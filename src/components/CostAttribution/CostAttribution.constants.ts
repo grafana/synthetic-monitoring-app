@@ -11,8 +11,4 @@ export const CMAB_URLS = {
 export const CMAB_SETUP_DOCS_URL =
   'https://grafana.com/docs/grafana-cloud/observe-and-act/testing/synthetic-monitoring/manage-labels/';
 
-// Only nudge tenants that have accumulated enough checks for cost attribution to be worth
-// the setup effort.
-export const MIN_CHECKS_FOR_CAL_BANNER = 5;
-
 export const CAL_BANNER_DISMISSED_KEY = 'dismissedCostAttributionBanner';

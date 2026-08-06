@@ -4,8 +4,9 @@ import { TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackCmabLinkClicked } from 'features/tracking/costAttributionEvents';
 
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+
 import { CMAB_URLS } from './CostAttribution.constants';
-import { useCostAttributionSetupStatus } from './CostAttribution.hooks';
 
 export type UsageMetric = 'active_series' | 'executions_per_month';
 
@@ -21,9 +22,9 @@ interface CostAttributionUsageTooltipProps {
 // tenant already has cost attribution labels (or the feature is off).
 export const CostAttributionUsageTooltip = ({ source, metric, children }: CostAttributionUsageTooltipProps) => {
   const styles = useStyles2(getStyles);
-  const { needsSetup } = useCostAttributionSetupStatus();
+  const { data: calData } = useTenantCostAttributionLabels();
 
-  if (!needsSetup) {
+  if (!calData || calData.names.length > 0) {
     return <>{children}</>;
   }
 

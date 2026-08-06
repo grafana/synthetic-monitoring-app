@@ -1,77 +1,26 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { FieldValidationMessage, LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CheckFormValues, FeatureName } from 'types';
-import { CostAttributionSetupHint } from 'components/CostAttribution/CostAttributionSetupHint';
-import { FeatureFlag } from 'components/FeatureFlag';
+import { CheckFormValues } from 'types';
 
 import { SectionContent } from '../../ui/SectionContent';
-import { CostAttributionLabelsField } from '../generic/CostAttributionLabelsField';
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 
 interface GenericLabelContentProps {
   description: string;
   isLoading?: boolean;
-  calNames?: string[];
   labelLimit?: number;
-  // True only when the CALs query succeeded with an empty list — a failed fetch must not
-  // show setup nudges to tenants that already have CALs configured.
-  showCalSetupHint?: boolean;
 }
 
-export function GenericLabelContent({
-  description,
-  isLoading,
-  calNames = [],
-  labelLimit,
-  showCalSetupHint = false,
-}: GenericLabelContentProps) {
+export function GenericLabelContent({ description, isLoading, labelLimit }: GenericLabelContentProps) {
   const styles = useStyles2(getStyles);
   const {
-    getValues,
-    setValue,
     formState: { errors },
   } = useFormContext<CheckFormValues>();
-  const prevCalNamesRef = useRef<string[]>([]);
-
-  useEffect(() => {
-    const prevCalNames = prevCalNamesRef.current;
-
-    if (calNames.length === 0 && prevCalNames.length === 0) {
-      return;
-    }
-
-    const hasChanged =
-      calNames.length !== prevCalNames.length || calNames.some((name, i) => name !== prevCalNames[i]);
-
-    if (!hasChanged) {
-      return;
-    }
-
-    const currentLabels = getValues('labels') ?? [];
-    const calNameSet = new Set(calNames);
-
-    const staleCalNames = prevCalNames.filter((name) => !calNameSet.has(name));
-    const staleCalNameSet = new Set(staleCalNames);
-
-    const calRows = calNames.map((calName) => {
-      const existing = currentLabels.find((label) => label.name === calName);
-      return { name: calName, value: existing?.value ?? '' };
-    });
-
-    const remainingLabels = currentLabels.filter(
-      (label) => !calNameSet.has(label.name) && !staleCalNameSet.has(label.name)
-    );
-
-    setValue('calLabels', calRows);
-    setValue('labels', remainingLabels);
-
-    prevCalNamesRef.current = calNames;
-  }, [calNames, getValues, setValue]);
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading label limits" />;
@@ -80,17 +29,6 @@ export function GenericLabelContent({
   return (
     <SectionContent>
       <div data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root} className={styles.container}>
-        <FeatureFlag name={FeatureName.CALs}>
-          {({ isEnabled }) =>
-            isEnabled ? (
-              calNames.length > 0 ? (
-                <CostAttributionLabelsField calNames={calNames} />
-              ) : showCalSetupHint ? (
-                <CostAttributionSetupHint />
-              ) : null
-            ) : null
-          }
-        </FeatureFlag>
         <GenericNameValueField
           allowEmpty
           field="labels"
@@ -100,7 +38,7 @@ export function GenericLabelContent({
           interpolationVariables={{ type: 'Label' }}
           namePlaceholder="name"
           valuePlaceholder="value"
-          limit={labelLimit !== undefined ? labelLimit - calNames.length : undefined}
+          limit={labelLimit}
           namePrefix={
             <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
               <span
@@ -117,9 +55,7 @@ export function GenericLabelContent({
             </Tooltip>
           }
         />
-        {errors.labels?.root?.message && (
-          <FieldValidationMessage>{errors.labels.root.message}</FieldValidationMessage>
-        )}
+        {errors.labels?.root?.message && <FieldValidationMessage>{errors.labels.root.message}</FieldValidationMessage>}
       </div>
     </SectionContent>
   );

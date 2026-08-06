@@ -1,4 +1,4 @@
-import { Check, CheckAlertPublished, CheckFormValues, TLSConfig } from 'types';
+import { Check, CheckAlertPublished, CheckFormValues, Label, TLSConfig } from 'types';
 import { fromBase64 } from 'utils';
 import {
   GLOBAL_PREDEFINED_ALERTS,
@@ -38,6 +38,21 @@ const getDecodedIfPEM = (cert = '') => {
   }
   return cert;
 };
+
+// A check stores cost attribution labels alongside custom ones, so the form has to pull them
+// apart. `calLabels` always holds one row per configured CAL name, in the tenant's order, because
+// the CAL field addresses them positionally — an unset CAL is a blank row, not a missing one.
+export function partitionCalLabels(labels: Label[] = [], calNames: string[] = []) {
+  const calNameSet = new Set(calNames);
+
+  return {
+    calLabels: calNames.map((name) => ({
+      name,
+      value: labels.find((label) => label.name === name)?.value ?? '',
+    })),
+    labels: labels.filter((label) => !calNameSet.has(label.name)),
+  };
+}
 
 export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkType' | 'settings'> {
   return {

@@ -1,26 +1,17 @@
 import React from 'react';
 
 import { FormSectionName } from '../../../types';
-import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
-import { useTenantLimits } from 'data/useTenantLimits';
 import { LimitsFetchWarning } from 'components/LabelField';
 
-import { DEFAULT_MAX_ALLOWED_LOG_LABELS, DEFAULT_MAX_ALLOWED_METRIC_LABELS } from '../../../constants';
 import { FormSection } from '../FormSection';
+import { CostAttributionLabelsField } from '../generic/CostAttributionLabelsField';
 import { GenericLabelContent } from '../layouts/GenericLabelContent';
+import { useLabelSectionData } from './LabelSection.hooks';
 
 export const LABEL_SECTION_FIELDS = ['labels'];
 
 export function LabelSection() {
-  // TODO: Pipe this data through the front door? Meaning as a prop to Checkster/ChecksterProvider (tenantLimits)
-  const { data: limits, isLoading: limitsLoading, error, isRefetching, refetch } = useTenantLimits();
-  const { data: calData, isLoading: calLoading } = useTenantCostAttributionLabels();
-
-  const isInitialLoad = (limitsLoading && !limits) || (calLoading && !calData);
-
-  const maxAllowedMetricLabels = limits?.maxAllowedMetricLabels ?? DEFAULT_MAX_ALLOWED_METRIC_LABELS;
-  const maxAllowedLogLabels = limits?.maxAllowedLogLabels ?? DEFAULT_MAX_ALLOWED_LOG_LABELS;
-  const description = `Custom labels to be included with collected metrics and logs. You can add up to ${maxAllowedMetricLabels}. If you add more than ${maxAllowedLogLabels} labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
+  const { error, isRefetching, refetch, isLoading, customLabelLimit, description } = useLabelSectionData();
 
   return (
     <FormSection sectionName={FormSectionName.Labels} fields={LABEL_SECTION_FIELDS}>
@@ -29,13 +20,9 @@ export function LabelSection() {
           <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />
         </div>
       )}
-      <GenericLabelContent
-        description={description}
-        isLoading={isInitialLoad}
-        calNames={calData?.names ?? []}
-        labelLimit={maxAllowedMetricLabels}
-        showCalSetupHint={calData !== undefined && calData.names.length === 0}
-      />
+
+      <CostAttributionLabelsField />
+      <GenericLabelContent description={description} isLoading={isLoading} labelLimit={customLabelLimit} />
     </FormSection>
   );
 }

@@ -34,9 +34,7 @@ describe('CheckUsage', () => {
 
     it('should render the correct label', async () => {
       await renderComponent(mockedCheck);
-      expect(
-        await screen.findByText('Estimated usage for this check', { selector: 'label > div' })
-      ).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Estimated usage for this check' })).toBeInTheDocument();
     });
   });
 
@@ -48,9 +46,7 @@ describe('CheckUsage', () => {
 
     it('should render the correct label', async () => {
       await renderComponent();
-      expect(
-        await screen.findByText('Estimated usage for this check', { selector: 'label > div' })
-      ).toBeInTheDocument();
+      expect(await screen.findByRole('heading', { name: 'Estimated usage for this check' })).toBeInTheDocument();
     });
   });
 });

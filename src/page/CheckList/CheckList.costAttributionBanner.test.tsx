@@ -9,11 +9,7 @@ import { mockFeatureToggles } from 'test/utils';
 import { Check, FeatureName, HTTPCheck } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import {
-  CAL_BANNER_DISMISSED_KEY,
-  CMAB_URLS,
-  MIN_CHECKS_FOR_CAL_BANNER,
-} from 'components/CostAttribution/CostAttribution.constants';
+import { CAL_BANNER_DISMISSED_KEY, CMAB_URLS } from 'components/CostAttribution/CostAttribution.constants';
 
 import { CheckList } from './CheckList';
 
@@ -71,20 +67,20 @@ describe('CheckList - cost attribution setup banner', () => {
       mockFeatureToggles({ [FeatureName.CALs]: true });
     });
 
-    it('shows the banner with a CMAB settings link when no CALs are configured and the tenant has enough checks', async () => {
+    it('shows the banner with a CMAB settings link when no CALs are configured', async () => {
       mockCalNames([]);
-      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+      await renderCheckList(buildChecks(5));
 
       expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
       const cta = screen.getByRole('link', { name: 'Set up cost attribution' });
       expect(cta).toHaveAttribute('href', CMAB_URLS.settings);
     });
 
-    it('does not show the banner when the tenant has fewer checks than the threshold', async () => {
+    it('shows the banner to tenants with only a single check', async () => {
       mockCalNames([]);
-      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER - 1));
+      await renderCheckList(buildChecks(1));
 
-      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
+      expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
     });
 
     it('does not show the banner when the CALs request fails', async () => {
@@ -95,28 +91,28 @@ describe('CheckList - cost attribution setup banner', () => {
           }),
         })
       );
-      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+      await renderCheckList(buildChecks(5));
 
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
 
     it('does not show the banner when CALs are already configured', async () => {
       mockCalNames([`Team`, `Service`]);
-      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+      await renderCheckList(buildChecks(5));
 
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
 
     it('hides the banner permanently when dismissed', async () => {
       mockCalNames([]);
-      const { user, unmount } = await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+      const { user, unmount } = await renderCheckList(buildChecks(5));
 
       expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
       await user.click(screen.getByLabelText('Close alert'));
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
 
       unmount();
-      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+      await renderCheckList(buildChecks(5));
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
   });
@@ -124,7 +120,7 @@ describe('CheckList - cost attribution setup banner', () => {
   describe('when CALs feature flag is disabled', () => {
     it('does not show the banner', async () => {
       mockCalNames([]);
-      await renderCheckList(buildChecks(MIN_CHECKS_FOR_CAL_BANNER));
+      await renderCheckList(buildChecks(5));
 
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });

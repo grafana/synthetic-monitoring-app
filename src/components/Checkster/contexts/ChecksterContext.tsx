@@ -23,6 +23,7 @@ import { getCheckType } from 'utils';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useDOMId } from 'hooks/useDOMId';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
@@ -74,13 +75,20 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[], defaultFolderUid?: string) {
+function useFormValuesMeta(
+  checkType: CheckType,
+  check: Check | undefined,
+  probesWithMetadata: ProbeWithMetadata[],
+  calNames: string[],
+  defaultFolderUid?: string
+) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+  const calNamesKey = calNames.join('\u0000');
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema);
-    const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    const formValues = check ? toFormValues(check, calNames) : getDefaultFormValues(checkType, calNames);
 
     if (defaultFolderUid && !formValues.folderUid) {
       formValues.folderUid = defaultFolderUid;
@@ -90,10 +98,11 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
       defaultFormValues: formValues,
       schema: refinedSchema,
     };
-    // Use probeCompatibilityKey instead of probesWithMetadata array reference
-    // This ensures schema only recreates when probe compatibility actually changes
+    // Use probeCompatibilityKey and calNamesKey instead of the array references
+    // This ensures schema only recreates when probe compatibility actually changes, and that the
+    // CALs query's polling doesn't recompute the defaults unless the names themselves change
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid]);
+  }, [checkType, check, probeCompatibilityKey, calNamesKey, defaultFolderUid]);
 }
 
 export function ChecksterProvider({
@@ -112,6 +121,14 @@ export function ChecksterProvider({
   const { defaultFolderUid, isLoading: isFolderLoading, isError: isFolderError } = useDefaultFolder(isFoldersEnabled);
   const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
 
+  // A check's cost attribution labels are stored alongside its custom ones, so the defaults can
+  // only be split apart once the tenant's CAL names are known. Rather than block the form on that
+  // query, the names feed the defaults and the reset below re-hydrates when they arrive. A failed
+  // query leaves the check's CAL values as custom labels — lossless, since the payload merges both
+  // arrays back together either way.
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = useMemo(() => calData?.names ?? [], [calData]);
+
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
   );
@@ -121,7 +138,13 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
+  const { schema, defaultFormValues } = useFormValuesMeta(
+    checkType,
+    check,
+    probesWithMetadata,
+    calNames,
+    defaultFolderUid
+  );
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
@@ -231,7 +254,7 @@ export function ChecksterProvider({
       formNavigation.completeAllSteps();
     }
     if (isPrefilled) {
-      formMethods.reset(getDefaultFormValues(checkType), { keepValues: true });
+      formMethods.reset(getDefaultFormValues(checkType, calNames), { keepValues: true });
       formMethods.setValue('job', formMethods.getValues('job'), { shouldDirty: true });
     }
     // only do this on mount so it doesn't trigger when the check is updated

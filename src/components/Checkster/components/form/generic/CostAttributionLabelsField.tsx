@@ -5,33 +5,38 @@ import { Input, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { CostAttributionSetupHint } from 'components/CostAttribution/CostAttributionSetupHint';
 
 import { StyledField } from '../../ui/StyledField';
 
 const CAL_DESCRIPTION =
   'Cost attribution labels help track costs across teams and services. Enter a value for each label or leave blank for unattributed.';
 
-interface CostAttributionLabelsFieldProps {
-  calNames: string[];
-}
-
-export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFieldProps) {
+export function CostAttributionLabelsField() {
   const {
+    watch,
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
+  const { data: calData } = useTenantCostAttributionLabels();
+  // `calLabels` is built from the tenant's CAL names in `toFormValues`, so it always holds one row
+  // per configured label and the rendered rows can't drift from the values they write to.
+  const calLabels = watch('calLabels');
 
-  if (calNames.length === 0) {
-    return null;
+  if (!calLabels?.length) {
+    // Only nudge once the query has actually succeeded with an empty list — a failed fetch must
+    // not tell a tenant that already has CALs configured to go and set them up.
+    return calData?.names.length === 0 ? <CostAttributionSetupHint /> : null;
   }
 
   return (
     <StyledField label="Cost attribution labels" description={CAL_DESCRIPTION} emulate>
       <Stack direction="column" gap={0.5}>
-        {calNames.map((calName, index) => (
-          <Stack key={calName} alignItems="start">
+        {calLabels.map((calLabel, index) => (
+          <Stack key={calLabel.name} alignItems="start">
             <StyledField className={styles.nameField}>
-              <Input value={calName} readOnly aria-label={`Cost attribution label ${index + 1} name`} />
+              <Input value={calLabel.name} readOnly aria-label={`Cost attribution label ${index + 1} name`} />
             </StyledField>
             <StyledField className={styles.valueField}>
               <Controller

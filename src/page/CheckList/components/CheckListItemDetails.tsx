@@ -5,10 +5,7 @@ import { css, cx } from '@emotion/css';
 import pluralize from 'pluralize';
 
 import { Label } from 'types';
-import {
-  CostAttributionUsageTooltip,
-  UsageMetric,
-} from 'components/CostAttribution/CostAttributionUsageTooltip';
+import { CostAttributionUsageTooltip, UsageMetric } from 'components/CostAttribution/CostAttributionUsageTooltip';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
 import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessage';
 
@@ -43,9 +40,9 @@ export const CheckListItemDetails = ({
   const executionRateMessage = executionsRate ? `${executionsRate} executions / month` : null;
   const detailItems = [
     { text: `${frequency / 1000}s frequency` },
-    { text: activeSeriesMessage, metric: 'active_series' as UsageMetric },
+    { text: activeSeriesMessage, metric: 'active_series' },
     { text: probeLocationsMessage },
-    { text: executionRateMessage, metric: 'executions_per_month' as UsageMetric },
+    { text: executionRateMessage, metric: 'executions_per_month' },
   ].filter((item): item is { text: string; metric?: UsageMetric } => Boolean(item.text));
   const hasCalLabels = (calLabels?.length ?? 0) > 0;
 
@@ -65,9 +62,7 @@ export const CheckListItemDetails = ({
           )}
           {item.metric ? (
             <CostAttributionUsageTooltip source="check_list" metric={item.metric}>
-              <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>
-                {item.text}
-              </span>
+              <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item.text}</span>
             </CostAttributionUsageTooltip>
           ) : (
             <span className={cx(styles.detailItem, { [styles.wrapDetailItem]: layout === 'wrap' })}>{item.text}</span>
@@ -146,7 +141,9 @@ export const CheckListItemDetails = ({
       {missingCalNames.length > 0 && (
         <>
           {layout === 'inline' && (
-            <span className={styles.separator} aria-hidden="true">|</span>
+            <span className={styles.separator} aria-hidden="true">
+              |
+            </span>
           )}
           <UnattributedMessage missingCalNames={missingCalNames} />
         </>
