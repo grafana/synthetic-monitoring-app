@@ -10,12 +10,17 @@ import { Check } from 'types';
  * ONE sample per series. A rate-ratio (the previous implementation) hits 0/0
  * (NaN) whenever the window holds samples but no complete execution interval,
  * which intermittently reported healthy low-frequency checks as down between
- * executions. The window only needs to be wide enough to contain each check's
- * most recent sample, so it sizes to the slowest check's frequency.
+ * executions.
+ *
+ * The window is a balance: it must contain every ACTIVE probe's latest sample
+ * (≥1 execution interval plus jitter), but no wider — a probe that stops
+ * reporting keeps contributing its final sample for the window's length, and
+ * a stale success could mask other probes' live failures. At 1.5x the slowest
+ * frequency, a silent probe drops out after roughly one missed cycle.
  */
 export function getUpStateByCheckQuery({ checks = [] }: { checks?: Check[] } = {}): DSQuery {
   const maxFrequencySeconds = Math.max(...checks.map((check) => check.frequency), 60_000) / 1000;
-  const windowSeconds = Math.max(900, maxFrequencySeconds * 2);
+  const windowSeconds = Math.max(300, Math.round(maxFrequencySeconds * 1.5));
   const expr = `max by (job, instance) (last_over_time(probe_success[${windowSeconds}s]))`;
 
   return {

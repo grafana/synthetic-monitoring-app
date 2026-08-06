@@ -18,14 +18,16 @@ describe(`getUpStateByCheckQuery`, () => {
     expect(expr).not.toContain(`rate(`);
   });
 
-  it(`sizes the window to contain the slowest check's most recent sample`, () => {
+  it(`sizes the window to contain the slowest check's most recent sample, but no wider`, () => {
     const { expr } = getUpStateByCheckQuery({ checks: [makeCheck(60_000), makeCheck(3_600_000)] });
 
-    expect(expr).toContain(`[7200s]`);
+    // 1.5x the slowest frequency: wide enough for an active probe's latest
+    // sample, narrow enough that a dead probe's stale success drops out fast.
+    expect(expr).toContain(`[5400s]`);
   });
 
   it(`keeps a floor window for fast or unknown frequencies`, () => {
-    expect(getUpStateByCheckQuery({ checks: [makeCheck(60_000)] }).expr).toContain(`[900s]`);
-    expect(getUpStateByCheckQuery().expr).toContain(`[900s]`);
+    expect(getUpStateByCheckQuery({ checks: [makeCheck(60_000)] }).expr).toContain(`[300s]`);
+    expect(getUpStateByCheckQuery().expr).toContain(`[300s]`);
   });
 });
