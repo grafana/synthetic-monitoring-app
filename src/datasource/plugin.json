@@ -76,54 +76,6 @@
           "content": "Bearer {{.SecureJsonData.accessToken}}"
         }
       ]
-    },
-    {
-      "path": "api/v1alpha1/secrets",
-      "method": "GET",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
-      "reqAction": "secret.securevalues:read",
-      "headers": [
-        {
-          "name": "Authorization",
-          "content": "Bearer {{.SecureJsonData.accessToken}}"
-        }
-      ]
-    },
-    {
-      "path": "api/v1alpha1/secrets",
-      "method": "PUT",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
-      "reqAction": "secret.securevalues:write",
-      "headers": [
-        {
-          "name": "Authorization",
-          "content": "Bearer {{.SecureJsonData.accessToken}}"
-        }
-      ]
-    },
-    {
-      "path": "api/v1alpha1/secrets",
-      "method": "POST",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
-      "reqAction": "secret.securevalues:create",
-      "headers": [
-        {
-          "name": "Authorization",
-          "content": "Bearer {{.SecureJsonData.accessToken}}"
-        }
-      ]
-    },
-    {
-      "path": "api/v1alpha1/secrets",
-      "method": "DELETE",
-      "url": "{{.JsonData.apiHost}}/api/v1alpha1/secrets",
-      "reqAction": "secret.securevalues:delete",
-      "headers": [
-        {
-          "name": "Authorization",
-          "content": "Bearer {{.SecureJsonData.accessToken}}"
-        }
-      ]
     }
   ],
 
