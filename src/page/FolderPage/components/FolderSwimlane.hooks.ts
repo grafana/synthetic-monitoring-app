@@ -1,36 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { joinRegexValues } from 'queries/queries.utils';
 
-import { ExecutionLabels, ExecutionLabelType, FailedLogLabels, SucceededLogLabels } from 'features/parseCheckLogs/checkLogs.types';
+import {
+  ExecutionLabels,
+  ExecutionLabelType,
+  FailedLogLabels,
+  SucceededLogLabels,
+} from 'features/parseCheckLogs/checkLogs.types';
 import { Check } from 'types';
 import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 import { useInfiniteLogs } from 'data/useInfiniteLogs';
 import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
-
-// Values are interpolated into a Loki stream selector regex, which is fully
-// anchored. Each character needs up to two escaping layers, applied in a
-// single pass so nothing is ever re-escaped: RE2 metacharacters so values
-// match literally, then string-literal escaping (backslashes doubled, quotes
-// escaped) because LogQL double-quoted strings reject unknown escape
-// sequences like `\.`.
-function escapeRe2(value: string): string {
-  return value.replace(/[\\^$.*+?()[\]{}|"]/g, (char) => {
-    if (char === '"') {
-      return '\\"';
-    }
-    if (char === '\\') {
-      // regex layer: \\ — string layer doubles each backslash
-      return '\\\\\\\\';
-    }
-    // regex layer: \<char> — string layer doubles the backslash
-    return `\\\\${char}`;
-  });
-}
-
-function joinRegex(values: string[]): string {
-  return [...new Set(values)].map(escapeRe2).join('|');
-}
 
 export interface ExecutionRecord {
   timestamp: number;
@@ -46,6 +28,7 @@ export interface FolderExecutionLogs {
   executionsByCheck: Map<string, ExecutionRecord[]>;
   failures: ExecutionRecord[];
   isLoading: boolean;
+  isError: boolean;
 }
 
 export function useFolderExecutionLogs(checks: Check[]): FolderExecutionLogs {
@@ -61,14 +44,15 @@ export function useFolderExecutionLogs(checks: Check[]): FolderExecutionLogs {
   const timeRange = useMemo(() => ({ from: now - THREE_HOURS_MS, to: now }), [now]);
 
   const expr = useMemo(() => {
-    const jobs = joinRegex(checks.map((check) => check.job));
-    const instances = joinRegex(checks.map((check) => check.target));
+    const jobs = joinRegexValues(checks.map((check) => check.job));
+    const instances = joinRegexValues(checks.map((check) => check.target));
     return `{job=~"${jobs}", instance=~"${instances}"} | logfmt |="duration_seconds="`;
   }, [checks]);
 
   const {
     data: logs = [],
     isLoading,
+    isError,
     fetchNextPage,
     hasNextPage,
   } = useInfiniteLogs<ExecutionLabels & (FailedLogLabels | SucceededLogLabels), ExecutionLabelType>({
@@ -122,8 +106,8 @@ export function useFolderExecutionLogs(checks: Check[]): FolderExecutionLogs {
 
     failures.sort((a, b) => b.timestamp - a.timestamp);
 
-    return { timeRange, executionsByCheck, failures, isLoading };
-  }, [logs, checks, timeRange, isLoading]);
+    return { timeRange, executionsByCheck, failures, isLoading, isError };
+  }, [logs, checks, timeRange, isLoading, isError]);
 
   // Advancing the window creates a fresh query (loading state) every tick;
   // keep showing the previous window while the next one fetches so the

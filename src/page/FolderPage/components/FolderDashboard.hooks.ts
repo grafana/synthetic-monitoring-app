@@ -1,5 +1,8 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { getAvgLatencyByCheckQuery } from 'queries/avgLatencyByCheck';
+import { getLatencyTrendByCheckQuery } from 'queries/latencyTrendByCheck';
+import { getUpStateByCheckQuery } from 'queries/upStateByCheck';
 
 import { Check } from 'types';
 import { MetricCheckSuccess, RangeMetric } from 'datasource/responses.types';
@@ -7,7 +10,7 @@ import { getCheckCompositeKey } from 'data/useCheckAlertStates';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { getStartEnd, queryInstantMetric, queryRangeMetric } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
-import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
+import { DEFAULT_QUERY_FROM_TIME, STANDARD_REFRESH_INTERVAL } from 'components/constants';
 
 type RangeCheckMetric = RangeMetric & {
   metric: {
@@ -16,37 +19,8 @@ type RangeCheckMetric = RangeMetric & {
   };
 };
 
-// Instant "is the check currently up" — mirrors the state query the summary
-// table uses, with a wider window so low-frequency checks still report.
-const STATE_QUERY = `ceil(
-  sum(rate(probe_all_success_sum[15m])) by (job, instance)
-  /
-  sum(rate(probe_all_success_count[15m])) by (job, instance)
-)`;
-
-// k6-based checks (scripted, browser, multihttp) emit probe_duration_seconds_*
-// instead of probe_all_duration_seconds_* — union both, like the check list does.
-const LATENCY_QUERY = `sum(rate(probe_all_duration_seconds_sum[3h]) or rate(probe_duration_seconds_sum[3h])) by (job, instance)
-  /
-  sum(rate(probe_all_duration_seconds_count[3h]) or rate(probe_duration_seconds_count[3h])) by (job, instance)`;
-
-// A rate window needs at least two samples of a series inside it. Sizing it
-// to 3x the slowest check's frequency keeps that true even with execution
-// jitter (2x is marginal: a window can catch a single sample and go empty).
-// The step stays fixed — a dense evaluation grid costs little and means young
-// checks produce points as soon as they have two samples.
-function getLatencyTrendQuery(checks: Check[]) {
-  const maxFrequencySeconds = Math.max(...checks.map((check) => check.frequency), 60_000) / 1000;
-  const windowSeconds = Math.max(600, maxFrequencySeconds * 3);
-  const stepSeconds = 300;
-
-  return {
-    query: `sum(rate(probe_all_duration_seconds_sum[${windowSeconds}s]) or rate(probe_duration_seconds_sum[${windowSeconds}s])) by (job, instance)
-  /
-  sum(rate(probe_all_duration_seconds_count[${windowSeconds}s]) or rate(probe_duration_seconds_count[${windowSeconds}s])) by (job, instance)`,
-    step: String(stepSeconds),
-  };
-}
+const STATE_QUERY = getUpStateByCheckQuery().expr;
+const LATENCY_QUERY = getAvgLatencyByCheckQuery({ window: DEFAULT_QUERY_FROM_TIME }).expr;
 
 export interface CheckMetricSummary {
   reachability?: number;
@@ -71,7 +45,7 @@ function useInstantByCheck(queryKey: string, query: string) {
 
   return useQuery({
     // 'now' can't live in the query key or it would refetch continuously
-     
+
     queryKey: [queryKey, query, url],
     queryFn: () => queryInstantMetric<MetricCheckSuccess>({ url, query, ...getStartEnd() }),
     refetchInterval: STANDARD_REFRESH_INTERVAL,
@@ -87,17 +61,17 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
   const { data: state = [], isLoading: isLoadingState } = useInstantByCheck('folder_check_state', STATE_QUERY);
   const { data: latency = [], isLoading: isLoadingLatency } = useInstantByCheck('folder_check_latency', LATENCY_QUERY);
 
-  const trend = useMemo(() => getLatencyTrendQuery(checks), [checks]);
+  const trend = useMemo(() => getLatencyTrendByCheckQuery({ checks }), [checks]);
 
   const { data: latencyTrend = [] } = useQuery({
     // 'now' can't live in the query key or it would refetch continuously
 
-    queryKey: ['folder_check_latency_trend', trend.query, trend.step, url],
+    queryKey: ['folder_check_latency_trend', trend.expr, trend.interval, url],
     queryFn: () =>
       queryRangeMetric<RangeCheckMetric>({
         url,
-        query: trend.query,
-        step: trend.step,
+        query: trend.expr,
+        step: trend.interval,
         ...getStartEnd(),
       }),
     refetchInterval: STANDARD_REFRESH_INTERVAL,
@@ -121,6 +95,8 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
         reachability: reachabilityMap.get(key)?.value?.[1],
         latency: latencyMap.get(key)?.value?.[1],
         isUp: stateValue === undefined ? undefined : stateValue > 0,
+        // queryRangeMetric converts sample values to numbers at runtime, but
+        // RangeMetric still types them as strings — hence the cast.
         latencyTrend: trendMap.get(key)?.values as Array<[number, number]> | undefined,
       };
     };
@@ -154,17 +130,4 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
       isLoading: isLoadingReachability || isLoadingState || isLoadingLatency,
     };
   }, [checks, reachability, state, latency, latencyTrend, isLoadingReachability, isLoadingState, isLoadingLatency]);
-}
-
-const DAYS_PER_MONTH = 31;
-
-export function getExecutionsPerMonth(checks: Check[]): number {
-  return checks.reduce((total, check) => {
-    // Disabled checks don't execute, so they contribute no volume.
-    if (!check.frequency || !check.enabled) {
-      return total;
-    }
-    const perProbe = (DAYS_PER_MONTH * 24 * 60 * 60 * 1000) / check.frequency;
-    return total + Math.round(perProbe * check.probes.length);
-  }, 0);
 }
