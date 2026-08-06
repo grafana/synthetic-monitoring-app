@@ -1,6 +1,7 @@
 import { useBooleanFlagValue, useOpenFeatureClientStatus } from '@openfeature/react-sdk';
 import { ProviderStatus } from '@openfeature/web-sdk';
 import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
+import type { SmFeatureName } from 'services/featureFlags.constants';
 
 import { FeatureName } from 'types';
 
@@ -13,7 +14,7 @@ const UNMAPPED_FLAG_KEY = 'sm-unmapped-flag';
 // config.featureToggles. See docs/development/openfeature-migration.md.
 export function useFeatureFlag(featureFlag: FeatureName) {
   const { isFeatureEnabled } = useFeatureFlagContext();
-  const openFeatureKey = OPEN_FEATURE_KEYS[featureFlag];
+  const openFeatureKey = OPEN_FEATURE_KEYS[featureFlag as SmFeatureName];
   const openFeatureValue = useBooleanFlagValue(openFeatureKey ?? UNMAPPED_FLAG_KEY, false);
   const providerStatus = useOpenFeatureClientStatus();
 

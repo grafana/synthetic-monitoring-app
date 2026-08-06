@@ -1,6 +1,8 @@
 import { CheckAlertType } from 'types';
 import { FormSectionName } from 'components/Checkster/types';
 
+export { CHECKS_TEST_ID, SCENES_TEST_ID } from './dataTestIds.constants';
+
 export const ACTIONS_TEST_ID = {
   create: {
     check: 'action create check',
@@ -17,29 +19,6 @@ export const APP_INITIALIZER_TEST_ID = {
   root: 'app-init container',
   initButton: 'app-init init-button',
   autoInitSpinner: 'app-init auto-init-spinner',
-} as const;
-
-export const CHECKS_TEST_ID = {
-  card: 'checks card',
-  emptyState: 'checks empty-state',
-  groupCard: 'checks group-card',
-  usage: 'checks usage',
-  form: {
-    chooseType: 'checks form choose-type',
-  },
-  filters: {
-    search: 'checks filters search',
-    status: 'checks filters status',
-    alerts: 'checks filters alerts',
-    probes: 'checks filters probes',
-  },
-  header: {
-    selectAll: 'checks header select-all',
-    sortBy: 'checks header sort-by',
-  },
-  listItem: {
-    editButton: 'checks list-item edit-button',
-  },
 } as const;
 
 export const CHECKSTER_TEST_ID = {
@@ -163,14 +142,6 @@ export const ROUTER_TEST_ID = {
   info: 'router info',
   pathname: 'router pathname',
   search: 'router search',
-} as const;
-
-export const SCENES_TEST_ID = {
-  timepoint: {
-    list: 'scenes timepoint list',
-    listEntryBar: 'scenes timepoint list-entry-bar',
-    viewer: 'scenes timepoint viewer',
-  },
 } as const;
 
 export const THRESHOLD_TEST_ID = {

@@ -38,7 +38,15 @@ export const TimepointListEntryBar = ({
   timepoint,
 }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { checkType, handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const {
+    checkType,
+    handleViewerStateChange,
+    handleSetScrollToViewer,
+    yAxisMax,
+    viewerState,
+    timepointWidth,
+    vizDisplay,
+  } = useTimepointExplorerContext();
   const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
@@ -56,7 +64,15 @@ export const TimepointListEntryBar = ({
     });
     handleSetScrollToViewer(true);
     handleViewerStateChange([timepoint, probeNameToView, 0]);
-  }, [analyticsEventName, checkType, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
+  }, [
+    analyticsEventName,
+    checkType,
+    status,
+    timepoint,
+    probeNameToView,
+    handleViewerStateChange,
+    handleSetScrollToViewer,
+  ]);
 
   if (!vizDisplay.includes(status)) {
     return <div />;
@@ -70,7 +86,16 @@ export const TimepointListEntryBar = ({
         </div>
       )}
       <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
-        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false} data-testid={`${SCENES_TEST_ID.timepoint.listEntryBar}-${timepoint.index}`}>
+        <PlainButton
+          aria-label={`${new Date(timepoint.adjustedTime).toISOString()} — ${status}`}
+          className={styles.button}
+          data-status={status}
+          data-time={timepoint.adjustedTime}
+          data-testid={`${SCENES_TEST_ID.timepoint.listEntryBar}-${timepoint.index}`}
+          ref={ref}
+          onClick={handleViewerStateClick}
+          showFocusStyles={false}
+        >
           <TimepointVizItem
             className={cx(styles.bar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,
@@ -90,7 +115,7 @@ const getStyles = (
   timepointWidth: number,
   height: number,
   isSelected: boolean,
-  hasSelection: boolean,
+  hasSelection: boolean
 ) => {
   return {
     container: css`
