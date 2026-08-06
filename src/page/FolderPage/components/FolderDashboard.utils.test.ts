@@ -4,7 +4,7 @@ import { Check } from 'types';
 import { CheckRuntimeAlertStates, getCheckCompositeKey } from 'data/useCheckAlertStates';
 
 import { FolderCheckMetrics } from './FolderDashboard.hooks';
-import { formatPercent, orderChecksByAttention } from './FolderDashboard.utils';
+import { formatPercent, getExecutionsPerMonth, orderChecksByAttention } from './FolderDashboard.utils';
 import { ExecutionRecord, FolderExecutionLogs } from './FolderSwimlane.hooks';
 
 function makeCheck(job: string): Check {
@@ -39,6 +39,7 @@ function makeExecutionLogs(failures: ExecutionRecord[]): FolderExecutionLogs {
     executionsByCheck: new Map(),
     failures,
     isLoading: false,
+    isError: false,
   };
 }
 
@@ -56,6 +57,21 @@ describe(`formatPercent`, () => {
     expect(formatPercent(0.99996)).toBe(`99.9%`);
     expect(formatPercent(1)).toBe(`100.0%`);
     expect(formatPercent(0.963)).toBe(`96.3%`);
+  });
+});
+
+describe(`getExecutionsPerMonth`, () => {
+  it(`estimates executions from frequency and probe count`, () => {
+    // 1-minute frequency, 2 probes: 31 days * 24h * 60m * 2 probes
+    const check = { ...BASIC_HTTP_CHECK, frequency: 60_000, probes: [1, 2], enabled: true };
+
+    expect(getExecutionsPerMonth([check])).toBe(31 * 24 * 60 * 2);
+  });
+
+  it(`excludes disabled checks`, () => {
+    const check = { ...BASIC_HTTP_CHECK, frequency: 60_000, probes: [1], enabled: false };
+
+    expect(getExecutionsPerMonth([check])).toBe(0);
   });
 });
 

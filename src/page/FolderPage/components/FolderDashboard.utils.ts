@@ -7,6 +7,24 @@ import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { FolderCheckMetrics } from './FolderDashboard.hooks';
 import { FolderExecutionLogs } from './FolderSwimlane.hooks';
 
+/** Stable identity for React keys and row ids, tolerating checks without an id. */
+export function getCheckKey(check: Check): string {
+  return String(check.id ?? `${check.job}-${check.target}`);
+}
+
+const DAYS_PER_MONTH = 31;
+
+export function getExecutionsPerMonth(checks: Check[]): number {
+  return checks.reduce((total, check) => {
+    // Disabled checks don't execute, so they contribute no volume.
+    if (!check.frequency || !check.enabled) {
+      return total;
+    }
+    const perProbe = (DAYS_PER_MONTH * 24 * 60 * 60 * 1000) / check.frequency;
+    return total + Math.round(perProbe * check.probes.length);
+  }, 0);
+}
+
 export function formatPercent(fraction: number): string {
   const percent = fraction * 100;
   // Never round an imperfect value up to 100% — a check that failed recently
