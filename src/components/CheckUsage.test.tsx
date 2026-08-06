@@ -13,6 +13,14 @@ import { CMAB_URLS } from './CostAttribution/CostAttribution.constants';
 import { CheckUsage } from './CheckUsage';
 import { FALLBACK_CHECK_MAP } from './constants';
 
+jest.mock('features/tracking/costAttributionEvents', () => ({
+  trackCmabLinkClicked: jest.fn(),
+}));
+
+import { trackCmabLinkClicked } from 'features/tracking/costAttributionEvents';
+
+const mockTrackCmabLinkClicked = trackCmabLinkClicked as jest.MockedFunction<typeof trackCmabLinkClicked>;
+
 const FOOTER_LINK_TEXT = 'Attribute check costs to teams and services';
 
 function RenderWrapper({ checkType = CheckType.Http }: { checkType?: CheckType }) {
@@ -70,6 +78,7 @@ describe('CheckUsage', () => {
     beforeEach(() => {
       mockFeatureToggles({ [FeatureName.CALs]: true });
       mockCalNames([]);
+      mockTrackCmabLinkClicked.mockClear();
     });
 
     it('shows a CMAB settings link for admins when no CALs are configured', async () => {
@@ -96,5 +105,27 @@ describe('CheckUsage', () => {
         expect(link).toHaveAttribute('href', CMAB_URLS.settings);
       }
     );
+
+    it('tracks executions_per_month when the footer nudge is shown for k6 check types', async () => {
+      const { user } = await renderComponent(undefined, CheckType.Scripted);
+
+      await user.click(await screen.findByRole('link', { name: FOOTER_LINK_TEXT }));
+
+      expect(mockTrackCmabLinkClicked).toHaveBeenCalledWith({
+        source: 'check_form_usage_tooltip',
+        metric: 'executions_per_month',
+      });
+    });
+
+    it('tracks active_series when the footer nudge is shown for HTTP checks', async () => {
+      const { user } = await renderComponent(undefined, CheckType.Http);
+
+      await user.click(await screen.findByRole('link', { name: FOOTER_LINK_TEXT }));
+
+      expect(mockTrackCmabLinkClicked).toHaveBeenCalledWith({
+        source: 'check_form_usage_tooltip',
+        metric: 'active_series',
+      });
+    });
   });
 });

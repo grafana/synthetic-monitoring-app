@@ -83,7 +83,12 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
                 href={CMAB_URLS.settings}
                 external={true}
                 variant="bodySmall"
-                onClick={() => trackCmabLinkClicked({ source: 'check_form_usage_tooltip', metric: 'active_series' })}
+                onClick={() =>
+                  trackCmabLinkClicked({
+                    source: 'check_form_usage_tooltip',
+                    metric: hideTelemetry ? 'executions_per_month' : 'active_series',
+                  })
+                }
               >
                 Attribute check costs to teams and services
               </TextLink>

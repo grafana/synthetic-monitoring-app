@@ -62,7 +62,14 @@ export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps
           >
             Set up cost attribution
           </LinkButton>
-          <Button variant="secondary" size="sm" onClick={() => setDismissed(true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              setDismissed(true);
+              setLocalDismissed(true);
+            }}
+          >
             Understood, don&apos;t show again
           </Button>
         </Stack>

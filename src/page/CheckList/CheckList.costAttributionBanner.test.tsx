@@ -123,6 +123,19 @@ describe('CheckList - cost attribution setup banner', () => {
       await renderCheckList(buildChecks(5));
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
+
+    it('hides the banner immediately when permanently dismissed', async () => {
+      mockCalNames([]);
+      const { user, unmount } = await renderCheckList(buildChecks(5));
+
+      expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: "Understood, don't show again" }));
+      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
+
+      unmount();
+      await renderCheckList(buildChecks(5));
+      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
+    });
   });
 
   describe('when CALs feature flag is disabled', () => {
