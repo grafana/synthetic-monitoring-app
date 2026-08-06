@@ -18,12 +18,7 @@ export function FormFolderField() {
 
   return (
     <StyledField label="Folder" description="Choose a folder where you want to store the check.">
-      <FolderSelector
-        value={field.value}
-        onChange={field.onChange}
-        disabled={disabled}
-        aria-label="Select folder"
-      />
+      <FolderSelector value={field.value} onChange={field.onChange} disabled={disabled} />
     </StyledField>
   );
 }

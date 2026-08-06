@@ -173,7 +173,7 @@ describe('buildChecksByFolder', () => {
 
     const externalNode = folderTree.find((n) => n.folderUid === FOLDER_EXTERNAL.uid);
     expect(externalNode).toBeDefined();
-    expect(externalNode!.isExternal).toBe(true);
+    expect(externalNode!.isOutside).toBe(true);
     expect(externalNode!.isOrphaned).toBe(false);
     expect(externalNode!.isAccessible).toBe(true);
     expect(externalNode!.folder?.title).toBe(FOLDER_EXTERNAL.title);
@@ -221,10 +221,11 @@ describe('CheckList - Folder View Integration', () => {
       await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_EXTERNAL_FOLDER], 'view=folder');
 
       // The external fixture duplicates the default folder's title (the
-      // stranded-folder incident scenario); the default node is suffixed.
+      // stranded-folder incident scenario); the default node is suffixed and
+      // the stranded root-level duplicate carries the Root badge.
       expect(await screen.findByText(FOLDER_EXTERNAL.title)).toBeInTheDocument();
       expect(screen.getByText(`${FOLDER_EXTERNAL.title} (default)`)).toBeInTheDocument();
-      expect(await screen.findByText('Outside default folder')).toBeInTheDocument();
+      expect(await screen.findByText('Root')).toBeInTheDocument();
       expect(screen.getByText('External folder check')).toBeInTheDocument();
       expect(screen.queryByText('Folder not found')).not.toBeInTheDocument();
     });

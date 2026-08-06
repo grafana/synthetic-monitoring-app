@@ -7,6 +7,7 @@ import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
 import { Check, GrafanaFolder } from 'types';
+import { flattenFolderTree, indentFolderLabel } from 'data/useFolders';
 import { useExtendedProbes } from 'data/useProbes';
 import { useCheckTypeOptions } from 'hooks/useCheckTypeOptions';
 import { CHECK_LIST_STATUS_OPTIONS } from 'page/CheckList/CheckList.constants';
@@ -19,6 +20,8 @@ interface CheckFiltersProps {
   checkFilters: CheckFiltersType;
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  /** UIDs of folders living outside the default folder's subtree, shown at the top level of the dropdown. */
+  outsideFolderUids?: Set<string>;
   isFoldersAvailable?: boolean;
   includeStatus?: boolean;
   calNames?: string[];
@@ -32,6 +35,7 @@ export function CheckFilters({
   checkFilters,
   folders = [],
   defaultFolderUid,
+  outsideFolderUids,
   isFoldersAvailable = false,
   includeStatus = true,
   calNames,
@@ -89,12 +93,36 @@ export function CheckFilters({
       }));
   }, [probes]);
 
+  // Hierarchy is conveyed by indentation: the default folder first with its
+  // descendants nested beneath it, then folders outside the subtree at the
+  // top level (nested among themselves when their parent is also listed).
   const folderOptions: Array<ComboboxOption<string>> = useMemo(() => {
-    return folders.map((folder) => ({
-      label: folder.uid === defaultFolderUid ? `${folder.title} (default)` : folder.title,
-      value: folder.uid,
-    }));
-  }, [folders, defaultFolderUid]);
+    const outsideFolders = folders.filter((folder) => outsideFolderUids?.has(folder.uid));
+    const subtreeFolders = folders.filter((folder) => !outsideFolderUids?.has(folder.uid));
+
+    const subtreeOptions: Array<ComboboxOption<string>> = defaultFolderUid
+      ? flattenFolderTree(subtreeFolders, defaultFolderUid).map(({ folder, depth }) => ({
+          label:
+            folder.uid === defaultFolderUid
+              ? `${folder.title} (default)`
+              : indentFolderLabel(folder.title, depth),
+          value: folder.uid,
+        }))
+      : subtreeFolders.map((folder) => ({ label: folder.title, value: folder.uid }));
+
+    // Outside folders form a forest: passing a synthetic root makes
+    // flattenFolderTree attach folders whose parent is not listed to that
+    // root (depth 1), while nesting listed parent/child pairs. Depths are
+    // shifted down so the forest's top level renders unindented.
+    const outsideOptions: Array<ComboboxOption<string>> = flattenFolderTree(outsideFolders, '__outside__').map(
+      ({ folder, depth }) => ({
+        label: indentFolderLabel(folder.title, depth - 1),
+        value: folder.uid,
+      })
+    );
+
+    return [...subtreeOptions, ...outsideOptions];
+  }, [folders, defaultFolderUid, outsideFolderUids]);
 
   return (
     <div className={cx(styles.controls, className)}>
