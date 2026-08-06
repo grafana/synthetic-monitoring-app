@@ -7,6 +7,8 @@ import {
   FOLDER_FORBIDDEN_UID,
   FOLDER_PRODUCTION,
   FOLDER_READONLY,
+  FOLDER_ROOT,
+  FOLDER_ROOT_CHILD,
   FOLDER_STAGING,
 } from './folders';
 
@@ -57,6 +59,20 @@ export const CHECK_IN_EXTERNAL_FOLDER: Check = {
   id: 207,
   job: 'External folder check',
   folderUid: FOLDER_EXTERNAL.uid,
+};
+
+export const CHECK_IN_ROOT_FOLDER: Check = {
+  ...BASIC_HTTP_CHECK,
+  id: 208,
+  job: 'Root folder check',
+  folderUid: FOLDER_ROOT.uid,
+};
+
+export const CHECK_IN_ROOT_CHILD_FOLDER: Check = {
+  ...BASIC_DNS_CHECK,
+  id: 209,
+  job: 'Root subfolder check',
+  folderUid: FOLDER_ROOT_CHILD.uid,
 };
 
 export const CHECK_IN_DELETABLE_FOLDER: Check = {

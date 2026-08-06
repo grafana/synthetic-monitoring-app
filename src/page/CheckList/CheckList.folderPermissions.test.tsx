@@ -227,6 +227,11 @@ describe('CheckList - Folder Permissions', () => {
         }),
         apiRoute(`listFolders`, {
           result: () => ({ json: [] }),
+        }),
+        // The RBAC flag alone is not enough: the server denies the creation,
+        // which surfaces the same "not provisioned" banner.
+        apiRoute(`createFolder`, {
+          result: () => ({ status: 403, json: { message: 'Access denied' } }),
         })
       );
 
@@ -396,7 +401,7 @@ describe('CheckList - Folder Permissions', () => {
       });
 
       expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
-      expect(screen.queryByText('Outside default folder')).not.toBeInTheDocument();
+      expect(screen.queryByText('Root')).not.toBeInTheDocument();
     });
   });
 
