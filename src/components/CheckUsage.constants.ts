@@ -23,6 +23,11 @@ export const TEST_VOLUME_ROWS: UsageRowDefinition[] = [
   },
 ];
 
+export const USAGE_NUDGE_MESSAGE = {
+  withTelemetry: 'Active series, data points per minute and log volume count toward your Grafana Cloud usage.',
+  withoutTelemetry: 'Test executions count toward your Grafana Cloud usage.',
+} as const;
+
 export const BILLED_TELEMETRY_ROWS: UsageRowDefinition[] = [
   {
     key: 'series',

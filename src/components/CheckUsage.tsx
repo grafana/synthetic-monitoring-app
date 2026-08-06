@@ -8,15 +8,16 @@ import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues, CheckType } from 'types';
 import { checkFormValuesToUsageCalcValues } from 'utils';
-import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { CMAB_URLS } from 'components/CostAttribution/CostAttribution.constants';
+import { useShowCostAttributionSetupNudge } from 'components/CostAttribution/CostAttribution.hooks';
 import { Toggletip } from 'components/Toggletip';
 
 import {
   BILLED_TELEMETRY_ROWS,
   HIDE_TELEMETRY_FOR_TYPES,
   TEST_VOLUME_ROWS,
+  USAGE_NUDGE_MESSAGE,
   UsageRowDefinition,
   UsageRowKey,
 } from './CheckUsage.constants';
@@ -26,8 +27,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
   const { watch } = useFormContext<CheckFormValues>();
   const checkFormValues = watch();
   const usage = useUsageCalc([checkFormValuesToUsageCalcValues(checkFormValues)]);
-  const { data: calData } = useTenantCostAttributionLabels();
-  const showCmabNudge = Boolean(calData && calData.names.length === 0);
+  const showCmabNudge = useShowCostAttributionSetupNudge();
 
   const hideTelemetry = HIDE_TELEMETRY_FOR_TYPES.includes(checkType);
 
@@ -74,11 +74,11 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
             ))}
           </div>
         )}
-        {billedTelemetryRows.length > 0 && showCmabNudge && (
+        {showCmabNudge && (
           <div className={styles.footer}>
             <Icon className={styles.footerIcon} name="info-circle" size="sm" />
             <span>
-              Active series, data points per minute and log volume count toward your Grafana Cloud usage.{' '}
+              {hideTelemetry ? USAGE_NUDGE_MESSAGE.withoutTelemetry : USAGE_NUDGE_MESSAGE.withTelemetry}{' '}
               <TextLink
                 href={CMAB_URLS.settings}
                 external={true}

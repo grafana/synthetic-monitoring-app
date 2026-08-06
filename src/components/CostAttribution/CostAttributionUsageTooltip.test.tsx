@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -50,6 +50,15 @@ describe('CostAttributionUsageTooltip', () => {
 
       const link = await screen.findByRole('link', { name: new RegExp(TOOLTIP_LINK_TEXT) });
       expect(link).toHaveAttribute('href', CMAB_URLS.settings);
+    });
+
+    it('renders children without a tooltip when the user lacks cost attribution write permission', async () => {
+      mockCmabCostAttributionWrite(false);
+      const { user } = renderTooltip();
+
+      await user.hover(await screen.findByText(CHILD_TEXT));
+
+      expect(screen.queryByRole('link', { name: new RegExp(TOOLTIP_LINK_TEXT) })).not.toBeInTheDocument();
     });
   });
 

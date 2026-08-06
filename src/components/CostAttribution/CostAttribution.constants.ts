@@ -1,5 +1,7 @@
 export const CMAB_PLUGIN_ID = 'grafana-cmab-app';
 
+export const CMAB_COST_ATTRIBUTION_WRITE = 'grafana-cmab-app.costattribution:write';
+
 const CMAB_BASE = `/a/${CMAB_PLUGIN_ID}`;
 
 export const CMAB_URLS = {

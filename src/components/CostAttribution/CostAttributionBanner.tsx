@@ -7,10 +7,10 @@ import {
 } from 'features/tracking/costAttributionEvents';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { DocsLink } from 'components/DocsLink/DocsLink';
 
 import { CAL_BANNER_DISMISSED_KEY, CMAB_SETUP_DOCS_URL, CMAB_URLS } from './CostAttribution.constants';
+import { useShowCostAttributionSetupNudge } from './CostAttribution.hooks';
 
 interface CostAttributionBannerProps {
   /** Reported with the shown event so we can see how check volume affects take-up. */
@@ -19,10 +19,10 @@ interface CostAttributionBannerProps {
 
 export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps) => {
   const [dismissed, setDismissed] = useLocalStorage<boolean>(CAL_BANNER_DISMISSED_KEY, false);
-  const { data: calData } = useTenantCostAttributionLabels();
+  const showNudge = useShowCostAttributionSetupNudge();
   const shownTrackedRef = useRef(false);
 
-  const show = calData && calData.names.length === 0 && !dismissed;
+  const show = showNudge && !dismissed;
 
   useEffect(() => {
     if (show && !shownTrackedRef.current) {

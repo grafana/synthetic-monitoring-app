@@ -4,7 +4,6 @@ import { useTenantLimits } from 'data/useTenantLimits';
 import { DEFAULT_MAX_ALLOWED_LOG_LABELS, DEFAULT_MAX_ALLOWED_METRIC_LABELS } from '../../../constants';
 
 export function useLabelSectionData() {
-  // TODO: Pipe this data through the front door? Meaning as a prop to Checkster/ChecksterProvider (tenantLimits)
   const { data: limits, isLoading: limitsLoading, error, isRefetching, refetch } = useTenantLimits();
   const { data: calData, isLoading: calsLoading } = useTenantCostAttributionLabels();
 

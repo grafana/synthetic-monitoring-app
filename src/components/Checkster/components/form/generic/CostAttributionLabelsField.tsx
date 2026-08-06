@@ -5,7 +5,7 @@ import { Input, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormValues } from 'types';
-import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useShowCostAttributionSetupNudge } from 'components/CostAttribution/CostAttribution.hooks';
 import { CostAttributionSetupHint } from 'components/CostAttribution/CostAttributionSetupHint';
 
 import { StyledField } from '../../ui/StyledField';
@@ -19,15 +19,13 @@ export function CostAttributionLabelsField() {
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
   const styles = useStyles2(getStyles);
-  const { data: calData } = useTenantCostAttributionLabels();
+  const showNudge = useShowCostAttributionSetupNudge();
   // `calLabels` is built from the tenant's CAL names in `toFormValues`, so it always holds one row
   // per configured label and the rendered rows can't drift from the values they write to.
   const calLabels = watch('calLabels');
 
   if (!calLabels?.length) {
-    // Only nudge once the query has actually succeeded with an empty list — a failed fetch must
-    // not tell a tenant that already has CALs configured to go and set them up.
-    return calData?.names.length === 0 ? <CostAttributionSetupHint /> : null;
+    return showNudge ? <CostAttributionSetupHint /> : null;
   }
 
   return (

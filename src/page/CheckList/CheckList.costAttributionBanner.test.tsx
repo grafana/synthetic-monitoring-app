@@ -4,7 +4,7 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
 
 import { Check, FeatureName, HTTPCheck } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -81,6 +81,14 @@ describe('CheckList - cost attribution setup banner', () => {
       await renderCheckList(buildChecks(1));
 
       expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
+    });
+
+    it('does not show the banner without cost attribution write permission', async () => {
+      mockCmabCostAttributionWrite(false);
+      mockCalNames([]);
+      await renderCheckList(buildChecks(5));
+
+      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
 
     it('does not show the banner when the CALs request fails', async () => {

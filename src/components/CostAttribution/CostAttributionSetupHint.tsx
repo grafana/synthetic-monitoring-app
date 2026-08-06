@@ -16,8 +16,8 @@ export const CostAttributionSetupHint = () => {
         <div>
           <div className={styles.title}>Want to see what your checks cost per team or service?</div>
           <div>
-            Once an admin sets up cost attribution labels, they appear here on every check and your spend is broken down
-            in the Cost Management and Billing app.{' '}
+            Set up cost attribution labels and they appear here on every check and your spend is broken down in the Cost
+            Management and Billing app.{' '}
             <TextLink
               href={CMAB_URLS.settings}
               external={true}

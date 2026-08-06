@@ -1,24 +1,40 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
+import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
 
-import { Check, CheckType } from 'types';
+import { Check, CheckType, FeatureName } from 'types';
 
 import { ChecksterProvider } from './Checkster/contexts/ChecksterContext';
+import { CMAB_URLS } from './CostAttribution/CostAttribution.constants';
 import { CheckUsage } from './CheckUsage';
 import { FALLBACK_CHECK_MAP } from './constants';
 
-function RenderWrapper() {
+const FOOTER_LINK_TEXT = 'Attribute check costs to teams and services';
+
+function RenderWrapper({ checkType = CheckType.Http }: { checkType?: CheckType }) {
   return (
-    <ChecksterProvider>
-      <CheckUsage checkType={CheckType.Http} />
+    <ChecksterProvider checkType={checkType}>
+      <CheckUsage checkType={checkType} />
     </ChecksterProvider>
   );
 }
 
-async function renderComponent(check?: Check) {
-  const result = render(<RenderWrapper />);
+function mockCalNames(names: string[]) {
+  server.use(
+    apiRoute(`getTenantCostAttributionLabels`, {
+      result: () => ({
+        json: { names },
+      }),
+    })
+  );
+}
+
+async function renderComponent(_check?: Check, checkType: CheckType = CheckType.Http) {
+  const result = render(<RenderWrapper checkType={checkType} />);
   await waitFor(() => screen.findByTestId(CHECKS_TEST_ID.usage), { timeout: 3000 });
 
   return result;
@@ -48,5 +64,37 @@ describe('CheckUsage', () => {
       await renderComponent();
       expect(await screen.findByRole('heading', { name: 'Estimated usage for this check' })).toBeInTheDocument();
     });
+  });
+
+  describe('cost attribution setup nudge', () => {
+    beforeEach(() => {
+      mockFeatureToggles({ [FeatureName.CALs]: true });
+      mockCalNames([]);
+    });
+
+    it('shows a CMAB settings link for admins when no CALs are configured', async () => {
+      await renderComponent();
+
+      const link = await screen.findByRole('link', { name: FOOTER_LINK_TEXT });
+      expect(link).toHaveAttribute('href', CMAB_URLS.settings);
+    });
+
+    it('does not show the CMAB settings link without cost attribution write permission', async () => {
+      mockCmabCostAttributionWrite(false);
+      await renderComponent();
+
+      await screen.findByTestId(CHECKS_TEST_ID.usage);
+      expect(screen.queryByRole('link', { name: FOOTER_LINK_TEXT })).not.toBeInTheDocument();
+    });
+
+    it.each([CheckType.Scripted, CheckType.MultiHttp, CheckType.Browser])(
+      'shows a CMAB settings link for check types that hide billed telemetry (%s)',
+      async (checkType) => {
+        await renderComponent(undefined, checkType);
+
+        const link = await screen.findByRole('link', { name: FOOTER_LINK_TEXT });
+        expect(link).toHaveAttribute('href', CMAB_URLS.settings);
+      }
+    );
   });
 });

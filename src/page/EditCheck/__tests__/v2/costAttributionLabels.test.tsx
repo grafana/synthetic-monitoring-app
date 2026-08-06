@@ -3,7 +3,7 @@ import { ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
 import { Check, FeatureName } from 'types';
@@ -104,12 +104,53 @@ describe('cost attribution labels on the check form', () => {
       expect((await readSavedCheck(read))?.labels).toEqual([{ name: CUSTOM_LABEL_NAME, value: CUSTOM_LABEL_VALUE }]);
     });
 
+    it('preserves in-progress edits when CAL names arrive after the form has rendered', async () => {
+      let resolveCals!: (value: { names: string[] }) => void;
+      const calsDeferred = new Promise<{ names: string[] }>((resolve) => {
+        resolveCals = resolve;
+      });
+
+      server.use(
+        apiRoute(`getTenantCostAttributionLabels`, {
+          result: async () => ({
+            json: await calsDeferred,
+          }),
+        })
+      );
+
+      const { user } = await renderEditForm(BASIC_SCRIPTED_CHECK.id);
+
+      const jobField = await screen.findByLabelText(/Job name/i);
+      await user.clear(jobField);
+      await user.type(jobField, 'edited-job-before-cals');
+
+      resolveCals({ names: ['Team', 'Service'] });
+
+      await gotoSection(user, FormSectionName.Labels);
+
+      await waitFor(() => {
+        expect(screen.getByRole('textbox', { name: 'Cost attribution label 1 name' })).toHaveValue(SET_CAL);
+      });
+
+      expect(jobField).toHaveValue('edited-job-before-cals');
+      expect(screen.getByRole('textbox', { name: 'Cost attribution label 1 value' })).toHaveValue(SET_CAL_VALUE);
+    });
+
     it('nudges the tenant to set up cost attribution when they have no CALs', async () => {
       mockCalNames([]);
       await goToLabels();
 
       expect(await screen.findByTestId('cost-attribution-setup-hint')).toBeInTheDocument();
       expect(screen.queryByText('Cost attribution labels')).not.toBeInTheDocument();
+    });
+
+    it('does not nudge a user without cost attribution write permission', async () => {
+      mockCmabCostAttributionWrite(false);
+      mockCalNames([]);
+      await goToLabels();
+
+      expect(await screen.findByRole('textbox', { name: 'Custom labels 1 name' })).toBeInTheDocument();
+      expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
     });
 
     it('does not nudge when the CALs request fails, since the tenant may already have CALs', async () => {

@@ -28,6 +28,7 @@ import { useDOMId } from 'hooks/useDOMId';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
+import { useHydrateCalLabels } from '../hooks/useHydrateCalLabels';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
@@ -79,16 +80,14 @@ function useFormValuesMeta(
   checkType: CheckType,
   check: Check | undefined,
   probesWithMetadata: ProbeWithMetadata[],
-  calNames: string[],
   defaultFolderUid?: string
 ) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
-  const calNamesKey = calNames.join('\u0000');
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema);
-    const formValues = check ? toFormValues(check, calNames) : getDefaultFormValues(checkType, calNames);
+    const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
 
     if (defaultFolderUid && !formValues.folderUid) {
       formValues.folderUid = defaultFolderUid;
@@ -98,11 +97,10 @@ function useFormValuesMeta(
       defaultFormValues: formValues,
       schema: refinedSchema,
     };
-    // Use probeCompatibilityKey and calNamesKey instead of the array references
-    // This ensures schema only recreates when probe compatibility actually changes, and that the
-    // CALs query's polling doesn't recompute the defaults unless the names themselves change
+    // Use probeCompatibilityKey instead of probesWithMetadata array reference
+    // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, calNamesKey, defaultFolderUid]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid]);
 }
 
 export function ChecksterProvider({
@@ -121,11 +119,9 @@ export function ChecksterProvider({
   const { defaultFolderUid, isLoading: isFolderLoading, isError: isFolderError } = useDefaultFolder(isFoldersEnabled);
   const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
 
-  // A check's cost attribution labels are stored alongside its custom ones, so the defaults can
-  // only be split apart once the tenant's CAL names are known. Rather than block the form on that
-  // query, the names feed the defaults and the reset below re-hydrates when they arrive. A failed
-  // query leaves the check's CAL values as custom labels — lossless, since the payload merges both
-  // arrays back together either way.
+  // Cost attribution labels are stored alongside custom ones. Rather than block the form on the
+  // CALs query, defaults load with labels unsplit and useHydrateCalLabels repartitions once the
+  // tenant's CAL names arrive — without touching unrelated fields via the global reset effect.
   const { data: calData } = useTenantCostAttributionLabels();
   const calNames = useMemo(() => calData?.names ?? [], [calData]);
 
@@ -138,13 +134,7 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(
-    checkType,
-    check,
-    probesWithMetadata,
-    calNames,
-    defaultFolderUid
-  );
+  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
@@ -206,6 +196,8 @@ export function ChecksterProvider({
     }
   }, [defaultFormValues, formMethodRef, formMethods, values]);
 
+  useHydrateCalLabels(formMethods, calNames, defaultFormValues);
+
   const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 
   useEffect(() => {
@@ -254,7 +246,7 @@ export function ChecksterProvider({
       formNavigation.completeAllSteps();
     }
     if (isPrefilled) {
-      formMethods.reset(getDefaultFormValues(checkType, calNames), { keepValues: true });
+      formMethods.reset(getDefaultFormValues(checkType), { keepValues: true });
       formMethods.setValue('job', formMethods.getValues('job'), { shouldDirty: true });
     }
     // only do this on mount so it doesn't trigger when the check is updated
