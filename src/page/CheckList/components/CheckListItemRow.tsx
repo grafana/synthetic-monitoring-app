@@ -83,13 +83,15 @@ const getStyles = (theme: GrafanaTheme2) => ({
     backgroundColor: theme.colors.background.secondary,
     borderRadius: theme.shape.radius.lg,
     border: `1px solid transparent`,
+    // Constant width so firing rows (which color it in) stay aligned with the rest
+    borderLeftWidth: '4px',
   }),
   disabledCard: css({
     backgroundColor: theme.colors.secondary.transparent,
   }),
   firingAlertRow: css({
     borderColor: theme.colors.error.border,
-    boxShadow: `inset 4px 0 0 ${theme.colors.error.text}`,
+    borderLeftColor: theme.colors.error.text,
   }),
   listCardWrapper: css({
     display: 'grid',
