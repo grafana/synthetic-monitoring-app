@@ -170,11 +170,9 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  // InteractiveTable has no per-column alignment, so right-align numeric
-  // values by letting the span fill its cell.
+  // Left-aligned like the headers (InteractiveTable has no per-column
+  // alignment); tabular numerals keep digits lined up across rows.
   num: css({
-    display: 'block',
-    textAlign: 'right',
     fontVariantNumeric: 'tabular-nums',
   }),
   nameCell: css({
