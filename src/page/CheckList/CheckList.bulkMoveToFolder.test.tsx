@@ -116,11 +116,9 @@ describe('BulkMoveToFolderModal', () => {
       <BulkMoveToFolderModal checks={checks} isOpen onDismiss={jest.fn()} onMoved={onDismiss} />
     );
 
-    const combobox = await screen.findByPlaceholderText(/Select a folder/);
-
-    await user.click(combobox);
-    await user.clear(combobox);
-    await user.type(combobox, 'Staging{enter}');
+    const picker = await screen.findByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_STAGING.title });
+    await user.selectOptions(picker, FOLDER_STAGING.uid);
 
     const submitButton = await screen.findByRole('button', { name: 'Move' });
     expect(submitButton).not.toBeDisabled();
@@ -137,15 +135,13 @@ describe('BulkMoveToFolderModal', () => {
   });
 
   it('does not offer read-only folders as options', async () => {
-    const { user } = render(
+    render(
       <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
     );
 
-    const combobox = await screen.findByPlaceholderText(/Select a folder/);
-    await user.click(combobox);
-    await user.clear(combobox);
-    await user.type(combobox, 'Read Only{enter}');
-
+    const picker = await screen.findByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_STAGING.title });
+    expect(within(picker).queryByRole('option', { name: 'Read Only' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled();
   });
 
@@ -154,7 +150,7 @@ describe('BulkMoveToFolderModal', () => {
       <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
     );
 
-    await screen.findByPlaceholderText(/Select a folder/);
+    await screen.findByLabelText('Folder picker');
     expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled();
   });
 
