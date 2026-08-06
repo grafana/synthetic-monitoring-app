@@ -81,6 +81,9 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
 
   const columns = useMemo<Array<Column<CheckTableRow>>>(
     () => [
+      // Check type sits below the name instead of in its own column, and the
+      // name links to the dashboard instead of a separate link column
+      // (design review feedback).
       {
         id: 'check',
         header: 'Check',
@@ -96,14 +99,10 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
             <div className={styles.target} title={row.original.check.target}>
               {row.original.check.target}
             </div>
+            <div className={styles.typeRow}>
+              <Badge text={getCheckType(row.original.check.settings).toUpperCase()} color="darkgrey" />
+            </div>
           </div>
-        ),
-      },
-      {
-        id: 'type',
-        header: 'Type',
-        cell: ({ row }: CellArgs) => (
-          <Badge text={getCheckType(row.original.check.settings).toUpperCase()} color="darkgrey" />
         ),
       },
       {
@@ -142,21 +141,13 @@ export const FolderCheckTable = ({ checks, metrics, alertStates }: FolderCheckTa
           </span>
         ),
       },
+      // No separate "view dashboard" column: the check name already links to
+      // the dashboard (design review feedback).
       {
         id: 'trend',
         header: 'Trend',
         cell: ({ row }: CellArgs) =>
           row.original.latencyTrend ? <Sparkline points={row.original.latencyTrend} /> : null,
-      },
-      {
-        id: 'actions',
-        header: '',
-        disableGrow: true,
-        cell: ({ row }: CellArgs) => (
-          <TextLink href={generateRoutePath(AppRoutes.CheckDashboard, { id: row.original.check.id! })} inline={false}>
-            View dashboard
-          </TextLink>
-        ),
       },
     ],
     [styles]
@@ -177,6 +168,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   nameCell: css({
     maxWidth: '340px',
+  }),
+  typeRow: css({
+    marginTop: theme.spacing(0.5),
   }),
   target: css({
     fontSize: theme.typography.bodySmall.fontSize,

@@ -58,7 +58,7 @@ export const FolderKPIs = ({ checks, metrics, executionLogs, alertStates }: Fold
           metrics.isLoading
             ? 'loading check states'
             : downCount > 0
-              ? formatDownDetail(downChecks, knownCount)
+              ? formatDownDetail(downChecks, checks.length)
               : knownCount > 0
                 ? 'all checks passing'
                 : 'no state data yet'
@@ -168,8 +168,11 @@ const MAX_DOWN_JOBS_LISTED = 2;
 // A tile can't fit an arbitrary list of job names: name the first couple and
 // summarize the rest. The full list is on the tile's hover title, and the
 // check table below leads with the down checks anyway (attention ordering).
-function formatDownDetail(downChecks: Check[], knownCount: number): string {
-  if (downChecks.length === knownCount && knownCount > 1) {
+// "All checks down" is measured against the folder's total check count, not
+// just the checks with known state — checks that haven't reported yet may
+// well be up.
+function formatDownDetail(downChecks: Check[], totalCount: number): string {
+  if (downChecks.length === totalCount && totalCount > 1) {
     return 'all checks down';
   }
 
