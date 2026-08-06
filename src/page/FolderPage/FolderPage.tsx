@@ -8,9 +8,9 @@ import { useChecks } from 'data/useChecks';
 import { useAllFolders } from 'data/useFolders';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { buildChecksByFolder, collectAllChecks, FolderNode } from 'hooks/useChecksByFolder';
-import { FolderDashboard } from 'scenes/Folder/FolderDashboard';
 
-import { PluginPageNotFound } from './NotFound/NotFound';
+import { PluginPageNotFound } from '../NotFound/NotFound';
+import { FolderDashboard } from './components/FolderDashboard';
 
 function findFolderNode(nodes: FolderNode[], uid: string): FolderNode | undefined {
   for (const node of nodes) {
