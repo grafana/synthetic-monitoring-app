@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { Alert, LinkButton, Stack } from '@grafana/ui';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Button, LinkButton, Stack } from '@grafana/ui';
 import {
   trackCmabLinkClicked,
   trackSetupBannerDismissed,
@@ -19,10 +19,11 @@ interface CostAttributionBannerProps {
 
 export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps) => {
   const [dismissed, setDismissed] = useLocalStorage<boolean>(CAL_BANNER_DISMISSED_KEY, false);
+  const [localDismissed, setLocalDismissed] = useState(dismissed);
   const showNudge = useShowCostAttributionSetupNudge();
   const shownTrackedRef = useRef(false);
 
-  const show = showNudge && !dismissed;
+  const show = showNudge && !localDismissed;
 
   useEffect(() => {
     if (show && !shownTrackedRef.current) {
@@ -40,7 +41,7 @@ export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps
       title="Attribute check costs to teams and services"
       severity="info"
       onRemove={() => {
-        setDismissed(true);
+        setLocalDismissed(true);
         trackSetupBannerDismissed();
       }}
     >
@@ -53,13 +54,18 @@ export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps
           you can break that spend down by team, service, or any dimension that matters to your organization, and track
           it in the Cost Management and Billing app.
         </p>
-        <LinkButton
-          size="sm"
-          href={CMAB_URLS.settings}
-          onClick={() => trackCmabLinkClicked({ source: 'check_list_banner' })}
-        >
-          Set up cost attribution
-        </LinkButton>
+        <Stack direction="row" gap={1}>
+          <LinkButton
+            size="sm"
+            href={CMAB_URLS.settings}
+            onClick={() => trackCmabLinkClicked({ source: 'check_list_banner' })}
+          >
+            Set up cost attribution
+          </LinkButton>
+          <Button variant="secondary" size="sm" onClick={() => setDismissed(true)}>
+            Understood, don&apos;t show again
+          </Button>
+        </Stack>
       </Stack>
     </Alert>
   );

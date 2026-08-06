@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Stack, TextLink, useStyles2 } from '@grafana/ui';
+import { Icon, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackCmabLinkClicked } from 'features/tracking/costAttributionEvents';
 
@@ -13,8 +13,8 @@ export const CostAttributionSetupHint = () => {
     <div className={styles.hint} data-testid="cost-attribution-setup-hint">
       <Stack gap={1} alignItems="flex-start">
         <Icon name="graph-bar" className={styles.icon} />
-        <div>
-          <div className={styles.title}>Want to see what your checks cost per team or service?</div>
+        <Stack direction="column" gap={0.5} alignItems="flex-start">
+          <Text weight="medium">Want to see what your checks cost per team or service?</Text>
           <div>
             Set up cost attribution labels and they appear here on every check and your spend is broken down in the Cost
             Management and Billing app.{' '}
@@ -25,9 +25,9 @@ export const CostAttributionSetupHint = () => {
               variant="bodySmall"
             >
               Set up cost attribution
-            </TextLink>{' '}
+            </TextLink>
           </div>
-        </div>
+        </Stack>
       </Stack>
     </div>
   );
@@ -42,12 +42,7 @@ function getStyles(theme: GrafanaTheme2) {
       font-size: ${theme.typography.bodySmall.fontSize};
     `,
     icon: css`
-      margin-top: ${theme.spacing(0.25)};
       color: ${theme.colors.text.secondary};
-    `,
-    title: css`
-      font-weight: ${theme.typography.fontWeightMedium};
-      margin-bottom: ${theme.spacing(0.5)};
     `,
   };
 }
