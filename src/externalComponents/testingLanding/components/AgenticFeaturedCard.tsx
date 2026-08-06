@@ -93,7 +93,7 @@ function getStyles(theme: GrafanaTheme2) {
       bottom: 0,
       width: 3,
       background: 'linear-gradient(180deg, #F55F3E 0%, #FF8833 100%)',
-      borderRadius: '2px 0 0 2px',
+      borderRadius: `${theme.shape.radius.sm} 0 0 ${theme.shape.radius.sm}`,
     }),
     body: css({
       label: 'testing-synthetics-agentic-body',
