@@ -7,6 +7,7 @@ import {
   ConfirmModal,
   Icon,
   IconButton,
+  LinkButton,
   Pagination,
   Spinner,
   Stack,
@@ -14,9 +15,12 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackFolderOverviewClicked } from 'features/tracking/folderEvents';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
 import { useDeleteFolder } from 'data/useFolders';
@@ -385,6 +389,18 @@ function FolderTreeBranch({
             </span>
           </Stack>
         </button>
+        {!node.isOrphaned && !node.isDefault && (
+          <LinkButton
+            fill="text"
+            size="sm"
+            icon="chart-line"
+            href={generateRoutePath(AppRoutes.FolderDashboard, { uid: node.folderUid })}
+            onClick={() => trackFolderOverviewClicked()}
+            aria-label={`Folder overview for ${node.folder?.title ?? node.folderUid}`}
+          >
+            Folder overview
+          </LinkButton>
+        )}
         {showActions && !isEmpty && (
           <div className={styles.folderActions}>
             <FolderBulkActions

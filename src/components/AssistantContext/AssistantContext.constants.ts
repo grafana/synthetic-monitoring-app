@@ -119,6 +119,7 @@ const root = PLUGIN_URL_PATH.replace(/\/$/, '');
 // Pre-built regex fragments so the route shape is obvious at the call site.
 const escapedRoot = root.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const checkIdRegex = new RegExp(`^${escapedRoot}/checks/[^/]+$`);
+const folderDashboardRegex = new RegExp(`^${escapedRoot}/checks/folders/[^/]+$`);
 const editCheckRegex = new RegExp(`^${escapedRoot}/checks/[^/]+/edit$`);
 // /checks/choose-type and the bare /checks/new index render the same component.
 const chooseCheckGroupRegex = new RegExp(`^${escapedRoot}/checks/(choose-type|new)$`);
@@ -338,6 +339,29 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
       question(
         'Explain the metrics',
         'What do the uptime, reachability, latency, and SSL expiry metrics on this dashboard mean and how are they calculated?'
+      ),
+    ],
+  },
+  {
+    id: 'sm-folder-dashboard',
+    route: AppRoutes.FolderDashboard,
+    urlPattern: folderDashboardRegex,
+    createContextItems: () => [
+      structured('Folder dashboard', {
+        name: 'Folder dashboard',
+        pageType: 'sm-folder-dashboard',
+        capabilities: ['explain-folder-health', 'explain-failures', 'compare-checks', 'explain-metrics'],
+        help: 'Overview dashboard for all synthetic monitoring checks in one folder (typically a team, service, environment, or customer grouping). Shows folder-level KPIs (checks up/down, average reachability, failed executions), a per-check execution timeline over the last 3 hours, per-check reachability and latency with trends, and recent failures. Help with: assessing overall folder health, spotting which check drags the group down, telling correlated failures (shared cause) apart from isolated ones, and drilling into a specific check.',
+      }),
+    ],
+    createQuestions: () => [
+      question(
+        'Why is this folder unhealthy?',
+        'Some checks in this folder are failing — help me work out whether the failures are correlated with a shared cause or isolated to one check, and what to investigate first.'
+      ),
+      question(
+        'Compare the checks in this folder',
+        'Compare the reachability and latency of the checks in this folder and tell me which one is the weakest and why that might be.'
       ),
     ],
   },
