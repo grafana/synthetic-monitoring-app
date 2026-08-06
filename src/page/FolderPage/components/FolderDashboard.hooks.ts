@@ -19,7 +19,6 @@ type RangeCheckMetric = RangeMetric & {
   };
 };
 
-const STATE_QUERY = getUpStateByCheckQuery().expr;
 const LATENCY_QUERY = getAvgLatencyByCheckQuery({ window: DEFAULT_QUERY_FROM_TIME }).expr;
 
 export interface CheckMetricSummary {
@@ -57,8 +56,10 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
   const metricsDS = useMetricsDS();
   const url = metricsDS?.url || '';
 
+  const stateQuery = useMemo(() => getUpStateByCheckQuery({ checks }).expr, [checks]);
+
   const { data: reachability = [], isLoading: isLoadingReachability } = useChecksReachabilitySuccessRate();
-  const { data: state = [], isLoading: isLoadingState } = useInstantByCheck('folder_check_state', STATE_QUERY);
+  const { data: state = [], isLoading: isLoadingState } = useInstantByCheck('folder_check_state', stateQuery);
   const { data: latency = [], isLoading: isLoadingLatency } = useInstantByCheck('folder_check_latency', LATENCY_QUERY);
 
   const trend = useMemo(() => getLatencyTrendByCheckQuery({ checks }), [checks]);
@@ -94,7 +95,8 @@ export function useFolderCheckMetrics(checks: Check[]): FolderCheckMetrics {
       return {
         reachability: reachabilityMap.get(key)?.value?.[1],
         latency: latencyMap.get(key)?.value?.[1],
-        isUp: stateValue === undefined ? undefined : stateValue > 0,
+        // Non-finite values (NaN/Inf from degenerate queries) are unknown, not down.
+        isUp: stateValue === undefined || !Number.isFinite(stateValue) ? undefined : stateValue > 0,
         // queryRangeMetric converts sample values to numbers at runtime, but
         // RangeMetric still types them as strings — hence the cast.
         latencyTrend: trendMap.get(key)?.values as Array<[number, number]> | undefined,
