@@ -32,11 +32,12 @@ import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 import { FolderBulkActions } from 'page/CheckList/components/FolderBulkActions';
+import { MoveFolderModal } from 'page/CheckList/components/MoveFolderModal';
 
 interface CheckListFolderViewProps {
   checks: Check[];
   folders: GrafanaFolder[];
-  externalFolders?: GrafanaFolder[];
+  outsideFolders?: GrafanaFolder[];
   foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
   foldersError?: boolean;
@@ -57,7 +58,7 @@ interface CheckListFolderViewProps {
 export function CheckListFolderView({
   checks,
   folders,
-  externalFolders,
+  outsideFolders,
   foldersMap,
   foldersLoading,
   foldersError,
@@ -77,8 +78,8 @@ export function CheckListFolderView({
   const styles = useStyles2(getStyles);
   const reverseFolderSort = sortType === CheckSort.ZToA;
   const { folderTree, rootChecks } = useMemo(
-    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort, externalFolders),
-    [checks, folders, defaultFolderUid, reverseFolderSort, externalFolders]
+    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort, outsideFolders),
+    [checks, folders, defaultFolderUid, reverseFolderSort, outsideFolders]
   );
 
   const defaultFolderNode: FolderNode | null = useMemo(() => {
@@ -264,6 +265,7 @@ function FolderTreeBranch({
 
   const folderStatus = useCheckFolderStatus({ folderUid: node.folderUid });
   const folderCanDelete = folderStatus.type === 'accessible' && folderStatus.permissions.canDelete;
+  const folderCanEdit = folderStatus.type === 'accessible' && folderStatus.permissions.canEdit;
 
   const allFolderCheckIds = useMemo(() => collectAllCheckIds(node), [node]);
   const allChecksInFolder = useMemo(() => collectAllChecks(node), [node]);
@@ -275,20 +277,31 @@ function FolderTreeBranch({
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
 
-  // External folders live outside the SM folder tree and may hold unrelated
-  // content (dashboards, subfolders, alert rules), so we never offer to delete
-  // them -- the badge guides the user to move their checks out instead.
+  // Folders outside the SM subtree may hold unrelated content (dashboards,
+  // subfolders, alert rules), so we never offer to delete them from SM --
+  // moving checks out (or moving the folder) is the supported operation.
   const deleteFolderTarget =
-    isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal
+    isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isOutside
       ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
       : undefined;
 
   const isEmpty = totalChecks === 0;
   const canDeleteEmptyFolder =
-    isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal;
+    isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isOutside;
+
+  // Any editable folder can be moved anywhere in the Grafana folder tree
+  // (destinations picked with Grafana's folder picker). Orphaned folders are
+  // not movable here.
+  const canMoveFolder = folderCanEdit && !node.isDefault && !node.isOrphaned && !!node.folder;
+  const [showMoveModal, setShowMoveModal] = useState(false);
   const [emptyFolderSelected, setEmptyFolderSelected] = useState(false);
   const [showDeleteEmptyFolderModal, setShowDeleteEmptyFolderModal] = useState(false);
   const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
+
+  // Like folder delete, the move action only appears once the folder is
+  // selected: all of its checks for regular folders, or the empty-folder
+  // checkbox for empty ones.
+  const showMoveAction = canMoveFolder && (isEmpty ? emptyFolderSelected : isAllInFolderSelected);
 
   const handleDeleteEmptyFolder = async () => {
     try {
@@ -358,12 +371,13 @@ function FolderTreeBranch({
                 (node.folder?.title ?? node.folderUid)
               )}
             </span>
-            {node.isExternal && (
+            {/* Outside folders nested under a visible parent need no badge:
+                their location is evident from the nesting. */}
+            {node.isOutside && !node.folder?.parentUid && (
               <Badge
-                text="Outside default folder"
-                color="orange"
-                icon="exclamation-triangle"
-                tooltip={`This is a separate folder (UID: ${node.folderUid}) outside the default Synthetic Monitoring folder. Move its checks to another folder to organize them with the rest.`}
+                text="Root"
+                color="darkgrey"
+                tooltip="This folder lives at the top level of Grafana, outside the default Synthetic Monitoring folder."
               />
             )}
             {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
@@ -385,8 +399,24 @@ function FolderTreeBranch({
             </span>
           </Stack>
         </button>
+        {showMoveModal && node.folder && (
+          <MoveFolderModal folder={node.folder} onDismiss={() => setShowMoveModal(false)} />
+        )}
         {showActions && !isEmpty && (
           <div className={styles.folderActions}>
+            {showMoveAction && (
+              <IconButton
+                name="folder-upload"
+                // IconButton uses the tooltip as the accessible name, so it
+                // includes the title to keep names unique across folder rows.
+                tooltip={`Move folder ${node.folder?.title ?? node.folderUid}`}
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMoveModal(true);
+                }}
+              />
+            )}
             <FolderBulkActions
               checks={selectedChecksInFolder}
               onResolved={handleFolderBulkResolved}
@@ -395,19 +425,32 @@ function FolderTreeBranch({
             <span className={styles.selectedCount}>{selectedCount} selected</span>
           </div>
         )}
-        {showActions && canDeleteEmptyFolder && (
+        {showActions && isEmpty && (canDeleteEmptyFolder || showMoveAction) && (
           <div className={styles.folderActions}>
-            <IconButton
-              name="trash-alt"
-              aria-label="Delete folder"
-              tooltip="Delete folder"
-              size="sm"
-              variant="destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteEmptyFolderModal(true);
-              }}
-            />
+            {showMoveAction && (
+              <IconButton
+                name="folder-upload"
+                tooltip={`Move folder ${node.folder?.title ?? node.folderUid}`}
+                size="sm"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMoveModal(true);
+                }}
+              />
+            )}
+            {canDeleteEmptyFolder && (
+              <IconButton
+                name="trash-alt"
+                aria-label="Delete folder"
+                tooltip="Delete folder"
+                size="sm"
+                variant="destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDeleteEmptyFolderModal(true);
+                }}
+              />
+            )}
             <span className={styles.selectedCount}>1 selected</span>
             {showDeleteEmptyFolderModal && (
               <ConfirmModal

@@ -166,7 +166,21 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const folderAccess = useCheckFolderAccess(sortedChecks);
-  const { visibleChecks, externalFolders } = folderAccess;
+  const { visibleChecks, outsideFolders } = folderAccess;
+
+  // The folder filter options must not churn as filters are applied, so
+  // outside folders for the filter are derived from the unfiltered check
+  // list (folderAccess only covers the currently filtered checks). The
+  // per-folder details are cached, so this issues no extra requests.
+  const unfilteredOutsideAccess = useCheckFolderAccess(checks);
+  const filterFolders = useMemo(
+    () => [...allFolders, ...unfilteredOutsideAccess.outsideFolders],
+    [allFolders, unfilteredOutsideAccess.outsideFolders]
+  );
+  const outsideFolderUids = useMemo(
+    () => new Set(unfilteredOutsideAccess.outsideFolders.map((folder) => folder.uid)),
+    [unfilteredOutsideAccess.outsideFolders]
+  );
 
   const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
   const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
@@ -290,8 +304,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
         currentPageChecks={currentPageChecks}
-        folders={allFolders}
+        folders={filterFolders}
         defaultFolderUid={defaultFolderUid}
+        outsideFolderUids={outsideFolderUids}
         isFoldersAvailable={isFoldersAvailable}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
@@ -324,7 +339,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         <CheckListFolderView
           checks={visibleChecks}
           folders={allFolders}
-          externalFolders={externalFolders}
+          outsideFolders={outsideFolders}
           foldersMap={foldersMap}
           foldersLoading={isFoldersLoading}
           foldersError={isFoldersError}

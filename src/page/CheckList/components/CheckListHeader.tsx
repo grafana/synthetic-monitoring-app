@@ -21,6 +21,7 @@ type CheckListHeaderProps = {
   currentPageChecks: Check[];
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  outsideFolderUids?: Set<string>;
   isFoldersAvailable: boolean;
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
@@ -70,6 +71,7 @@ export const CheckListHeader = ({
   currentPageChecks,
   folders,
   defaultFolderUid,
+  outsideFolderUids,
   isFoldersAvailable,
   onChangeView,
   onDelete,
@@ -115,6 +117,7 @@ export const CheckListHeader = ({
               checkFilters={checkFilters}
               folders={folders}
               defaultFolderUid={defaultFolderUid}
+              outsideFolderUids={outsideFolderUids}
               isFoldersAvailable={isFoldersAvailable}
               onChange={onFilterChange}
               calNames={calNames}
