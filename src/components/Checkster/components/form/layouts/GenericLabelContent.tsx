@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { FieldValidationMessage, LoadingPlaceholder, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -28,17 +28,18 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
   } = useFormContext<CheckFormValues>();
   const prevCalNamesRef = useRef<string[]>([]);
 
+  const watchedCalLabels = useWatch<CheckFormValues>({ name: 'calLabels' });
+
   useEffect(() => {
     const prevCalNames = prevCalNamesRef.current;
+    const currentCalLabels = getValues('calLabels') ?? [];
 
-    if (calNames.length === 0 && prevCalNames.length === 0) {
-      return;
-    }
-
-    const hasChanged =
+    const calNamesChanged =
       calNames.length !== prevCalNames.length || calNames.some((name, i) => name !== prevCalNames[i]);
+    const calRowsOutOfSync =
+      currentCalLabels.length !== calNames.length || calNames.some((name, i) => currentCalLabels[i]?.name !== name);
 
-    if (!hasChanged) {
+    if (!calNamesChanged && !calRowsOutOfSync) {
       return;
     }
 
@@ -49,8 +50,9 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
     const staleCalNameSet = new Set(staleCalNames);
 
     const calRows = calNames.map((calName) => {
-      const existing = currentLabels.find((label) => label.name === calName);
-      return { name: calName, value: existing?.value ?? '' };
+      const fromLabels = currentLabels.find((label) => label.name === calName);
+      const fromCalLabels = currentCalLabels.find((label) => label?.name === calName);
+      return { name: calName, value: fromLabels?.value ?? fromCalLabels?.value ?? '' };
     });
 
     const remainingLabels = currentLabels.filter(
@@ -61,7 +63,7 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
     setValue('labels', remainingLabels);
 
     prevCalNamesRef.current = calNames;
-  }, [calNames, getValues, setValue]);
+  }, [calNames, watchedCalLabels, getValues, setValue]);
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading label limits" />;

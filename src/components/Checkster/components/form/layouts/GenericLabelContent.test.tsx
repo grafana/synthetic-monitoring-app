@@ -1,9 +1,14 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
 import { TENANT_COST_ATTRIBUTION_LABELS } from 'test/fixtures/tenants';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 import { mockFeatureToggles } from 'test/utils';
 
-import { FeatureName } from 'types';
+import { FeatureName, Label } from 'types';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericLabelContent } from './GenericLabelContent';
@@ -27,6 +32,35 @@ function renderGenericLabelContent(
     { description: 'Test description', ...props } as any,
     { calLabels: [], ...formValues }
   );
+}
+
+const RESET_BUTTON_TEXT = 'Simulate check refetch';
+
+// Saving a check refetches it, which re-seeds `labels` with every label on the check and clears
+// `calLabels`. This harness reproduces that reset so the regrouping can be asserted.
+function renderWithRefetchReset(calNames: string[], labels: Label[]) {
+  function Harness() {
+    const formMethods = useForm({ defaultValues: { labels, calLabels: [] }, mode: 'onChange' });
+
+    return (
+      <FormProvider {...formMethods}>
+        <form>
+          <GenericLabelContent description="Test description" calNames={calNames} />
+          <button type="button" onClick={() => formMethods.reset({ labels, calLabels: [] })}>
+            {RESET_BUTTON_TEXT}
+          </button>
+        </form>
+      </FormProvider>
+    );
+  }
+
+  render(
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
+      <Harness />
+    </OpenFeatureTestProvider>
+  );
+
+  return userEvent.setup();
 }
 
 describe('GenericLabelContent', () => {
@@ -137,6 +171,27 @@ describe('GenericLabelContent', () => {
           expect(screen.getByDisplayValue(name)).toBeInTheDocument();
         });
       });
+    });
+
+    it('keeps CAL labels out of the custom labels section after the form is reset', async () => {
+      const user = renderWithRefetchReset(calNames, [
+        { name: 'Team', value: 'team-a' },
+        { name: 'Service', value: 'service-a' },
+        { name: 'custom', value: 'my-value' },
+      ]);
+
+      await waitFor(() => {
+        expect(screen.getByRole('textbox', { name: 'Cost attribution label 1 value' })).toHaveValue('team-a');
+      });
+
+      await user.click(screen.getByRole('button', { name: RESET_BUTTON_TEXT }));
+
+      await waitFor(() => {
+        expect(screen.getByRole('textbox', { name: 'Cost attribution label 1 value' })).toHaveValue('team-a');
+      });
+      expect(screen.getByRole('textbox', { name: 'Cost attribution label 2 value' })).toHaveValue('service-a');
+      expect(screen.getByRole('textbox', { name: 'Custom labels 1 name' })).toHaveValue('custom');
+      expect(screen.queryByRole('textbox', { name: 'Custom labels 2 name' })).not.toBeInTheDocument();
     });
 
     describe('label limit accounts for CALs', () => {
