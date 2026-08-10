@@ -2,7 +2,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
 
-import { GRAFANA_DEV_ENTRY } from 'hooks/useProbeApiServer';
+import { GRAFANA_DEV_ENTRY, LEGACY_US_CENTRAL2_ENTRY } from 'hooks/useProbeApiServer';
 import { ProbeAPIServer } from 'components/ProbeAPIServer';
 
 // Mock useBackendAddress for the third test only
@@ -41,9 +41,15 @@ describe('ProbeAPIServer', () => {
     mockUseBackendAddress.mockReturnValue('synthetic-monitoring-api-private.example.net');
 
     render(<ProbeAPIServer source="test" />);
-    expect(
-      await screen.findByText('synthetic-monitoring-grpc-private.example.net:443')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('synthetic-monitoring-grpc-private.example.net:443')).toBeInTheDocument();
+  });
+
+  it(`should show the us-central-7 probe API server URL for the legacy us-central2 backend address`, async () => {
+    mockUseBackendAddress.mockReturnValue(LEGACY_US_CENTRAL2_ENTRY.backendAddress);
+
+    render(<ProbeAPIServer source="test" />);
+    expect(await screen.findByText(LEGACY_US_CENTRAL2_ENTRY.apiServerURL)).toBeInTheDocument();
+    expect(screen.queryByRole('alert', { name: /No probe API server found/ })).not.toBeInTheDocument();
   });
 
   it(`should show an error if the probe API server URL is not found`, async () => {
