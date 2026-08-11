@@ -4,25 +4,9 @@ import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { queryClient } from 'data/queryClient';
 
-function setViewport(width: number, height: number) {
-  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: width });
-  Object.defineProperty(window, 'innerHeight', { configurable: true, writable: true, value: height });
-}
-
 describe('getGlobalTrackingProps', () => {
-  beforeEach(() => {
-    setViewport(1440, 900);
-  });
-
   afterEach(() => {
     queryClient.clear();
-  });
-
-  it('reports the viewport size', () => {
-    const props = getGlobalTrackingProps();
-
-    expect(props.screen_width).toBe(1440);
-    expect(props.screen_height).toBe(900);
   });
 
   describe('page', () => {
@@ -70,6 +54,7 @@ describe('getGlobalTrackingProps', () => {
   });
 
   it('still reports the other props when one resolver throws', () => {
+    queryClient.setQueryData(['checks', { includeAlerts: true }], [BASIC_HTTP_CHECK]);
     jest.mocked(locationService.getLocation).mockImplementationOnce(() => {
       throw new Error('location unavailable');
     });
@@ -77,7 +62,6 @@ describe('getGlobalTrackingProps', () => {
     const props = getGlobalTrackingProps();
 
     expect(props.page).toBeUndefined();
-    expect(props.screen_width).toBe(1440);
-    expect(props.screen_height).toBe(900);
+    expect(props.check_count).toBe(1);
   });
 });
