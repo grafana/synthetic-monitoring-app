@@ -76,28 +76,31 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 - Changes to the plugin code will hot reload. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `yarn server` command).
 
 `yarn server` runs `yarn build:backend` before starting Grafana, which compiles
-the Go backend into `dist/` alongside the webpack output. Grafana needs both:
-if the `gpx_sm_app_<os>_<arch>` binary for the container's platform is missing,
-the plugin fails to load entirely — the app simply will not appear in the nav,
-and the Grafana logs will show `Could not start plugin backend`.
+the Go backend into `dist/` alongside the webpack output. The backend belongs to
+the nested `synthetic-monitoring-datasource` plugin, not to the app, so it builds
+to `dist/datasource/gpx_sm_datasource_<os>_<arch>`. If the binary for the
+container's platform is missing, the app still loads but the datasource is
+dropped, and the Grafana logs will show `Could not start plugin backend
+pluginId=synthetic-monitoring-datasource`.
 
 Changes to Go code under `pkg/` do **not** hot reload. Rerun `yarn server` (or
 `yarn build:backend` followed by `docker compose restart`) to pick them up.
 
-To check the backend is running:
+To check the backend is running, health-check a configured SM datasource
+(substitute its UID):
 
 ```bash
-curl -u admin:admin localhost:3000/api/plugins/grafana-synthetic-monitoring-app/health
+curl -u admin:admin localhost:3000/api/datasources/uid/<uid>/health
 # {"message":"ok","status":"OK"}
 ```
 
 If you would rather not run the full dev setup — for example when reviewing a
 change that touches `pkg/` — `./scripts/validate-backend` checks the backend on
 its own. It builds the binary, starts a throwaway Grafana on port 3199 in an
-isolated compose project, asserts that the plugin registered and that its health
-check responds, and then removes everything it created. It needs no provisioning
-or Grafana Cloud credentials, and it will not disturb a `yarn server` you already
-have running.
+isolated compose project, provisions a throwaway SM datasource, asserts that the
+app and the nested datasource both registered and that the datasource's health
+check responds, and then removes everything it created. It needs no Grafana Cloud
+credentials, and it will not disturb a `yarn server` you already have running.
 
 To start using the app:
 

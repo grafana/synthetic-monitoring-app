@@ -22,8 +22,17 @@ Standard commands are in `package.json`:
 
 ### Backend (Go)
 
-The plugin has a Go backend under `pkg/`. It currently only starts up and reports
-its health — it exposes no resources and no frontend code calls it.
+The plugin has a Go backend under `pkg/`. It backs the **nested
+`synthetic-monitoring-datasource` plugin** (`src/datasource/plugin.json`), not the
+app itself — Grafana routes panel and scene queries through datasources, so an app
+backend could not serve them. It currently only starts up and reports its health —
+it serves no queries or resources and no frontend code calls it.
+
+`src/plugin.json` must **not** gain `backend`/`executable`. The SDK's build target
+only looks for the nested datasource when the app's `plugin.json` has no
+`executable` of its own (`build/common.go`, `getBuildBackendCmdInfo`); setting one
+silently redirects the build to an app binary and stops producing
+`gpx_sm_datasource` at all.
 
 Backend tooling lives in `Magefile.go` under the `go:` namespace, because the
 `grafana-plugin-sdk-go` build package already occupies the top-level target names
@@ -89,40 +98,44 @@ Two services are needed for local development:
 Both must run concurrently. The Webpack output goes into `dist/`, which Grafana loads live.
 
 `dist/` must contain **both** halves: the webpack bundle and a
-`gpx_sm_app_<os>_<arch>` binary matching the _container's_ platform. `yarn
-server` runs `yarn build:backend` first so this holds automatically; Go is
-therefore a prerequisite for running Grafana locally, even for frontend-only
-work.
+`datasource/gpx_sm_datasource_<os>_<arch>` binary matching the _container's_
+platform. `yarn server` runs `yarn build:backend` first so this holds
+automatically; Go is therefore a prerequisite for running Grafana locally, even
+for frontend-only work.
 
-If the binary is missing, Grafana does not merely disable the backend — it drops
-the plugin entirely, frontend included, because registration happens after the
-backend process starts. The symptom is the app silently missing from the nav,
-with this in the Grafana logs:
+If the binary is missing, the failure is scoped to the datasource: the app itself
+still registers and its UI still loads, but `synthetic-monitoring-datasource` is
+dropped, so anything routed through it breaks. Verified by removing the binary
+and reading the container logs:
 
 ```
-level=error msg="Could not start plugin backend" error="fork/exec .../gpx_sm_app_linux_amd64: no such file or directory"
-level=error msg="Could not initialize plugin"
+level=info  msg="Plugin registered" pluginId=grafana-synthetic-monitoring-app
+level=error msg="Could not start plugin backend" pluginId=synthetic-monitoring-datasource error="fork/exec .../datasource/gpx_sm_datasource_linux_amd64: no such file or directory"
+level=error msg="Could not initialize plugin" pluginId=synthetic-monitoring-datasource
 ```
+
+Note this is a quieter failure than an app backend would give: the app does not
+vanish from the nav, so a missing binary shows up as broken behaviour rather than
+an absent plugin.
 
 Webpack will not clobber the binaries on rebuild: `.config/webpack/webpack.config.ts`
 sets `output.clean.keep` to preserve `gpx_*` and `go_plugin_build_manifest`.
 
 To verify the backend is actually running against an instance you already have
-up:
+up, health-check a configured SM datasource (backend health is per-datasource, so
+this needs a datasource to exist — substitute its UID):
 
 ```
-curl -u admin:admin localhost:3000/api/plugins/grafana-synthetic-monitoring-app/health
+curl -u admin:admin localhost:3000/api/datasources/uid/<uid>/health
 # {"message":"ok","status":"OK"}
 ```
 
-This needs no provisioning or Grafana Cloud credentials — provisioning only
-gates whether the app UI can reach the SM API, not whether the plugin loads.
-
 To check the backend from scratch without touching a running instance, use
 `./scripts/validate-backend`. It builds the binary, starts a throwaway Grafana
-in its own compose project on port 3199, asserts that the plugin registered and
-that `CheckHealth` answers, then tears everything down. `SKIP_BUILD=1` validates
-the existing `dist/` instead of rebuilding.
+in its own compose project on port 3199, provisions an SM datasource to check
+against, asserts that both the app and the nested datasource registered and that
+`CheckHealth` answers, then tears everything down. `SKIP_BUILD=1` validates the
+existing `dist/` instead of rebuilding.
 
 ### Provisioning (gotcha)
 
