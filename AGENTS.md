@@ -46,10 +46,16 @@ parse error, not an override. Run `mage -l` to list everything.
 backend-related is a `mage` target only, deliberately not wrapped in the
 Makefile.
 
-The `yarn` scripts use `go run github.com/magefile/mage` rather than a bare
-`mage`, because mage is a module dependency: `go run` uses the pinned version
-and contributors need no separate install. The tables above use bare `mage` for
-brevity; either form works if you have it installed.
+The `yarn` scripts, the Makefile targets and CI all invoke mage as `go run
+github.com/magefile/mage` rather than a bare `mage`, because mage is a module
+dependency: `go run` uses the version pinned in `go.mod` and contributors need no
+separate install. This matters beyond convenience — a globally installed `mage`
+is usually a different version than the pinned one, so bare invocations can
+diverge from CI silently.
+
+The tables above show bare `mage` for brevity. If you have it installed, prefer
+`go run github.com/magefile/mage` (or the `make` wrappers) when a result needs to
+match CI.
 
 Two rules worth knowing:
 

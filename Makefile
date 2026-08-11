@@ -4,6 +4,12 @@ PACKAGE_NAME := grafana-synthetic-monitoring-app-$(VERSION).zip
 
 ARTIFACTS_DIR ?= $(ROOT_DIR)/artifacts/builds
 
+# Invoke mage through `go run` rather than a bare `mage`, so that the version
+# pinned in go.mod is used and contributors need no separate install. A globally
+# installed mage is usually a different version than CI's (which also uses
+# `go run`), which would make local results diverge silently.
+MAGE := go run github.com/magefile/mage
+
 .PHONY: build
 build: build-go
 	yarn build
@@ -14,7 +20,7 @@ build: build-go
 # load.
 .PHONY: build-go
 build-go:
-	mage -v buildAll
+	$(MAGE) -v buildAll
 
 .PHONY: install
 install:
@@ -24,12 +30,13 @@ install:
 lint: lint-go
 	yarn lint
 
-# Backend tooling lives in Magefile.go under the `go:` namespace; run `mage -l`
-# for the full set. These wrappers exist so that `make lint` and `make test`
-# cover the backend too, instead of passing while Go code goes unchecked.
+# Backend tooling lives in Magefile.go under the `go:` namespace; run
+# `$(MAGE) -l` for the full set. These wrappers exist so that `make lint` and
+# `make test` cover the backend too, instead of passing while Go code goes
+# unchecked.
 .PHONY: lint-go
 lint-go:
-	mage go:lint
+	$(MAGE) go:lint
 
 # Regenerate .policy.yml from the pull_request workflows. `scripts/check-policy-bot-config`
 # names this target in its CI failure message, so it needs to exist.
@@ -55,7 +62,7 @@ validate-backend:
 
 .PHONY: test-go
 test-go:
-	mage -v testRace
+	$(MAGE) -v testRace
 
 .PHONY: package
 package:
