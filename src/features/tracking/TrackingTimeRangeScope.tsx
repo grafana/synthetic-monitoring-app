@@ -18,8 +18,7 @@ export const TrackingTimeRangeScope = () => {
   return null;
 };
 
-// raw values are relative expressions (`now-3h`) or DateTime objects for absolute
-// ranges; tracking props only allow primitives, so DateTimes report as ISO strings
+// tracking props only allow primitives, so DateTime raw values (absolute ranges) report as ISO strings
 function toPrimitive(rawValue: TimeRange['raw']['from']): string {
   return typeof rawValue === 'string' ? rawValue : rawValue.toISOString();
 }

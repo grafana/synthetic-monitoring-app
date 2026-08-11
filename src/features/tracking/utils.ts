@@ -18,10 +18,7 @@ export const setTrackingBaseProps = (props: TrackingEventProps) => {
   baseProps = omitUndefined(props);
 };
 
-// Props contributed by mounted components, keyed per useTrackingScope instance and
-// merged in registration order. Concurrent scopes must use disjoint prop namespaces
-// (`check_*`, `time_range_*`, ...) because collision order between them follows effect
-// timing and is not a supported semantic.
+// Scope props merge in registration order; scopes must use disjoint prop namespaces (see useTrackingScope)
 const trackingScopes = new Map<symbol, TrackingEventProps>();
 
 /** Prefer the useTrackingScope hook over calling this directly. */
