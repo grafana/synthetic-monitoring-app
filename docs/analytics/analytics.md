@@ -30,9 +30,10 @@ For each feature you wish to track, create a new file in the `src/features/track
 Every event created through `createSMEventFactory` is automatically enriched with contextual metadata at the moment it fires, in addition to the properties passed at the call site. There are three layers, and more specific properties always win on key collision (event props > scope props > base props > global props). Automatically attached properties use `snake_case` names because downstream consumers key off the exact column names.
 
 1. **Global props** (`src/features/tracking/globalTrackingProps.ts`) — resolved lazily on every event:
-   - `screen_width` / `screen_height` — the viewport size
    - `page` — the current page as a low-cardinality route pattern (e.g. `checks/:id/edit`, resolved against `PAGE_ROUTE_PATTERNS` in `src/routing/pagePatterns.ts`); pages outside the plugin report their raw pathname
    - `check_count` — the tenant's total check count, read passively from the react-query cache (omitted until a page has loaded the check list)
+
+   The viewport is deliberately not reported here — Rudderstack captures it natively on every event (`context.screen.innerWidth`/`innerHeight`).
 
 2. **Base props** (`src/features/tracking/TrackingIdentity.tsx`) — the Grafana Cloud identity, `org_id` and `stack_id`.
 
