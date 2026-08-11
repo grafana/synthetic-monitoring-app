@@ -1,4 +1,9 @@
+import { getGlobalTrackingProps } from 'features/tracking/globalTrackingProps';
 import { createSMEventFactory, setTrackingBaseProps, TrackingEventProps } from 'features/tracking/utils';
+
+jest.mock('features/tracking/globalTrackingProps');
+
+const getGlobalTrackingPropsMock = jest.mocked(getGlobalTrackingProps);
 
 interface SampleEvent extends TrackingEventProps {
   /** The type of check, to exercise event-specific props in tests. */
@@ -20,6 +25,7 @@ describe('createEventFactory', () => {
 
   beforeEach(() => {
     setTrackingBaseProps({});
+    getGlobalTrackingPropsMock.mockReturnValue({});
     reportInteraction.mockClear();
   });
 
@@ -75,5 +81,51 @@ describe('createEventFactory', () => {
 
     const [, props] = reportInteraction.mock.calls[0];
     expect(props).toEqual({ checkType: 'browser' });
+  });
+
+  it('includes global context props on every event', () => {
+    getGlobalTrackingPropsMock.mockReturnValue({ screen_width: 1440, page: 'checks/:id' });
+    trackSampleEvent({ checkType: 'browser' });
+
+    expect(reportInteraction).toHaveBeenCalledWith('synthetic-monitoring_test_feature_sample_event', {
+      screen_width: 1440,
+      page: 'checks/:id',
+      checkType: 'browser',
+    });
+  });
+
+  it('resolves global context props at fire time, not at factory creation time', () => {
+    getGlobalTrackingPropsMock.mockReturnValue({ page: 'home' });
+    trackPropslessEvent();
+
+    getGlobalTrackingPropsMock.mockReturnValue({ page: 'checks' });
+    trackPropslessEvent();
+
+    expect(reportInteraction).toHaveBeenNthCalledWith(1, 'synthetic-monitoring_test_feature_propsless_event', {
+      page: 'home',
+    });
+    expect(reportInteraction).toHaveBeenNthCalledWith(2, 'synthetic-monitoring_test_feature_propsless_event', {
+      page: 'checks',
+    });
+  });
+
+  it('drops undefined global prop values instead of reporting them', () => {
+    getGlobalTrackingPropsMock.mockReturnValue({ check_count: undefined, page: 'home' });
+    trackPropslessEvent();
+
+    const [, props] = reportInteraction.mock.calls[0];
+    expect(props).not.toHaveProperty('check_count');
+    expect(props).toHaveProperty('page', 'home');
+  });
+
+  it('lets base props win over global props, and event props win over both', () => {
+    getGlobalTrackingPropsMock.mockReturnValue({ org_id: 1, checkType: 'from-global' });
+    setTrackingBaseProps({ org_id: 2, checkType: 'from-base' });
+    trackSampleEvent({ checkType: 'browser' });
+
+    expect(reportInteraction).toHaveBeenCalledWith('synthetic-monitoring_test_feature_sample_event', {
+      org_id: 2,
+      checkType: 'browser',
+    });
   });
 });
