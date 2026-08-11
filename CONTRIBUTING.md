@@ -115,6 +115,8 @@ We use Jest with React Testing Library and MSW. Our suite behaves like a pseudo 
 
 See [docs/development/testing.md](./docs/development/testing.md) for expectations, examples, and how to use `src/test/` (custom render, handlers, fixtures, journey helpers).
 
+For agent-assisted test writing, the project skill lives at [`.agents/skills/write-tests/`](./.agents/skills/write-tests/) (with a [`.claude/skills/write-tests`](./.claude/skills/write-tests) symlink for Claude Code).
+
 Run tests with `yarn test` or a single file: `yarn test EditProbe.test.tsx`.
 
 #### File nesting

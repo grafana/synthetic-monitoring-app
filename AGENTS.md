@@ -54,6 +54,8 @@ If you switch between `yarn dev:msw` and `yarn dev`, the MSW service worker pers
 
 See [docs/development/testing.md](./docs/development/testing.md) for the full testing guide — expectations, pseudo-e2e philosophy, and how to use `src/test/`.
 
+Agent skill (auto-trigger workflow): [`.agents/skills/write-tests/SKILL.md`](./.agents/skills/write-tests/SKILL.md). Cursor and other Agent Skills-compatible tools read `.agents/skills/` directly; Claude Code uses the symlink at `.claude/skills/write-tests`.
+
 - `yarn test` runs the full Jest test suite (~170 suites, ~1300 tests).
 - `yarn test <filename>` runs a single file; `yarn test:changed` watches changed files.
 - Tests use MSW handlers from `src/test/handlers` for API mocking.
