@@ -128,7 +128,8 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     probeIds: proposedCheck.probeIds,
   };
   const readiness = getReadiness(suggestion);
-  const requestRate = `${formatDecimal(suggestion.evidence.reqPerS)} req/s`;
+  const requestRate =
+    suggestion.evidence.reqPerS === undefined ? undefined : `${formatDecimal(suggestion.evidence.reqPerS)} req/s`;
   const reachability = getReachabilityLabel(suggestion);
   const frequency = config.frequencyMs ? formatFrequency(config.frequencyMs) : 'Default schedule';
   const locations = config.probeIds.length;
@@ -144,7 +145,7 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     id: suggestion.id,
     suggestion,
     subject: getSubject(suggestion.target),
-    observedSummary: `${requestRate} · ${reachability} · last hour`,
+    observedSummary: [requestRate, reachability, requestRate ? 'last hour' : undefined].filter(Boolean).join(' · '),
     rationale: suggestion.rationale ?? 'Observed demand appears to have no equivalent synthetic coverage.',
     value: getValue(suggestion.relevance),
     confidence: getConfidence(suggestion.confidence),
@@ -156,10 +157,13 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
         : `${frequency} · ${locationCopy} · ${assertion}`,
     estimatedUsage: estimateMonthlyUsage(config),
     sortScore: suggestion.relevance ?? suggestion.score * 100,
-    requestVolume: formatCompactNumber(suggestion.evidence.reqPerS * 60 * 60),
+    requestVolume:
+      suggestion.evidence.reqPerS === undefined
+        ? undefined
+        : formatCompactNumber(suggestion.evidence.reqPerS * 60 * 60),
     requestRate,
-    errorRate: formatErrorRate(suggestion),
-    p99: `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
+    errorRate: formatErrorRate(suggestion.evidence.errorRatio),
+    p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
     evidencePrototype: suggestion.evidencePrototype,
     proposedCheck,
   };
@@ -401,11 +405,10 @@ function formatDecimal(value: number) {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(value);
 }
 
-function formatErrorRate(suggestion: ReliabilitySuggestion) {
-  const errors = Object.entries(suggestion.evidence.statusDistribution).reduce((total, [status, rate]) => {
-    return Number(status) >= 400 ? total + rate : total;
-  }, 0);
-  const ratio = suggestion.evidence.reqPerS > 0 ? errors / suggestion.evidence.reqPerS : 0;
+function formatErrorRate(ratio?: number) {
+  if (ratio === undefined) {
+    return undefined;
+  }
 
   return new Intl.NumberFormat('en-US', {
     style: 'percent',

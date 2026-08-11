@@ -1,4 +1,4 @@
-import { ReliabilitySuggestion } from './types';
+import { ReliabilitySuggestion, reliabilitySuggestionSchema } from './types';
 import { CheckType } from 'types';
 
 import {
@@ -16,6 +16,7 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
   checkType: 'http',
   evidence: {
     reqPerS: 1.6081232492997197,
+    errorRatio: 0.0014,
     p99Ms: 4,
     statusDistribution: {
       '200': 1.6058823529411763,
@@ -147,6 +148,25 @@ describe('Reliability Inbox model', () => {
         validStatusCodes: [200],
         locationPolicy: 'Run from the suggested public probe in Frankfurt.',
         estimatedExecutionsPerMonth: 43_200,
+      })
+    );
+  });
+
+  it('preserves absent numeric evidence instead of presenting it as zero', () => {
+    const suggestion = reliabilitySuggestionSchema.parse({
+      ...HTTP_SUGGESTION,
+      evidence: {
+        families: HTTP_SUGGESTION.evidence.families,
+        activitySemantics: HTTP_SUGGESTION.evidence.activitySemantics,
+      },
+    });
+
+    expect(toReliabilityOpportunity(suggestion)).toEqual(
+      expect.objectContaining({
+        requestVolume: undefined,
+        requestRate: undefined,
+        errorRate: undefined,
+        p99: undefined,
       })
     );
   });
