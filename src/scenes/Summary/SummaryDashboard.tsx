@@ -131,7 +131,12 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
   const styles = useStyles2(getStyles);
 
   if (checks.length === 0) {
-    return <ChecksEmptyState className={styles.emptyState} />;
+    return (
+      <Stack direction="column" gap={1}>
+        <ReliabilityInboxBanner />
+        <ChecksEmptyState className={styles.emptyState} />
+      </Stack>
+    );
   }
 
   return (
