@@ -121,7 +121,7 @@ function ReliabilityInboxReview() {
       requestsPerSecond: selected.suggestion.evidence.reqPerS,
       estimatedRequestsInWindow: selected.requestVolume,
       p99Milliseconds: selected.suggestion.evidence.p99Ms,
-      httpErrorRate: selected.errorRate,
+      fiveXxResponseRatio: selected.suggestion.evidence.errorRatio,
       statusDistribution: selected.suggestion.evidence.statusDistribution,
       measurementWindow: 'last hour',
       telemetryFamilies: selected.suggestion.evidence.families,
@@ -216,7 +216,7 @@ function ReliabilityInboxReview() {
                 text={`${capitalize(opportunity.confidence)} confidence`}
               />
             </div>
-            <span>Public HTTP traffic · {opportunity.requestRate}</span>
+            <span>Public HTTP traffic{opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}</span>
           </button>
         ))}
       </aside>
@@ -282,8 +282,8 @@ function ReliabilityInboxReview() {
                   value={formatExactNumber(selected.evidencePrototype.exactRequestTotal)}
                   label={`requests · ${selected.evidencePrototype.window.label}`}
                 />
-                <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
-                <EvidenceMetric value={selected.p99} label="p99 response time" />
+                {selected.errorRate && <EvidenceMetric value={selected.errorRate} label="5xx responses" />}
+                {selected.p99 && <EvidenceMetric value={selected.p99} label="p99 response time" />}
               </div>
               <ReliabilityEvidenceTrend evidence={selected.evidencePrototype} />
               <p className={styles.sectionSummary}>
@@ -293,14 +293,20 @@ function ReliabilityInboxReview() {
           ) : (
             <>
               <div className={styles.metrics}>
-                <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
-                <EvidenceMetric value={selected.requestRate} label="observed request rate" />
-                <EvidenceMetric value={selected.errorRate} label="HTTP error responses" />
-                <EvidenceMetric value={selected.p99} label="p99 response time" />
+                {selected.requestVolume && (
+                  <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
+                )}
+                {selected.requestRate && <EvidenceMetric value={selected.requestRate} label="observed request rate" />}
+                {selected.errorRate && <EvidenceMetric value={selected.errorRate} label="5xx responses" />}
+                {selected.p99 && <EvidenceMetric value={selected.p99} label="p99 response time" />}
               </div>
-              <p className={styles.sectionSummary}>
-                Recent aggregate traffic shows sustained demand with measurable availability and latency.
-              </p>
+              {selected.requestVolume || selected.requestRate || selected.errorRate || selected.p99 ? (
+                <p className={styles.sectionSummary}>These values come from recent request telemetry.</p>
+              ) : (
+                <p className={styles.sectionSummary} role="status">
+                  No aggregate traffic values were returned for this suggestion.
+                </p>
+              )}
             </>
           )}
           <details className={styles.disclosure}>

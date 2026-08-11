@@ -48,6 +48,7 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
   checkType: 'http',
   evidence: {
     reqPerS: 1.6081232492997197,
+    errorRatio: 0.0014,
     p99Ms: 4,
     statusDistribution: {
       '200': 1.6058823529411763,
@@ -171,6 +172,7 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.getByText('Demo evidence')).toBeInTheDocument();
     expect(screen.getByText('14,700')).toBeInTheDocument();
     expect(screen.getByText('requests · the last 24 hours')).toBeInTheDocument();
+    expect(screen.getByText('5xx responses')).toBeInTheDocument();
     expect(screen.getByLabelText('Observed requests over time')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'View in Explore' })).not.toBeInTheDocument();
 
@@ -206,6 +208,30 @@ describe('ReliabilityInboxPage', () => {
       'No traffic trend is available for this evidence window.'
     );
     expect(screen.queryByLabelText('Observed requests over time')).not.toBeInTheDocument();
+  });
+
+  it('does not render missing aggregate evidence as zero', async () => {
+    mockSuggestions({
+      ...HTTP_SUGGESTION,
+      evidence: {
+        statusDistribution: {},
+        families: HTTP_SUGGESTION.evidence.families,
+        activitySemantics: HTTP_SUGGESTION.evidence.activitySemantics,
+      },
+      evidencePrototype: undefined,
+    });
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByRole('status')).toHaveTextContent(
+      'No aggregate traffic values were returned for this suggestion.'
+    );
+    expect(screen.queryByText('0 req/s')).not.toBeInTheDocument();
+    expect(screen.queryByText('0 ms')).not.toBeInTheDocument();
+    expect(screen.queryByText('0.0%')).not.toBeInTheDocument();
   });
 
   it('keeps the existing page-level loading state while evidence is loading', async () => {
