@@ -1,0 +1,111 @@
+#!/bin/sh
+# Validate that the plugin's Go backend actually loads and serves inside Grafana.
+#
+# This is the check that unit tests cannot make: it builds the binary, starts
+# Grafana with dist/ mounted as the plugin directory, and asserts that Grafana
+# registered the plugin and that CheckHealth responds over gRPC.
+#
+# Runs in an isolated compose project with its own container name and port, so
+# it does not disturb a `yarn server` instance from this or any other checkout.
+
+set -eu
+
+PORT=${PORT:-3199}
+PROJECT=sm-backend-validate
+NAME=grafana-sm-backend-validate
+PLUGIN_ID=grafana-synthetic-monitoring-app
+
+toplevel=$(git rev-parse --show-toplevel)
+cd "$toplevel"
+
+override=$(mktemp)
+cleanup() {
+	docker compose -f docker-compose.yaml -f "$override" -p "$PROJECT" down >/dev/null 2>&1 || true
+	rm -f "$override"
+}
+trap cleanup EXIT INT TERM
+
+cat > "$override" <<EOT
+services:
+  grafana:
+    container_name: $NAME
+    ports: !override
+      - $PORT:3000
+EOT
+
+fail() {
+	echo "FAIL: $1" >&2
+	echo "--- last 40 log lines ---" >&2
+	docker logs --tail 40 "$NAME" 2>&1 >&2 || true
+	exit 1
+}
+
+if [ "${SKIP_BUILD:-0}" = "1" ]; then
+	echo "==> skipping build (SKIP_BUILD=1), validating dist/ as-is"
+else
+	echo "==> building backend"
+	go run github.com/magefile/mage -v buildAll >/dev/null
+fi
+
+echo "==> checking dist/ has a binary for linux (the container's OS)"
+arch=$(docker version --format '{{.Server.Arch}}')
+case "$arch" in
+	amd64) want=dist/gpx_sm_app_linux_amd64 ;;
+	arm64) want=dist/gpx_sm_app_linux_arm64 ;;
+	*) echo "FAIL: unsupported docker server arch: $arch" >&2; exit 1 ;;
+esac
+test -x "$want" || fail "missing executable $want"
+echo "    found $want"
+
+echo "==> starting Grafana on :$PORT"
+docker compose -f docker-compose.yaml -f "$override" -p "$PROJECT" up --build -d >/dev/null
+
+echo "==> waiting for plugin health endpoint"
+health=""
+i=0
+while [ "$i" -lt 60 ]; do
+	health=$(curl -s -u admin:admin "http://localhost:$PORT/api/plugins/$PLUGIN_ID/health" 2>/dev/null || true)
+	case "$health" in
+		*'"status":"OK"'*) break ;;
+	esac
+	# Fail fast rather than waiting out the timeout: once Grafana has logged that
+	# it could not start the backend, it has already dropped the plugin and will
+	# never answer the health endpoint.
+	if docker logs "$NAME" 2>&1 | grep -q "Could not start plugin backend"; then
+		fail "Grafana logged 'Could not start plugin backend'"
+	fi
+	i=$((i + 1))
+	sleep 2
+done
+
+case "$health" in
+	*'"status":"OK"'*) echo "    health: $health" ;;
+	*) fail "health check did not return OK (got: ${health:-<no response>})" ;;
+esac
+
+echo "==> asserting Grafana registered the plugin"
+docker logs "$NAME" 2>&1 | grep -q "msg=\"Plugin registered\" pluginId=$PLUGIN_ID" \
+	|| fail "Grafana did not log 'Plugin registered' for $PLUGIN_ID"
+
+echo "==> asserting no backend start failure was logged"
+if docker logs "$NAME" 2>&1 | grep -q "Could not start plugin backend"; then
+	fail "Grafana logged 'Could not start plugin backend'"
+fi
+
+echo "==> asserting the plugin process is running in the container"
+docker exec "$NAME" ps ax 2>/dev/null | grep -q "gpx_sm_app_linux_" \
+	|| fail "no gpx_sm_app process found inside the container"
+
+echo "==> asserting the version ldflag was injected"
+# Read the working tree's package.json, not HEAD: the SDK's build target reads
+# the version off disk, so comparing against a committed value would fail
+# spuriously whenever the version has been bumped but not committed.
+version=$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' package.json | head -1)
+if [ -n "$version" ]; then
+	docker logs "$NAME" 2>&1 | grep -q "msg=\"Starting plugin process\" version=$version" \
+		|| fail "backend did not report version=$version (ldflag injection broken?)"
+	echo "    version: $version"
+fi
+
+echo
+echo "PASS: backend builds, loads, registers and reports healthy"

@@ -2,7 +2,10 @@ module github.com/grafana/synthetic-monitoring-app
 
 go 1.26.5
 
-require github.com/grafana/grafana-plugin-sdk-go v0.296.2
+require (
+	github.com/grafana/grafana-plugin-sdk-go v0.296.2
+	github.com/magefile/mage v1.17.2
+)
 
 require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
@@ -36,7 +39,6 @@ require (
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.19.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.4.0 // indirect
-	github.com/magefile/mage v1.17.2 // indirect
 	github.com/mattetti/filebuffer v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.15 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect

@@ -8,6 +8,7 @@ There are two different "modes" for developing this plugin. You can either work 
 
 - Set up a Grafana Cloud account
 - Make sure you have Docker installed
+- Make sure you have Go installed (see the `go` directive in [`go.mod`](./go.mod) for the version). The plugin has a Go backend, and Grafana will not load the plugin at all without its binary — so Go is required even for frontend-only work.
 - Clone this repo to your local machine
 
 ### Package manager
@@ -73,6 +74,30 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 - In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable
 - Go to `localhost:3000`
 - Changes to the plugin code will hot reload. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `yarn server` command).
+
+`yarn server` runs `yarn build:backend` before starting Grafana, which compiles
+the Go backend into `dist/` alongside the webpack output. Grafana needs both:
+if the `gpx_sm_app_<os>_<arch>` binary for the container's platform is missing,
+the plugin fails to load entirely — the app simply will not appear in the nav,
+and the Grafana logs will show `Could not start plugin backend`.
+
+Changes to Go code under `pkg/` do **not** hot reload. Rerun `yarn server` (or
+`yarn build:backend` followed by `docker compose restart`) to pick them up.
+
+To check the backend is running:
+
+```bash
+curl -u admin:admin localhost:3000/api/plugins/grafana-synthetic-monitoring-app/health
+# {"message":"ok","status":"OK"}
+```
+
+If you would rather not run the full dev setup — for example when reviewing a
+change that touches `pkg/` — `./scripts/validate-backend` checks the backend on
+its own. It builds the binary, starts a throwaway Grafana on port 3199 in an
+isolated compose project, asserts that the plugin registered and that its health
+check responds, and then removes everything it created. It needs no provisioning
+or Grafana Cloud credentials, and it will not disturb a `yarn server` you already
+have running.
 
 To start using the app:
 
