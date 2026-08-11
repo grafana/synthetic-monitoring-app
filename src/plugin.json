@@ -5,6 +5,8 @@
   "id": "grafana-synthetic-monitoring-app",
   "autoEnabled": true,
   "preload": true,
+  "backend": true,
+  "executable": "gpx_sm_app",
   "info": {
     "description": "Worldwide black box monitoring for services and applications",
     "author": {
