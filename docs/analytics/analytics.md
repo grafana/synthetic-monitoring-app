@@ -33,8 +33,6 @@ Every event created through `createSMEventFactory` is automatically enriched wit
    - `page` — the current page as a low-cardinality route pattern (e.g. `checks/:id/edit`, resolved against `PAGE_ROUTE_PATTERNS` in `src/routing/pagePatterns.ts`); pages outside the plugin report their raw pathname
    - `check_count` — the tenant's total check count, read passively from the react-query cache (omitted until a page has loaded the check list)
 
-   The viewport is deliberately not reported here — Rudderstack captures it natively on every event (`context.screen.innerWidth`/`innerHeight`).
-
 2. **Base props** (`src/features/tracking/TrackingIdentity.tsx`) — the Grafana Cloud identity, `org_id` and `stack_id`.
 
 3. **Scope props** (`useTrackingScope`) — attached by mounted components while the user is inside a feature, and removed on unmount:
