@@ -22,7 +22,6 @@ export const createEventFactory = (product: string, featureName: string) => {
   return <P extends TrackingEventProps | undefined = undefined>(eventName: string) =>
     (props: P extends undefined ? void : P) => {
       const eventNameToReport = `${product}_${featureName}_${eventName}`;
-      // global context props are resolved at fire time so they are always current;
       // more specific props win on key collision: event props > base props > global props
       reportInteraction(eventNameToReport, {
         ...omitUndefined(getGlobalTrackingProps()),

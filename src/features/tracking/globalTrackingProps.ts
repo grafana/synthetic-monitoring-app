@@ -34,11 +34,9 @@ function guard(resolve: () => TrackingEventProps): TrackingEventProps {
 }
 
 /**
- * Reports the current page as a route pattern (e.g. `checks/:id/edit`) rather than the
- * raw pathname so the property stays low-cardinality. `matchRoutes` ranks candidates,
- * so static patterns (`checks/choose-type`) win over dynamic ones (`checks/:id`).
- * Pages that don't resolve to a known pattern (e.g. external components rendered
- * outside the plugin's own pages) report their pathname as-is.
+ * Reports the current page as a low-cardinality route pattern (e.g. `checks/:id/edit`).
+ * `matchRoutes` ranks candidates, so static patterns win over dynamic ones. Unmatched
+ * pages (e.g. external components outside the plugin) report their pathname as-is.
  */
 function getPageProps(): TrackingEventProps {
   const { pathname } = locationService.getLocation();
@@ -55,10 +53,8 @@ function getPageProps(): TrackingEventProps {
 
 function getCheckCountProps(): TrackingEventProps {
   // The literal ['checks'] prefix must stay in sync with QUERY_KEYS.list in
-  // data/useChecks. It can't be imported from there because data/useChecks imports
-  // tracking event files, which would create an import cycle back into this module.
-  // getQueriesData is a passive cache read and never triggers a fetch, so the count is
-  // omitted until some page has loaded the check list.
+  // data/useChecks — it can't be imported from there without creating an import cycle
+  // (data/useChecks imports tracking event files). getQueriesData never triggers a fetch.
   const cachedChecksLists = queryClient.getQueriesData({ queryKey: ['checks'] });
   const checks = cachedChecksLists.map(([_, data]) => data).find(Array.isArray);
 
