@@ -37,6 +37,13 @@ jest.mock('data/useDefaultFolder', () => ({
   })),
 }));
 
+jest.mock('data/useTenantCostAttributionLabels', () => ({
+  useTenantCostAttributionLabels: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+  })),
+}));
+
 const defaultProps = {
   field: 'labels',
   label: 'Labels',
