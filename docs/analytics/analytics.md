@@ -25,6 +25,25 @@ For each feature you wish to track, create a new file in the `src/features/track
 3. Avoid overly long feature and event names
 4. Do not use variables or any other high cardinality properties in the feature or event name. The eslint rule is configured to catch this.
 
+### Automatic context properties
+
+Every event created through `createSMEventFactory` is automatically enriched with contextual metadata at the moment it fires, in addition to the properties passed at the call site. There are three layers, and more specific properties always win on key collision (event props > scope props > base props > global props). Automatically attached properties use `snake_case` names because downstream consumers key off the exact column names.
+
+1. **Global props** (`src/features/tracking/globalTrackingProps.ts`) — resolved lazily on every event:
+   - `screen_width` / `screen_height` — the viewport size
+   - `page` — the current page as a low-cardinality route pattern (e.g. `checks/:id/edit`, resolved against `PAGE_ROUTE_PATTERNS` in `src/routing/pagePatterns.ts`); pages outside the plugin report their raw pathname
+   - `check_count` — the tenant's total check count, read passively from the react-query cache (omitted until a page has loaded the check list)
+
+2. **Base props** (`src/features/tracking/TrackingIdentity.tsx`) — the Grafana Cloud identity, `org_id` and `stack_id`.
+
+3. **Scope props** (`useTrackingScope`) — attached by mounted components while the user is inside a feature, and removed on unmount:
+   - Check dashboards: `check_id`, `check_type`, `check_frequency_seconds`, `probe_count`, `alerting_enabled`, `check_enabled`
+   - Dashboards with a time range: `time_range_from`, `time_range_to`, `time_range_seconds`
+   - The check form: `check_type`, `check_state` (`new`/`existing`), `check_id`, `check_is_duplicate`
+   - The Time Point Explorer: `tpe_view_mode`, `tpe_visible_timepoints`, `tpe_total_timepoints`, `tpe_page`, `tpe_section`
+
+To add scoped context for a new feature, call `useTrackingScope(props)` in the feature's provider/root component. Use a prop namespace that doesn't collide with other scopes (e.g. `myfeature_*`): collision order between concurrently mounted scopes is not a supported semantic.
+
 ### Generating the analytics-events.md file
 
 To generate the `analytics-events.md` file, run the following command:
