@@ -23,11 +23,13 @@ import { getCheckType } from 'utils';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useDOMId } from 'hooks/useDOMId';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
+import { groupLabelsByCalNames } from '../transformations/toFormValues.utils';
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
 import { flattenObjectKeys } from '../utils/form';
@@ -76,11 +78,17 @@ interface StashedValues {
 
 function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[], defaultFolderUid?: string) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = useMemo(() => calData?.names ?? [], [calData]);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema);
     const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    const grouped = groupLabelsByCalNames(formValues.labels, calNames);
+
+    formValues.labels = grouped.labels;
+    formValues.calLabels = grouped.calLabels;
 
     if (defaultFolderUid && !formValues.folderUid) {
       formValues.folderUid = defaultFolderUid;
@@ -93,7 +101,7 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, calNames]);
 }
 
 export function ChecksterProvider({
