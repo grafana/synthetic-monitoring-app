@@ -37,12 +37,11 @@ export const reliabilitySuggestionSchema = z
     checkType: z.string(),
     evidence: z
       .object({
-        // Defaulted rather than required. Every field on the service's Evidence
-        // struct is `omitempty`, so a zero value is ABSENT from the JSON rather
-        // than 0 — and zero-traffic candidates are common (a host found via labels
-        // that carries no requests). Requiring these discarded every suggestion.
-        reqPerS: z.number().default(0),
-        p99Ms: z.number().default(0),
+        // Numeric evidence is optional because the service omits zero values.
+        // Preserve absence so the UI does not present missing telemetry as zero.
+        reqPerS: z.number().optional(),
+        errorRatio: z.number().optional(),
+        p99Ms: z.number().optional(),
         statusDistribution: z.record(z.string(), z.number()).default({}),
         families: z.array(z.string()).default([]),
         activitySemantics: z.array(z.string()).default([]),
@@ -125,10 +124,10 @@ export interface ReliabilityOpportunity {
   actionSummary: string;
   estimatedUsage?: string;
   sortScore: number;
-  requestVolume: string;
-  requestRate: string;
-  errorRate: string;
-  p99: string;
+  requestVolume?: string;
+  requestRate?: string;
+  errorRate?: string;
+  p99?: string;
   evidencePrototype?: ReliabilityEvidencePrototype;
   proposedCheck: ProposedHttpCheckDraft;
 }
