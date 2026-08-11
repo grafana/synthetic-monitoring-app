@@ -237,8 +237,6 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
   const isFetching = isCheckConfigsFetching || isExecutionDurationLogsFetching || isMaxProbeDurationFetching;
   const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
 
-  // every event fired inside the explorer (including feature feedback) carries the
-  // explorer's display state, so reactions can be correlated with what the user saw
   useTrackingScope({
     tpe_view_mode: viewMode,
     tpe_visible_timepoints: timepointsDisplayCount,
