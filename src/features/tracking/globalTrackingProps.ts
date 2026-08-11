@@ -14,13 +14,15 @@ const routeObjects = PAGE_ROUTE_PATTERNS.map((path) => ({ path }));
 /**
  * Context properties automatically attached to every tracking event (see
  * `createEventFactory`). Resolved lazily at the moment an event fires so values are
- * always current without needing resize/navigation listeners. Each resolver is guarded
+ * always current without needing navigation listeners. Each resolver is guarded
  * individually: enrichment must never break the interaction being tracked, and one
  * failing resolver shouldn't take the others down with it.
+ *
+ * Note the viewport is deliberately not included: Rudderstack captures it natively on
+ * every event (`context.screen.innerWidth`/`innerHeight`).
  */
 export function getGlobalTrackingProps(): TrackingEventProps {
   return {
-    ...guard(getViewportProps),
     ...guard(getPageProps),
     ...guard(getCheckCountProps),
   };
@@ -32,13 +34,6 @@ function guard(resolve: () => TrackingEventProps): TrackingEventProps {
   } catch {
     return {};
   }
-}
-
-function getViewportProps(): TrackingEventProps {
-  return {
-    screen_width: window.innerWidth,
-    screen_height: window.innerHeight,
-  };
 }
 
 /**
