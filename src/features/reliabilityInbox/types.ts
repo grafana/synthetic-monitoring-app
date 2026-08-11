@@ -45,6 +45,26 @@ export const reliabilitySuggestionSchema = z
         statusDistribution: z.record(z.string(), z.number()).default({}),
         families: z.array(z.string()).default([]),
         activitySemantics: z.array(z.string()).default([]),
+        window: z
+          .object({
+            from: z.number().int(),
+            to: z.number().int(),
+          })
+          .optional(),
+        datasource: z
+          .object({
+            uid: z.string(),
+            type: z.string(),
+          })
+          .optional(),
+        queries: z
+          .array(
+            z.object({
+              key: z.string(),
+              expr: z.string(),
+            })
+          )
+          .optional(),
       })
       .loose(),
     // Graft-only contract prototype. The production suggestion API does not return this field yet.
@@ -82,6 +102,7 @@ export const reliabilitySuggestionsSchema = z.object({
 });
 
 export type ReliabilitySuggestion = z.infer<typeof reliabilitySuggestionSchema>;
+export type ReliabilityEvidence = ReliabilitySuggestion['evidence'];
 export type ReliabilityEvidencePrototype = z.infer<typeof reliabilityEvidencePrototypeSchema>;
 
 export type OpportunityValue = 'high' | 'medium' | 'lower';
