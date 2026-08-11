@@ -24,7 +24,7 @@ export const Pill = ({ className, icon, color, onClick, children }: PropsWithChi
 const getStyles = (color: string) => (theme: GrafanaTheme2) => ({
   container: css`
     background-color: ${theme.colors.background.primary};
-    border-radius: 2px;
+    border-radius: ${theme.shape.radius.sm};
     padding: ${theme.spacing(0.5)} ${theme.spacing(1)};
     font-weight: ${theme.typography.fontWeightBold};
     font-size: 0.75rem;
