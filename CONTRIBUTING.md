@@ -109,6 +109,14 @@ We make no distinction of what IDE you should be using, however we do have some 
 
 We use both [prettier](https://prettier.io/) and [eslint](https://eslint.org/) with the [@grafana/eslint-config package](https://www.npmjs.com/package/@grafana/eslint-config) which [we have chosen to extend](./.eslintrc.js). Our CI/CD pipelines expect these rules to be adherred to and will fail any submitted PRs if not. We recommend you enable format on save to ensure you are always adhering to these rules with as little friction as possible.
 
+### Testing
+
+We use Jest with React Testing Library and MSW. Our suite behaves like a pseudo e2e framework — real UI journeys against mocked APIs.
+
+See [docs/development/testing.md](./docs/development/testing.md) for expectations, examples, and how to use `src/test/` (custom render, handlers, fixtures, journey helpers).
+
+Run tests with `yarn test` or a single file: `yarn test EditProbe.test.tsx`.
+
 #### File nesting
 
 We use the file nesting feature to help manage the growing number of files in the project. We recommend you enable this feature in your IDE to help keep your project organized and add the following rule (example is for VSCode):
@@ -148,8 +156,8 @@ const buttonLabel = t('componentName.buttonLabel', 'Default text');
 **Example:**
 
 ```tsx
-const activeFiltersText = t('checkFilterGroup.activeFiltersText', '({{activeFilters}} active)', { 
-  activeFilters: activeFilters.length 
+const activeFiltersText = t('checkFilterGroup.activeFiltersText', '({{activeFilters}} active)', {
+  activeFilters: activeFilters.length,
 });
 ```
 
@@ -162,9 +170,7 @@ import { Trans } from '@grafana/i18n';
 
 return (
   <button>
-    <Trans i18nKey="componentName.buttonText">
-      Default button text
-    </Trans>
+    <Trans i18nKey="componentName.buttonText">Default button text</Trans>
   </button>
 );
 ```
@@ -173,9 +179,7 @@ return (
 
 ```tsx
 <LinkButton>
-  <Trans i18nKey="checks.numberOfChecks">
-    Number of checks: {{ numOfChecks: checks.length }}
-  </Trans>
+  <Trans i18nKey="checks.numberOfChecks">Number of checks: {{ numOfChecks: checks.length }}</Trans>
 </LinkButton>
 ```
 
@@ -268,4 +272,3 @@ The i18next configuration is defined in `i18next.config.ts`:
 - Keep translation keys focused and specific to avoid reuse conflicts
 - For text with variables, use clear variable names (e.g., `{{activeFilters}}` not `{{count}}`)
 - Test your changes with different languages enabled in Grafana
-
