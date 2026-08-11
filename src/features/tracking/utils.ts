@@ -18,10 +18,7 @@ export const setTrackingBaseProps = (props: TrackingEventProps) => {
   baseProps = omitUndefined(props);
 };
 
-// Props contributed by mounted components, keyed per useTrackingScope instance and
-// merged in registration order. Concurrent scopes must use disjoint prop namespaces
-// (`check_*`, `time_range_*`, ...) because collision order between them follows effect
-// timing and is not a supported semantic.
+// Scope props merge in registration order; scopes must use disjoint prop namespaces (see useTrackingScope)
 const trackingScopes = new Map<symbol, TrackingEventProps>();
 
 /** Prefer the useTrackingScope hook over calling this directly. */
@@ -48,9 +45,7 @@ export const createEventFactory = (product: string, featureName: string) => {
   return <P extends TrackingEventProps | undefined = undefined>(eventName: string) =>
     (props: P extends undefined ? void : P) => {
       const eventNameToReport = `${product}_${featureName}_${eventName}`;
-      // global context props are resolved at fire time so they are always current;
-      // more specific props win on key collision:
-      // event props > scope props > base props > global props
+      // more specific props win on key collision: event props > scope props > base props > global props
       reportInteraction(eventNameToReport, {
         ...omitUndefined(getGlobalTrackingProps()),
         ...baseProps,

@@ -74,8 +74,6 @@ const matchesAlertsFilter = (check: Check, alertsFilter: CheckAlertsFilter) => {
     return true;
   }
 
-  // Mirror `AlertStatus` behavior: any per-check alerts OR any legacy alert sensitivity (including custom strings),
-  // treating `AlertSensitivity.None` as "no alerts configured".
   const hasAlerts = checkHasAlerting(check);
 
   if (alertsFilter === 'with') {

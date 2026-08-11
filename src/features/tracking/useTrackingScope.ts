@@ -9,8 +9,7 @@ import { registerTrackingScope, TrackingEventProps, unregisterTrackingScope } fr
  *
  * Concurrently mounted scopes must use disjoint prop namespaces (`check_*`,
  * `time_range_*`, `tpe_*`, ...): collision order between scopes follows effect timing
- * (child effects run before parent effects) and is not a supported semantic. Explicit
- * event props always win over scope props on key collision.
+ * and is not a supported semantic. Explicit event props always win over scope props.
  */
 export function useTrackingScope(props: TrackingEventProps) {
   const [id] = useState(() => Symbol('tracking-scope'));
