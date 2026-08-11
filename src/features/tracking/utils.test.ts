@@ -84,11 +84,11 @@ describe('createEventFactory', () => {
   });
 
   it('includes global context props on every event', () => {
-    getGlobalTrackingPropsMock.mockReturnValue({ screen_width: 1440, page: 'checks/:id' });
+    getGlobalTrackingPropsMock.mockReturnValue({ check_count: 12, page: 'checks/:id' });
     trackSampleEvent({ checkType: 'browser' });
 
     expect(reportInteraction).toHaveBeenCalledWith('synthetic-monitoring_test_feature_sample_event', {
-      screen_width: 1440,
+      check_count: 12,
       page: 'checks/:id',
       checkType: 'browser',
     });
