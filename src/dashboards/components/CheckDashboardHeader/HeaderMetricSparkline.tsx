@@ -1,19 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { FieldSparkline, GrafanaTheme2 } from '@grafana/data';
-import {
-  AxisPlacement,
-  GraphDrawStyle,
-  ScaleDirection,
-  ScaleOrientation,
-  VisibilityMode,
-} from '@grafana/schema';
-import {
-  Sparkline,
-  UPlotChart,
-  UPlotConfigBuilder,
-  useStyles2,
-  useTheme2,
-} from '@grafana/ui';
+import { AxisPlacement, GraphDrawStyle, ScaleDirection, ScaleOrientation, VisibilityMode } from '@grafana/schema';
+import { Sparkline, UPlotChart, UPlotConfigBuilder, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { HealthState } from './health/checkHealth.types';
@@ -131,9 +119,7 @@ export function HeaderMetricSparkline({
 
   const primaryFacet = createElapsedFacet(sparkline);
   const referenceFacet =
-    visual.kind === 'overlay'
-      ? createElapsedFacet(visual.series)
-      : createAverageFacet(visual.value);
+    visual.kind === 'overlay' ? createElapsedFacet(visual.series) : createAverageFacet(visual.value);
   const sharedValues = [...finiteFacetValues(primaryFacet), ...finiteFacetValues(referenceFacet)];
   const { min: yMin, max: yMax } = getComparisonYRange(sparkline, sharedValues);
   const plotData: ComparisonPlotData = [null, primaryFacet, referenceFacet];
@@ -141,31 +127,15 @@ export function HeaderMetricSparkline({
   const comparisonLabel = `Current range compared to ${visual.label}`;
 
   return (
-    <div
-      aria-label={comparisonLabel}
-      className={styles.container}
-      data-testid="header-metric-sparkline"
-      role="group"
-    >
+    <div aria-label={comparisonLabel} className={styles.container} data-testid="header-metric-sparkline" role="group">
       {width > 0 ? (
         <>
-          <span className={styles.visuallyHidden}>
-            {seriesDescription('Current range', primaryFacet, 'current')}
-          </span>
-          <span className={styles.visuallyHidden}>
-            {seriesDescription(visual.label, referenceFacet, 'reference')}
-          </span>
+          <span className={styles.visuallyHidden}>{seriesDescription('Current range', primaryFacet, 'current')}</span>
+          <span className={styles.visuallyHidden}>{seriesDescription(visual.label, referenceFacet, 'reference')}</span>
         </>
       ) : null}
       <div className={styles.plot} data-testid="header-metric-sparkline-plot" ref={containerRef}>
-        {width > 0 ? (
-          <UPlotChart
-            config={plotConfig}
-            data={plotData}
-            height={SPARKLINE_HEIGHT}
-            width={width}
-          />
-        ) : null}
+        {width > 0 ? <UPlotChart config={plotConfig} data={plotData} height={SPARKLINE_HEIGHT} width={width} /> : null}
       </div>
     </div>
   );
@@ -176,9 +146,7 @@ type ComparisonPlotData = [null, ComparisonFacet, ComparisonFacet];
 
 function createElapsedFacet(sparkline: FieldSparkline): ComparisonFacet {
   const values = valuesToArray(sparkline.y.values);
-  const rawTimes = sparkline.x
-    ? valuesToArray(sparkline.x.values)
-    : values.map((_, index) => index);
+  const rawTimes = sparkline.x ? valuesToArray(sparkline.x.values) : values.map((_, index) => index);
   const timeRange = getFacetTimeRange(sparkline, rawTimes);
   const x: number[] = [];
   const y: Array<number | null> = [];
@@ -186,20 +154,11 @@ function createElapsedFacet(sparkline: FieldSparkline): ComparisonFacet {
   values.forEach((value, index) => {
     const at = rawTimes[index];
 
-    if (
-      typeof at !== 'number' ||
-      !Number.isFinite(at) ||
-      at < timeRange.min ||
-      at > timeRange.max
-    ) {
+    if (typeof at !== 'number' || !Number.isFinite(at) || at < timeRange.min || at > timeRange.max) {
       return;
     }
 
-    x.push(
-      timeRange.max === timeRange.min
-        ? 0.5
-        : (at - timeRange.min) / (timeRange.max - timeRange.min)
-    );
+    x.push(timeRange.max === timeRange.min ? 0.5 : (at - timeRange.min) / (timeRange.max - timeRange.min));
     y.push(typeof value === 'number' && Number.isFinite(value) ? value : null);
   });
 
@@ -223,10 +182,7 @@ function valuesToArray(values: ArrayLike<unknown> | { toArray: () => unknown[] }
     : Array.from(values as ArrayLike<unknown>);
 }
 
-function getFacetTimeRange(
-  sparkline: FieldSparkline,
-  rawTimes: unknown[]
-): { min: number; max: number } {
+function getFacetTimeRange(sparkline: FieldSparkline, rawTimes: unknown[]): { min: number; max: number } {
   const configuredMin = sparkline.timeRange?.from.valueOf();
   const configuredMax = sparkline.timeRange?.to.valueOf();
 
@@ -240,13 +196,9 @@ function getFacetTimeRange(
     return { min: configuredMin, max: configuredMax };
   }
 
-  const finiteTimes = rawTimes.filter(
-    (value): value is number => typeof value === 'number' && Number.isFinite(value)
-  );
+  const finiteTimes = rawTimes.filter((value): value is number => typeof value === 'number' && Number.isFinite(value));
 
-  return finiteTimes.length > 0
-    ? { min: Math.min(...finiteTimes), max: Math.max(...finiteTimes) }
-    : { min: 0, max: 0 };
+  return finiteTimes.length > 0 ? { min: Math.min(...finiteTimes), max: Math.max(...finiteTimes) } : { min: 0, max: 0 };
 }
 
 function createComparisonPlotConfig(
@@ -315,10 +267,7 @@ function createComparisonPlotConfig(
   return config;
 }
 
-function getComparisonYRange(
-  sparkline: FieldSparkline,
-  values: number[]
-): { min: number; max: number } {
+function getComparisonYRange(sparkline: FieldSparkline, values: number[]): { min: number; max: number } {
   const configuredMin = sparkline.y.config.min;
   const configuredMax = sparkline.y.config.max;
   const min =
@@ -337,11 +286,7 @@ function getComparisonYRange(
   return { min, max };
 }
 
-function seriesDescription(
-  label: string,
-  facet: ComparisonFacet,
-  kind: 'current' | 'reference'
-): string {
+function seriesDescription(label: string, facet: ComparisonFacet, kind: 'current' | 'reference'): string {
   const pointCount = finiteFacetValues(facet).length;
 
   if (pointCount === 0) {

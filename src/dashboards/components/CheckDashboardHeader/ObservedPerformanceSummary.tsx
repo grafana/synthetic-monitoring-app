@@ -72,18 +72,24 @@ const getStyles = (theme: GrafanaTheme2) => ({
   metricCell: css({
     display: 'flex',
     minWidth: 0,
+    // Keep padding and border box identical on every cell so HeaderMetric
+    // container queries see the same inline size across the row.
     padding: theme.spacing(0, 1.5),
-    '&:first-child': { paddingLeft: 0 },
-    '&:last-child': { paddingRight: 0 },
-    '&:not(:first-child)': { borderLeft: `1px solid ${theme.colors.border.weak}` },
+    borderLeft: '1px solid transparent',
+    '&:not(:first-child)': {
+      borderLeftColor: theme.colors.border.weak,
+    },
     [`@container (max-width: ${METRICS_STACK_MAX_WIDTH})`]: {
       padding: theme.spacing(1.5),
-      '&:nth-child(odd)': { borderLeft: 0, paddingLeft: 0 },
-      '&:nth-child(even)': { borderLeft: `1px solid ${theme.colors.border.weak}`, paddingRight: 0 },
-      '&:nth-child(-n + 2)': { paddingTop: 0 },
+      borderTop: '1px solid transparent',
+      '&:nth-child(odd)': {
+        borderLeftColor: 'transparent',
+      },
+      '&:nth-child(even)': {
+        borderLeftColor: theme.colors.border.weak,
+      },
       '&:nth-child(n + 3)': {
-        borderTop: `1px solid ${theme.colors.border.weak}`,
-        paddingBottom: 0,
+        borderTopColor: theme.colors.border.weak,
       },
     },
   }),

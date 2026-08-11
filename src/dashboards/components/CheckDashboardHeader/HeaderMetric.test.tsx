@@ -6,30 +6,17 @@ import { useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery'
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 
 import { HeaderMetricDefinition } from './CheckDashboardHeader.types';
-import {
-  HEALTH_EXPLANATION_PRIORITY,
-  HealthState,
-  MetricAlertModel,
-} from './health/checkHealth.types';
+import { HEALTH_EXPLANATION_PRIORITY, HealthState, MetricAlertModel } from './health/checkHealth.types';
 
 import { resolveCheckHealth } from './health/checkHealth';
 import { CheckHealthProvider } from './health/CheckHealthContext';
 import { HeaderMetric } from './HeaderMetric';
-import {
-  HeaderMetricComparisonVisual,
-  useHeaderMetricComparison,
-} from './useHeaderMetricComparison';
+import { HeaderMetricComparisonVisual, useHeaderMetricComparison } from './useHeaderMetricComparison';
 
 jest.mock('dashboards/hooks/useDashboardPanelQuery', () => ({ useDashboardPanelQuery: jest.fn() }));
 jest.mock('./useHeaderMetricComparison', () => ({ useHeaderMetricComparison: jest.fn() }));
 jest.mock('./HeaderMetricSparkline', () => ({
-  HeaderMetricSparkline: ({
-    state,
-    visual,
-  }: {
-    state?: HealthState;
-    visual?: HeaderMetricComparisonVisual;
-  }) => (
+  HeaderMetricSparkline: ({ state, visual }: { state?: HealthState; visual?: HeaderMetricComparisonVisual }) => (
     <div
       data-health-state={state}
       data-testid="header-metric-sparkline"
@@ -46,7 +33,13 @@ const metric: HeaderMetricDefinition = {
   id: 'uptime',
   label: 'Uptime',
   description: 'Uptime description',
-  definition: { id: 'uptime', pluginId: 'stat', targets: [], fieldConfig: { defaults: {}, overrides: [] }, options: {} },
+  definition: {
+    id: 'uptime',
+    pluginId: 'stat',
+    targets: [],
+    fieldConfig: { defaults: {}, overrides: [] },
+    options: {},
+  },
   selectValue: (data) => data.series[0]?.fields[0]?.values[0] ?? null,
   formatValue: (value) => (value === null ? 'N/A' : `${(value * 100).toFixed(2)}%`),
 };
@@ -54,7 +47,10 @@ const metric: HeaderMetricDefinition = {
 function data(state: LoadingState, value?: number): PanelData {
   return {
     state,
-    series: value === undefined ? [] : [{ fields: [{ name: 'value', type: FieldType.number, values: [value], config: {} }], length: 1 }],
+    series:
+      value === undefined
+        ? []
+        : [{ fields: [{ name: 'value', type: FieldType.number, values: [value], config: {} }], length: 1 }],
     timeRange: { from: dateTime(0), to: dateTime(1), raw: { from: dateTime(0), to: dateTime(1) } },
   };
 }
@@ -148,12 +144,14 @@ describe('HeaderMetric', () => {
     expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('99.98%');
   });
 
-  it('renders loading when no usable value has arrived', () => {
+  it('shows the dataless value while the first result is still loading', () => {
     jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Loading), true));
 
     render(<HeaderMetric metric={metric} />);
 
-    expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('Loading');
+    expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('N/A');
+    expect(screen.getByTestId('inline-loading-bar')).toBeVisible();
+    expect(screen.getByLabelText('Updating Uptime')).toBeVisible();
   });
 
   it('places the metric alert control beside the metric information when a check is available', () => {
@@ -170,7 +168,24 @@ describe('HeaderMetric', () => {
     render(<HeaderMetric metric={metric} />);
 
     expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('99.00%');
+    expect(screen.getByTestId('inline-loading-bar')).toBeVisible();
     expect(screen.getByLabelText('Updating Uptime')).toBeVisible();
+    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+  });
+
+  it('keeps the last settled value when a refresh briefly clears the reading', () => {
+    jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.99), false));
+
+    const { rerender } = render(<HeaderMetric metric={metric} />);
+
+    expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('99.00%');
+
+    jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Loading), true));
+    rerender(<HeaderMetric metric={metric} />);
+
+    expect(screen.getByRole('region', { name: 'Uptime' })).toHaveTextContent('99.00%');
+    expect(screen.getByTestId('inline-loading-bar')).toBeVisible();
+    expect(screen.queryByText('N/A')).not.toBeInTheDocument();
   });
 
   it('does not apply legacy threshold colours to factual values', () => {
@@ -193,8 +208,7 @@ describe('HeaderMetric', () => {
 
     renderWithHealth({ rangeState });
 
-    const expectedColor =
-      tone === 'text' ? result.current.colors.text.primary : result.current.colors[tone].text;
+    const expectedColor = tone === 'text' ? result.current.colors.text.primary : result.current.colors[tone].text;
     expect(screen.getByText('96.80%')).toHaveStyle({ color: expectedColor });
   });
 
@@ -208,9 +222,7 @@ describe('HeaderMetric', () => {
 
     const health = screen.getByTestId('header-metric-health');
     expect(health).toContainElement(screen.getByRole('status', { name: 'Uptime trend' }));
-    expect(health).toHaveTextContent(
-      'Recovered earlier in this range'
-    );
+    expect(health).toHaveTextContent('Recovered earlier in this range');
   });
 
   it('omits the trend line when the health provider supplies no trend', () => {
@@ -257,9 +269,7 @@ describe('HeaderMetric', () => {
     const { rerender } = render(<HeaderMetric metric={metricWithSparkline} />);
 
     expect(screen.getByTestId('header-metric-sparkline')).toBeVisible();
-    expect(screen.getByTestId('header-metric-chart')).toContainElement(
-      screen.getByTestId('header-metric-sparkline')
-    );
+    expect(screen.getByTestId('header-metric-chart')).toContainElement(screen.getByTestId('header-metric-sparkline'));
 
     jest
       .mocked(useDashboardPanelQuery)
@@ -298,10 +308,7 @@ describe('HeaderMetric', () => {
       metricDefinition: metricWithSparkline,
     });
 
-    expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute(
-      'data-health-state',
-      'unhealthy'
-    );
+    expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-health-state', 'unhealthy');
   });
 
   it('replaces the selected-range health trend with comparison evidence while retaining alerts', () => {
@@ -351,7 +358,7 @@ describe('HeaderMetric', () => {
     expect(screen.getByTestId('header-metric-sparkline')).toHaveAttribute('data-health-state', 'unhealthy');
     expect(screen.queryByRole('status', { name: 'Uptime trend' })).not.toBeInTheDocument();
     expect(screen.getByTestId('header-metric-health')).toContainElement(
-      screen.getByRole('button', { name: /Uptime comparison: 3.1 pp lower/ })
+      screen.getByRole('status', { name: /Uptime comparison: 3.1 pp lower/ })
     );
     expect(
       screen.getByRole('status', {
@@ -360,7 +367,7 @@ describe('HeaderMetric', () => {
     ).toBeVisible();
   });
 
-  it('renders the comparison in the status slot instead of beneath the primary value', () => {
+  it('shows the reference with the primary reading and the difference in the status slot', () => {
     jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.968), false));
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'ready',
@@ -377,19 +384,23 @@ describe('HeaderMetric', () => {
 
     const primary = screen.getByText('96.80%');
     const reading = screen.getByTestId('header-metric-reading');
+    const reference = screen.getByTestId('header-metric-comparison-value');
     expect(primary.tagName).toBe('STRONG');
     expect(primary).not.toHaveTextContent('Previous period');
     expect(reading).toContainElement(primary);
-    const comparisonButton = screen.getByRole('button', {
+    expect(reading).toContainElement(reference);
+    expect(reference).toHaveTextContent('99.90%');
+    const difference = screen.getByRole('status', {
       name: /Uptime comparison: 3.1 pp lower/,
     });
-    expect(reading).not.toContainElement(comparisonButton);
-    expect(screen.getByTestId('header-metric-health')).toContainElement(comparisonButton);
+    expect(reading).not.toContainElement(difference);
+    expect(screen.getByTestId('header-metric-health')).toContainElement(difference);
     expect(screen.getByTestId('header-metric-health')).toHaveTextContent('Compared to Previous period');
+    expect(screen.getByTestId('header-metric-health')).not.toHaveTextContent('99.90%');
     expect(screen.queryByText('96.80% selected · 99.90% reference')).not.toBeInTheDocument();
   });
 
-  it('announces loading and unavailable comparisons in the status slot without replacing the primary value', () => {
+  it('shows a top loading bar for comparison fetches and keeps unavailable copy in the status slot', () => {
     jest.mocked(useDashboardPanelQuery).mockReturnValue(queryResult(data(LoadingState.Done, 0.968), false));
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
       state: 'loading',
@@ -397,12 +408,10 @@ describe('HeaderMetric', () => {
 
     const { rerender } = render(<HeaderMetric metric={metric} />);
 
-    const loading = screen.getByTestId('header-metric-comparison-loading');
-    expect(screen.getByTestId('header-metric-reading')).not.toContainElement(loading);
-    expect(screen.getByTestId('header-metric-health')).toContainElement(loading);
-    expect(loading).toHaveAttribute('aria-live', 'polite');
-    expect(loading).toHaveTextContent('Loading comparison');
-    expect(loading.querySelector('svg')).toBeInTheDocument();
+    expect(screen.getByTestId('inline-loading-bar')).toBeVisible();
+    expect(screen.getByLabelText('Updating Uptime')).toBeVisible();
+    expect(screen.queryByTestId('header-metric-health')).not.toBeInTheDocument();
+    expect(screen.queryByText('Loading comparison')).not.toBeInTheDocument();
     expect(screen.getByText('96.80%')).toBeVisible();
 
     jest.mocked(useHeaderMetricComparison).mockReturnValue({
@@ -473,6 +482,6 @@ describe('HeaderMetric', () => {
     );
 
     expect(screen.getByText('96.80%')).toHaveStyle({ color: result.current.colors.error.text });
-    expect(screen.getByRole('button', { name: /Uptime comparison: 8% faster/ })).toBeVisible();
+    expect(screen.getByRole('status', { name: /Uptime comparison: 8% faster/ })).toBeVisible();
   });
 });

@@ -25,7 +25,13 @@ const uptimeMetric: HeaderMetricDefinition<typeof BASIC_HTTP_CHECK> = {
   id: 'uptime',
   label: 'Uptime',
   description: 'Uptime description',
-  definition: { id: 'uptime', pluginId: 'stat', targets: [], fieldConfig: { defaults: {}, overrides: [] }, options: {} },
+  definition: {
+    id: 'uptime',
+    pluginId: 'stat',
+    targets: [],
+    fieldConfig: { defaults: {}, overrides: [] },
+    options: {},
+  },
   selectValue: () => null,
   formatValue: () => 'N/A',
 };
@@ -85,6 +91,36 @@ describe('ObservedPerformanceSummary', () => {
     expect(screen.queryByTestId('live-incident-prompt')).not.toBeInTheDocument();
   });
 
+  it('keeps equal padding and border box on every metric cell', () => {
+    const fourMetricProfile: CheckDashboardHeaderProfile<typeof BASIC_HTTP_CHECK> = {
+      ...profile,
+      getMetrics: () =>
+        ['uptime', 'reachability', 'latency', 'ssl'].map((id) => ({
+          ...uptimeMetric,
+          id,
+          label: id,
+        })),
+    };
+
+    renderSummary(fourMetricProfile);
+
+    const cells = screen.getAllByTestId('observed-performance-metric');
+    expect(cells).toHaveLength(4);
+
+    const boxes = cells.map((cell) => {
+      const style = getComputedStyle(cell);
+      return {
+        paddingLeft: style.paddingLeft,
+        paddingRight: style.paddingRight,
+        borderLeftWidth: style.borderLeftWidth,
+      };
+    });
+
+    expect(boxes.every((box) => box.paddingLeft === boxes[0]!.paddingLeft)).toBe(true);
+    expect(boxes.every((box) => box.paddingRight === boxes[0]!.paddingRight)).toBe(true);
+    expect(boxes.every((box) => box.borderLeftWidth === boxes[0]!.borderLeftWidth)).toBe(true);
+  });
+
   it('installs an opted-in profile health provider around the summary and metrics', () => {
     const model = resolveCheckHealth({
       metricIds: ['uptime'],
@@ -106,12 +142,8 @@ describe('ObservedPerformanceSummary', () => {
     expect(screen.getByTestId('health-provider')).toContainElement(
       screen.getByRole('status', { name: 'Check health' })
     );
-    expect(screen.getByTestId('health-provider')).toContainElement(
-      screen.getByTestId('observed-performance-surface')
-    );
-    expect(screen.getByTestId('health-provider')).toContainElement(
-      screen.getByTestId('live-incident-prompt')
-    );
+    expect(screen.getByTestId('health-provider')).toContainElement(screen.getByTestId('observed-performance-surface'));
+    expect(screen.getByTestId('health-provider')).toContainElement(screen.getByTestId('live-incident-prompt'));
   });
 
   it('shows healthy now while retaining an unhealthy selected-range value and recovery trend', () => {
@@ -160,9 +192,7 @@ describe('ObservedPerformanceSummary', () => {
     const healthProfile: CheckDashboardHeaderProfile<typeof BASIC_HTTP_CHECK> = {
       ...profile,
       getMetrics: () => [reachabilityMetric],
-      HealthProvider: ({ children }) => (
-        <CheckHealthProvider value={model}>{children}</CheckHealthProvider>
-      ),
+      HealthProvider: ({ children }) => <CheckHealthProvider value={model}>{children}</CheckHealthProvider>,
     };
     jest.mocked(useDashboardPanelQuery).mockReturnValue({
       panelData: {

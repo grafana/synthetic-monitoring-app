@@ -2,12 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import {
-  HEALTH_EXPLANATION_PRIORITY,
-  HealthEvidence,
-  HealthState,
-  MetricAlertModel,
-} from './health/checkHealth.types';
+import { HEALTH_EXPLANATION_PRIORITY, HealthEvidence, HealthState, MetricAlertModel } from './health/checkHealth.types';
 import type { AppTimeRangeMode } from 'contexts/AppTimeProvider.utils';
 
 import { resolveCheckHealth } from './health/checkHealth';
@@ -102,7 +97,7 @@ describe('AlertHealthSummary', () => {
     expect(status).not.toHaveTextContent(/^Unhealthy/);
   });
 
-  it('shows no more than two leading reasons and retains the full evidence list in a toggletip', async () => {
+  it('shows no more than two leading reasons and retains the full evidence list in a drawer', async () => {
     const user = userEvent.setup();
 
     renderSummary({
@@ -120,10 +115,11 @@ describe('AlertHealthSummary', () => {
 
     await user.click(screen.getByRole('button', { name: 'View health evidence' }));
 
-    expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Baseline regression');
-    expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Baseline regression detail');
-    expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Evaluation point');
-    expect(screen.getByTestId('toggletip-content')).toHaveTextContent('Selected range');
+    const drawer = screen.getByRole('dialog', { name: 'Health evidence' });
+    expect(drawer).toHaveTextContent('Baseline regression');
+    expect(drawer).toHaveTextContent('Baseline regression detail');
+    expect(drawer).toHaveTextContent('Evaluation point');
+    expect(drawer).toHaveTextContent('Selected range');
   });
 
   it('always reports how many alerts fired in the selected range', () => {
@@ -172,13 +168,13 @@ describe('AlertHealthSummary', () => {
 
     await user.click(screen.getByRole('button', { name: 'View health evidence' }));
 
-    const tip = screen.getByTestId('toggletip-content');
-    expect(tip).toHaveTextContent('Signal');
-    expect(tip).toHaveTextContent('Source');
-    expect(tip).toHaveTextContent('Baseline / threshold');
-    expect(tip).toHaveTextContent('State');
-    expect(tip).toHaveTextContent('Alert rule');
-    expect(tip).toHaveTextContent('Comparison');
+    const drawer = screen.getByRole('dialog', { name: 'Health evidence' });
+    expect(drawer).toHaveTextContent('Signal');
+    expect(drawer).toHaveTextContent('Source');
+    expect(drawer).toHaveTextContent('Baseline / threshold');
+    expect(drawer).toHaveTextContent('State');
+    expect(drawer).toHaveTextContent('Alert rule');
+    expect(drawer).toHaveTextContent('Comparison');
   });
 
   it('shows selected-range qualifiers without replacing the known health state', () => {
@@ -264,10 +260,10 @@ describe('AlertHealthSummary', () => {
 
     await user.click(screen.getByRole('button', { name: 'View health evidence' }));
 
-    const tip = screen.getByTestId('toggletip-content');
-    expect(tip).toHaveTextContent('Evaluation point');
-    expect(tip).toHaveTextContent('Selected range');
-    // Full evidence tip still lists both scopes even when the status bar is deduped.
-    expect(tip.textContent?.match(/SSL expiry: certificate expires in under 7 days detail/g)).toHaveLength(2);
+    const drawer = screen.getByRole('dialog', { name: 'Health evidence' });
+    expect(drawer).toHaveTextContent('Evaluation point');
+    expect(drawer).toHaveTextContent('Selected range');
+    // Full evidence drawer still lists both scopes even when the status bar is deduped.
+    expect(drawer.textContent?.match(/SSL expiry: certificate expires in under 7 days detail/g)).toHaveLength(2);
   });
 });

@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2, IconName } from '@grafana/data';
-import { Icon, useStyles2 } from '@grafana/ui';
+import { Drawer, Icon, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { HealthEvidence, HealthEvidenceKind, HealthState } from './health/checkHealth.types';
 import type { AppTimeRangeMode } from 'contexts/AppTimeProvider.utils';
-import { Toggletip } from 'components/Toggletip';
 
 import { useCheckHealth } from './health/CheckHealthContext';
 import { CHECK_DASHBOARD_PAGE_GUTTER } from './CheckDashboardLayout.constants';
@@ -158,6 +157,7 @@ function EvidenceTable({
 export function AlertHealthSummary() {
   const styles = useStyles2(getStyles);
   const model = useCheckHealth();
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const visual = STATUS_VISUAL[model.state];
   const evaluationEvidence = model.evidence.filter((item) => item.scope === 'evaluation');
   const rangeEvidence = model.evidence.filter((item) => item.scope === 'range');
@@ -181,12 +181,14 @@ export function AlertHealthSummary() {
             const tier = getSourceTier(reason.kind);
 
             return (
-              <span
-                className={reason.scope === 'range' ? styles.rangeReason : styles.reason}
-                key={reason.id}
-              >
+              <span className={reason.scope === 'range' ? styles.rangeReason : styles.reason} key={reason.id}>
                 <span aria-hidden>·</span>{' '}
-                <Icon aria-hidden className={cx(styles.tierIcon, tierIconClass[tier])} name={SOURCE_TIER[tier].icon} size="xs" />
+                <Icon
+                  aria-hidden
+                  className={cx(styles.tierIcon, tierIconClass[tier])}
+                  name={SOURCE_TIER[tier].icon}
+                  size="xs"
+                />
                 <span className={styles.srOnly}>{SOURCE_TIER[tier].label} signal: </span>
                 {reason.summary}
               </span>
@@ -202,36 +204,37 @@ export function AlertHealthSummary() {
             {getAlertsFiredLabel(model.alertFireCount)}
           </span>
         </div>
-        <Toggletip
-          content={
-            <div className={styles.evidence}>
-              <strong>Health evidence</strong>
-              <EvidenceTable
-                emptyLabel="No evaluation-point evidence is available."
-                heading="Evaluation point"
-                items={evaluationEvidence}
-                styles={styles}
-              />
-              <EvidenceTable
-                emptyLabel="No selected-range evidence is available."
-                heading="Selected range"
-                items={rangeEvidence}
-                styles={styles}
-              />
-              <div className={styles.evidenceFooter}>
-                <Icon aria-hidden name="bell" size="sm" />
-                <span>{getAlertsFiredLabel(model.alertFireCount)}</span>
-              </div>
-            </div>
-          }
-          maxWidth="100%"
-          width={560}
+        <button
+          aria-label="View health evidence"
+          className={styles.evidenceButton}
+          onClick={() => setEvidenceOpen(true)}
+          type="button"
         >
-          <button aria-label="View health evidence" className={styles.evidenceButton} type="button">
-            <Icon name="list-ul" />
-          </button>
-        </Toggletip>
+          <Icon name="list-ul" />
+        </button>
       </div>
+      {evidenceOpen && (
+        <Drawer onClose={() => setEvidenceOpen(false)} size="md" title="Health evidence">
+          <div className={styles.evidence}>
+            <EvidenceTable
+              emptyLabel="No evaluation-point evidence is available."
+              heading="Evaluation point"
+              items={evaluationEvidence}
+              styles={styles}
+            />
+            <EvidenceTable
+              emptyLabel="No selected-range evidence is available."
+              heading="Selected range"
+              items={rangeEvidence}
+              styles={styles}
+            />
+            <div className={styles.evidenceFooter}>
+              <Icon aria-hidden name="bell" size="sm" />
+              <span>{getAlertsFiredLabel(model.alertFireCount)}</span>
+            </div>
+          </div>
+        </Drawer>
+      )}
     </div>
   );
 }
