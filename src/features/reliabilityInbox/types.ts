@@ -1,32 +1,5 @@
 import { z } from 'zod';
 
-const reliabilityEvidencePrototypeSchema = z
-  .object({
-    kind: z.literal('graft-demo-v1'),
-    window: z.object({
-      label: z.string(),
-      from: z.number().int(),
-      to: z.number().int(),
-    }),
-    exactRequestTotal: z.number().int().nonnegative(),
-    timeline: z.array(
-      z.object({
-        timestamp: z.number().int(),
-        requests: z.number().int().nonnegative(),
-      })
-    ),
-    source: z
-      .object({
-        datasourceUid: z.string(),
-        datasourceType: z.string(),
-        expression: z.string(),
-        from: z.number().int(),
-        to: z.number().int(),
-      })
-      .optional(),
-  })
-  .strict();
-
 export const reliabilitySuggestionSchema = z
   .object({
     id: z.string(),
@@ -67,8 +40,6 @@ export const reliabilitySuggestionSchema = z
           .optional(),
       })
       .loose(),
-    // Graft-only contract prototype. The production suggestion API does not return this field yet.
-    evidencePrototype: reliabilityEvidencePrototypeSchema.optional(),
     reachability: z.string(),
     reachabilitySource: z.string(),
     confidence: z.string(),
@@ -103,7 +74,6 @@ export const reliabilitySuggestionsSchema = z.object({
 
 export type ReliabilitySuggestion = z.infer<typeof reliabilitySuggestionSchema>;
 export type ReliabilityEvidence = ReliabilitySuggestion['evidence'];
-export type ReliabilityEvidencePrototype = z.infer<typeof reliabilityEvidencePrototypeSchema>;
 
 export type OpportunityValue = 'high' | 'medium' | 'lower';
 export type OpportunityConfidence = 'high' | 'medium' | 'low';
@@ -149,6 +119,5 @@ export interface ReliabilityOpportunity {
   requestRate?: string;
   errorRate?: string;
   p99?: string;
-  evidencePrototype?: ReliabilityEvidencePrototype;
   proposedCheck: ProposedHttpCheckDraft;
 }

@@ -1,45 +1,31 @@
-import { ReliabilityEvidencePrototype } from './types';
+import { ReliabilityEvidence } from './types';
 
-import { getEvidenceExploreUrl, getEvidencePanelData } from './evidence';
+import { getEvidenceExploreUrl } from './evidence';
 
-const EVIDENCE: ReliabilityEvidencePrototype = {
-  kind: 'graft-demo-v1',
+const EVIDENCE: ReliabilityEvidence = {
+  reqPerS: 12.5,
+  errorRatio: 0.04,
+  p99Ms: 340,
+  statusDistribution: { '200': 12, '500': 0.5 },
+  families: ['http_server_request_duration_seconds_bucket'],
+  activitySemantics: ['requests'],
   window: {
-    label: 'the last 24 hours',
     from: 1_784_800_800_000,
-    to: 1_784_887_200_000,
+    to: 1_784_804_400_000,
   },
-  exactRequestTotal: 14_700,
-  timeline: [
-    { timestamp: 1_784_800_800_000, requests: 5100 },
-    { timestamp: 1_784_804_400_000, requests: 4900 },
-    { timestamp: 1_784_808_000_000, requests: 4700 },
+  datasource: {
+    uid: 'prometheus-uid',
+    type: 'prometheus',
+  },
+  queries: [
+    { key: 'requestRate', expr: 'sum(rate(http_requests_total[1h]))' },
+    { key: 'statusDistribution', expr: 'sum by (status) (rate(http_requests_total[1h]))' },
   ],
 };
 
-describe('Reliability Inbox prototype evidence', () => {
-  it('formats timeline samples as a Grafana time-series frame', () => {
-    const panelData = getEvidencePanelData(EVIDENCE);
-
-    expect(panelData.series).toHaveLength(1);
-    expect(panelData.series[0].fields[0].values).toEqual([1_784_800_800_000, 1_784_804_400_000, 1_784_808_000_000]);
-    expect(panelData.series[0].fields[1].values).toEqual([5100, 4900, 4700]);
-    expect(panelData.series[0].fields[1].config.unit).toBe('short');
-  });
-
-  it('builds a current Explore panes URL only from complete, matching provenance', () => {
-    const evidenceWithSource: ReliabilityEvidencePrototype = {
-      ...EVIDENCE,
-      source: {
-        datasourceUid: 'prometheus-uid',
-        datasourceType: 'prometheus',
-        expression: 'sum(increase(http_requests_total[1h]))',
-        from: EVIDENCE.window.from,
-        to: EVIDENCE.window.to,
-      },
-    };
-
-    const exploreUrl = getEvidenceExploreUrl(evidenceWithSource, 1);
+describe('Reliability Inbox evidence provenance', () => {
+  it('opens every evidence query in one Explore pane', () => {
+    const exploreUrl = getEvidenceExploreUrl(EVIDENCE, 1);
     const search = new URL(exploreUrl!, 'https://example.com').searchParams;
     const panes = JSON.parse(search.get('panes')!);
 
@@ -50,68 +36,36 @@ describe('Reliability Inbox prototype evidence', () => {
       queries: [
         {
           refId: 'A',
-          datasource: {
-            uid: 'prometheus-uid',
-            type: 'prometheus',
-          },
-          expr: 'sum(increase(http_requests_total[1h]))',
+          datasource: { uid: 'prometheus-uid', type: 'prometheus' },
+          expr: 'sum(rate(http_requests_total[1h]))',
+          editorMode: 'code',
+          range: true,
+          instant: false,
+        },
+        {
+          refId: 'B',
+          datasource: { uid: 'prometheus-uid', type: 'prometheus' },
+          expr: 'sum by (status) (rate(http_requests_total[1h]))',
           editorMode: 'code',
           range: true,
           instant: false,
         },
       ],
       range: {
-        from: String(EVIDENCE.window.from),
-        to: String(EVIDENCE.window.to),
+        from: String(EVIDENCE.window!.from),
+        to: String(EVIDENCE.window!.to),
       },
     });
   });
 
   it.each([
-    ['source is absent', EVIDENCE, 1],
-    [
-      'source time range differs',
-      {
-        ...EVIDENCE,
-        source: {
-          datasourceUid: 'prometheus-uid',
-          datasourceType: 'prometheus',
-          expression: 'sum(rate(http_requests_total[5m]))',
-          from: EVIDENCE.window.from + 1,
-          to: EVIDENCE.window.to,
-        },
-      },
-      1,
-    ],
-    [
-      'query is empty',
-      {
-        ...EVIDENCE,
-        source: {
-          datasourceUid: 'prometheus-uid',
-          datasourceType: 'prometheus',
-          expression: ' ',
-          from: EVIDENCE.window.from,
-          to: EVIDENCE.window.to,
-        },
-      },
-      1,
-    ],
-    [
-      'organization context is absent',
-      {
-        ...EVIDENCE,
-        source: {
-          datasourceUid: 'prometheus-uid',
-          datasourceType: 'prometheus',
-          expression: 'sum(rate(http_requests_total[5m]))',
-          from: EVIDENCE.window.from,
-          to: EVIDENCE.window.to,
-        },
-      },
-      undefined,
-    ],
+    ['datasource is absent', { ...EVIDENCE, datasource: undefined }, 1],
+    ['window is absent', { ...EVIDENCE, window: undefined }, 1],
+    ['window is invalid', { ...EVIDENCE, window: { from: 2, to: 1 } }, 1],
+    ['queries are absent', { ...EVIDENCE, queries: [] }, 1],
+    ['a query is empty', { ...EVIDENCE, queries: [{ key: 'requestRate', expr: ' ' }] }, 1],
+    ['organization context is absent', EVIDENCE, undefined],
   ])('does not construct a verification link when %s', (_, evidence, orgId) => {
-    expect(getEvidenceExploreUrl(evidence as ReliabilityEvidencePrototype, orgId)).toBeUndefined();
+    expect(getEvidenceExploreUrl(evidence as ReliabilityEvidence, orgId)).toBeUndefined();
   });
 });

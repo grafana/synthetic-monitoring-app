@@ -164,7 +164,6 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion): Rel
     requestRate,
     errorRate: formatErrorRate(suggestion.evidence.errorRatio),
     p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
-    evidencePrototype: suggestion.evidencePrototype,
     proposedCheck,
   };
 }

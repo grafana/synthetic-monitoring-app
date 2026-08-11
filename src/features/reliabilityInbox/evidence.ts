@@ -1,21 +1,17 @@
-import { createDataFrame, dateTime, FieldType, LoadingState, PanelData } from '@grafana/data';
+import { ReliabilityEvidence } from './types';
 
-import { ReliabilityEvidencePrototype } from './types';
-
-export function getEvidenceExploreUrl(
-  evidence: ReliabilityEvidencePrototype,
-  orgId: number | undefined
-): string | undefined {
-  const source = evidence.source;
+export function getEvidenceExploreUrl(evidence: ReliabilityEvidence, orgId: number | undefined): string | undefined {
+  const { datasource, queries, window } = evidence;
 
   if (
-    !source ||
-    !source.datasourceUid.trim() ||
-    !source.datasourceType.trim() ||
-    !source.expression.trim() ||
-    source.from !== evidence.window.from ||
-    source.to !== evidence.window.to ||
-    source.from >= source.to ||
+    !datasource?.uid.trim() ||
+    !datasource.type.trim() ||
+    !window ||
+    !Number.isFinite(window.from) ||
+    !Number.isFinite(window.to) ||
+    window.from >= window.to ||
+    !queries?.length ||
+    queries.some(({ expr }) => !expr.trim()) ||
     !Number.isFinite(orgId)
   ) {
     return undefined;
@@ -23,23 +19,21 @@ export function getEvidenceExploreUrl(
 
   const panes = {
     'reliability-inbox-evidence': {
-      datasource: source.datasourceUid,
-      queries: [
-        {
-          refId: 'A',
-          datasource: {
-            uid: source.datasourceUid,
-            type: source.datasourceType,
-          },
-          expr: source.expression,
-          editorMode: 'code',
-          range: true,
-          instant: false,
+      datasource: datasource.uid,
+      queries: queries.map(({ expr }, index) => ({
+        refId: String.fromCharCode('A'.charCodeAt(0) + index),
+        datasource: {
+          uid: datasource.uid,
+          type: datasource.type,
         },
-      ],
+        expr,
+        editorMode: 'code',
+        range: true,
+        instant: false,
+      })),
       range: {
-        from: String(source.from),
-        to: String(source.to),
+        from: String(window.from),
+        to: String(window.to),
       },
     },
   };
@@ -50,40 +44,4 @@ export function getEvidenceExploreUrl(
   });
 
   return `/explore?${params.toString()}`;
-}
-
-export function getEvidencePanelData(evidence: ReliabilityEvidencePrototype): PanelData {
-  const frame = createDataFrame({
-    name: 'Observed requests',
-    refId: 'A',
-    fields: [
-      {
-        name: 'Time',
-        type: FieldType.time,
-        values: evidence.timeline.map(({ timestamp }) => timestamp),
-      },
-      {
-        name: 'Requests',
-        type: FieldType.number,
-        values: evidence.timeline.map(({ requests }) => requests),
-        config: {
-          displayName: 'Requests',
-          unit: 'short',
-        },
-      },
-    ],
-  });
-
-  return {
-    state: LoadingState.Done,
-    series: [frame],
-    timeRange: {
-      from: dateTime(evidence.window.from),
-      to: dateTime(evidence.window.to),
-      raw: {
-        from: String(evidence.window.from),
-        to: String(evidence.window.to),
-      },
-    },
-  };
 }
