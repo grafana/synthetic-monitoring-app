@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { isEqual } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
@@ -120,6 +121,13 @@ export function ChecksterProvider({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
+
+  useTrackingScope({
+    check_type: checkType,
+    check_state: isNew ? 'new' : 'existing',
+    check_id: check?.id,
+    check_is_duplicate: isDuplicate,
+  });
 
   const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
 
