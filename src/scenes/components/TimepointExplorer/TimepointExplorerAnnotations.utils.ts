@@ -3,6 +3,20 @@ import {
   StatelessTimepoint,
   UnixTimestamp,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { NamedAlertEpisode } from 'dashboards/annotations/annotationEvents';
+
+export function mapAlertEpisodesToCheckEvents(
+  episodes: NamedAlertEpisode[],
+  state: 'firing' | 'pending'
+): CheckEvent[] {
+  return episodes.map(({ alertName, from, to }) => ({
+    label: `${alertName} alert ${state}`,
+    from,
+    to,
+    color: state === 'firing' ? 'red' : 'yellow',
+    zIndex: state === 'firing' ? 4 : 3,
+  }));
+}
 
 export function getCheckEventsInRange(checkEvents: CheckEvent[], timepointsInRange: StatelessTimepoint[]) {
   if (timepointsInRange.length === 0) {

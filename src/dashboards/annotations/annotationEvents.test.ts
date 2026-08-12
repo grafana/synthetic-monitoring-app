@@ -5,6 +5,7 @@ import {
   annotationFramesToNamedAlertEpisodes,
   coalesceAdjacentAnnotationEvents,
   getAlertEpisodeStateAt,
+  mergeAnnotationFrames,
 } from './annotationEvents';
 
 describe('annotationFramesToEvents', () => {
@@ -80,6 +81,25 @@ describe('annotationFramesToEvents', () => {
       [1_000, 1_000],
       [2_000, 2_000],
     ]);
+  });
+});
+
+describe('mergeAnnotationFrames', () => {
+  it('preserves the layer color when merging raw annotation frames', () => {
+    const [frame] = mergeAnnotationFrames(
+      {
+        'Show alerts firing': [
+          {
+            name: 'ALERTS',
+            fields: [{ name: 'Time', type: FieldType.time, config: {}, values: [1_000] }],
+            length: 1,
+          },
+        ],
+      },
+      { 'Show alerts firing': 'red' }
+    );
+
+    expect(frame?.meta?.custom?.annotationColor).toBe('red');
   });
 });
 
@@ -180,25 +200,11 @@ describe('getAlertEpisodeStateAt', () => {
   const alertName = 'ProbeFailedExecutionsTooHigh';
 
   it('treats an episode within the query-step tolerance as firing', () => {
-    expect(
-      getAlertEpisodeStateAt(
-        [{ alertName, from: 1_000, to: 1_900 }],
-        alertName,
-        2_000,
-        200
-      )
-    ).toBe('firing');
+    expect(getAlertEpisodeStateAt([{ alertName, from: 1_000, to: 1_900 }], alertName, 2_000, 200)).toBe('firing');
   });
 
   it('distinguishes resolved and absent episodes', () => {
-    expect(
-      getAlertEpisodeStateAt(
-        [{ alertName, from: 1_000, to: 1_500 }],
-        alertName,
-        2_000,
-        200
-      )
-    ).toBe('resolved');
+    expect(getAlertEpisodeStateAt([{ alertName, from: 1_000, to: 1_500 }], alertName, 2_000, 200)).toBe('resolved');
     expect(getAlertEpisodeStateAt([], alertName, 2_000, 200)).toBe('none');
   });
 

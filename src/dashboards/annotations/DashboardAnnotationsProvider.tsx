@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  PropsWithChildren,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AnnotationQuery, DataFrame } from '@grafana/data';
 import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 
@@ -40,11 +32,7 @@ type DashboardAnnotationsProviderProps = PropsWithChildren<{
   definitions?: AnnotationQuery[];
 }>;
 
-export function DashboardAnnotationsProvider({
-  check,
-  definitions,
-  children,
-}: DashboardAnnotationsProviderProps) {
+export function DashboardAnnotationsProvider({ check, definitions, children }: DashboardAnnotationsProviderProps) {
   const defaultDefinitions = useDashboardContainerAnnotations(check);
   const resolvedDefinitions = definitions ?? defaultDefinitions;
   const timeRange = useDashboardTime();
@@ -115,28 +103,26 @@ export function DashboardAnnotationsProvider({
     const enabledFrames = Object.fromEntries(
       Object.entries(framesByName).filter(([name]) => enabledByName[name] !== false)
     );
+    const colorsByLayer = Object.fromEntries(
+      resolvedDefinitions.map((definition) => [definition.name, definition.iconColor])
+    );
 
     return {
       definitions: resolvedDefinitions,
       enabledByName,
       framesByName,
-      frames: mergeAnnotationFrames(enabledFrames),
+      frames: mergeAnnotationFrames(enabledFrames, colorsByLayer),
       eventsByName: Object.fromEntries(
         Object.entries(framesByName).map(([name, frames]) => [name, annotationFramesToEvents(frames)])
       ),
       alertEpisodesByName: Object.fromEntries(
-        Object.entries(framesByName).map(([name, frames]) => [
-          name,
-          annotationFramesToNamedAlertEpisodes(frames),
-        ])
+        Object.entries(framesByName).map(([name, frames]) => [name, annotationFramesToNamedAlertEpisodes(frames)])
       ),
       setEnabled,
     };
   }, [enabledByName, framesByName, resolvedDefinitions, setEnabled]);
 
-  return (
-    <DashboardAnnotationsContext.Provider value={value}>{children}</DashboardAnnotationsContext.Provider>
-  );
+  return <DashboardAnnotationsContext.Provider value={value}>{children}</DashboardAnnotationsContext.Provider>;
 }
 
 export function useDashboardAnnotationsOptional(): DashboardAnnotationsContextValue | null {
@@ -164,6 +150,21 @@ export function useDashboardAnnotationEventsForTpe() {
   return { firing, pending };
 }
 
+export function useDashboardAlertEpisodesForTpe() {
+  const context = useDashboardAnnotationsOptional();
+  const firingName = 'Show alerts firing';
+  const pendingName = 'Show alerts pending';
+
+  if (!context) {
+    return { firing: [], pending: [] };
+  }
+
+  return {
+    firing: context.enabledByName[firingName] === false ? [] : (context.alertEpisodesByName[firingName] ?? []),
+    pending: context.enabledByName[pendingName] === false ? [] : (context.alertEpisodesByName[pendingName] ?? []),
+  };
+}
+
 export function useDashboardAlertEpisodes(alertName: string, annotationName?: string): NamedAlertEpisode[] {
   const context = useDashboardAnnotationsOptional();
 
@@ -175,9 +176,7 @@ export function useDashboardAlertEpisodes(alertName: string, annotationName?: st
     ? [context.alertEpisodesByName[annotationName] ?? []]
     : Object.values(context.alertEpisodesByName);
 
-  return episodeGroups
-    .flat()
-    .filter((episode) => episode.alertName === alertName);
+  return episodeGroups.flat().filter((episode) => episode.alertName === alertName);
 }
 
 export function DashboardAnnotationsStaticProvider({

@@ -21,6 +21,51 @@ describe('toTimeseriesAnnotationFrames', () => {
     expect(frames[0]?.fields.find((field) => field.name === 'isRegion')?.values).toEqual([true]);
   });
 
+  it('uses the Prometheus alert name and state as the annotation label', () => {
+    const frames = toTimeseriesAnnotationFrames([
+      {
+        name: 'Show alerts firing',
+        length: 2,
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [1_000, 11_000] },
+          {
+            name: 'Value',
+            type: FieldType.number,
+            config: {},
+            labels: { alertname: 'Latency', alertstate: 'firing' },
+            values: [1, 1],
+          },
+        ],
+      },
+    ]);
+
+    expect(frames[0]?.fields.find((field) => field.name === 'text')?.values).toEqual(['Latency alert firing']);
+  });
+
+  it('uses the alert state to color dashboard annotations', () => {
+    const frames = toTimeseriesAnnotationFrames([
+      {
+        name: 'Show alerts firing',
+        length: 1,
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [1_000] },
+          { name: 'Value', type: FieldType.number, config: {}, values: [1] },
+        ],
+      },
+      {
+        name: 'Show alerts pending',
+        length: 1,
+        fields: [
+          { name: 'Time', type: FieldType.time, config: {}, values: [2_000] },
+          { name: 'Value', type: FieldType.number, config: {}, values: [1] },
+        ],
+      },
+    ]);
+
+    expect(frames[0]?.fields.find((field) => field.name === 'color')?.values).toEqual(['red']);
+    expect(frames[1]?.fields.find((field) => field.name === 'color')?.values).toEqual(['yellow']);
+  });
+
   it('keeps separate firing windows when samples are interrupted', () => {
     const frames = toTimeseriesAnnotationFrames([
       {

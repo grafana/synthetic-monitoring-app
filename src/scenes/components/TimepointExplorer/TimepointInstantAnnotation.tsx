@@ -80,6 +80,7 @@ const getStyles = (
   triggerHeight?: number
 ) => {
   const borderColor = theme.visualization.getColorByName(annotation?.checkEvent.color!);
+  const zIndex = annotation.checkEvent.zIndex ?? 2;
 
   return {
     annotation: css`
@@ -88,10 +89,10 @@ const getStyles = (
       height: ${showLabels ? '80%' : '100%'};
       pointer-events: none;
       position: absolute;
-      z-index: 2;
+      z-index: ${zIndex};
 
       &:hover {
-        z-index: 3;
+        z-index: ${Math.max(zIndex, 3)};
       }
     `,
     label: css`

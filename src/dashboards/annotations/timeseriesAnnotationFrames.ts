@@ -27,7 +27,7 @@ function coalesceFrameToTimeseriesAnnotation(frame: DataFrame): DataFrame | null
   }
 
   const color = readAnnotationColor(frame);
-  const text = frame.name?.trim() || undefined;
+  const text = (readAlertAnnotationText(frame) ?? frame.name?.trim()) || undefined;
   const events = regions.map(([time, timeEnd]) => ({
     time,
     timeEnd,
@@ -50,9 +50,39 @@ function coalesceFrameToTimeseriesAnnotation(frame: DataFrame): DataFrame | null
   };
 }
 
+function readAlertAnnotationText(frame: DataFrame): string | undefined {
+  for (const field of frame.fields) {
+    const alertName = field.labels?.alertname?.trim();
+    const alertState = field.labels?.alertstate?.trim();
+
+    if (alertName && alertState) {
+      return `${alertName} alert ${alertState}`;
+    }
+  }
+
+  return undefined;
+}
+
 function readAnnotationColor(frame: DataFrame): string | undefined {
   const colorField = frame.fields.find((field) => field.name.toLowerCase() === 'color');
   const first = colorField?.values?.[0];
 
-  return typeof first === 'string' && first.length > 0 ? first : undefined;
+  if (typeof first === 'string' && first.length > 0) {
+    return first;
+  }
+
+  const metadataColor = frame.meta?.custom?.annotationColor;
+  if (typeof metadataColor === 'string' && metadataColor.length > 0) {
+    return metadataColor;
+  }
+
+  if (frame.name === 'Show alerts firing') {
+    return 'red';
+  }
+
+  if (frame.name === 'Show alerts pending') {
+    return 'yellow';
+  }
+
+  return undefined;
 }

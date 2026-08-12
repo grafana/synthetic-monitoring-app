@@ -2,9 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { colorManipulator } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
-import {
-  useDashboardAnnotationEventsForTpe,
-} from 'dashboards/annotations/DashboardAnnotationsProvider';
+import { useDashboardAlertEpisodesForTpe } from 'dashboards/annotations/DashboardAnnotationsProvider';
 import { useDashboardRefresh } from 'dashboards/hooks/useDashboardRefresh';
 import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 import { useDashboardVar, useDashboardVarProbes } from 'dashboards/hooks/useDashboardVar';
@@ -27,12 +25,11 @@ import {
   REF_ID_MAX_PROBE_DURATION,
   REF_ID_UNIQUE_CHECK_CONFIGS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
+import { mapAlertEpisodesToCheckEvents } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import {
   CheckConfig,
   CheckConfigRaw,
-  CheckEvent,
-  CheckEventType,
   StatefulTimepoint,
   StatelessTimepoint,
   TimepointStatus,
@@ -518,7 +515,6 @@ export function useIsInitialised({
   return !persistedIsLoading;
 }
 
-
 export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
   const { check, checkConfigs } = useTimepointExplorerContext();
   const latestConfigDate = checkConfigs[checkConfigs.length - 1].from;
@@ -530,21 +526,9 @@ export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
 }
 
 export function useDashboardAnnotationEventsForExplorer() {
-  const { firing, pending } = useDashboardAnnotationEventsForTpe();
-
-  const alertFiringEvents = firing.map<CheckEvent>(([timeStart, timeEnd]) => ({
-    label: CheckEventType.AlertsFiring,
-    to: timeEnd,
-    from: timeStart,
-    color: 'red',
-  }));
-
-  const alertPendingEvents = pending.map<CheckEvent>(([timeStart, timeEnd]) => ({
-    label: CheckEventType.AlertsPending,
-    to: timeEnd,
-    from: timeStart,
-    color: 'yellow',
-  }));
+  const { firing, pending } = useDashboardAlertEpisodesForTpe();
+  const alertFiringEvents = mapAlertEpisodesToCheckEvents(firing, 'firing');
+  const alertPendingEvents = mapAlertEpisodesToCheckEvents(pending, 'pending');
 
   return [...alertFiringEvents, ...alertPendingEvents];
 }

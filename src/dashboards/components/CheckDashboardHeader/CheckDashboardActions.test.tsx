@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute, getServerRequests } from 'test/handlers';
@@ -25,17 +25,43 @@ describe('CheckDashboardActions', () => {
       expect(await screen.findByRole('button', { name: 'Resume' })).toBeInTheDocument();
     });
 
-    it('sends a request to disable the check when Pause is clicked', async () => {
+    it('requires confirmation before disabling the check', async () => {
       const { user } = render(<CheckDashboardActions check={{ ...BASIC_HTTP_CHECK, enabled: true }} />);
-      const { read, record } = getServerRequests();
+      const { read, record, requests } = getServerRequests();
       server.use(apiRoute('updateCheck', {}, record));
 
       await user.click(await screen.findByRole('button', { name: 'Pause' }));
+
+      const confirmation = await screen.findByTestId('toggletip-content');
+      expect(confirmation).toHaveTextContent('Pause this check?');
+      expect(requests).toHaveLength(0);
+
+      await user.click(within(confirmation).getByRole('button', { name: 'Pause' }));
 
       const { body } = await read();
       expect(body).toEqual({
         ...BASIC_HTTP_CHECK,
         enabled: false,
+      });
+    });
+
+    it('requires confirmation before resuming the check', async () => {
+      const { user } = render(<CheckDashboardActions check={{ ...BASIC_HTTP_CHECK, enabled: false }} />);
+      const { read, record, requests } = getServerRequests();
+      server.use(apiRoute('updateCheck', {}, record));
+
+      await user.click(await screen.findByRole('button', { name: 'Resume' }));
+
+      const confirmation = await screen.findByTestId('toggletip-content');
+      expect(confirmation).toHaveTextContent('Resume this check?');
+      expect(requests).toHaveLength(0);
+
+      await user.click(within(confirmation).getByRole('button', { name: 'Resume' }));
+
+      const { body } = await read();
+      expect(body).toEqual({
+        ...BASIC_HTTP_CHECK,
+        enabled: true,
       });
     });
   });

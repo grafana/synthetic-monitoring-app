@@ -5,12 +5,14 @@ import {
   DashboardAnnotationsContextValue,
   DashboardAnnotationsStaticProvider,
   useDashboardAlertEpisodes,
+  useDashboardAlertEpisodesForTpe,
 } from './DashboardAnnotationsProvider';
 
 const firingEpisodes = [
   { alertName: 'ProbeFailedExecutionsTooHigh', from: 100, to: 200 },
   { alertName: 'HTTPRequestDurationTooHighAvg', from: 300, to: 400 },
 ];
+const pendingEpisodes = [{ alertName: 'ProbeFailedExecutionsTooHigh', from: 500, to: 600 }];
 
 function Wrapper({ children }: PropsWithChildren) {
   const value: DashboardAnnotationsContextValue = {
@@ -20,6 +22,26 @@ function Wrapper({ children }: PropsWithChildren) {
     frames: [],
     eventsByName: {},
     alertEpisodesByName: { 'Show alerts firing': firingEpisodes },
+    setEnabled: jest.fn(),
+  };
+
+  return <DashboardAnnotationsStaticProvider value={value}>{children}</DashboardAnnotationsStaticProvider>;
+}
+
+function TpeWrapper({ children }: PropsWithChildren) {
+  const value: DashboardAnnotationsContextValue = {
+    definitions: [
+      { name: 'Show alerts firing', enable: true, iconColor: 'red' },
+      { name: 'Show alerts pending', enable: true, iconColor: 'yellow' },
+    ],
+    enabledByName: { 'Show alerts firing': false, 'Show alerts pending': true },
+    framesByName: {},
+    frames: [],
+    eventsByName: {},
+    alertEpisodesByName: {
+      'Show alerts firing': firingEpisodes,
+      'Show alerts pending': pendingEpisodes,
+    },
     setEnabled: jest.fn(),
   };
 
@@ -42,5 +64,13 @@ describe('useDashboardAlertEpisodes', () => {
     );
 
     expect(result.current).toEqual([]);
+  });
+});
+
+describe('useDashboardAlertEpisodesForTpe', () => {
+  it('keeps alert episodes grouped by enabled state', () => {
+    const { result } = renderHook(() => useDashboardAlertEpisodesForTpe(), { wrapper: TpeWrapper });
+
+    expect(result.current).toEqual({ firing: [], pending: pendingEpisodes });
   });
 });

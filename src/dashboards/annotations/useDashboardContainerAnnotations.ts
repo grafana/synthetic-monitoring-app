@@ -23,7 +23,7 @@ export function useDashboardContainerAnnotations(check: Check): AnnotationQuery[
     const datasource = metricsDSUid ? { uid: metricsDSUid, type: metricsDSType } : undefined;
     const alertFiringAnnotation: AnnotationQuery = {
       datasource,
-      expr: `max by (alertname) (ALERTS${FIRING_CONDITION} or GRAFANA_ALERTS${FIRING_CONDITION})`,
+      expr: `max by (alertname, alertstate) (ALERTS${FIRING_CONDITION} or GRAFANA_ALERTS${FIRING_CONDITION})`,
       hide: false,
       refId: 'alertsAnnotation',
       enable: true,
@@ -35,7 +35,7 @@ export function useDashboardContainerAnnotations(check: Check): AnnotationQuery[
 
     const alertPendingAnnotation: AnnotationQuery = {
       datasource,
-      expr: `max by (alertname) (ALERTS${PENDING_CONDITION} or GRAFANA_ALERTS${PENDING_CONDITION})`,
+      expr: `max by (alertname, alertstate) (ALERTS${PENDING_CONDITION} or GRAFANA_ALERTS${PENDING_CONDITION})`,
       hide: false,
       refId: 'alertsAnnotation',
       enable: true,

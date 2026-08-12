@@ -4,7 +4,41 @@ import {
   AnnotationWithIndices,
   getCheckEventsInRange,
   getClosestTimepointsToCheckEvent,
+  mapAlertEpisodesToCheckEvents,
 } from 'scenes/components/TimepointExplorer/TimepointExplorerAnnotations.utils';
+
+describe('mapAlertEpisodesToCheckEvents', () => {
+  it('uses each alert name and state as the Timepoint Explorer annotation label', () => {
+    expect(
+      mapAlertEpisodesToCheckEvents([{ alertName: 'HTTPRequestDurationTooHighAvg', from: 1_000, to: 11_000 }], 'firing')
+    ).toEqual([
+      {
+        label: 'HTTPRequestDurationTooHighAvg alert firing',
+        from: 1_000,
+        to: 11_000,
+        color: 'red',
+        zIndex: 4,
+      },
+    ]);
+  });
+
+  it('places pending alerts below firing alerts', () => {
+    expect(
+      mapAlertEpisodesToCheckEvents(
+        [{ alertName: 'HTTPRequestDurationTooHighAvg', from: 1_000, to: 11_000 }],
+        'pending'
+      )
+    ).toEqual([
+      {
+        label: 'HTTPRequestDurationTooHighAvg alert pending',
+        from: 1_000,
+        to: 11_000,
+        color: 'yellow',
+        zIndex: 3,
+      },
+    ]);
+  });
+});
 
 describe('getCheckEventsInRange', () => {
   it('should return the check events that are in the range', () => {

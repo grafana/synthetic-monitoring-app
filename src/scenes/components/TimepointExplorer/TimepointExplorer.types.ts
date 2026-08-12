@@ -51,10 +51,11 @@ export enum CheckEventType {
 }
 
 export type CheckEvent = {
-  label: CheckEventType;
+  label: string;
   from: UnixTimestamp | null;
   to: UnixTimestamp | null;
   color: string;
+  zIndex?: number;
 };
 
 export type CheckConfigType = 'no-data';

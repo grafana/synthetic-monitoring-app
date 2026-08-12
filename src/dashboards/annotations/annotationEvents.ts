@@ -111,9 +111,7 @@ function seriesSamplesToAnnotationRegions(times: unknown[], values: unknown[]): 
   // If every sample looks inactive, still treat timestamps as alert points.
   // Some prometheus annotation responses omit meaningful Value semantics.
   const timesForRegions =
-    activeTimes.length > 0
-      ? activeTimes
-      : parsedTimes.filter((time): time is number => time != null);
+    activeTimes.length > 0 ? activeTimes : parsedTimes.filter((time): time is number => time != null);
 
   const maxGapMs = inferMaxGapMs(timesForRegions.map((time) => [time, time]));
   const regions: number[][] = [];
@@ -127,8 +125,7 @@ function seriesSamplesToAnnotationRegions(times: unknown[], values: unknown[]): 
       continue;
     }
 
-    const active =
-      activeTimes.length === 0 ? true : isActiveAnnotationValue(values[index]);
+    const active = activeTimes.length === 0 ? true : isActiveAnnotationValue(values[index]);
 
     if (!active) {
       if (start !== null && end !== null) {
@@ -233,9 +230,7 @@ export function getAlertEpisodeStateAt(
   at: number,
   toleranceMs: number
 ): AlertEpisodeState {
-  const relevant = episodes.filter(
-    (episode) => episode.alertName === alertName && episode.from <= at
-  );
+  const relevant = episodes.filter((episode) => episode.alertName === alertName && episode.from <= at);
 
   if (relevant.length === 0) {
     return 'none';
@@ -267,6 +262,26 @@ export function annotationFramesToNamedAlertEpisodes(frames: DataFrame[]): Named
   });
 }
 
-export function mergeAnnotationFrames(framesByLayer: Record<string, DataFrame[]>): DataFrame[] {
-  return Object.values(framesByLayer).flat();
+export function mergeAnnotationFrames(
+  framesByLayer: Record<string, DataFrame[]>,
+  colorsByLayer: Record<string, string | undefined> = {}
+): DataFrame[] {
+  return Object.entries(framesByLayer).flatMap(([layerName, frames]) => {
+    const annotationColor = colorsByLayer[layerName];
+
+    if (!annotationColor) {
+      return frames;
+    }
+
+    return frames.map((frame) => ({
+      ...frame,
+      meta: {
+        ...frame.meta,
+        custom: {
+          ...frame.meta?.custom,
+          annotationColor,
+        },
+      },
+    }));
+  });
 }

@@ -119,6 +119,7 @@ const getStyles = (theme: GrafanaTheme2, annotation?: AnnotationWithIndices, tri
       height: 100%;
       pointer-events: none;
       position: absolute;
+      z-index: ${annotation?.checkEvent.zIndex ?? 1};
     `,
     label: css`
       background-color: ${theme.colors.background.primary};
