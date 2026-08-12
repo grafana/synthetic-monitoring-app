@@ -11,6 +11,7 @@ export enum AppRoutes {
   NewCheck = 'checks/new',
   NewProbe = 'probes/new',
   Probes = 'probes',
+  ReliabilityInbox = 'reliability-inbox',
   Redirect = 'redirect',
   Scene = 'scene',
 }
@@ -22,6 +23,7 @@ export const AUTO_INITIALIZE_ROUTES = [
   AppRoutes.Probes,
   AppRoutes.NewProbe,
   AppRoutes.Alerts,
+  AppRoutes.ReliabilityInbox,
 ] as const;
 
 export type AutoInitializeRoute = (typeof AUTO_INITIALIZE_ROUTES)[number];

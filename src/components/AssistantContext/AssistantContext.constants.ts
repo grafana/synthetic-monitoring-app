@@ -5,12 +5,12 @@ import { AppRoutes } from 'routing/types';
 
 /**
  * Routes that are intentionally not registered with the Grafana Assistant
- * because they have no user-facing surface area (they immediately redirect
- * elsewhere on mount; see SceneRedirecter).
+ * because they redirect immediately or provide action-scoped context.
  */
 export const ASSISTANT_CONTEXT_EXCLUDED_ROUTES: ReadonlySet<AppRoutes> = new Set([
   AppRoutes.Redirect,
   AppRoutes.Scene,
+  AppRoutes.ReliabilityInbox,
 ]);
 
 interface AssistantPageContextEntry {
