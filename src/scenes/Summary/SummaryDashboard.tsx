@@ -13,6 +13,7 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { ReliabilityInboxBanner } from 'features/reliabilityInbox';
 
 import { Check } from 'types';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
@@ -88,6 +89,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
     <>
       <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => <h1>Home</h1>}>
         <Stack direction="column" gap={1}>
+          <ReliabilityInboxBanner />
           <DashboardContainerAnnotations annotations={annotations}>
             <div className={styles.header}>
               <VariableControl name="region" />
@@ -129,7 +131,12 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
   const styles = useStyles2(getStyles);
 
   if (checks.length === 0) {
-    return <ChecksEmptyState className={styles.emptyState} />;
+    return (
+      <Stack direction="column" gap={1}>
+        <ReliabilityInboxBanner />
+        <ChecksEmptyState className={styles.emptyState} />
+      </Stack>
+    );
   }
 
   return (
@@ -222,4 +229,3 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
   };
 };
-
