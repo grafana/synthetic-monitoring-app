@@ -71,8 +71,8 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 ### Run
 
 - Run `yarn dev`
-- In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable
-- Go to `localhost:3000`
+- In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable. If port 3000 is already in use (e.g. a local Grafana instance), set `GRAFANA_HOST_PORT` to bind elsewhere, e.g. `GRAFANA_HOST_PORT=3001 yarn server`
+- Go to `localhost:3000` (or the port set via `GRAFANA_HOST_PORT`)
 - Changes to the plugin code will hot reload. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `yarn server` command).
 
 `yarn server` runs `yarn build:backend` before starting Grafana, which compiles
