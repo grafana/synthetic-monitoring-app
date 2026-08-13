@@ -8,17 +8,17 @@ This is the **Grafana Synthetic Monitoring Frontend Application** — a Grafana 
 
 Standard commands are in `package.json`:
 
-| Task | Command |
-|------|---------|
-| Dev (watch + MSW mocks) | `yarn dev:msw` |
-| Dev (watch, needs Cloud) | `yarn dev` |
-| Lint | `yarn lint` |
-| Lint fix | `yarn lint:fix` |
-| Type check | `yarn typecheck` |
-| Test (all) | `yarn test` |
-| Test (CI) | `yarn test:ci` |
-| Build | `yarn build` |
-| Grafana server | `yarn server` (Docker) |
+| Task                     | Command                |
+| ------------------------ | ---------------------- |
+| Dev (watch + MSW mocks)  | `yarn dev:msw`         |
+| Dev (watch, needs Cloud) | `yarn dev`             |
+| Lint                     | `yarn lint`            |
+| Lint fix                 | `yarn lint:fix`        |
+| Type check               | `yarn typecheck`       |
+| Test (all)               | `yarn test`            |
+| Test (CI)                | `yarn test:ci`         |
+| Build                    | `yarn build`           |
+| Grafana server           | `yarn server` (Docker) |
 
 ### Running the application locally
 
@@ -52,6 +52,11 @@ If you switch between `yarn dev:msw` and `yarn dev`, the MSW service worker pers
 
 ### Testing notes
 
+See [docs/development/testing.md](./docs/development/testing.md) for the full testing guide — expectations, pseudo-e2e philosophy, and how to use `src/test/`.
+
+Agent skill (auto-trigger workflow): [`.agents/skills/write-tests/SKILL.md`](./.agents/skills/write-tests/SKILL.md). Cursor and other Agent Skills-compatible tools read `.agents/skills/` directly; Claude Code uses the symlink at `.claude/skills/write-tests`.
+
 - `yarn test` runs the full Jest test suite (~170 suites, ~1300 tests).
+- `yarn test <filename>` runs a single file; `yarn test:changed` watches changed files.
 - Tests use MSW handlers from `src/test/handlers` for API mocking.
 - The test suite passes cleanly with no configuration needed beyond `yarn install`.
