@@ -1,5 +1,32 @@
 # Changelog
 
+## [1.58.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.1...v1.58.0) (2026-08-12)
+
+
+### Features
+
+* Add Label Migration config tab for label_ prefix removal ([#1768](https://github.com/grafana/synthetic-monitoring-app/issues/1768)) ([a890391](https://github.com/grafana/synthetic-monitoring-app/commit/a89039173573aa6ae83e7acd0325c3b30e85cd80))
+* attach global context props (page, check count) to all tracking events ([#1801](https://github.com/grafana/synthetic-monitoring-app/issues/1801)) ([e8d7730](https://github.com/grafana/synthetic-monitoring-app/commit/e8d773030c4593abd4a7ad374fc5c8534248f6d4))
+
+
+### Fixes
+
+* map legacy us-central2 backend address to the us-central-7 probe API server ([#1787](https://github.com/grafana/synthetic-monitoring-app/issues/1787)) ([56d7109](https://github.com/grafana/synthetic-monitoring-app/commit/56d71091aa4e4b570518c53e84fd70a55fb48261))
+* point faro config at the recreated collector apps ([#1784](https://github.com/grafana/synthetic-monitoring-app/issues/1784)) ([1d23b22](https://github.com/grafana/synthetic-monitoring-app/commit/1d23b22cca0c399f36dc7b458b916af3b36d49e6))
+* **security/high/:** update dependency ip-address to v10.3.1 [security] ([#1780](https://github.com/grafana/synthetic-monitoring-app/issues/1780)) ([a7b2db3](https://github.com/grafana/synthetic-monitoring-app/commit/a7b2db33334aef90b4fb7174a4415f5c2f032307))
+* **security/high/:** update dependency undici to v7.29.0 [security] ([#1781](https://github.com/grafana/synthetic-monitoring-app/issues/1781)) ([74c7755](https://github.com/grafana/synthetic-monitoring-app/commit/74c77550480cea7d56907af9e51bbf8f7c83b739))
+* use theme radius tokens for check list cards and pills ([#1789](https://github.com/grafana/synthetic-monitoring-app/issues/1789)) ([2f7aef5](https://github.com/grafana/synthetic-monitoring-app/commit/2f7aef577acd5ce438eafa587382a2a3bb8fe538))
+
+
+### Documentation
+
+* expand testing guide and add write-tests agent skill ([#1803](https://github.com/grafana/synthetic-monitoring-app/issues/1803)) ([37bb844](https://github.com/grafana/synthetic-monitoring-app/commit/37bb844a574429325196349b154e852dee0779a7))
+
+
+### Miscellaneous Chores
+
+* **faro:** duplicate rudderstack events to faro and enhance faro instrumentation ([#1782](https://github.com/grafana/synthetic-monitoring-app/issues/1782)) ([067f611](https://github.com/grafana/synthetic-monitoring-app/commit/067f6119740d835314e74f3474476170dea2f857))
+
 ## [1.57.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.0...v1.57.1) (2026-07-24)
 
 
