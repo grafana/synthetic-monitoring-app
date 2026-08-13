@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 )
 
 // target names one of the datasources the SM datasource is linked to.
@@ -18,63 +17,6 @@ const (
 // defaultQueryFromTime mirrors DEFAULT_QUERY_FROM_TIME in components/constants.ts.
 const defaultQueryFromTime = "3h"
 
-// params are the arguments the app passes with a named query. Every named query
-// draws from this one set; each validates what it actually needs.
-//
-// This is the whole API surface the app sees -- no expressions, no datasource
-// uids, no query language.
-type params struct {
-	Job      string `json:"job"`
-	Instance string `json:"instance"`
-	Probe    string `json:"probe"`
-	// Frequency is the check's frequency in milliseconds.
-	Frequency int `json:"frequency"`
-	// UnsuccessfulOnly restricts log queries to failed executions.
-	UnsuccessfulOnly bool `json:"unsuccessfulOnly"`
-	// Metric selects which series a query aggregates, where the query is generic
-	// over metrics. Validated as a metric name, or against an allow-list.
-	Metric string `json:"metric"`
-	// Label is grouped on by the per-request breakdowns.
-	Label string `json:"label"`
-	// LabelName and LabelValue filter to a single request within a scripted check.
-	LabelName  string `json:"labelName"`
-	LabelValue string `json:"labelValue"`
-	// Method is an HTTP method to filter on.
-	Method string `json:"method"`
-	// Quantile for quantile_over_time, 0-1.
-	Quantile float64 `json:"quantile"`
-	// By adds extra grouping labels on top of instance and job.
-	By []string `json:"by"`
-}
-
-// probeOrAny defaults the probe matcher to "everything" so callers can omit it.
-func (p params) probeOrAny() string {
-	if p.Probe == "" {
-		return ".*"
-	}
-
-	return p.Probe
-}
-
-// check requires the parameters every per-check query needs, and returns them
-// escaped for use in label matchers.
-func (p params) check() (job, instance, probe string, err error) {
-	if p.Job == "" || p.Instance == "" {
-		return "", "", "", fmt.Errorf("job and instance are required")
-	}
-
-	return escapeValue(p.Job), escapeValue(p.Instance), escapeValue(p.probeOrAny()), nil
-}
-
-// intervalFromFrequency renders the check frequency as a PromQL duration.
-func (p params) intervalFromFrequency() (string, error) {
-	if p.Frequency <= 0 {
-		return "", fmt.Errorf("a positive frequency is required")
-	}
-
-	return fmt.Sprintf("%ds", p.Frequency/int(time.Second/time.Millisecond)), nil
-}
-
 // built is what a named query resolves to: an expression plus the execution
 // options the backing datasource needs.
 type built struct {
@@ -85,14 +27,32 @@ type built struct {
 	maxDataPoints int64
 }
 
-// namedQuery is one entry in the registry.
+// namedQuery is one entry in the registry. build takes the raw parameter JSON
+// the frontend sent so each entry can unmarshal into its own shape (see
+// queryshapes.go) rather than one struct shared by all 19.
 type namedQuery struct {
 	target target
-	build  func(params) (built, error)
+	build  func(json.RawMessage) (built, error)
+}
+
+// parseParams unmarshals a named query's raw parameter JSON into its declared
+// shape. An empty body is valid for shapes where every field is optional (or
+// there are none, as with TenantWideQuery).
+func parseParams[T any](raw json.RawMessage) (T, error) {
+	var p T
+	if len(raw) > 0 {
+		if err := json.Unmarshal(raw, &p); err != nil {
+			return p, fmt.Errorf("parsing parameters: %w", err)
+		}
+	}
+
+	return p, nil
 }
 
 // registry maps the names the app asks for onto expressions. Adding a query the
-// app can use means adding an entry here -- and nothing in the frontend.
+// app can use means adding an entry here, a matching entry in querySchemas
+// (schema_test.go, enforced by TestSchemaCoversRegistry) -- and nothing in the
+// frontend.
 //
 // Each entry is ported from the frontend builder named in its comment. The
 // expressions are written on one line where the original was indented across
@@ -102,7 +62,12 @@ var registry = map[string]namedQuery{
 	// src/queries/uptime.ts
 	"checks_uptime": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckFrequencyQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -129,7 +94,12 @@ var registry = map[string]namedQuery{
 	// src/queries/reachability.ts
 	"reachability": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckFrequencyQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -155,7 +125,12 @@ var registry = map[string]namedQuery{
 	// src/queries/getCheckConfigsQuery.ts
 	"check_configs": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -174,7 +149,12 @@ var registry = map[string]namedQuery{
 	// src/queries/getCheckProbeMaxDuration.ts
 	"check_probe_max_duration": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -193,7 +173,12 @@ var registry = map[string]namedQuery{
 	// src/queries/getCheckProbeAvgDuration.ts -- deliberately not filtered by probe
 	"check_probe_avg_duration": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, _, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -209,7 +194,7 @@ var registry = map[string]namedQuery{
 	// src/queries/probeExecutionStats.ts -- tenant-wide, so no check parameters
 	"probe_execution_rate": {
 		target: targetMetrics,
-		build: func(params) (built, error) {
+		build: func(json.RawMessage) (built, error) {
 			return built{
 				expr:    fmt.Sprintf(`sum(rate(probe_all_success_count[%s])) by (probe)`, defaultQueryFromTime),
 				instant: true,
@@ -220,7 +205,7 @@ var registry = map[string]namedQuery{
 	// src/queries/probeExecutionStats.ts
 	"probe_failure_rate": {
 		target: targetMetrics,
-		build: func(params) (built, error) {
+		build: func(json.RawMessage) (built, error) {
 			return built{
 				expr: fmt.Sprintf(
 					`clamp_min(sum(rate(probe_all_success_count[%s])) by (probe) - sum(rate(probe_all_success_sum[%s])) by (probe), 0)`,
@@ -234,7 +219,12 @@ var registry = map[string]namedQuery{
 	// src/queries/sumDurationByProbe.ts
 	"sum_duration_by_probe": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckMetricQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -258,7 +248,12 @@ var registry = map[string]namedQuery{
 	// src/queries/countDistinctTargets.ts
 	"count_distinct_targets": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckMetricQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -307,7 +302,12 @@ var registry = map[string]namedQuery{
 	// src/queries/avgQuantileWebVital.ts
 	"avg_quantile_web_vital": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckWebVitalQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -315,13 +315,13 @@ var registry = map[string]namedQuery{
 
 			// the frontend restricted this to a union of six metrics; keep that rather
 			// than accepting any metric name
-			metric, err := oneOf("web vital metric", p.Metric,
-				"probe_browser_web_vital_fcp",
-				"probe_browser_web_vital_lcp",
-				"probe_browser_web_vital_ttfb",
-				"probe_browser_web_vital_cls",
-				"probe_browser_web_vital_fid",
-				"probe_browser_web_vital_inp",
+			metric, err := oneOf("web vital metric", string(p.Metric),
+				string(WebVitalFCP),
+				string(WebVitalLCP),
+				string(WebVitalTTFB),
+				string(WebVitalCLS),
+				string(WebVitalFID),
+				string(WebVitalINP),
 			)
 			if err != nil {
 				return built{}, err
@@ -353,7 +353,12 @@ var registry = map[string]namedQuery{
 	// src/queries/avgRequestLatency.ts
 	"avg_request_latency": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckLabelQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, label, err := p.requestBreakdown()
 			if err != nil {
 				return built{}, err
@@ -372,7 +377,12 @@ var registry = map[string]namedQuery{
 	// src/queries/avgRequestSuccessRate.ts
 	"avg_request_success_rate": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckLabelQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, label, err := p.requestBreakdown()
 			if err != nil {
 				return built{}, err
@@ -393,7 +403,12 @@ var registry = map[string]namedQuery{
 	// src/queries/avgRequestExpectedResponse.ts
 	"avg_request_expected_response": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckLabelQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, label, err := p.requestBreakdown()
 			if err != nil {
 				return built{}, err
@@ -414,7 +429,12 @@ var registry = map[string]namedQuery{
 	// src/queries/scriptedHTTPRequestsErrorRate.ts
 	"scripted_http_requests_error_rate": {
 		target: targetMetrics,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckLabelMatchQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -446,7 +466,12 @@ var registry = map[string]namedQuery{
 	// src/scenes/Common/ErrorLogsPanel.tsx
 	"check_error_logs": {
 		target: targetLogs,
-		build: func(p params) (built, error) {
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckLogsQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
 			job, instance, probe, err := p.check()
 			if err != nil {
 				return built{}, err
@@ -467,24 +492,14 @@ var registry = map[string]namedQuery{
 	},
 }
 
-// requestBreakdown validates the parameters the per-request HTTP breakdowns share.
-func (p params) requestBreakdown() (job, instance, probe, label string, err error) {
-	job, instance, probe, err = p.check()
-	if err != nil {
-		return "", "", "", "", err
-	}
-
-	label, err = validLabel(p.Label)
-	if err != nil {
-		return "", "", "", "", err
-	}
-
-	return job, instance, probe, label, nil
-}
-
 // sumByProbe builds the browser data queries, which differ only by metric.
-func sumByProbe(metric string) func(params) (built, error) {
-	return func(p params) (built, error) {
+func sumByProbe(metric string) func(json.RawMessage) (built, error) {
+	return func(raw json.RawMessage) (built, error) {
+		p, err := parseParams[CheckQuery](raw)
+		if err != nil {
+			return built{}, err
+		}
+
 		job, instance, probe, err := p.check()
 		if err != nil {
 			return built{}, err
@@ -501,8 +516,13 @@ func sumByProbe(metric string) func(params) (built, error) {
 }
 
 // seriesByProbe builds the scripted data queries, which return raw series.
-func seriesByProbe(metric string) func(params) (built, error) {
-	return func(p params) (built, error) {
+func seriesByProbe(metric string) func(json.RawMessage) (built, error) {
+	return func(raw json.RawMessage) (built, error) {
+		p, err := parseParams[CheckQuery](raw)
+		if err != nil {
+			return built{}, err
+		}
+
 		job, instance, probe, err := p.check()
 		if err != nil {
 			return built{}, err
@@ -523,14 +543,7 @@ func resolve(name string, raw json.RawMessage) (namedQuery, built, error) {
 		return namedQuery{}, built{}, fmt.Errorf("unknown query %q", name)
 	}
 
-	var p params
-	if len(raw) > 0 {
-		if err := json.Unmarshal(raw, &p); err != nil {
-			return namedQuery{}, built{}, fmt.Errorf("parsing parameters for %q: %w", name, err)
-		}
-	}
-
-	b, err := nq.build(p)
+	b, err := nq.build(raw)
 	if err != nil {
 		return namedQuery{}, built{}, fmt.Errorf("%s: %w", name, err)
 	}

@@ -1,0 +1,819 @@
+{
+  "kind": "QueryTypeDefinitionList",
+  "apiVersion": "datasource.grafana.app/v0alpha1",
+  "metadata": {
+    "resourceVersion": "1786651398247"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "check_probe_avg_duration",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "check_probe_avg_duration"
+          }
+        ],
+        "description": "Average probe duration for the check in range, across all probes (not filterable to one probe).",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "browser_data_received",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "browser_data_received"
+          }
+        ],
+        "description": "Sum of browser check data received, grouped by probe.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "scripted_data_received",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "scripted_data_received"
+          }
+        ],
+        "description": "Raw scripted check data-received series, grouped by probe.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "check_probe_max_duration",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "check_probe_max_duration"
+          }
+        ],
+        "description": "Longest probe duration recorded for the check in range, grouped by probe.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "probe_execution_rate",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "probe_execution_rate"
+          }
+        ],
+        "description": "Rate of successful check executions per probe, summed across all checks in the tenant.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "TenantWideQuery has no parameters: the query is computed across the whole tenant.",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "sum_duration_by_probe",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "sum_duration_by_probe"
+          }
+        ],
+        "description": "Sum of the given metric for the check, grouped by probe.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckMetricQuery is a CheckQuery plus the metric series to aggregate, for queries generic over which probe_* metric they read.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "metric": {
+              "description": "Metric is the Prometheus metric name to aggregate, validated against an\nallow-list.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "metric"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "avg_request_success_rate",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "avg_request_success_rate"
+          }
+        ],
+        "description": "Average per-request success rate for a scripted check, broken out by the given label and method.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckLabelQuery is a CheckQuery plus the label to break results out by, for the per-request HTTP breakdown panels.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "label": {
+              "description": "Label is grouped on in addition to method.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "label"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "reachability",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "reachability"
+          }
+        ],
+        "description": "Ratio of successful to total check executions over the dashboard's rate interval.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckFrequencyQuery is a CheckQuery plus the check's execution frequency, used to size a lookback window.",
+          "properties": {
+            "frequency": {
+              "description": "Frequency is the check's frequency in milliseconds. Must be positive.",
+              "type": "integer"
+            },
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "frequency"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "count_distinct_targets",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "count_distinct_targets"
+          }
+        ],
+        "description": "Count of distinct target URLs seen for the given metric, grouped by job.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckMetricQuery is a CheckQuery plus the metric series to aggregate, for queries generic over which probe_* metric they read.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "metric": {
+              "description": "Metric is the Prometheus metric name to aggregate, validated against an\nallow-list.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "metric"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "scripted_data_sent",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "scripted_data_sent"
+          }
+        ],
+        "description": "Raw scripted check data-sent series, grouped by probe.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "avg_request_latency",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "avg_request_latency"
+          }
+        ],
+        "description": "Average per-request latency for a scripted check, broken out by the given label and method.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckLabelQuery is a CheckQuery plus the label to break results out by, for the per-request HTTP breakdown panels.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "label": {
+              "description": "Label is grouped on in addition to method.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "label"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "check_error_logs",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "check_error_logs"
+          }
+        ],
+        "description": "Log lines for the check's executions, optionally restricted to failed executions only.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckLogsQuery is a CheckQuery plus a log-filtering flag.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            },
+            "unsuccessfulOnly": {
+              "description": "UnsuccessfulOnly restricts results to failed executions.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "checks_uptime",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "checks_uptime"
+          }
+        ],
+        "description": "Fraction of time the check was reported up over the check's own frequency window.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckFrequencyQuery is a CheckQuery plus the check's execution frequency, used to size a lookback window.",
+          "properties": {
+            "frequency": {
+              "description": "Frequency is the check's frequency in milliseconds. Must be positive.",
+              "type": "integer"
+            },
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "frequency"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "check_configs",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "check_configs"
+          }
+        ],
+        "description": "The check's frequency and config version, as of the most recent execution in range.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "probe_failure_rate",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "probe_failure_rate"
+          }
+        ],
+        "description": "Rate of failed check executions per probe, summed across all checks in the tenant.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "TenantWideQuery has no parameters: the query is computed across the whole tenant.",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "browser_data_sent",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "browser_data_sent"
+          }
+        ],
+        "description": "Sum of browser check data sent, grouped by probe.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckQuery identifies a single check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "avg_quantile_web_vital",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "avg_quantile_web_vital"
+          }
+        ],
+        "description": "Quantile of a Core Web Vital metric over the dashboard range, grouped by instance and job (plus any extra labels).",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckWebVitalQuery is a CheckQuery plus a web vital metric, quantile, and extra grouping labels.",
+          "properties": {
+            "by": {
+              "description": "By adds extra grouping labels on top of instance and job.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "metric": {
+              "description": "Metric is one of the six Core Web Vitals metrics.\n\n\nPossible enum values:\n - `\"probe_browser_web_vital_fcp\"` First Contentful Paint\n - `\"probe_browser_web_vital_lcp\"` Largest Contentful Paint\n - `\"probe_browser_web_vital_ttfb\"` Time To First Byte\n - `\"probe_browser_web_vital_cls\"` Cumulative Layout Shift\n - `\"probe_browser_web_vital_fid\"` First Input Delay\n - `\"probe_browser_web_vital_inp\"` Interaction to Next Paint",
+              "enum": [
+                "probe_browser_web_vital_fcp",
+                "probe_browser_web_vital_lcp",
+                "probe_browser_web_vital_ttfb",
+                "probe_browser_web_vital_cls",
+                "probe_browser_web_vital_fid",
+                "probe_browser_web_vital_inp"
+              ],
+              "type": "string",
+              "x-enum-description": {
+                "probe_browser_web_vital_cls": "Cumulative Layout Shift",
+                "probe_browser_web_vital_fcp": "First Contentful Paint",
+                "probe_browser_web_vital_fid": "First Input Delay",
+                "probe_browser_web_vital_inp": "Interaction to Next Paint",
+                "probe_browser_web_vital_lcp": "Largest Contentful Paint",
+                "probe_browser_web_vital_ttfb": "Time To First Byte"
+              }
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            },
+            "quantile": {
+              "description": "Quantile for quantile_over_time, between 0 and 1. Defaults to 0.75.",
+              "type": "number"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "metric"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "avg_request_expected_response",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "avg_request_expected_response"
+          }
+        ],
+        "description": "Average rate of expected HTTP responses for a scripted check, broken out by the given label and method.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckLabelQuery is a CheckQuery plus the label to break results out by, for the per-request HTTP breakdown panels.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "label": {
+              "description": "Label is grouped on in addition to method.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "label"
+          ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "scripted_http_requests_error_rate",
+        "resourceVersion": "1786651398247",
+        "creationTimestamp": "2026-08-13T20:03:18Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "scripted_http_requests_error_rate"
+          }
+        ],
+        "description": "Error rate for one specific request within a scripted check, isolated by label/value and method.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckLabelMatchQuery is a CheckQuery plus a single label/value/method filter, for isolating one request within a scripted check.",
+          "properties": {
+            "instance": {
+              "description": "Instance is the check's instance label.",
+              "type": "string"
+            },
+            "job": {
+              "description": "Job is the check's job label.",
+              "type": "string"
+            },
+            "labelName": {
+              "description": "LabelName is the label to filter on.",
+              "type": "string"
+            },
+            "labelValue": {
+              "description": "LabelValue is the required value of LabelName.",
+              "type": "string"
+            },
+            "method": {
+              "description": "Method is the HTTP method to filter on.",
+              "type": "string"
+            },
+            "probe": {
+              "description": "Probe restricts results to a single probe. Empty matches every probe.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "job",
+            "instance",
+            "labelName",
+            "labelValue",
+            "method"
+          ],
+          "type": "object"
+        }
+      }
+    }
+  ]
+}
