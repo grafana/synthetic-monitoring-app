@@ -1,4 +1,4 @@
-import { reliabilityInboxURL } from './reliabilityInboxRegion';
+import { isLocalReliabilityInboxStack, reliabilityInboxURL } from './reliabilityInboxRegion';
 
 const suggestions = (host: string) => `https://${host}/api/v1alpha1/reliability-inbox/suggestions`;
 
@@ -52,6 +52,20 @@ describe('reliabilityInboxURL', () => {
       ['https://synthetic-monitoring-api.grafana-dev.net', 'bare prefix without an override'],
     ])('%s (%s)', (apiHost) => {
       expect(reliabilityInboxURL(apiHost)).toBeUndefined();
+    });
+  });
+
+  describe('local dem-dev', () => {
+    it.each(['http://sm-api:4030', 'http://localhost:4030', 'http://127.0.0.1:4030'])(
+      'maps %s to the local k6-experiments suggestions URL',
+      (apiHost) => {
+        expect(reliabilityInboxURL(apiHost)).toBe('http://localhost:10001/api/v1alpha1/reliability-inbox/suggestions');
+      }
+    );
+
+    it('detects local stacks', () => {
+      expect(isLocalReliabilityInboxStack('http://sm-api:4030')).toBe(true);
+      expect(isLocalReliabilityInboxStack('https://synthetic-monitoring-api-dev.grafana-dev.net')).toBe(false);
     });
   });
 });

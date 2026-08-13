@@ -163,8 +163,22 @@ describe('Reliability Inbox model', () => {
     expect(isInitialReviewCandidate(developmentHttp)).toBe(false);
   });
 
-  it('suppresses suggestions the service no longer considers uncovered', () => {
+  it('keeps partially covered endpoints while suppressing covered or dismissed suggestions', () => {
+    expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'partially_covered' })).toBe(true);
     expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'covered' })).toBe(false);
     expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'dismissed' })).toBe(false);
+  });
+
+  it('allows private simnet targets when the stack uses a local reliability inbox', () => {
+    const localApiHost = 'http://sm-api:4030';
+    const simnetHttp = {
+      ...HTTP_SUGGESTION,
+      id: 'simnet-http',
+      target: 'https://oak-and-hearth.dem.local.test/products',
+      reachability: 'private' as const,
+    };
+
+    expect(isInitialReviewCandidate(simnetHttp, localApiHost)).toBe(true);
+    expect(isInitialReviewCandidate(simnetHttp)).toBe(false);
   });
 });

@@ -36,7 +36,7 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
 
       return reliabilitySuggestionsSchema
         .parse(result)
-        .suggestions.filter(isInitialReviewCandidate)
+        .suggestions.filter((suggestion) => isInitialReviewCandidate(suggestion, apiHost))
         .map(toReliabilityOpportunity);
     },
     retry: false,

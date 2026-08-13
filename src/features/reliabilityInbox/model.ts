@@ -6,6 +6,7 @@ import {
   ReliabilitySuggestion,
 } from './types';
 import { CheckType } from 'types';
+import { isLocalReliabilityInboxStack } from '../../datasource/reliabilityInboxRegion';
 
 const ONE_MINUTE_IN_MS = 60 * 1000;
 
@@ -74,11 +75,13 @@ export function compareReliabilityOpportunities(a: ReliabilityOpportunity, b: Re
   return a.id.localeCompare(b.id);
 }
 
-export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
+export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion, apiHost?: string) {
+  const localStack = apiHost ? isLocalReliabilityInboxStack(apiHost) : false;
+
   if (
     suggestion.checkType !== CheckType.Http ||
-    suggestion.dedupStatus !== 'uncovered' ||
-    suggestion.reachability !== 'public' ||
+    (suggestion.dedupStatus !== 'uncovered' && suggestion.dedupStatus !== 'partially_covered') ||
+    (!localStack && suggestion.reachability !== 'public') ||
     suggestion.authRequired ||
     suggestion.needsConfiguration
   ) {
@@ -87,7 +90,11 @@ export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
 
   try {
     const url = new URL(suggestion.target);
-    return (url.protocol === 'http:' || url.protocol === 'https:') && !isPrivateOrDevelopmentHost(url.hostname);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return false;
+    }
+
+    return localStack || !isPrivateOrDevelopmentHost(url.hostname);
   } catch {
     return false;
   }
