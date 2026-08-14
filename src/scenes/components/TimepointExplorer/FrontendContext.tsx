@@ -94,7 +94,14 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
           </Stack>
           <Stack direction="row" gap={1} alignItems="center">
             {context.hasSessionReplay ? (
-              <LinkButton href={sessionHref} icon="play" size="sm" variant="secondary" fill="outline">
+              <LinkButton
+                href={sessionHref}
+                icon="play"
+                size="sm"
+                variant="secondary"
+                fill="outline"
+                target="_blank"
+              >
                 Watch session replay
               </LinkButton>
             ) : (
@@ -204,14 +211,21 @@ const ExceptionsList = ({ context, to }: { context: FaroExecutionContext; to: nu
 const COLLAPSED_REQUEST_COUNT = 5;
 
 const NetworkRequestsList = ({ context }: { context: FaroExecutionContext }) => {
+  const styles = useStyles2(getStyles);
   const tracesDS = useTracesDS();
   const [showAll, setShowAll] = useState(false);
-  // failures first, then chronological — the failing request is what you came for
-  const sorted = [...context.requests].sort(
+  const failedCount = context.requests.filter((request) => request.isError).length;
+
+  // Failures get priority for the collapsed view — the failing request is what
+  // you came for — but rendering below is grouped by page, chronological within.
+  const prioritized = [...context.requests].sort(
     (a, b) => Number(b.isError) - Number(a.isError) || a.timestamp - b.timestamp
   );
-  const failedCount = context.requests.filter((request) => request.isError).length;
-  const visible = showAll ? sorted : sorted.slice(0, COLLAPSED_REQUEST_COUNT);
+  const visibleSet = new Set(showAll ? prioritized : prioritized.slice(0, COLLAPSED_REQUEST_COUNT));
+
+  // Pages in journey order; any request with an unrecognized page lands at the end.
+  const journeyPageIds = context.pages.map((page) => page.pageId);
+  const pageIds = [...new Set([...journeyPageIds, ...context.requests.map((request) => request.pageId)])];
 
   return (
     <Stack direction="column" gap={0.5}>
@@ -219,13 +233,38 @@ const NetworkRequestsList = ({ context }: { context: FaroExecutionContext }) => 
         Network requests during this run ({context.requests.length}
         {failedCount > 0 ? ` · ${failedCount} failed` : ''})
       </Text>
-      {visible.map((request, index) => (
-        <RequestRow key={`${request.timestamp}-${request.url}-${index}`} request={request} tracesDS={tracesDS} />
-      ))}
-      {sorted.length > COLLAPSED_REQUEST_COUNT && (
+      {pageIds.map((pageId) => {
+        const pageRequests = context.requests
+          .filter((request) => request.pageId === pageId && visibleSet.has(request))
+          .sort((a, b) => a.timestamp - b.timestamp);
+
+        if (!pageRequests.length) {
+          return null;
+        }
+
+        return (
+          <Stack key={pageId || 'unknown-page'} direction="column" gap={0.5}>
+            <Text color="secondary" variant="bodySmall" weight="medium">
+              on {pageId || 'unknown page'}
+            </Text>
+            <div className={styles.page}>
+              <Stack direction="column" gap={0.5}>
+                {pageRequests.map((request, index) => (
+                  <RequestRow
+                    key={`${request.timestamp}-${request.url}-${index}`}
+                    request={request}
+                    tracesDS={tracesDS}
+                  />
+                ))}
+              </Stack>
+            </div>
+          </Stack>
+        );
+      })}
+      {context.requests.length > COLLAPSED_REQUEST_COUNT && (
         <PlainButton onClick={() => setShowAll(!showAll)}>
           <Text color="link" variant="bodySmall">
-            {showAll ? 'Show fewer' : `Show all ${sorted.length} requests`}
+            {showAll ? 'Show fewer' : `Show all ${context.requests.length} requests`}
           </Text>
         </PlainButton>
       )}
