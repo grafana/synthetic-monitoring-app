@@ -103,31 +103,24 @@ describe('Reliability Inbox model', () => {
     );
   });
 
-  it('prioritizes confidence, then value, before the raw suggestion score', () => {
+  it('orders reviewable recommendations by technical relevance', () => {
     const opportunities = [
-      { id: 'high-value-low-confidence', relevance: 99, confidence: 'low' },
-      { id: 'lower-value-high-confidence', relevance: 20, confidence: 'high' },
-      { id: 'high-value-medium-confidence', relevance: 95, confidence: 'medium' },
-      { id: 'medium-value-high-confidence', relevance: 55, confidence: 'high' },
-      { id: 'high-value-high-confidence', relevance: 75, confidence: 'high' },
+      { id: 'lower-technical-relevance', relevance: 20 },
+      { id: 'higher-technical-relevance', relevance: 75 },
     ]
-      .map(({ id, relevance, confidence }) =>
+      .map(({ id, relevance }) =>
         toReliabilityOpportunity({
           ...HTTP_SUGGESTION,
           id,
           target: `https://${id}.example.com/`,
           relevance,
-          confidence,
         })
       )
       .sort(compareReliabilityOpportunities);
 
     expect(opportunities.map(({ id }) => id)).toEqual([
-      'high-value-high-confidence',
-      'medium-value-high-confidence',
-      'lower-value-high-confidence',
-      'high-value-medium-confidence',
-      'high-value-low-confidence',
+      'higher-technical-relevance',
+      'lower-technical-relevance',
     ]);
   });
 
@@ -166,5 +159,10 @@ describe('Reliability Inbox model', () => {
   it('suppresses suggestions the service no longer considers uncovered', () => {
     expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'covered' })).toBe(false);
     expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, dedupStatus: 'dismissed' })).toBe(false);
+  });
+
+  it('suppresses coverage gaps without high confidence', () => {
+    expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, confidence: 'medium' })).toBe(false);
+    expect(isInitialReviewCandidate({ ...HTTP_SUGGESTION, confidence: 'low' })).toBe(false);
   });
 });

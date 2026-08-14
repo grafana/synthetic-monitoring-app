@@ -46,9 +46,6 @@ export const reliabilitySuggestionsSchema = z.object({
 export type ReliabilitySuggestion = z.infer<typeof reliabilitySuggestionSchema>;
 export type ReliabilityEvidence = ReliabilitySuggestion['evidence'];
 
-export type OpportunityValue = 'high' | 'medium' | 'lower';
-export type OpportunityConfidence = 'high' | 'medium' | 'low';
-
 export interface ProposedHttpCheckDraft {
   job: string;
   target: string;
@@ -66,9 +63,6 @@ export interface ReliabilityOpportunity {
   id: string;
   suggestion: ReliabilitySuggestion;
   subject: string;
-  rationale: string;
-  value: OpportunityValue;
-  confidence: OpportunityConfidence;
   sortScore: number;
   requestVolume?: string;
   requestRate?: string;
