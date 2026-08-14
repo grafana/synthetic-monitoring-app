@@ -5,6 +5,7 @@
   "scripts": {
     "analyze:bundle": "ANALYZE_BUNDLE=true yarn build",
     "build:analytics-events": "node --experimental-strip-types ./scripts/analytics/main.mts",
+    "build:backend": "go run github.com/magefile/mage -v buildAll",
     "build:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/build-probe-api-mappings.ts",
     "build:generate-terraform-test-config": "npx tsx scripts/terraform-validation/generate-test-configs.ts",
     "build": "webpack -c webpack.config.ts --env production",
@@ -20,7 +21,7 @@
     "lint:fix": "yarn run lint --fix",
     "lint": "eslint --cache src/",
     "prepare": "husky",
-    "server": "docker compose up --build",
+    "server": "yarn build:backend && docker compose up --build",
     "sign": "npx --yes @grafana/sign-plugin@latest",
     "test:changed": "jest --watch --onlyChanged",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
