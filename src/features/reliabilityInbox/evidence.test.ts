@@ -27,8 +27,8 @@ describe('Reliability Inbox evidence provenance', () => {
       expect.objectContaining({
         datasource: 'prometheus-uid',
         queries: [
-          { expr: 'sum(rate(http_requests_total[1h]))' },
-          { expr: 'sum by (status) (rate(http_requests_total[1h]))' },
+          { refId: 'A', expr: 'sum(rate(http_requests_total[1h]))' },
+          { refId: 'B', expr: 'sum by (status) (rate(http_requests_total[1h]))' },
         ],
       })
     );
