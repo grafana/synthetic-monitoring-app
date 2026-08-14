@@ -35,12 +35,17 @@ const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = {
 
 const openAssistant = jest.fn();
 
-function renderPage(suggestions: ReliabilitySuggestion[] = [HTTP_RELIABILITY_SUGGESTION]) {
+function renderPage(
+  suggestions: ReliabilitySuggestion[] = [HTTP_RELIABILITY_SUGGESTION],
+  overrides: Partial<ReturnType<typeof useReliabilityInboxSuggestions>> = {}
+) {
   const result = {
     data: suggestions.map(toReliabilityOpportunity),
     isLoading: false,
+    isFetching: false,
     isError: false,
     refetch: jest.fn(),
+    ...overrides,
   } as unknown as ReturnType<typeof useReliabilityInboxSuggestions>;
 
   jest.mocked(useReliabilityInboxSuggestions).mockReturnValue(result);
@@ -141,6 +146,21 @@ describe('ReliabilityInboxPage', () => {
 
     expect(await screen.findByText('Loading Reliability Inbox…')).toBeInTheDocument();
     expect(screen.queryByText('Why this recommendation')).not.toBeInTheDocument();
+  });
+
+  it('keeps saved suggestions usable while looking for new opportunities', async () => {
+    renderPage(undefined, { isFetching: true });
+
+    expect(await screen.findByText('Showing saved suggestions · Looking for new opportunities…')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Create an HTTP check' })).toBeInTheDocument();
+  });
+
+  it('keeps saved suggestions usable when the refresh fails', async () => {
+    renderPage(undefined, { isError: true });
+
+    expect(await screen.findByText('Suggestions could not be refreshed')).toBeInTheDocument();
+    expect(screen.getByText('Showing saved suggestions. Try again later for newer opportunities.')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Create an HTTP check' })).toBeInTheDocument();
   });
 
   it('shows a compact proposed check with configuration details on demand', async () => {

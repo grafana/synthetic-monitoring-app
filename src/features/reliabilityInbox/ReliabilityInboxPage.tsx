@@ -11,6 +11,7 @@ import {
   Grid,
   LinkButton,
   LoadingPlaceholder,
+  Spinner,
   Stack,
   Text,
   useStyles2,
@@ -63,7 +64,8 @@ function ReliabilityInboxReview() {
   const styles = useStyles2(getStyles);
   const { canWriteChecks } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
-  const { data: opportunities = [], isLoading, isError, refetch } = useReliabilityInboxSuggestions();
+  const { data, isLoading, isFetching, isError, refetch } = useReliabilityInboxSuggestions();
+  const opportunities = data ?? [];
   const [selectedId, setSelectedId] = useState<string>();
   const reviewedIds = useRef(new Set<string>());
 
@@ -82,7 +84,7 @@ function ReliabilityInboxReview() {
     return <LoadingPlaceholder text="Loading Reliability Inbox…" />;
   }
 
-  if (isError) {
+  if (isError && !data) {
     return (
       <ErrorAlert
         buttonText="Retry"
@@ -93,11 +95,30 @@ function ReliabilityInboxReview() {
     );
   }
 
+  const refreshStatus = isFetching ? (
+    <Stack role="status" alignItems="center" gap={1}>
+      <Spinner size="xs" inline />
+      <Text color="secondary" variant="bodySmall">
+        Showing saved suggestions · Looking for new opportunities…
+      </Text>
+    </Stack>
+  ) : isError ? (
+    <ErrorAlert
+      buttonText="Retry"
+      content="Showing saved suggestions. Try again later for newer opportunities."
+      onClick={() => refetch()}
+      title="Suggestions could not be refreshed"
+    />
+  ) : null;
+
   if (!selected) {
     return (
-      <EmptyState message="No reviewable opportunities" variant="completed">
-        Only public HTTP endpoints with enough evidence of missing coverage are shown.
-      </EmptyState>
+      <Stack direction="column" gap={1}>
+        {refreshStatus}
+        <EmptyState message="No reviewable opportunities" variant="completed">
+          Only public HTTP endpoints with enough evidence of missing coverage are shown.
+        </EmptyState>
+      </Stack>
     );
   }
 
@@ -145,6 +166,7 @@ function ReliabilityInboxReview() {
 
   return (
     <div className={styles.reviewLayout}>
+      {refreshStatus && <div className={styles.refreshStatus}>{refreshStatus}</div>}
       <aside className={styles.queue} aria-label="Recommendations">
         <div className={styles.queueHeader}>
           <Stack direction="column" gap={0.5}>
@@ -362,6 +384,7 @@ function EvidenceMetric({ value, label }: { value: string; label: string }) {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   assistantAction: getAssistantActionStyle(theme),
+  refreshStatus: css({ gridColumn: '1 / -1' }),
   reviewLayout: css({
     display: 'grid',
     gridTemplateColumns: 'minmax(320px, 360px) minmax(0, 1fr)',
