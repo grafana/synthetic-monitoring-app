@@ -45,8 +45,8 @@ export function ReliabilityInboxPage() {
     <PluginPage pageNav={RELIABILITY_INBOX_PAGE_NAV} renderTitle={() => <ReliabilityInboxTitle />}>
       <Stack direction="column" gap={2}>
         <Text element="p" color="secondary">
-          Prioritized monitoring opportunities from observed traffic. Review first; nothing is created without your
-          confirmation.
+          Actionable monitoring recommendations from observed traffic, ordered by technical signals—not business
+          criticality. Nothing is created without your confirmation.
         </Text>
         <ReliabilityInboxReview />
       </Stack>
@@ -108,7 +108,7 @@ function ReliabilityInboxReview() {
             No reviewable opportunities
           </Text>
           <Text element="p" color="secondary" textAlignment="center">
-            Private, development-only, non-HTTP, and incomplete targets are excluded from this experiment.
+            Only public HTTP endpoints with enough evidence of missing coverage are shown.
           </Text>
         </Stack>
       </Box>
@@ -175,29 +175,19 @@ function ReliabilityInboxReview() {
             onClick={() => setSelectedId(opportunity.id)}
           >
             <Stack direction="column" alignItems="flex-start" gap={0.5}>
-              <Text variant="bodySmall" color="info" weight="bold">
-                {index === 0 ? 'Highest priority' : `Priority ${index + 1}`}
-              </Text>
+              {index === 0 && (
+                <Text variant="bodySmall" color="info" weight="bold">
+                  Recommended next
+                </Text>
+              )}
               <Text weight="bold" truncate title={opportunity.proposedCheck.target}>
                 {opportunity.subject}
               </Text>
-              <Stack
-                direction="column"
-                alignItems="flex-start"
-                gap={0.5}
-                aria-label={`Decision signals for ${opportunity.subject}`}
-              >
-                <Badge
-                  color={opportunity.value === 'high' ? 'orange' : 'darkgrey'}
-                  text={`${capitalize(opportunity.value)} value`}
-                />
-                <Badge
-                  color={opportunity.confidence === 'high' ? 'green' : 'darkgrey'}
-                  text={`${capitalize(opportunity.confidence)} confidence`}
-                />
-              </Stack>
+              <Text variant="bodySmall" color="secondary">
+                No matching check found
+              </Text>
               <Text color="secondary">
-                Public HTTP traffic{opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}
+                Public HTTP{opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}
               </Text>
             </Stack>
           </button>
@@ -225,28 +215,10 @@ function ReliabilityInboxReview() {
                   <Text truncate>{selected.subject}</Text>
                 </Stack>
                 <Text element="p">
-                  Review a ready-to-customize check that can continuously verify this public endpoint.
+                  {selected.requestVolume
+                    ? `We observed ${selected.requestVolume} requests in the last hour, and no matching Synthetic Monitoring check was found.`
+                    : 'We observed recent traffic, and no matching Synthetic Monitoring check was found.'}
                 </Text>
-                <Stack direction="column" alignItems="flex-start" gap={1} aria-label="Recommendation signals">
-                  <Stack alignItems="center" gap={1}>
-                    <Badge
-                      color={selected.value === 'high' ? 'orange' : 'darkgrey'}
-                      text={`${capitalize(selected.value)} value`}
-                    />
-                    <Text variant="bodySmall" color="secondary">
-                      Observed demand and endpoint relevance make this worth reviewing.
-                    </Text>
-                  </Stack>
-                  <Stack alignItems="center" gap={1}>
-                    <Badge
-                      color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
-                      text={`${capitalize(selected.confidence)} confidence`}
-                    />
-                    <Text variant="bodySmall" color="secondary">
-                      Endpoint and traffic signals agree.
-                    </Text>
-                  </Stack>
-                </Stack>
               </Stack>
               <Stack direction="column" alignItems={{ xs: 'flex-start', md: 'flex-end' }} gap={1} maxWidth={280}>
                 <Button
@@ -298,16 +270,6 @@ function ReliabilityInboxReview() {
               No aggregate traffic values were returned for this suggestion.
             </Text>
           )}
-          <details className={styles.disclosure}>
-            <summary>
-              <Icon name="angle-right" />
-              <span>Why this recommendation?</span>
-            </summary>
-            <div className={styles.disclosureContent}>
-              <p>{selected.rationale}</p>
-              <p>Evidence covers the last hour and came from {formatList(selected.suggestion.evidence.families)}.</p>
-            </div>
-          </details>
         </Box>
 
         <Divider spacing={0} />
@@ -317,10 +279,10 @@ function ReliabilityInboxReview() {
               <Icon name="info-circle" />
               <Stack direction="column" gap={0.5}>
                 <Text variant="bodySmall" color="secondary" weight="bold">
-                  Monitoring status
+                  Coverage check
                 </Text>
                 <Text element="h3" variant="h5">
-                  Synthetic Monitoring does not appear to monitor this traffic yet, so we recommend adding this check.
+                  No matching check found
                 </Text>
               </Stack>
             </Stack>
@@ -343,16 +305,13 @@ function ReliabilityInboxReview() {
         <Divider spacing={0} />
         <Box element="section" backgroundColor="secondary" paddingTop={2.5}>
           <Box paddingX={2.5}>
-            <Stack alignItems="center" justifyContent="space-between" gap={2}>
-              <Stack direction="column" gap={0.5}>
-                <Text variant="bodySmall" color="secondary" weight="bold">
-                  Proposed check
-                </Text>
-                <Text element="h3" variant="h3">
-                  {selected.proposedCheck.method} {selected.subject}
-                </Text>
-              </Stack>
-              <Badge color="green" text="Ready to review" />
+            <Stack direction="column" gap={0.5}>
+              <Text variant="bodySmall" color="secondary" weight="bold">
+                Proposed check
+              </Text>
+              <Text element="h3" variant="h3">
+                {selected.proposedCheck.method} {selected.subject}
+              </Text>
             </Stack>
           </Box>
 
@@ -443,14 +402,6 @@ function ReliabilityInboxTitle() {
       <Badge color="blue" text="Experimental" />
     </Stack>
   );
-}
-
-function formatList(values: string[]) {
-  return values.length > 0 ? values.join(', ').replaceAll('_', ' ') : 'available request telemetry';
-}
-
-function capitalize(value: string) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({

@@ -25,7 +25,7 @@ const OPPORTUNITY = {
 describe('ReliabilityInboxBanner', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('links the highest-priority suggestion to the review page', async () => {
+  it('links the next recommendation to the review page', async () => {
     jest.mocked(useCachedReliabilityInboxSuggestions).mockReturnValue({
       data: [OPPORTUNITY],
     } as ReturnType<typeof useCachedReliabilityInboxSuggestions>);
@@ -34,7 +34,7 @@ describe('ReliabilityInboxBanner', () => {
     render(<ReliabilityInboxBanner />);
 
     expect(screen.getByText('Reliability Inbox · 1 opportunity')).toBeInTheDocument();
-    expect(screen.getByText('Highest priority: mcp.goagain.dev')).toBeInTheDocument();
+    expect(screen.getByText('Recommended next: mcp.goagain.dev')).toBeInTheDocument();
     const reviewLink = screen.getByRole('link', { name: 'Review suggestions' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
     await waitFor(() =>
@@ -55,8 +55,8 @@ describe('ReliabilityInboxBanner', () => {
 
     render(<ReliabilityInboxBanner />);
 
-    expect(screen.getByText('Generate prioritized suggestions when you are ready to review them.')).toBeInTheDocument();
-    expect(screen.queryByText(/Highest priority:/)).not.toBeInTheDocument();
+    expect(screen.getByText('Generate actionable recommendations when you are ready to review them.')).toBeInTheDocument();
+    expect(screen.queryByText(/Recommended next:/)).not.toBeInTheDocument();
     expect(trackInboxExposure).not.toHaveBeenCalled();
   });
 });

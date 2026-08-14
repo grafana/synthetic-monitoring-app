@@ -86,12 +86,11 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
-  it('leads with a decision-oriented recommendation and neutral coverage status', async () => {
+  it('leads with an actionable recommendation and the evidence behind it', async () => {
     const { user } = renderPage();
 
     expect(await screen.findByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).toBeInTheDocument();
     expect(screen.getByText('Recommended next step')).toBeInTheDocument();
-    expect(screen.getByText('Highest priority')).toBeInTheDocument();
 
     const endpoint = screen.getByLabelText('Recommended endpoint');
     expect(within(endpoint).getByText('GET')).toBeInTheDocument();
@@ -101,19 +100,20 @@ describe('ReliabilityInboxPage', () => {
     const queueSubject = within(screen.getByLabelText('Review queue')).getByText('mcp.goagain.dev');
     expect(queueSubject).toHaveAttribute('title', 'https://mcp.goagain.dev/');
 
-    const queueSignals = screen.getByLabelText('Decision signals for mcp.goagain.dev');
-    expect(within(queueSignals).getByText('High value')).toBeInTheDocument();
-    expect(within(queueSignals).getByText('High confidence')).toBeInTheDocument();
-
-    const recommendationSignals = screen.getByLabelText('Recommendation signals');
-    expect(within(recommendationSignals).getByText('High value')).toBeInTheDocument();
-    expect(within(recommendationSignals).getByText('High confidence')).toBeInTheDocument();
+    const queue = screen.getByLabelText('Review queue');
+    expect(within(queue).getByText('Recommended next')).toBeInTheDocument();
+    expect(within(queue).getByText('No matching check found')).toBeInTheDocument();
+    expect(within(queue).getByText('Public HTTP · 1.6 req/s')).toBeInTheDocument();
 
     expect(
       screen.getByText(
-        'Synthetic Monitoring does not appear to monitor this traffic yet, so we recommend adding this check.'
+        'We observed 5.8k requests in the last hour, and no matching Synthetic Monitoring check was found.'
       )
     ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'No matching check found' })).toBeInTheDocument();
+    expect(screen.queryByText('High value')).not.toBeInTheDocument();
+    expect(screen.queryByText('High confidence')).not.toBeInTheDocument();
+    expect(screen.queryByText('Ready to review')).not.toBeInTheDocument();
     expect(screen.getByText('5.8k')).toBeInTheDocument();
     expect(screen.getByText('estimated requests in the last hour')).toBeInTheDocument();
     expect(screen.getByText('5xx responses')).toBeInTheDocument();
