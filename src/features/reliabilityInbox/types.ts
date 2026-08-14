@@ -41,6 +41,7 @@ export const reliabilitySuggestionSchema = z
 
 export const reliabilitySuggestionsSchema = z.object({
   suggestions: z.array(reliabilitySuggestionSchema),
+  warnings: z.array(z.string()).default([]),
 });
 
 export type ReliabilitySuggestion = z.infer<typeof reliabilitySuggestionSchema>;
