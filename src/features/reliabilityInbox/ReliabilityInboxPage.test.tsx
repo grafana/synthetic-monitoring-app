@@ -9,11 +9,12 @@ import { ReliabilitySuggestion } from './types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { useReliabilityInboxSuggestions } from './data';
+import { useReliabilityInboxDismissals, useReliabilityInboxSuggestions } from './data';
 import { toReliabilityOpportunity } from './model';
 import { ReliabilityInboxPage } from './ReliabilityInboxPage';
 
 jest.mock('./data', () => ({
+  useReliabilityInboxDismissals: jest.fn(),
   useReliabilityInboxSuggestions: jest.fn(),
 }));
 
@@ -34,6 +35,8 @@ const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = {
 };
 
 const openAssistant = jest.fn();
+const dismissSuggestion = jest.fn();
+const restoreSuggestion = jest.fn();
 
 function renderPage(
   suggestions: ReliabilitySuggestion[] = [HTTP_RELIABILITY_SUGGESTION],
@@ -59,6 +62,11 @@ function renderPage(
 describe('ReliabilityInboxPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.mocked(useReliabilityInboxDismissals).mockReturnValue({
+      dismissedSuggestionIds: [],
+      dismissSuggestion,
+      restoreSuggestion,
+    });
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: true,
       isLoading: false,
@@ -161,6 +169,72 @@ describe('ReliabilityInboxPage', () => {
     expect(await screen.findByText('Suggestions could not be refreshed')).toBeInTheDocument();
     expect(screen.getByText('Showing saved suggestions. Try again later for newer opportunities.')).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Create an HTTP check' })).toBeInTheDocument();
+  });
+
+  it('dismisses suggestions from the card header, advances, and supports undo', async () => {
+    const first = toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION);
+    const second = toReliabilityOpportunity({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      id: 'api-suggestion',
+      target: 'https://api.example.com/',
+      score: 1.3,
+      relevance: 50,
+      prompt: HTTP_RELIABILITY_SUGGESTION.prompt.replaceAll('mcp.goagain.dev', 'api.example.com'),
+    });
+    let suggestions = [first, second];
+
+    dismissSuggestion.mockImplementation((id) => {
+      suggestions = suggestions.filter((suggestion) => suggestion.id !== id);
+    });
+    restoreSuggestion.mockImplementation((id) => {
+      const restored = [first, second].find((suggestion) => suggestion.id === id);
+
+      if (restored && !suggestions.some((suggestion) => suggestion.id === id)) {
+        suggestions = [restored, ...suggestions];
+      }
+    });
+    jest.mocked(useReliabilityInboxSuggestions).mockImplementation(
+      () =>
+        ({
+          data: suggestions,
+          isLoading: false,
+          isFetching: false,
+          isError: false,
+          refetch: jest.fn(),
+        }) as unknown as ReturnType<typeof useReliabilityInboxSuggestions>
+    );
+
+    const { user } = render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    const dismissButton = await screen.findByRole('button', { name: 'Dismiss suggestion' });
+    expect(dismissButton).not.toHaveTextContent('Dismiss suggestion');
+    await user.click(dismissButton);
+
+    expect(dismissSuggestion).toHaveBeenCalledWith('http-suggestion');
+    expect(within(screen.getByLabelText('Suggested check endpoint')).getByText('api.example.com')).toBeInTheDocument();
+    const dismissalToast = await screen.findByRole('status', { name: 'Suggestion dismissed in this browser' });
+    expect(within(dismissalToast).getByRole('button', { name: 'Undo' })).toBeInTheDocument();
+
+    await user.click(within(dismissalToast).getByRole('button', { name: 'Undo' }));
+
+    expect(restoreSuggestion).toHaveBeenCalledWith('http-suggestion');
+    expect(within(screen.getByLabelText('Suggested check endpoint')).getByText('mcp.goagain.dev')).toBeInTheDocument();
+    expect(screen.queryByRole('status', { name: 'Suggestion dismissed in this browser' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Dismiss suggestion' }));
+    expect(within(screen.getByLabelText('Suggested check endpoint')).getByText('api.example.com')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Dismiss suggestion' }));
+    expect(await screen.findByText('No reviewable opportunities')).toBeInTheDocument();
+
+    const finalDismissalToast = screen.getByRole('status', { name: 'Suggestion dismissed in this browser' });
+    await user.click(within(finalDismissalToast).getByRole('button', { name: 'Undo' }));
+
+    expect(restoreSuggestion).toHaveBeenLastCalledWith('api-suggestion');
+    expect(within(screen.getByLabelText('Suggested check endpoint')).getByText('api.example.com')).toBeInTheDocument();
   });
 
   it('shows a compact proposed check with configuration details on demand', async () => {
