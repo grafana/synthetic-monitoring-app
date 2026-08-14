@@ -169,6 +169,7 @@ export const SCENES_TEST_ID = {
   timepoint: {
     list: 'scenes timepoint list',
     listEntryBar: 'scenes timepoint list-entry-bar',
+    listEntryFailureSegment: 'scenes timepoint list-entry-failure-segment',
     viewer: 'scenes timepoint viewer',
   },
 } as const;
