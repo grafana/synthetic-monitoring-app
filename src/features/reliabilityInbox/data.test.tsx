@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { HTTP_RELIABILITY_SUGGESTION } from 'test/fixtures/reliabilityInbox';
 import { createWrapper } from 'test/render';
 
@@ -7,8 +7,10 @@ import { useSMDS } from 'hooks/useSMDS';
 
 import {
   reliabilityInboxQueryKey,
+  reliabilityInboxDismissalsKey,
   reliabilityInboxStorageKey,
   useCachedReliabilityInboxSuggestions,
+  useReliabilityInboxDismissals,
   useReliabilityInboxSuggestions,
 } from './data';
 
@@ -97,6 +99,30 @@ describe('Reliability Inbox data', () => {
     const { result } = renderHook(() => useCachedReliabilityInboxSuggestions(), { wrapper: Wrapper });
 
     await waitFor(() => expect(result.current.data?.[0].subject).toBe('mcp.goagain.dev'));
+    expect(getReliabilityInboxSuggestions).not.toHaveBeenCalled();
+  });
+
+  it('persists dismissed suggestions, filters them from cache, and supports undo', async () => {
+    const dismissalsKey = reliabilityInboxDismissalsKey(API_HOST, STACK_ID);
+    window.localStorage.setItem(
+      reliabilityInboxStorageKey(API_HOST, STACK_ID),
+      JSON.stringify({ savedAt: Date.now(), suggestions: [HTTP_RELIABILITY_SUGGESTION] })
+    );
+    window.localStorage.setItem(dismissalsKey, JSON.stringify([HTTP_RELIABILITY_SUGGESTION.id]));
+    const queryClient = getQueryClient();
+    const { Wrapper } = createWrapper({ queryClient });
+
+    const { result } = renderHook(
+      () => ({ suggestions: useCachedReliabilityInboxSuggestions(), dismissals: useReliabilityInboxDismissals() }),
+      { wrapper: Wrapper }
+    );
+
+    await waitFor(() => expect(result.current.suggestions.data).toEqual([]));
+    act(() => result.current.dismissals.restoreSuggestion(HTTP_RELIABILITY_SUGGESTION.id));
+    expect(result.current.suggestions.data).toHaveLength(1);
+    act(() => result.current.dismissals.dismissSuggestion(HTTP_RELIABILITY_SUGGESTION.id));
+    expect(result.current.suggestions.data).toEqual([]);
+    expect(JSON.parse(window.localStorage.getItem(dismissalsKey)!)).toEqual([HTTP_RELIABILITY_SUGGESTION.id]);
     expect(getReliabilityInboxSuggestions).not.toHaveBeenCalled();
   });
 

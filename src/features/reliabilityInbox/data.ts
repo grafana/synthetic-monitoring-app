@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useLocalStorage } from 'usehooks-ts';
 import { z } from 'zod';
 
 import { reliabilitySuggestionSchema, reliabilitySuggestionsSchema } from './types';
@@ -12,12 +13,19 @@ const reliabilityInboxSnapshotSchema = z.object({
   savedAt: z.number(),
   suggestions: z.array(reliabilitySuggestionSchema),
 });
+const dismissedSuggestionIdsSchema = z.array(z.string());
+const dismissedSuggestionIdsStorageOptions = {
+  deserializer: (value: string) => dismissedSuggestionIdsSchema.parse(JSON.parse(value)),
+};
 
 export const reliabilityInboxQueryKey = (apiHost: string, stackId: number) =>
   ['reliability-inbox', 'suggestions', apiHost, stackId] as const;
 
 export const reliabilityInboxStorageKey = (apiHost: string, stackId: number) =>
   `synthetic-monitoring:reliability-inbox:v1:${apiHost}:${stackId}`;
+
+export const reliabilityInboxDismissalsKey = (apiHost: string, stackId: number) =>
+  `synthetic-monitoring:reliability-inbox-dismissals:v1:${apiHost}:${stackId}`;
 
 /**
  * Fetches suggestions from the reliability-inbox experiment.
@@ -34,12 +42,21 @@ export function useCachedReliabilityInboxSuggestions() {
   return useReliabilityInboxQuery(false);
 }
 
+export function useReliabilityInboxDismissals() {
+  const smDS = useSMDS();
+  return useScopedReliabilityInboxDismissals(
+    smDS.instanceSettings.jsonData.apiHost,
+    smDS.instanceSettings.jsonData.metrics.hostedId
+  );
+}
+
 function useReliabilityInboxQuery(generateSuggestions: boolean) {
   const smDS = useSMDS();
   const apiHost = smDS.instanceSettings.jsonData.apiHost;
   const stackId = smDS.instanceSettings.jsonData.metrics.hostedId;
   const storageKey = reliabilityInboxStorageKey(apiHost, stackId);
   const snapshot = readSnapshot(storageKey);
+  const { dismissedSuggestionIds } = useScopedReliabilityInboxDismissals(apiHost, stackId);
 
   return useQuery({
     // apiHost is in the key because it selects the region, and therefore which
@@ -67,7 +84,25 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
     // the result for the lifetime of the SPA session, even when no component is
     // temporarily subscribed, so navigation cannot cause accidental regeneration.
     gcTime: Infinity,
+    select: (opportunities) => opportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id)),
   });
+}
+
+function useScopedReliabilityInboxDismissals(apiHost: string, stackId: number) {
+  const [dismissedSuggestionIds, setDismissedSuggestionIds] = useLocalStorage<string[]>(
+    reliabilityInboxDismissalsKey(apiHost, stackId),
+    [],
+    dismissedSuggestionIdsStorageOptions
+  );
+  return {
+    dismissedSuggestionIds,
+    dismissSuggestion: (id: string) =>
+      setDismissedSuggestionIds((dismissedIds) =>
+        dismissedIds.includes(id) ? dismissedIds : [...dismissedIds, id]
+      ),
+    restoreSuggestion: (id: string) =>
+      setDismissedSuggestionIds((dismissedIds) => dismissedIds.filter((dismissedId) => dismissedId !== id)),
+  };
 }
 
 function toOpportunities(suggestions: Array<z.infer<typeof reliabilitySuggestionSchema>>) {
