@@ -1,14 +1,16 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { Box, Icon, LinkButton, Stack, Text } from '@grafana/ui';
+import { Box, Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { trackInboxExposure, trackReviewEntryClicked } from 'features/tracking/reliabilityInboxEvents';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
+import { getAssistantActionStyle } from './assistantActionStyles';
 import { useCachedReliabilityInboxSuggestions } from './data';
 import { compareReliabilityOpportunities } from './model';
 
 export function ReliabilityInboxBanner() {
+  const assistantAction = useStyles2(getAssistantActionStyle);
   const { data: opportunities = [] } = useCachedReliabilityInboxSuggestions();
   const exposureTracked = useRef(false);
   const topOpportunity = useMemo(() => [...opportunities].sort(compareReliabilityOpportunities)[0], [opportunities]);
@@ -53,6 +55,7 @@ export function ReliabilityInboxBanner() {
           </Stack>
         </Stack>
         <LinkButton
+          className={assistantAction}
           icon="ai-sparkle"
           variant="secondary"
           href={generateRoutePath(AppRoutes.ReliabilityInbox)}

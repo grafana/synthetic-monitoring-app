@@ -11,10 +11,10 @@ import {
   Divider,
   Grid,
   Icon,
+  LinkButton,
   Spinner,
   Stack,
   Text,
-  TextLink,
   useStyles2,
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -25,6 +25,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 
+import { getAssistantActionStyle } from './assistantActionStyles';
 import { useReliabilityInboxSuggestions } from './data';
 import { getEvidenceExploreUrl } from './evidence';
 import { compareReliabilityOpportunities } from './model';
@@ -205,57 +206,65 @@ function ReliabilityInboxReview() {
 
       <article className={styles.review}>
         <Box element="header" padding={2.5}>
-          <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="flex-start" gap={2}>
-            <Stack direction="column" gap={1} minWidth={0} flex={1}>
-              <Text variant="bodySmall" color="secondary" weight="bold">
-                Recommended next step
-              </Text>
-              <Text element="h2" variant="h3">
-                Add an HTTP check for {selected.subject}
-              </Text>
-              <Stack alignItems="center" gap={1} aria-label="Recommended endpoint" minWidth={0}>
-                <Badge color="darkgrey" text={selected.proposedCheck.method} />
-                <Text truncate>{selected.subject}</Text>
-              </Stack>
-              <Text element="p">
-                Review a ready-to-customize check that can continuously verify this public endpoint.
-              </Text>
-              <Stack direction="column" alignItems="flex-start" gap={1} aria-label="Recommendation signals">
-                <Stack alignItems="center" gap={1}>
-                  <Badge
-                    color={selected.value === 'high' ? 'orange' : 'darkgrey'}
-                    text={`${capitalize(selected.value)} value`}
-                  />
-                  <Text variant="bodySmall" color="secondary">
-                    Observed demand and endpoint relevance make this worth reviewing.
-                  </Text>
+          <Stack direction="column" gap={1}>
+            <Text variant="bodySmall" color="secondary" weight="bold">
+              Recommended next step
+            </Text>
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              justifyContent="space-between"
+              alignItems="flex-start"
+              gap={2}
+            >
+              <Stack direction="column" gap={1} minWidth={0} flex={1}>
+                <Text element="h2" variant="h3">
+                  Add an HTTP check for {selected.subject}
+                </Text>
+                <Stack alignItems="center" gap={1} aria-label="Recommended endpoint" minWidth={0}>
+                  <Badge color="darkgrey" text={selected.proposedCheck.method} />
+                  <Text truncate>{selected.subject}</Text>
                 </Stack>
-                <Stack alignItems="center" gap={1}>
-                  <Badge
-                    color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
-                    text={`${capitalize(selected.confidence)} confidence`}
-                  />
-                  <Text variant="bodySmall" color="secondary">
-                    Endpoint and traffic signals agree.
-                  </Text>
+                <Text element="p">
+                  Review a ready-to-customize check that can continuously verify this public endpoint.
+                </Text>
+                <Stack direction="column" alignItems="flex-start" gap={1} aria-label="Recommendation signals">
+                  <Stack alignItems="center" gap={1}>
+                    <Badge
+                      color={selected.value === 'high' ? 'orange' : 'darkgrey'}
+                      text={`${capitalize(selected.value)} value`}
+                    />
+                    <Text variant="bodySmall" color="secondary">
+                      Observed demand and endpoint relevance make this worth reviewing.
+                    </Text>
+                  </Stack>
+                  <Stack alignItems="center" gap={1}>
+                    <Badge
+                      color={selected.confidence === 'high' ? 'green' : 'darkgrey'}
+                      text={`${capitalize(selected.confidence)} confidence`}
+                    />
+                    <Text variant="bodySmall" color="secondary">
+                      Endpoint and traffic signals agree.
+                    </Text>
+                  </Stack>
                 </Stack>
               </Stack>
-            </Stack>
-            <Stack direction="column" alignItems={{ xs: 'flex-start', md: 'flex-end' }} gap={1} maxWidth={280}>
-              <Button
-                aria-describedby="reliability-inbox-assistant-action-help"
-                icon="ai-sparkle"
-                disabled={assistantDisabled}
-                tooltip={assistantTooltip}
-                variant="secondary"
-                onClick={setUpWithAssistant}
-              >
-                Review and customize check
-              </Button>
-              <Text id="reliability-inbox-assistant-action-help" variant="bodySmall" color="secondary">
-                Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved
-                until you confirm.
-              </Text>
+              <Stack direction="column" alignItems={{ xs: 'flex-start', md: 'flex-end' }} gap={1} maxWidth={280}>
+                <Button
+                  aria-describedby="reliability-inbox-assistant-action-help"
+                  className={styles.assistantAction}
+                  icon="ai-sparkle"
+                  disabled={assistantDisabled}
+                  tooltip={assistantTooltip}
+                  variant="secondary"
+                  onClick={setUpWithAssistant}
+                >
+                  Review and customize check
+                </Button>
+                <Text id="reliability-inbox-assistant-action-help" variant="bodySmall" color="secondary">
+                  Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or
+                  saved until you confirm.
+                </Text>
+              </Stack>
             </Stack>
           </Stack>
         </Box>
@@ -267,9 +276,9 @@ function ReliabilityInboxReview() {
               Evidence at a glance
             </Text>
             {evidenceExploreUrl && (
-              <TextLink href={evidenceExploreUrl} variant="bodySmall">
+              <LinkButton href={evidenceExploreUrl} icon="compass" variant="secondary">
                 Investigate in Explore
-              </TextLink>
+              </LinkButton>
             )}
           </Stack>
           <Grid columns={{ xs: 2, lg: 4 }} gap={1}>
@@ -445,6 +454,7 @@ function capitalize(value: string) {
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  assistantAction: getAssistantActionStyle(theme),
   reviewLayout: css({
     display: 'grid',
     gridTemplateColumns: 'minmax(220px, 280px) minmax(0, 1fr)',
