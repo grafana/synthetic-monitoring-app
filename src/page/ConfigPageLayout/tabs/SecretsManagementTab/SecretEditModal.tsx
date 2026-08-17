@@ -7,7 +7,7 @@ import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { trackSecretCreated, trackSecretUpdated } from 'features/tracking/secretsManagementEvents';
 import { DataTestIds } from 'test/dataTestIds';
 
-import { Secret, SecretsManagementSource } from './types';
+import { Secret, SecretsManagementSource, SecretWithMetadata } from './types';
 import { getErrorMessage } from 'utils';
 import { useSaveSecret, useSecret } from 'data/useSecrets';
 
@@ -23,6 +23,12 @@ interface SecretEditModalProps {
   existingNames?: string[];
   /** The source context where the secrets management UI is being used. */
   source: SecretsManagementSource;
+  /**
+   * Prefill the form when creating a secret (e.g. migrating a hardcoded value
+   * detected by the secret scanner).
+   */
+  initialValues?: Partial<SecretFormValues & { plaintext?: string }>;
+  onCreated?: (secret: SecretWithMetadata) => void;
 }
 
 function getDefaultValues(isNew = true): SecretFormValues & { plaintext?: string } {
@@ -66,7 +72,15 @@ function createGetFieldError(errors: FormErrorMap) {
   };
 }
 
-export function SecretEditModal({ open, name, onDismiss, existingNames = [], source }: SecretEditModalProps) {
+export function SecretEditModal({
+  open,
+  name,
+  onDismiss,
+  existingNames = [],
+  source,
+  initialValues,
+  onCreated,
+}: SecretEditModalProps) {
   const { data: secret, isLoading, isError: hasFetchError, error: fetchError } = useSecret(name);
   const saveSecret = useSaveSecret();
   const isNewSecret = name === SECRETS_EDIT_MODE_ADD;
@@ -75,8 +89,8 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
   const hasError = hasFetchError || !!saveError;
   const styles = useStyles2(getStyles);
   const defaultValues = useMemo(() => {
-    return secretToFormValues(secret) ?? getDefaultValues(isNewSecret);
-  }, [secret, isNewSecret]);
+    return secretToFormValues(secret) ?? { ...getDefaultValues(isNewSecret), ...initialValues };
+  }, [secret, isNewSecret, initialValues]);
 
   const schema = secretSchemaFactory(isNewSecret, existingNames);
 
@@ -95,10 +109,12 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
     resolver: standardSchemaResolver(schema),
   });
 
-  // Set the default value for plaintext to empty string when secret is reset (for validation to work)
+  // Set the default value for plaintext when the secret is (re)set, so validation
+  // works. Fresh/reset secrets get '', unless a prefilled value was provided
+  // (e.g. migrating a detected secret), in which case we keep it.
   useEffect(() => {
-    setValue('plaintext', isConfigured ? undefined : '');
-  }, [setValue, isConfigured]);
+    setValue('plaintext', isConfigured ? undefined : (initialValues?.plaintext ?? ''));
+  }, [setValue, isConfigured, initialValues?.plaintext]);
 
   const fieldError = createGetFieldError(errors as FormErrorMap);
 
@@ -118,6 +134,11 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
     reset(defaultValues);
   }, [reset, defaultValues]);
 
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.stopPropagation();
+    return handleSubmit(onSubmit)(event);
+  };
+
   const onSubmit = (data: SecretFormValues) => {
     if ('plaintext' in data && (data.plaintext === undefined || isConfigured)) {
       delete data.plaintext;
@@ -127,10 +148,11 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
       onError(error: unknown) {
         setSaveError(error);
       },
-      onSuccess() {
+      onSuccess(created) {
         setSaveError(null);
         if (isNewSecret) {
           trackSecretCreated({ source });
+          onCreated?.(created);
         } else {
           trackSecretUpdated({ source });
         }
@@ -157,7 +179,7 @@ export function SecretEditModal({ open, name, onDismiss, existingNames = [], sou
         /* Clicking the backdrop will not close the modal */
       }}
     >
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleFormSubmit}>
         {hasError && (
           <Alert title={`Unable to ${hasFetchError ? 'fetch' : 'save'} secret`} severity="error">
             An error occurred while trying to {hasFetchError ? <>fetch secret (name: {name})</> : <>save secret</>}. If

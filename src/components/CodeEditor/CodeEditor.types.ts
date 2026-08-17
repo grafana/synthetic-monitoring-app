@@ -8,6 +8,7 @@ export interface CodeEditorProps {
   k6Channel?: string;
   language?: 'javascript' | 'json' | 'text';
   onBeforeEditorMount?: (monaco: typeof monacoType) => void;
+  onEditorDidMount?: (editor: monacoType.editor.IStandaloneCodeEditor, monaco: typeof monacoType) => void;
   onChange?: (value: string) => void;
   onValidation?: (hasError: boolean, value: string) => void;
   overlayMessage?: ReactNode;
