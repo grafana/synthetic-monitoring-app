@@ -130,10 +130,11 @@ export function countScenarios(objectExpression: ObjectExpression, declarations:
     return 0;
   }
 
+  // Count every scenario entry by key. Values may be inline objects, identifiers
+  // (including shorthand like `scenarios: { ui, api }`), or other expressions —
+  // skipping non-ObjectExpression values would let multi-scenario scripts through.
   return expandProperties(scenarios, declarations).filter(
-    (scenario) =>
-      (scenario.key.type === 'Identifier' || scenario.key.type === 'Literal') &&
-      scenario.value.type === 'ObjectExpression'
+    (scenario) => scenario.key.type === 'Identifier' || scenario.key.type === 'Literal'
   ).length;
 }
 

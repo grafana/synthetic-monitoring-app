@@ -381,6 +381,42 @@ export default async function () {
     ]);
   });
 
+  it('errors when multiple scenarios are referenced by identifier (including shorthand)', () => {
+    const script = `
+import { browser } from 'k6/browser';
+
+const ui = {
+  executor: 'shared-iterations',
+  options: {
+    browser: {
+      type: 'chromium',
+    },
+  },
+};
+
+const api = {
+  executor: 'shared-iterations',
+  options: {
+    browser: {
+      type: 'chromium',
+    },
+  },
+};
+
+export const options = {
+  scenarios: { ui, api },
+};
+
+export default async function () {
+  const page = await browser.newPage();
+}
+`;
+
+    expect(runValidation(script)).toEqual([
+      expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE }),
+    ]);
+  });
+
   it(`errors when the script does not import { browser } from 'k6/browser'`, () => {
     const script = `
       export const options = {
@@ -429,6 +465,23 @@ export const options = {
       executor: 'shared-iterations',
     },
   },
+};
+
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([
+      expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE }),
+    ]);
+  });
+
+  it('errors when multiple non-browser scenarios use identifier shorthand', () => {
+    const script = `
+const first = { executor: 'shared-iterations' };
+const second = { executor: 'shared-iterations' };
+
+export const options = {
+  scenarios: { first, second },
 };
 
 export default function () {}
