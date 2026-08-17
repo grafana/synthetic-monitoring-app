@@ -5,6 +5,7 @@ import { useDashboardTime } from 'dashboards/hooks/useDashboardTime';
 import { Check } from 'types';
 import { useAppTimeOptional } from 'contexts/AppTimeProvider';
 import { DEFAULT_APP_TIMEZONE } from 'contexts/AppTimeProvider.utils';
+import { alertNamesMatch } from 'data/grafanaAlertName';
 
 import {
   annotationFramesToEvents,
@@ -176,7 +177,7 @@ export function useDashboardAlertEpisodes(alertName: string, annotationName?: st
     ? [context.alertEpisodesByName[annotationName] ?? []]
     : Object.values(context.alertEpisodesByName);
 
-  return episodeGroups.flat().filter((episode) => episode.alertName === alertName);
+  return episodeGroups.flat().filter((episode) => alertNamesMatch(episode.alertName, alertName));
 }
 
 export function DashboardAnnotationsStaticProvider({

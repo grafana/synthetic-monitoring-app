@@ -65,8 +65,8 @@ describe('HTTP header metric comparison semantics', () => {
         referenceLabel: '30 days ago',
       })
     ).toEqual({
-      plain: '0.4 pp lower',
-      compact: '↓ 0.4 pp',
+      plain: '0.40 pp lower',
+      compact: '↓ 0.40 pp',
       detail: '99.50% selected · 99.90% reference',
     });
   });
@@ -80,7 +80,7 @@ describe('HTTP header metric comparison semantics', () => {
       })
     ).toEqual({
       plain: 'No change',
-      compact: '→ 0.0 pp',
+      compact: '→ 0.00 pp',
       detail: '99.90% selected · 99.90% reference',
     });
   });
@@ -93,9 +93,23 @@ describe('HTTP header metric comparison semantics', () => {
         referenceLabel: '30 days ago',
       })
     ).toEqual({
-      plain: 'No change',
-      compact: '→ 0.0 pp',
+      plain: '0.04 pp higher',
+      compact: '↑ 0.04 pp',
       detail: '99.94% selected · 99.90% reference',
+    });
+  });
+
+  it('reports "No change" only when the two-decimal displayed values are identical', () => {
+    expect(
+      comparePercentagePoints({
+        primary: 0.99951,
+        reference: 0.99949,
+        referenceLabel: '30 days ago',
+      })
+    ).toEqual({
+      plain: 'No change',
+      compact: '→ 0.00 pp',
+      detail: '99.95% selected · 99.95% reference',
     });
   });
 
@@ -109,8 +123,8 @@ describe('HTTP header metric comparison semantics', () => {
         referenceDurationMs: 60 * 60 * 1000,
       })
     ).toEqual({
-      plain: '1.0 pp higher',
-      compact: '↑ 1.0 pp',
+      plain: '1.00 pp higher',
+      compact: '↑ 1.00 pp',
       detail: '100.00% selected · 99.00% reference · Current range: 2 hours · Previous period range: 1 hour',
     });
   });

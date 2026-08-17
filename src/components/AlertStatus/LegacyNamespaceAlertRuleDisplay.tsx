@@ -4,6 +4,7 @@ import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { PrometheusAlertsGroup } from 'types';
+import { isFiringAlertName } from 'data/grafanaAlertName';
 
 import { getStyles } from './AlertStatus';
 
@@ -38,7 +39,7 @@ export const LegacyNamespaceAlertRuleDisplay = ({ group, metricsDSName, firingAl
       </Stack>
       <ul className={styles.list}>
         {filteredRules.map((rule) => {
-          const isFiring = firingAlertNames.has(rule.name);
+          const isFiring = isFiringAlertName(firingAlertNames, rule.name);
 
           return (
             <li key={rule.name}>

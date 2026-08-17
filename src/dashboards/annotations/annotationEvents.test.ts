@@ -208,6 +208,12 @@ describe('getAlertEpisodeStateAt', () => {
     expect(getAlertEpisodeStateAt([], alertName, 2_000, 200)).toBe('none');
   });
 
+  it('matches GRAFANA_ALERTS titles that include a period suffix', () => {
+    expect(
+      getAlertEpisodeStateAt([{ alertName: `${alertName} [5m]`, from: 1_000, to: 1_900 }], alertName, 2_000, 200)
+    ).toBe('firing');
+  });
+
   it('ignores episodes for other alerts and episodes that start after the evaluation point', () => {
     expect(
       getAlertEpisodeStateAt(

@@ -11,10 +11,7 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { CheckAlertError, CheckAlertPublished, CheckAlertType } from 'types';
 import { useAppTime } from 'contexts/AppTimeProvider';
 import type { AppTimeRangeMode } from 'contexts/AppTimeProvider.utils';
-import {
-  DashboardComparisonContextValue,
-  useDashboardComparison,
-} from 'contexts/DashboardComparisonProvider';
+import { DashboardComparisonContextValue, useDashboardComparison } from 'contexts/DashboardComparisonProvider';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { useChecksAlertStates } from 'data/useCheckAlertStates';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
@@ -96,9 +93,7 @@ function hourlyPanel(value: number, hours: number): HealthPanelQueryResult {
 
 function trendPanel(values: number[]): HealthPanelQueryResult {
   const duration = selectedRange.to - selectedRange.from;
-  const times = values.map((_, index) =>
-    selectedRange.from + (index * duration) / Math.max(values.length - 1, 1)
-  );
+  const times = values.map((_, index) => selectedRange.from + (index * duration) / Math.max(values.length - 1, 1));
 
   return {
     isLoading: false,
@@ -299,14 +294,13 @@ describe('HttpCheckHealthProvider', () => {
 
     const snapshot = JSON.parse(screen.getByTestId('health-model').textContent ?? '{}');
     expect(
-      snapshot.baselineEvidence.filter(
-        ({ metricId }: { metricId?: string }) => metricId === 'reachability'
-      )
+      snapshot.baselineEvidence.filter(({ metricId }: { metricId?: string }) => metricId === 'reachability')
     ).toEqual([]);
     expect(
-      snapshot.baselineEvidence.map(
-        ({ detail, metricId }: { detail?: string; metricId?: string }) => ({ detail, metricId })
-      )
+      snapshot.baselineEvidence.map(({ detail, metricId }: { detail?: string; metricId?: string }) => ({
+        detail,
+        metricId,
+      }))
     ).toEqual([
       { detail: 'Compared with the 21-day median', metricId: 'uptime' },
       { detail: 'Compared with the 21-day median', metricId: 'uptime' },
@@ -417,50 +411,47 @@ describe('HttpCheckHealthProvider', () => {
       healthReference: { status: 'query-error' as const },
       qualifier: 'Some health evidence is unavailable',
     },
-  ])(
-    'keeps alerts and guardrails active while Normal is $healthReference.status',
-    ({ healthReference, qualifier }) => {
-      setComparison(healthReference, null);
-      mockFiringReachabilityAlert();
+  ])('keeps alerts and guardrails active while Normal is $healthReference.status', ({ healthReference, qualifier }) => {
+    setComparison(healthReference, null);
+    mockFiringReachabilityAlert();
 
-      renderProvider();
+    renderProvider();
 
-      const baselineCalls = jest
-        .mocked(useDashboardPanelQuery)
-        .mock.calls.filter(([definition]) => definition.id.includes('-baseline'));
-      expect(baselineCalls.map(([, options]) => options?.enabled)).toEqual([false, false, false]);
+    const baselineCalls = jest
+      .mocked(useDashboardPanelQuery)
+      .mock.calls.filter(([definition]) => definition.id.includes('-baseline'));
+    expect(baselineCalls.map(([, options]) => options?.enabled)).toEqual([false, false, false]);
 
-      const snapshot = JSON.parse(screen.getByTestId('health-model').textContent ?? '{}');
-      expect(snapshot.state).toBe('unhealthy');
-      expect(snapshot.rangeState).toBe('unhealthy');
-      expect(snapshot.baselineEvidence).toEqual([]);
-      expect(snapshot.metrics.uptime.trend.source).toBe('guardrail');
-      expect(snapshot.metrics.reachability.trend.source).toBe('alert');
-      expect(snapshot.alertEvidence).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            state: 'unhealthy',
-            summary: 'Reachability alert is firing',
-          }),
-        ])
-      );
-      expect(snapshot.guardrailEvidence).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            state: 'unhealthy',
-            summary: 'Reachability is below 99%',
-          }),
-        ])
-      );
+    const snapshot = JSON.parse(screen.getByTestId('health-model').textContent ?? '{}');
+    expect(snapshot.state).toBe('unhealthy');
+    expect(snapshot.rangeState).toBe('unhealthy');
+    expect(snapshot.baselineEvidence).toEqual([]);
+    expect(snapshot.metrics.uptime.trend.source).toBe('guardrail');
+    expect(snapshot.metrics.reachability.trend.source).toBe('alert');
+    expect(snapshot.alertEvidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          state: 'unhealthy',
+          summary: 'Reachability alert is firing',
+        }),
+      ])
+    );
+    expect(snapshot.guardrailEvidence).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          state: 'unhealthy',
+          summary: 'Reachability is below 99%',
+        }),
+      ])
+    );
 
-      if (qualifier) {
-        expect(snapshot.qualifiers).toContain(qualifier);
-      } else {
-        expect(snapshot.qualifiers).not.toContain('Some health evidence is unavailable');
-        expect(snapshot.qualifiers).not.toContain('Normal not established yet');
-      }
+    if (qualifier) {
+      expect(snapshot.qualifiers).toContain(qualifier);
+    } else {
+      expect(snapshot.qualifiers).not.toContain('Some health evidence is unavailable');
+      expect(snapshot.qualifiers).not.toContain('Normal not established yet');
     }
-  );
+  });
 });
 
 function buildModel({
@@ -536,7 +527,23 @@ describe('buildHttpCheckHealthModel', () => {
 
     expect(model.state).toBe('healthy');
     expect(model.rangeState).toBe('unhealthy');
-    expect(model.rangeReasons.map((reason) => reason.summary)).toContain('Average latency is well above normal');
+    expect(model.rangeReasons.map((reason) => reason.summary)).toContain('Average latency was well above normal');
+  });
+
+  it('phrases baseline evidence in the past tense for a historical range and present tense while live', () => {
+    const historicalModel = buildModel({
+      reachability: panel(0.997),
+      rangeMode: 'historical',
+    });
+    const liveModel = buildModel({
+      reachability: panel(0.997),
+      rangeMode: 'live',
+    });
+
+    expect(historicalModel.compactReasons.map(({ summary }) => summary)).toContain(
+      'Reachability was within normal range'
+    );
+    expect(liveModel.compactReasons.map(({ summary }) => summary)).toContain('Reachability is within normal range');
   });
 
   it('uses guardrails and says normal is not established below twenty-four hours', () => {
@@ -606,7 +613,7 @@ describe('buildHttpCheckHealthModel', () => {
 
     expect(model.state).toBe('healthy');
     expect(model.rangeState).toBe('unhealthy');
-    expect(model.rangeReasons.map((reason) => reason.summary)).toContain('Reachability is below 99%');
+    expect(model.rangeReasons.map((reason) => reason.summary)).toContain('Reachability was below 99%');
   });
 
   it('distinguishes failed baseline loading from insufficient history', () => {
@@ -631,9 +638,7 @@ describe('buildHttpCheckHealthModel', () => {
 
     expect(model.state).toBe('healthy');
     expect(model.rangeState).toBe('healthy');
-    expect(model.rangeReasons.map((reason) => reason.summary)).not.toContain(
-      'Average latency is well above normal'
-    );
+    expect(model.rangeReasons.map((reason) => reason.summary)).not.toContain('Average latency was well above normal');
     expect(model.evidence).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -731,6 +736,33 @@ describe('buildHttpCheckHealthModel', () => {
     expect(model.rangeReasons.map(({ summary }) => summary)).toContain(
       'Reachability was critical earlier in this range'
     );
+  });
+
+  it('treats a live GRAFANA_ALERTS series with a period suffix as firing', () => {
+    const model = buildModel({
+      alerts: [configuredAlert(CheckAlertType.HTTPRequestDurationTooHighAvg)],
+      runtimeAlertNames: new Set(['HTTPRequestDurationTooHighAvg [5m]']),
+      rangeMode: 'live',
+    });
+
+    expect(model.metrics['average-latency'].alert.state).toBe('firing');
+    expect(model.metrics['average-latency'].alert.fireCount).toBe(1);
+  });
+
+  it('counts historical episodes whose alertname includes a period suffix', () => {
+    const model = buildModel({
+      alerts: [configuredAlert(CheckAlertType.HTTPRequestDurationTooHighAvg)],
+      firingEpisodes: [
+        {
+          alertName: 'HTTPRequestDurationTooHighAvg [5m]',
+          from: selectedRange.from,
+          to: selectedRange.from + 1_000,
+        },
+      ],
+    });
+
+    expect(model.metrics['average-latency'].alert.state).toBe('historical');
+    expect(model.metrics['average-latency'].alert.fireCount).toBe(1);
   });
 
   it('does not let a current runtime alert contaminate historical endpoint health', () => {

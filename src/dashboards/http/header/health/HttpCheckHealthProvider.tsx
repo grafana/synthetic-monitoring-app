@@ -1,10 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import { PanelData } from '@grafana/data';
 import { ALERT_EPISODE_END_TOLERANCE_MS } from 'dashboards/annotations/alertAnnotation.constants';
-import {
-  getAlertEpisodeStateAt,
-  NamedAlertEpisode,
-} from 'dashboards/annotations/annotationEvents';
+import { getAlertEpisodeStateAt, NamedAlertEpisode } from 'dashboards/annotations/annotationEvents';
 import { useDashboardAlertEpisodes } from 'dashboards/annotations/DashboardAnnotationsProvider';
 import { type NormalReference } from 'dashboards/comparison/comparisonCoverage';
 import { panelDataToTrendSamples } from 'dashboards/components/CheckDashboardHeader/headerMetricSparkline.utils';
@@ -13,18 +10,10 @@ import {
   BaselineSummary,
   summarizeBaselineForRange,
 } from 'dashboards/components/CheckDashboardHeader/health/baseline';
-import {
-  resolveCheckHealth,
-} from 'dashboards/components/CheckDashboardHeader/health/checkHealth';
+import { resolveCheckHealth } from 'dashboards/components/CheckDashboardHeader/health/checkHealth';
 import { CheckHealthProvider } from 'dashboards/components/CheckDashboardHeader/health/CheckHealthContext';
-import {
-  bucketTrendSamples,
-  classifyMetricTrend,
-} from 'dashboards/components/CheckDashboardHeader/health/metricTrend';
-import {
-  DashboardPanelDefinition,
-  useDashboardPanelQuery,
-} from 'dashboards/hooks/useDashboardPanelQuery';
+import { bucketTrendSamples, classifyMetricTrend } from 'dashboards/components/CheckDashboardHeader/health/metricTrend';
+import { DashboardPanelDefinition, useDashboardPanelQuery } from 'dashboards/hooks/useDashboardPanelQuery';
 import { hasPanelDataQueryError } from 'dashboards/query/panelDataQueryState';
 
 import {
@@ -42,11 +31,9 @@ import {
 } from 'dashboards/components/CheckDashboardHeader/health/checkHealth.types';
 import { CheckAlertPublished, CheckAlertType, HTTPCheck } from 'types';
 import { useAppTime } from 'contexts/AppTimeProvider';
-import {
-  type AppTimeRangeMode,
-  parseTimeIntervalMs,
-} from 'contexts/AppTimeProvider.utils';
+import { type AppTimeRangeMode, parseTimeIntervalMs } from 'contexts/AppTimeProvider.utils';
 import { useDashboardComparison } from 'contexts/DashboardComparisonProvider';
+import { alertNamesMatch, isFiringAlertName } from 'data/grafanaAlertName';
 import { useListAlertsForCheck } from 'data/useCheckAlerts';
 import { getCheckRuntimeAlertState, useChecksAlertStates } from 'data/useCheckAlertStates';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
@@ -59,10 +46,7 @@ import {
   evaluateSslGuardrail,
   HealthDecision,
 } from './httpHealthPolicy';
-import {
-  getHttpTrendMaterialDelta,
-  interpretHttpMetricTrend,
-} from './httpMetricTrend';
+import { getHttpTrendMaterialDelta, interpretHttpMetricTrend } from './httpMetricTrend';
 
 type HttpMetricId = 'uptime' | 'reachability' | 'average-latency' | 'ssl-expiry';
 
@@ -160,13 +144,13 @@ function createEvidence({
   };
 }
 
-function prefixDecision(label: string, decision: HealthDecision): HealthDecision {
+function prefixDecision(label: string, decision: HealthDecision, rangeMode: AppTimeRangeMode): HealthDecision {
   if (decision.summary.toLowerCase().startsWith(label.toLowerCase())) {
     return decision;
   }
 
-  const separator =
-    decision.state === 'unknown' || decision.summary.startsWith('Certificate') ? ': ' : ' is ';
+  const verb = rangeMode === 'live' ? 'is' : 'was';
+  const separator = decision.state === 'unknown' || decision.summary.startsWith('Certificate') ? ': ' : ` ${verb} `;
 
   return {
     ...decision,
@@ -174,7 +158,11 @@ function prefixDecision(label: string, decision: HealthDecision): HealthDecision
   };
 }
 
-function createGuardrailResult(policies: MetricPolicy[], range: HealthRange): HealthEvidenceProviderResult {
+function createGuardrailResult(
+  policies: MetricPolicy[],
+  range: HealthRange,
+  rangeMode: AppTimeRangeMode
+): HealthEvidenceProviderResult {
   return {
     sourceId: 'http-guardrails',
     isLoading: false,
@@ -185,7 +173,7 @@ function createGuardrailResult(policies: MetricPolicy[], range: HealthRange): He
 
       const metric = policy.selected;
       const value = policyValue(policy);
-      const decision = prefixDecision(policy.label, policy.evaluateGuardrail(value));
+      const decision = prefixDecision(policy.label, policy.evaluateGuardrail(value), rangeMode);
 
       return [
         createEvidence({
@@ -205,7 +193,8 @@ function createGuardrailResult(policies: MetricPolicy[], range: HealthRange): He
 function createBaselineResult(
   policies: MetricPolicy[],
   range: HealthRange,
-  healthReference: NormalReference
+  healthReference: NormalReference,
+  rangeMode: AppTimeRangeMode
 ): HealthEvidenceProviderResult & {
   hasInsufficientHistory: boolean;
   baselinesByMetric: Partial<Record<HttpMetricId, BaselineSummary>>;
@@ -215,10 +204,7 @@ function createBaselineResult(
       sourceId: 'http-baseline',
       isLoading: healthReference.status === 'checking',
       evidence: [],
-      error:
-        healthReference.status === 'query-error'
-          ? new Error('Normal reference query failed')
-          : undefined,
+      error: healthReference.status === 'query-error' ? new Error('Normal reference query failed') : undefined,
       hasInsufficientHistory: healthReference.status === 'not-established',
       baselinesByMetric: {},
     };
@@ -271,7 +257,7 @@ function createBaselineResult(
     const decision =
       value === null
         ? { state: 'unknown' as const, summary: `${policy.label} selected-range value is unavailable` }
-        : prefixDecision(policy.label, policy.compareBaseline(value, baseline));
+        : prefixDecision(policy.label, policy.compareBaseline(value, baseline), rangeMode);
 
     return [
       createEvidence({
@@ -409,32 +395,27 @@ function createAlertResult({
     const configured = alerts.find((alert) => alert.name === alertType);
     const overlappingFiringEpisodes = firingEpisodes.filter(
       (episode) =>
-        episode.alertName === alertType &&
-        rangesOverlap(range, { from: episode.from, to: episode.to })
+        alertNamesMatch(episode.alertName, alertType) && rangesOverlap(range, { from: episode.from, to: episode.to })
     );
     const fireCount = overlappingFiringEpisodes.length;
     const historical = fireCount > 0;
     const pending = pendingEpisodes.some(
       (episode) =>
-        episode.alertName === alertType &&
-        rangesOverlap(range, { from: episode.from, to: episode.to })
+        alertNamesMatch(episode.alertName, alertType) && rangesOverlap(range, { from: episode.from, to: episode.to })
     );
-    const runtimeFiring = runtimeAlertNames.has(alertType);
+    const runtimeFiring = isFiringAlertName(runtimeAlertNames, alertType);
     const episodeStateAtEnd = getAlertEpisodeStateAt(
       firingEpisodes,
       alertType,
       range.to,
       ALERT_EPISODE_END_TOLERANCE_MS
     );
-    const atEvaluation =
-      rangeMode === 'live' ? runtimeFiring : episodeStateAtEnd === 'firing';
+    const atEvaluation = rangeMode === 'live' ? runtimeFiring : episodeStateAtEnd === 'firing';
     const resolvedEpisodes = overlappingFiringEpisodes.filter(
       (episode) => episode.to + ALERT_EPISODE_END_TOLERANCE_MS < range.to
     );
     const resolvedAt =
-      resolvedEpisodes.length > 0
-        ? Math.max(...resolvedEpisodes.map((episode) => episode.to))
-        : undefined;
+      resolvedEpisodes.length > 0 ? Math.max(...resolvedEpisodes.map((episode) => episode.to)) : undefined;
     alertResolutionByMetric[policy.id] = {
       configured,
       atEvaluation,
@@ -572,16 +553,10 @@ function median(values: number[]): number {
   const sorted = [...values].sort((left, right) => left - right);
   const middle = Math.floor(sorted.length / 2);
 
-  return sorted.length % 2 === 0
-    ? (sorted[middle - 1] + sorted[middle]) / 2
-    : sorted[middle];
+  return sorted.length % 2 === 0 ? (sorted[middle - 1] + sorted[middle]) / 2 : sorted[middle];
 }
 
-function getPolicyTrendData(
-  policy: MetricPolicy,
-  range: HealthRange,
-  baseline?: BaselineSummary
-): PolicyTrendData {
+function getPolicyTrendData(policy: MetricPolicy, range: HealthRange, baseline?: BaselineSummary): PolicyTrendData {
   const samples = panelDataToTrendSamples(policy.series.panelData);
   const maxBuckets = Math.min(48, Math.max(4, samples.length));
   const bucketedSamples = bucketTrendSamples({ samples, range, maxBuckets });
@@ -595,11 +570,7 @@ function getPolicyTrendData(
   const first = bucketedSamples[0]?.value;
   const last = bucketedSamples[bucketedSamples.length - 1]?.value;
   const movement =
-    first === undefined || last === undefined || first === last
-      ? undefined
-      : last > first
-        ? 'rising'
-        : 'falling';
+    first === undefined || last === undefined || first === last ? undefined : last > first ? 'rising' : 'falling';
   const latestValues = bucketedSamples.slice(-3).map(({ value }) => value);
 
   return {
@@ -615,11 +586,13 @@ function createEndpointResult({
   baselinesByMetric,
   alertResolutionByMetric,
   range,
+  rangeMode,
 }: {
   policies: MetricPolicy[];
   baselinesByMetric: Partial<Record<HttpMetricId, BaselineSummary>>;
   alertResolutionByMetric: Partial<Record<HttpMetricId, MetricAlertResolution>>;
   range: HealthRange;
+  rangeMode: AppTimeRangeMode;
 }): HealthEvidenceProviderResult {
   const evidence = policies.flatMap<HealthEvidence>((policy) => {
     if (!policy.applicable || alertResolutionByMetric[policy.id]?.configured) {
@@ -638,9 +611,9 @@ function createEndpointResult({
       };
     } else if (baseline && policy.compareBaseline) {
       kind = 'baseline';
-      decision = prefixDecision(policy.label, policy.compareBaseline(trend.latestValue, baseline));
+      decision = prefixDecision(policy.label, policy.compareBaseline(trend.latestValue, baseline), rangeMode);
     } else {
-      decision = prefixDecision(policy.label, policy.evaluateGuardrail(trend.latestValue));
+      decision = prefixDecision(policy.label, policy.evaluateGuardrail(trend.latestValue), rangeMode);
     }
 
     return [
@@ -698,14 +671,12 @@ function createTrendModels({
             ? 'none'
             : 'guardrail';
       const configuredPeriodMs = resolution?.configured?.period
-        ? parseTimeIntervalMs(resolution.configured.period) ?? 0
+        ? (parseTimeIntervalMs(resolution.configured.period) ?? 0)
         : 0;
       const stabilisationMs = Math.max(checkFrequency * 3, configuredPeriodMs);
       const resolvedAt = resolution?.resolvedAt;
       const postResolutionSamples =
-        resolvedAt === undefined
-          ? []
-          : trend.bucketedSamples.filter(({ at }) => at > resolvedAt);
+        resolvedAt === undefined ? [] : trend.bucketedSamples.filter(({ at }) => at > resolvedAt);
       const postResolutionSpan =
         postResolutionSamples.length >= 2
           ? postResolutionSamples[postResolutionSamples.length - 1].at - postResolutionSamples[0].at
@@ -814,8 +785,8 @@ export function buildHttpCheckHealthModel({
       selectValue: definitions.ssl.selectValue,
     },
   ];
-  const guardrail = createGuardrailResult(policies, selectedRange);
-  const learnedBaseline = createBaselineResult(policies, selectedRange, healthReference);
+  const guardrail = createGuardrailResult(policies, selectedRange, rangeMode);
+  const learnedBaseline = createBaselineResult(policies, selectedRange, healthReference, rangeMode);
   const alertEvidence = createAlertResult({
     policies,
     alerts,
@@ -833,6 +804,7 @@ export function buildHttpCheckHealthModel({
     baselinesByMetric: learnedBaseline.baselinesByMetric,
     alertResolutionByMetric: alertEvidence.alertResolutionByMetric,
     range: selectedRange,
+    rangeMode,
   });
   const qualifiers = [
     ...(learnedBaseline.hasInsufficientHistory ? ['Normal not established yet'] : []),
@@ -875,16 +847,11 @@ function useHealthPanel(
   range?: HealthRange,
   enabled?: boolean
 ): HealthPanelQueryResult {
-  const query = useDashboardPanelQuery(
-    definition,
-    range || enabled !== undefined ? { range, enabled } : undefined
-  );
+  const query = useDashboardPanelQuery(definition, range || enabled !== undefined ? { range, enabled } : undefined);
   return { panelData: query.panelData, isLoading: query.isLoading };
 }
 
-function requireNormalBaselineDefinition(
-  metric: HeaderMetricDefinition<HTTPCheck>
-): DashboardPanelDefinition {
+function requireNormalBaselineDefinition(metric: HeaderMetricDefinition<HTTPCheck>): DashboardPanelDefinition {
   const definition = metric.comparison?.normalBaseline?.definition;
 
   if (!definition) {
@@ -914,18 +881,12 @@ export function HttpCheckHealthProvider({
   const reachability = useHealthPanel(definitions.reachability.definition);
   const latency = useHealthPanel(definitions.latency.definition);
   const ssl = useHealthPanel(definitions.ssl.definition);
-  const uptimeSeries = useHealthPanel(
-    definitions.uptime.sparkline?.definition ?? definitions.uptime.definition
-  );
+  const uptimeSeries = useHealthPanel(definitions.uptime.sparkline?.definition ?? definitions.uptime.definition);
   const reachabilitySeries = useHealthPanel(
     definitions.reachability.sparkline?.definition ?? definitions.reachability.definition
   );
-  const latencySeries = useHealthPanel(
-    definitions.latency.sparkline?.definition ?? definitions.latency.definition
-  );
-  const sslSeries = useHealthPanel(
-    definitions.ssl.sparkline?.definition ?? definitions.ssl.definition
-  );
+  const latencySeries = useHealthPanel(definitions.latency.sparkline?.definition ?? definitions.latency.definition);
+  const sslSeries = useHealthPanel(definitions.ssl.sparkline?.definition ?? definitions.ssl.definition);
   const uptimeBaseline = useHealthPanel(
     requireNormalBaselineDefinition(definitions.uptime),
     baselineRange,
@@ -948,22 +909,13 @@ export function HttpCheckHealthProvider({
     CheckAlertType.ProbeFailedExecutionsTooHigh,
     'Show alerts firing'
   );
-  const latencyFiring = useDashboardAlertEpisodes(
-    CheckAlertType.HTTPRequestDurationTooHighAvg,
-    'Show alerts firing'
-  );
-  const sslFiring = useDashboardAlertEpisodes(
-    CheckAlertType.TLSTargetCertificateCloseToExpiring,
-    'Show alerts firing'
-  );
+  const latencyFiring = useDashboardAlertEpisodes(CheckAlertType.HTTPRequestDurationTooHighAvg, 'Show alerts firing');
+  const sslFiring = useDashboardAlertEpisodes(CheckAlertType.TLSTargetCertificateCloseToExpiring, 'Show alerts firing');
   const reachabilityPending = useDashboardAlertEpisodes(
     CheckAlertType.ProbeFailedExecutionsTooHigh,
     'Show alerts pending'
   );
-  const latencyPending = useDashboardAlertEpisodes(
-    CheckAlertType.HTTPRequestDurationTooHighAvg,
-    'Show alerts pending'
-  );
+  const latencyPending = useDashboardAlertEpisodes(CheckAlertType.HTTPRequestDurationTooHighAvg, 'Show alerts pending');
   const sslPending = useDashboardAlertEpisodes(
     CheckAlertType.TLSTargetCertificateCloseToExpiring,
     'Show alerts pending'

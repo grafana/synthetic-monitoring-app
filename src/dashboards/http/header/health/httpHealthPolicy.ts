@@ -33,14 +33,14 @@ export function evaluateLatencyGuardrail(value: number | null): HealthDecision {
   }
 
   if (value >= 2) {
-    return { state: 'unhealthy', summary: 'Average latency is at least 2 seconds' };
+    return { state: 'unhealthy', summary: 'At least 2 seconds' };
   }
 
   if (value >= 1) {
-    return { state: 'degraded', summary: 'Average latency is at least 1 second' };
+    return { state: 'degraded', summary: 'At least 1 second' };
   }
 
-  return { state: 'healthy', summary: 'Average latency is under 1 second' };
+  return { state: 'healthy', summary: 'Under 1 second' };
 }
 
 export function evaluateSslGuardrail(value: number | null): HealthDecision {

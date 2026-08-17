@@ -4,6 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { Check, PrometheusAlertsGroup } from 'types';
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
+import { grafanaManagedAlertName } from 'data/grafanaAlertName';
 import { ALL_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 import { constructError, showAlert } from './utils';
@@ -45,12 +46,12 @@ function findGroupWithMatchingRule(
   groups: PrometheusAlertsGroup[],
   alert: { name: string; period?: string }
 ): PrometheusAlertsGroup | undefined {
-  const fullAlertName = alert.period ? `${alert.name} [${alert.period}]` : alert.name;
+  const fullAlertName = grafanaManagedAlertName(alert.name, alert.period);
   return groups.find((group) => group.rules.some((rule) => rule.name === fullAlertName));
 }
 
 function extractMatchingRules(group: PrometheusAlertsGroup, alert: { name: string; period?: string }) {
-  const fullAlertName = alert.period ? `${alert.name} [${alert.period}]` : alert.name;
+  const fullAlertName = grafanaManagedAlertName(alert.name, alert.period);
   return group.rules.filter((rule) => rule.name === fullAlertName);
 }
 

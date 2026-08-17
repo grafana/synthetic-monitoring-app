@@ -4,6 +4,7 @@ import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check, PrometheusAlertsGroup } from 'types';
+import { isFiringAlertName } from 'data/grafanaAlertName';
 
 import { getStyles } from './AlertStatus';
 import { NotOkStatusInfo } from './NotOkStatusInfo';
@@ -37,7 +38,7 @@ export const GrafanaNamespaceAlertRuleDisplay = ({ group, alerts, firingAlertNam
       <ul className={styles.list}>
         {filteredRules.map((rule) => {
           const alert = alerts?.find((alert) => rule.name.includes(alert.name));
-          const isFiring = firingAlertNames.has(rule.name);
+          const isFiring = isFiringAlertName(firingAlertNames, rule.name);
 
           return (
             <li key={rule.name}>

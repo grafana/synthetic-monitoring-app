@@ -80,14 +80,16 @@ export function comparePercentagePoints(input: NumericComparisonInput): HeaderMe
   }
 
   const difference = (primary - reference) * 100;
-  const displayedDifference = Math.abs(difference).toFixed(1);
+  // Match the two-decimal precision used by formatPercent so "No change" only appears
+  // when the displayed percentages are actually identical.
+  const displayedDifference = Math.abs(difference).toFixed(2);
   const plain =
     Number(displayedDifference) === 0
       ? 'No change'
       : `${displayedDifference} pp ${difference > 0 ? 'higher' : 'lower'}`;
   const compact =
     Number(displayedDifference) === 0
-      ? '→ 0.0 pp'
+      ? '→ 0.00 pp'
       : `${difference > 0 ? '↑' : '↓'} ${displayedDifference} pp`;
   const detail = `${(primary * 100).toFixed(2)}% selected · ${(reference * 100).toFixed(2)}% reference`;
 

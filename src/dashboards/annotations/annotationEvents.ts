@@ -1,5 +1,7 @@
 import { DataFrame } from '@grafana/data';
 
+import { alertNamesMatch } from 'data/grafanaAlertName';
+
 function getFieldValues(frame: DataFrame, name: string): unknown[] {
   const values = frame.fields.find((field) => field.name.toLowerCase() === name)?.values;
   if (!values) {
@@ -230,7 +232,7 @@ export function getAlertEpisodeStateAt(
   at: number,
   toleranceMs: number
 ): AlertEpisodeState {
-  const relevant = episodes.filter((episode) => episode.alertName === alertName && episode.from <= at);
+  const relevant = episodes.filter((episode) => alertNamesMatch(episode.alertName, alertName) && episode.from <= at);
 
   if (relevant.length === 0) {
     return 'none';
