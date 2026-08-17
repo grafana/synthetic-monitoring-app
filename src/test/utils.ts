@@ -2,6 +2,7 @@ import { OrgRole } from '@grafana/data';
 import runTime, { config } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
+import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
 import {
   LOGS_DATASOURCE,
   METRICS_DATASOURCE,
@@ -23,6 +24,7 @@ import {
   WRITER_NO_DELETE_ACCESS,
 } from './fixtures/rbacPermissions';
 import { apiRoute } from './handlers';
+import { setTestFlag } from './openFeatureTestProvider';
 import { server } from './server';
 
 export const UPDATED_VALUES: Pick<Probe, 'name' | 'latitude' | 'longitude' | 'region' | 'labels' | 'capabilities'> = {
@@ -319,8 +321,6 @@ export const getSelect = async (options: GetSelectProps, context?: HTMLElement) 
   return [parent, input];
 };
 
-
-
 type GetComboboxProps =
   | {
       dataTestId: string;
@@ -367,11 +367,7 @@ type ComboboxOptions = GetComboboxProps & {
   option: string | RegExp;
 };
 
-export const selectOption = async (
-  user: UserEvent,
-  options: ComboboxOptions,
-  context?: HTMLElement
-) => {
+export const selectOption = async (user: UserEvent, options: ComboboxOptions, context?: HTMLElement) => {
   testUsesCombobox();
   const combobox = await getCombobox(options, context);
 
@@ -420,6 +416,13 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
       ...runtime.config.featureToggles,
       ...overrides,
     },
+  });
+
+  Object.entries(overrides).forEach(([name, value]) => {
+    const openFeatureKey = OPEN_FEATURE_KEYS[name as FeatureName];
+    if (openFeatureKey) {
+      setTestFlag(openFeatureKey, Boolean(value));
+    }
   });
 }
 

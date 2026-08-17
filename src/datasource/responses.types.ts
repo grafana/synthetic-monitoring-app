@@ -181,6 +181,18 @@ export type AccessTokenResponse = {
   token: string;
 };
 
+// LabelMode mirrors the synthetic_monitoring proto enum values.
+export enum LabelMode {
+  Prefixed = 0,
+  DualWrite = 1,
+  Unprefixed = 2,
+}
+
+export type LabelModeResponse = {
+  mode: LabelMode;
+  systemLabels: string[];
+};
+
 export type CheckAlertsResponse = {
   alerts: CheckAlertPublished[];
 };

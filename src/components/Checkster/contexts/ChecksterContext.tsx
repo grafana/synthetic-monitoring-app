@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { isEqual } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
@@ -66,6 +67,7 @@ export interface ChecksterProviderProps extends PropsWithChildren {
   check?: Check;
   checkType?: CheckType;
   isDuplicate?: boolean;
+  isPrefilled?: boolean;
 }
 
 interface StashedValues {
@@ -103,6 +105,7 @@ export function ChecksterProvider({
   onCheckTypeChange,
   disabled = false,
   isDuplicate = false,
+  isPrefilled = false,
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
@@ -118,6 +121,13 @@ export function ChecksterProvider({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
+
+  useTrackingScope({
+    check_type: checkType,
+    check_state: isNew ? 'new' : 'existing',
+    check_id: check?.id,
+    check_is_duplicate: isDuplicate,
+  });
 
   const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
 
@@ -227,6 +237,10 @@ export function ChecksterProvider({
     if (isDuplicate) {
       formMethods.setValue('job', `${check?.job} (Copy)`, { shouldDirty: true });
       formNavigation.completeAllSteps();
+    }
+    if (isPrefilled) {
+      formMethods.reset(getDefaultFormValues(checkType), { keepValues: true });
+      formMethods.setValue('job', formMethods.getValues('job'), { shouldDirty: true });
     }
     // only do this on mount so it doesn't trigger when the check is updated
     // eslint-disable-next-line react-hooks/exhaustive-deps

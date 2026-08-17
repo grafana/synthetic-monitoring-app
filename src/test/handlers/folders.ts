@@ -1,4 +1,4 @@
-import { FOLDER_FORBIDDEN_UID, MOCK_FOLDERS } from 'test/fixtures/folders';
+import { FOLDER_EXTERNAL, FOLDER_FORBIDDEN_UID, MOCK_FOLDERS } from 'test/fixtures/folders';
 
 import { ApiEntry } from './types';
 import { GrafanaFolder } from 'types';
@@ -28,6 +28,8 @@ export const listFolders: ApiEntry<Array<Pick<GrafanaFolder, 'uid' | 'title' | '
 /**
  * GET /api/folders/:uid — detail endpoint.
  * Returns the full folder object including permission fields.
+ * Also resolves FOLDER_EXTERNAL, which the list endpoint never returns
+ * (it lives outside the default folder's subtree).
  * Returns 403 for FOLDER_FORBIDDEN_UID, 404 for unknown UIDs.
  */
 export const getFolder: ApiEntry<GrafanaFolder> = {
@@ -41,7 +43,7 @@ export const getFolder: ApiEntry<GrafanaFolder> = {
       return { status: 403, json: { message: 'Access denied' } };
     }
 
-    const folder = MOCK_FOLDERS.find((f) => f.uid === uid);
+    const folder = [...MOCK_FOLDERS, FOLDER_EXTERNAL].find((f) => f.uid === uid);
 
     if (!folder) {
       return { status: 404, json: { message: 'Folder not found' } };

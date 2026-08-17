@@ -1,13 +1,13 @@
 import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 
 import { ChecksEmptyState } from './ChecksEmptyState';
 
 async function renderComponent() {
   const result = render(<ChecksEmptyState />);
-  await waitFor(() => screen.getByTestId(DataTestIds.ChecksEmptyState), { timeout: 3000 });
+  await waitFor(() => screen.getByTestId(CHECKS_TEST_ID.emptyState), { timeout: 3000 });
 
   return result;
 }

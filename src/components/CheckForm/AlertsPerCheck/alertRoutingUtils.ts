@@ -2,8 +2,12 @@ import {
   type InstanceMatchResult,
   type Label as AlertingLabel,
   type LabelMatcher,
+  matchInstancesToRouteTrees,
   type Route,
+  USER_DEFINED_TREE_NAME,
 } from '@grafana/alerting';
+
+type RoutingTree = Parameters<typeof matchInstancesToRouteTrees>[0][number];
 
 import { CheckAlertType, CheckType, Label } from 'types';
 
@@ -71,9 +75,22 @@ export const encodeReceiverForUrl = (receiverName: string): string => {
   return receiverId.replace(/=+$/, '');
 };
 
-export const getPolicyIdentifier = (route: Route, isDefaultPolicy: boolean): PolicyInfo => {
-  if (isDefaultPolicy) {
-    return { text: 'Default policy', type: 'default' };
+/**
+ * Returns the default (user-defined) routing tree from the list. The routing tree
+ * API does not guarantee ordering, so the default tree is matched by name rather
+ * than assuming it is the first item.
+ */
+export const getDefaultRoutingTree = (trees: RoutingTree[]): RoutingTree | undefined => {
+  return trees.find((tree) => tree.metadata?.name === USER_DEFINED_TREE_NAME);
+};
+
+export const getPolicyIdentifier = (route: Route, isRootPolicy: boolean, treeName?: string): PolicyInfo => {
+  if (isRootPolicy) {
+    // Each routing tree has a root policy with no matchers. Only the default
+    // ("user-defined") tree should be shown as "Default policy"; named trees
+    // (available with the alertingMultiplePolicies feature) show their own name.
+    const isDefaultTree = !treeName || treeName === USER_DEFINED_TREE_NAME;
+    return { text: isDefaultTree ? 'Default policy' : treeName, type: 'default' };
   }
 
   const hasMatchers = route.matchers && route.matchers.length > 0;

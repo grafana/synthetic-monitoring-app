@@ -3,7 +3,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, styleMixins, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { TimepointDetailsClick, trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
-import { DataTestIds } from 'test/dataTestIds';
+import { SCENES_TEST_ID } from 'test/dataTestIds';
 
 import { PlainButton } from 'components/PlainButton';
 import {
@@ -38,7 +38,7 @@ export const TimepointListEntryBar = ({
   timepoint,
 }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const { checkType, handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
   const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
@@ -50,12 +50,13 @@ export const TimepointListEntryBar = ({
 
   const handleViewerStateClick = useCallback(() => {
     trackTimepointDetailsClicked({
+      checkType,
       component: analyticsEventName,
       status,
     });
     handleSetScrollToViewer(true);
     handleViewerStateChange([timepoint, probeNameToView, 0]);
-  }, [analyticsEventName, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
+  }, [analyticsEventName, checkType, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
 
   if (!vizDisplay.includes(status)) {
     return <div />;
@@ -69,7 +70,7 @@ export const TimepointListEntryBar = ({
         </div>
       )}
       <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
-        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false} data-testid={`${DataTestIds.TimepointListEntryBar}-${timepoint.index}`}>
+        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false} data-testid={`${SCENES_TEST_ID.timepoint.listEntryBar}-${timepoint.index}`}>
           <TimepointVizItem
             className={cx(styles.bar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,

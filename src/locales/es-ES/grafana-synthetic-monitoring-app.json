@@ -2,6 +2,12 @@
   "addNewCheckButton": {
     "createNewCheck": "Crear nueva prueba"
   },
+  "agenticFeaturedCard": {
+    "createTestButton": "",
+    "description": "",
+    "learnMoreButton": "",
+    "title": ""
+  },
   "checkFilterGroup": {
     "activeFiltersText": "({{activeFilters}} activo)",
     "filterTitle": "Filtros adicionales {{activeFiltersText}}"
@@ -43,5 +49,34 @@
   },
   "labelFilterInput": {
     "buttonCascaderLabel": "Etiquetas"
+  },
+  "testing-and-synthetics-landing": {
+    "performance": {
+      "browse-projects": "",
+      "description": "",
+      "start-testing": "",
+      "title": ""
+    },
+    "synthetics": {
+      "description": "",
+      "title": ""
+    },
+    "task": {
+      "make-check": {
+        "action": "",
+        "description": "",
+        "title": ""
+      },
+      "manage-probes": {
+        "action": "",
+        "description": "",
+        "title": ""
+      },
+      "terraform": {
+        "action": "",
+        "description": "",
+        "title": ""
+      }
+    }
   }
 }

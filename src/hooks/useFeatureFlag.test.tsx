@@ -1,26 +1,22 @@
 import React from 'react';
-import runtime from '@grafana/runtime';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, screen } from '@testing-library/react';
+import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
+import { mockFeatureToggles } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 import { useFeatureFlag } from './useFeatureFlag';
 
-const CONFIG_FLAG = 'configFlag';
-const URL_FLAG = 'urlFlag';
+const OPEN_FEATURE_ROUTED_FLAG = FeatureName.__Turnoff;
+const OPEN_FEATURE_KEY = 'synthetic-monitoring.test-only';
 
-jest.replaceProperty(runtime, `config`, {
-  featureToggles: {
-    // changing this key to use the declared const variable results in undefined
-    // @ts-expect-error
-    configFlag: { live: true },
-  },
-});
-
-jest.mock('@grafana/data', () => ({
-  urlUtil: {
-    getUrlSearchParams: jest.fn().mockImplementation(() => ({ features: [URL_FLAG] })),
+jest.mock('services/featureFlags', () => ({
+  ...jest.requireActual('services/featureFlags'),
+  OPEN_FEATURE_KEYS: {
+    'test-only-do-not-use': 'synthetic-monitoring.test-only',
   },
 }));
 
@@ -29,39 +25,77 @@ interface WrappedProps {
 }
 
 const Wrapped = ({ name }: WrappedProps) => {
-  const { isEnabled } = useFeatureFlag(name);
+  const { isEnabled, isReady } = useFeatureFlag(name);
   return (
     <div>
-      <h1>A flagged feature</h1>
-      {isEnabled ? <div>the feature is enabled</div> : <div>not enabled</div>}
+      <div>{isEnabled ? 'the feature is enabled' : 'not enabled'}</div>
+      <div>{isReady ? 'ready' : 'not ready'}</div>
     </div>
   );
 };
 
-const renderFeatureFlags = (name: string) => {
-  const cast = name as unknown as FeatureName;
-  render(
-    <FeatureFlagProvider>
-      <Wrapped name={cast} />
-    </FeatureFlagProvider>
+const renderFeatureFlag = (name: FeatureName, flagValueMap: Record<string, boolean> = getTestFlagValues()) => {
+  return render(
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={flagValueMap}>
+      <FeatureFlagProvider>
+        <Wrapped name={name} />
+      </FeatureFlagProvider>
+    </OpenFeatureTestProvider>
   );
 };
 
-test('gets flag values from config', async () => {
-  renderFeatureFlags(CONFIG_FLAG);
-  const enabled = await screen.findByText('the feature is enabled');
-  expect(enabled).toBeInTheDocument();
+describe('legacy flags (not mapped in OPEN_FEATURE_KEYS)', () => {
+  test('gets flag values from config.featureToggles', async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    renderFeatureFlag(FeatureName.Folders);
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('disabled for flags that do not exist', async () => {
+    renderFeatureFlag('not a real flag' as FeatureName);
+    expect(await screen.findByText('not enabled')).toBeInTheDocument();
+  });
+
+  test('is always ready (resolves synchronously)', async () => {
+    renderFeatureFlag(FeatureName.Folders);
+    expect(await screen.findByText('ready')).toBeInTheDocument();
+  });
 });
 
-test('disabled for flags that do not exist', async () => {
-  renderFeatureFlags('not a real flag');
-  const notEnabled = await screen.findByText('not enabled');
-  expect(notEnabled).toBeInTheDocument();
-});
+describe('OpenFeature-routed flags (mapped in OPEN_FEATURE_KEYS)', () => {
+  test('reads the flag value from OpenFeature', async () => {
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: true });
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
 
-// todo: broken this test somehow despite it does work correctly -- will look into why later date
-test.skip('detects feature flags in url params', async () => {
-  renderFeatureFlags(URL_FLAG);
-  const enabled = await screen.findByText('the feature is enabled');
-  expect(enabled).toBeInTheDocument();
+  test('defaults to disabled when the flag is not set in OpenFeature', async () => {
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG);
+    expect(await screen.findByText('not enabled')).toBeInTheDocument();
+  });
+
+  test('ignores legacy config.featureToggles for mapped flags', async () => {
+    // legacy enabled, OpenFeature unset -> mapped flag must follow OpenFeature
+    const runtime = require('@grafana/runtime');
+    jest.replaceProperty(runtime, 'config', {
+      ...runtime.config,
+      featureToggles: {
+        ...runtime.config.featureToggles,
+        [OPEN_FEATURE_ROUTED_FLAG]: true,
+      },
+    });
+
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG);
+    expect(await screen.findByText('not enabled')).toBeInTheDocument();
+  });
+
+  test('mockFeatureToggles drives the OpenFeature backend for mapped flags', async () => {
+    mockFeatureToggles({ [OPEN_FEATURE_ROUTED_FLAG]: true });
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG);
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('reports ready once the provider settles', async () => {
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: true });
+    expect(await screen.findByText('ready')).toBeInTheDocument();
+  });
 });

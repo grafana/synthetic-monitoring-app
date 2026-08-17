@@ -1,14 +1,12 @@
 import React from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 
-import { AppRoutes } from 'routing/types';
+import { AppRoutes, AUTO_INITIALIZE_ROUTES } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { useMeta } from 'hooks/useMeta';
-import { AlertingWelcomePage } from 'page/AlertingWelcomePage';
-import { ChecksWelcomePage } from 'page/ChecksWelcomePage';
+import { AutoInitializeResourceCreation } from 'page/AutoInitializeResourceCreation';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { UninitializedTab } from 'page/ConfigPageLayout/tabs/UninitializedTab';
-import { ProbesWelcomePage } from 'page/ProbesWelcomePage';
 import { UnprovisionedSetup } from 'page/UnprovisionedSetup';
 import { WelcomePage } from 'page/WelcomePage';
 
@@ -26,9 +24,9 @@ export const UninitialisedRouter = () => {
     <Routes>
       <Route path={AppRoutes.Home} element={<WelcomePage />} />
       <Route path={AppRoutes.Scene} element={<WelcomePage />} />
-      <Route path={AppRoutes.Checks} element={<ChecksWelcomePage />} />
-      <Route path={AppRoutes.Probes} element={<ProbesWelcomePage />} />
-      <Route path={AppRoutes.Alerts} element={<AlertingWelcomePage />} />
+      {AUTO_INITIALIZE_ROUTES.map((route) => (
+        <Route key={route} path={`${route}/*`} element={<AutoInitializeResourceCreation />} />
+      ))}
       <Route path={AppRoutes.Config} element={<ConfigPageLayout />}>
         <Route index element={<UninitializedTab />} />
         <Route path="*" element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />

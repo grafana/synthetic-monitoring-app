@@ -2,7 +2,7 @@ import React, { Children, Fragment, PropsWithChildren, ReactNode } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 function highlightCode(children: ReactNode, highlight?: string): ReactNode {
   if (!highlight) {
@@ -40,7 +40,7 @@ export function Preformatted({
   const Wrapper = isCode ? 'code' : Fragment;
 
   return (
-    <pre data-testid={DataTestIds.Preformatted} className={cx(styles.container, className)}>
+    <pre data-testid={UI_TEST_ID.preformatted} className={cx(styles.container, className)}>
       <Wrapper>{doHighlights(children, highlight)}</Wrapper>
     </pre>
   );

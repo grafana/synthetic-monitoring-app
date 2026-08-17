@@ -6,7 +6,7 @@ import { ExtendedProbe } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
-import { DataTestIds } from '../test/dataTestIds';
+import { PROBES_TEST_ID } from '../test/dataTestIds';
 
 interface ProbeUsageLinkProps {
   probe: ExtendedProbe;
@@ -45,7 +45,7 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
 
   if (!hasChecks && showWhenUnused) {
     return (
-      <span className={className} data-testid={DataTestIds.ProbeUsageLink}>
+      <span className={className} data-testid={PROBES_TEST_ID.usageLink}>
         {linkText}
       </span>
     );
@@ -54,7 +54,7 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
   if (variant === 'bodySmall') {
     return (
       <TextLink
-        data-testid={DataTestIds.ProbeUsageLink}
+        data-testid={PROBES_TEST_ID.usageLink}
         className={className}
         variant={variant}
         color="link"
@@ -67,7 +67,7 @@ export function ProbeUsageLink({ probe, className, variant, showWhenUnused = fal
 
   return (
     <LinkButton
-      data-testid={DataTestIds.ProbeUsageLink}
+      data-testid={PROBES_TEST_ID.usageLink}
       className={className}
       href={checksHref}
       icon="list-ul"

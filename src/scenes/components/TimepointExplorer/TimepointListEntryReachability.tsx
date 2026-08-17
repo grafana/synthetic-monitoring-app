@@ -31,6 +31,7 @@ const ICON_MAP: Record<number, IconName> = {
 
 export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntryProps) => {
   const {
+    checkType,
     handleHoverStateChange,
     handleSetScrollToViewer,
     handleViewerStateChange,
@@ -63,13 +64,14 @@ export const TimepointListEntryReachability = ({ timepoint }: TimepointListEntry
   const handleProbeClick = useCallback(
     (probeName: string, index: number) => {
       trackTimepointDetailsClicked({
+        checkType,
         component: 'reachability-entry',
         status: statefulTimepoint.status,
       });
       handleSetScrollToViewer(true);
       handleViewerStateChange([statefulTimepoint, probeName, index]);
     },
-    [statefulTimepoint, handleViewerStateChange, handleSetScrollToViewer]
+    [checkType, statefulTimepoint, handleViewerStateChange, handleSetScrollToViewer]
   );
 
   if (!executionsToRender.length) {

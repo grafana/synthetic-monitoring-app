@@ -1,6 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
+import { emitCheckCreatedEvent } from 'features/tracking/appEvents';
 import { trackCheckCreated } from 'features/tracking/checkFormEvents';
-import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -22,6 +23,10 @@ jest.mock('features/tracking/checkFormEvents', () => ({
   trackNavigateWizardForm: jest.fn(),
   trackAdhocCreated: jest.fn(),
   trackNeedHelpScriptsButtonClicked: jest.fn(),
+}));
+
+jest.mock('features/tracking/appEvents', () => ({
+  emitCheckCreatedEvent: jest.fn(),
 }));
 
 describe(`<NewCheckV2 /> journey`, () => {
@@ -289,7 +294,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['job'] });
     await submitForm(user);
 
-    const pathInfo = await screen.findByTestId(DataTestIds.TestRouterInfoPathname);
+    const pathInfo = await screen.findByTestId(ROUTER_TEST_ID.pathname);
     expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
   });
 
@@ -302,17 +307,18 @@ describe(`<NewCheckV2 /> journey`, () => {
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).not.toBeDisabled();
   });
 
-  it(`should track check creation with check type`, async () => {
+  it(`should track + emit check creation with check type`, async () => {
     const { user } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http });
     await submitForm(user);
 
     await waitFor(() => {
-      const pathInfo = screen.getByTestId(DataTestIds.TestRouterInfoPathname);
+      const pathInfo = screen.getByTestId(ROUTER_TEST_ID.pathname);
       expect(pathInfo).toHaveTextContent(generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }));
     });
 
     expect(trackCheckCreated).toHaveBeenCalledWith({ checkType: CheckType.Http });
+    expect(emitCheckCreatedEvent).toHaveBeenCalledWith({ checkType: CheckType.Http });
   });
 });

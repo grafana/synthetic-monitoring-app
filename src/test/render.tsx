@@ -3,11 +3,14 @@ import { Route, Router, Routes } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppPluginMeta } from '@grafana/data';
 import { locationService, LocationServiceProvider } from '@grafana/runtime';
+import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
 import { render, type RenderOptions } from '@testing-library/react';
 import userEventLib from '@testing-library/user-event';
+import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
 import { SM_META } from 'test/fixtures/meta';
 import { TestRouteInfo } from 'test/helpers/TestRouteInfo';
 import { useLocationServiceHistory } from 'test/helpers/useLocationServiceHistory';
+import { getTestFlagValues } from 'test/openFeatureTestProvider';
 
 import { ProvisioningJsonData } from 'types';
 import { MetaContextProvider } from 'contexts/MetaContext';
@@ -84,9 +87,11 @@ export const createWrapper = ({ route = '*', meta, path: _path, queryClient, wra
   const initialEntries = [path];
 
   const Wrapper = ({ children }: PropsWithChildren) => (
-    <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
-      {children}
-    </Component>
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={getTestFlagValues()}>
+      <Component route={route} meta={meta} initialEntries={initialEntries} queryClient={activeQueryClient}>
+        {children}
+      </Component>
+    </OpenFeatureTestProvider>
   );
 
   return { Wrapper, initialEntries };

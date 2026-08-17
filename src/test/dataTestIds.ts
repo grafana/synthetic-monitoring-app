@@ -7,9 +7,39 @@ export const ACTIONS_TEST_ID = {
   },
 } as const;
 
+export const ALERT_TEST_ID = {
+  probePercentage: 'alert probe-percentage',
+  timeUnitCombobox: 'alert time-unit-combobox',
+  sensitivityInput: 'alert sensitivity-input',
+} as const;
+
 export const APP_INITIALIZER_TEST_ID = {
   root: 'app-init container',
   initButton: 'app-init init-button',
+  autoInitSpinner: 'app-init auto-init-spinner',
+} as const;
+
+export const CHECKS_TEST_ID = {
+  card: 'checks card',
+  emptyState: 'checks empty-state',
+  groupCard: 'checks group-card',
+  usage: 'checks usage',
+  form: {
+    chooseType: 'checks form choose-type',
+  },
+  filters: {
+    search: 'checks filters search',
+    status: 'checks filters status',
+    alerts: 'checks filters alerts',
+    probes: 'checks filters probes',
+  },
+  header: {
+    selectAll: 'checks header select-all',
+    sortBy: 'checks header sort-by',
+  },
+  listItem: {
+    editButton: 'checks list-item edit-button',
+  },
 } as const;
 
 export const CHECKSTER_TEST_ID = {
@@ -97,67 +127,78 @@ export const CHECKSTER_TEST_ID = {
   },
 } as const;
 
+export const CONFIG_TEST_ID = {
+  content: 'config content',
+  contentLoading: 'config content-loading',
+  layout: {
+    activeTab: 'config layout active-tab',
+  },
+  secretEditModal: 'config secret-edit-modal',
+} as const;
+
+export const PLUGIN_TEST_ID = {
+  configPage: 'plugin config-page',
+  linkedDatasources: 'plugin linked-datasources',
+  linkedDatasourcesError: 'plugin linked-datasources-error',
+} as const;
+
 export const PROBES_TEST_ID = {
   cards: {
     status: 'probes cards status',
     statusTooltip: 'probes cards statusTooltip',
   },
+  list: {
+    private: 'probes list private',
+    public: 'probes list public',
+  },
+  button: 'probes button',
+  card: {
+    actionButton: 'probes card action-button',
+  },
+  usageLink: 'probes usage-link',
+  checkExecutionStats: 'probes check-execution-stats',
+} as const;
+
+export const ROUTER_TEST_ID = {
+  info: 'router info',
+  pathname: 'router pathname',
+  search: 'router search',
+} as const;
+
+export const SCENES_TEST_ID = {
+  timepoint: {
+    list: 'scenes timepoint list',
+    listEntryBar: 'scenes timepoint list-entry-bar',
+    viewer: 'scenes timepoint viewer',
+  },
+} as const;
+
+export const THRESHOLD_TEST_ID = {
+  save: 'threshold save',
+  defaults: 'threshold defaults',
+  upperLimit: 'threshold upper-limit',
+  lowerLimit: 'threshold lower-limit',
+} as const;
+
+export const UI_TEST_ID = {
+  centeredSpinner: 'ui centered-spinner',
+  frequency: 'ui frequency',
+  preformatted: 'ui preformatted',
+  codeEditor: 'ui code-editor',
+  modals: {
+    confirmUnsavedHeading: 'ui modals confirm-unsaved-heading',
+  },
+  page: {
+    ready: 'ui page ready',
+    notReady: 'ui page not-ready',
+  },
+  refreshPicker: {
+    runButton: 'refresh-picker-run-button',
+  },
+} as const;
+
+export const LOGS_TEST_ID = {
+  executionId: 'logs execution-id',
 } as const;
 
 export const GROT_SAD_TEST_ID = 'grotSad';
-
-// deprecated -- look to migrate these to follow the same patterns as above
-export enum DataTestIds {
-  ActionsBar = 'actions-bar',
-  AlertProbePercentage = 'alert-probe-percentage',
-  AlertRuleFormTimeUnitCombobox = 'alert-rule-form-time-unit-combobox',
-  AlertSensitivityInput = 'alert-sensitivity-input',
-  CenteredSpinner = 'centered-spinner',
-  CheckAlertsFilter = 'check-alerts-filter',
-  CheckCard = 'check-card',
-  CheckFormSubmitButton = 'check-form-submit-button',
-  CheckGroupCard = 'check-group-card',
-  CheckSearchInput = 'check-search-input',
-  CheckStatusFilter = 'check-status-filter',
-  CheckProbesFilter = 'check-probes-filter',
-  CheckUsage = 'check-usage',
-  ChecksEmptyState = 'checks-empty-state',
-  ChooseCheckType = 'choose-check-type',
-  ClipboardContent = 'clipboard-content',
-  CodeEditor = 'code-editor',
-  ConfigContent = 'config-content',
-  ConfigContentLoading = 'config-content-loading',
-  ConfigPageLayoutActiveTab = 'config-page-layout-active-tab',
-  ConfirmUnsavedModalHeading = 'confirm-unsaved-modal-heading',
-  EditCheckButton = 'edit-check-button',
-  FrequencyComponent = 'frequency-component',
-  IndividualAssertion = 'individual-assertion',
-  MultiHttpRequest = 'multihttp-request',
-  PageNotReady = 'page-not-ready',
-  PageReady = 'page-ready',
-  Preformatted = 'preformatted',
-  PrivateProbesList = 'private-probes-list',
-  ProbeButton = 'probe-button',
-  ProbeCardActionButton = 'probe-card-action-button',
-  ProbeUsageLink = 'probe-usage-link',
-  ProbeCheckExecutionStats = 'probe-check-execution-stats',
-  PublicProbesList = 'public-probes-list',
-  RefreshPickerRunButton = 'refresh-picker-run-button',
-  RequestAssertion = 'request-assertion',
-  SecretEditModal = 'secret-edit-modal',
-  SelectAllChecks = 'select-all-checks',
-  SortChecksByCombobox = 'sort-checks-by-combobox',
-  TestPluginConfigPage = 'test-plugin-config-page',
-  TestPluginConfigPageLinkedDatasources = 'test-plugin-config-page-linked-datasources',
-  TestPluginConfigPageLinkedDatasourcesError = 'test-plugin-config-page-linked-datasources-error',
-  TestRouterInfo = 'test-router-info',
-  TestRouterInfoPathname = 'test-router-info-pathname',
-  TestRouterInfoSearch = 'test-router-info-search',
-  ThresholdDefaults = 'threshold-defaults',
-  ThresholdLowerLimit = 'threshold-lower-limit',
-  ThresholdSave = 'threshold-save',
-  ThresholdUpperLimit = 'threshold-upper-limit',
-  TimepointList = 'timepoint-list',
-  TimepointListEntryBar = 'timepoint-list-entry-bar',
-  TimepointViewer = 'timepoint-viewer',
-}

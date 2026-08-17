@@ -7,11 +7,11 @@ services:
       context: .
       args:
         grafana_image: ${GRAFANA_IMAGE:-grafana-enterprise}
-        grafana_version: ${GRAFANA_VERSION:-12.4.0}
+        grafana_version: ${GRAFANA_VERSION:-13.0}
         development: ${DEVELOPMENT:-false}
         anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
     ports:
-      - 3000:3000/tcp
+      - ${GRAFANA_HOST_PORT:-3000}:3000/tcp
     volumes:
       - ../dist:/var/lib/grafana/plugins/grafana-synthetic-monitoring-app
       - ../provisioning:/etc/grafana/provisioning

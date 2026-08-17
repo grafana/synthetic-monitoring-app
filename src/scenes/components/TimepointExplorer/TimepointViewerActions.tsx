@@ -1,14 +1,16 @@
 import React from 'react';
 import { IconButton, LinkButton, Stack } from '@grafana/ui';
 
+import { FrontendO11yButton } from 'scenes/components/TimepointExplorer/FrontendO11yButton';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointViewerActions } from 'scenes/components/TimepointExplorer/TimepointViewerActions.hooks';
 
 export const TimepointViewerActions = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
-  const actions = useTimepointViewerActions(timepoint);
+  const { actions } = useTimepointViewerActions(timepoint);
 
   return (
-    <Stack direction={`row`} gap={1}>
+    <Stack direction={`row`} gap={1} alignItems="center">
+      <FrontendO11yButton timepoint={timepoint} />
       {actions.map((action) => {
         const props = {
           tooltip: action.label,

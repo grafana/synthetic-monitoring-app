@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { ConfigContent } from './ConfigContent';
 
@@ -13,13 +13,13 @@ describe('ConfigContent', () => {
     );
 
     expect(screen.getByText('Test Content')).toBeInTheDocument();
-    expect(screen.queryByTestId(DataTestIds.ConfigContentLoading)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(CONFIG_TEST_ID.contentLoading)).not.toBeInTheDocument();
   });
 
   it('should render loading spinner when loading is true', () => {
     render(<ConfigContent loading={true} />);
 
-    const loadingSpinner = screen.getByTestId(DataTestIds.ConfigContentLoading);
+    const loadingSpinner = screen.getByTestId(CONFIG_TEST_ID.contentLoading);
     expect(loadingSpinner).toBeInTheDocument();
     expect(screen.getByLabelText('Loading')).toBeInTheDocument();
   });

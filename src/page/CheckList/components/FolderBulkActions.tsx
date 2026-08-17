@@ -4,6 +4,7 @@ import { ConfirmModal, IconButton, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
+import { useIsFoldersAvailable } from 'contexts/CheckFolderAccessContext';
 import { BulkMoveToFolderModal } from 'page/CheckList/components/BulkMoveToFolderModal';
 
 import { DeleteFolderTarget, useBulkActions } from './BulkActions.hooks';
@@ -16,8 +17,8 @@ interface FolderBulkActionsProps {
 
 export function FolderBulkActions({ checks, onResolved, deleteFolder }: FolderBulkActionsProps) {
   const styles = useStyles2(getStyles);
+  const isFoldersAvailable = useIsFoldersAvailable();
   const {
-    isFoldersEnabled,
     canWriteAll,
     canDeleteAll,
     showDeleteModal,
@@ -29,11 +30,11 @@ export function FolderBulkActions({ checks, onResolved, deleteFolder }: FolderBu
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks, onResolved, deleteFolder });
+  } = useBulkActions({ checks, onResolved, deleteFolder, isFoldersAvailable });
 
   return (
     <div className={styles.container}>
-      {isFoldersEnabled && (
+      {isFoldersAvailable && (
         <IconButton
           name="folder"
           aria-label="Move to folder"

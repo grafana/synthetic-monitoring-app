@@ -1,5 +1,148 @@
 # Changelog
 
+## [1.58.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.1...v1.58.0) (2026-08-12)
+
+
+### Features
+
+* Add Label Migration config tab for label_ prefix removal ([#1768](https://github.com/grafana/synthetic-monitoring-app/issues/1768)) ([a890391](https://github.com/grafana/synthetic-monitoring-app/commit/a89039173573aa6ae83e7acd0325c3b30e85cd80))
+* attach global context props (page, check count) to all tracking events ([#1801](https://github.com/grafana/synthetic-monitoring-app/issues/1801)) ([e8d7730](https://github.com/grafana/synthetic-monitoring-app/commit/e8d773030c4593abd4a7ad374fc5c8534248f6d4))
+
+
+### Fixes
+
+* map legacy us-central2 backend address to the us-central-7 probe API server ([#1787](https://github.com/grafana/synthetic-monitoring-app/issues/1787)) ([56d7109](https://github.com/grafana/synthetic-monitoring-app/commit/56d71091aa4e4b570518c53e84fd70a55fb48261))
+* point faro config at the recreated collector apps ([#1784](https://github.com/grafana/synthetic-monitoring-app/issues/1784)) ([1d23b22](https://github.com/grafana/synthetic-monitoring-app/commit/1d23b22cca0c399f36dc7b458b916af3b36d49e6))
+* **security/high/:** update dependency ip-address to v10.3.1 [security] ([#1780](https://github.com/grafana/synthetic-monitoring-app/issues/1780)) ([a7b2db3](https://github.com/grafana/synthetic-monitoring-app/commit/a7b2db33334aef90b4fb7174a4415f5c2f032307))
+* **security/high/:** update dependency undici to v7.29.0 [security] ([#1781](https://github.com/grafana/synthetic-monitoring-app/issues/1781)) ([74c7755](https://github.com/grafana/synthetic-monitoring-app/commit/74c77550480cea7d56907af9e51bbf8f7c83b739))
+* use theme radius tokens for check list cards and pills ([#1789](https://github.com/grafana/synthetic-monitoring-app/issues/1789)) ([2f7aef5](https://github.com/grafana/synthetic-monitoring-app/commit/2f7aef577acd5ce438eafa587382a2a3bb8fe538))
+
+
+### Documentation
+
+* expand testing guide and add write-tests agent skill ([#1803](https://github.com/grafana/synthetic-monitoring-app/issues/1803)) ([37bb844](https://github.com/grafana/synthetic-monitoring-app/commit/37bb844a574429325196349b154e852dee0779a7))
+
+
+### Miscellaneous Chores
+
+* **faro:** duplicate rudderstack events to faro and enhance faro instrumentation ([#1782](https://github.com/grafana/synthetic-monitoring-app/issues/1782)) ([067f611](https://github.com/grafana/synthetic-monitoring-app/commit/067f6119740d835314e74f3474476170dea2f857))
+
+## [1.57.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.0...v1.57.1) (2026-07-24)
+
+
+### Fixes
+
+* handle datasource Mismatch status and correct metrics UID fallback ([#1670](https://github.com/grafana/synthetic-monitoring-app/issues/1670)) ([b79a2cb](https://github.com/grafana/synthetic-monitoring-app/commit/b79a2cbcf37a4ba568c0e718f2d2905480c8b60d))
+* **security/medium/:** update dependency axios to v1.18.0 [security] ([#1764](https://github.com/grafana/synthetic-monitoring-app/issues/1764)) ([f0fc05e](https://github.com/grafana/synthetic-monitoring-app/commit/f0fc05ed6c928f10614540f2062a59d274d6158e))
+* **security/medium/:** update dependency react-router to v7.18.0 [security] ([#1770](https://github.com/grafana/synthetic-monitoring-app/issues/1770)) ([c2e3148](https://github.com/grafana/synthetic-monitoring-app/commit/c2e314806054deb2f1cffee0019d88819835c31d))
+* show secrets side-panel tab for HTTP checks ([#1771](https://github.com/grafana/synthetic-monitoring-app/issues/1771)) ([9e15eb6](https://github.com/grafana/synthetic-monitoring-app/commit/9e15eb6cfdf5a291063b27fa2f64a0ea7c77e347))
+
+
+### Miscellaneous Chores
+
+* auto-approve Argo canary and prod deploys ([#1769](https://github.com/grafana/synthetic-monitoring-app/issues/1769)) ([1b44732](https://github.com/grafana/synthetic-monitoring-app/commit/1b44732e54f834ff4840c8bc6a1ad9b35cadbc0c))
+
+## [1.57.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.56.0...v1.57.0) (2026-07-16)
+
+
+### Features
+
+* add Grafana Cloud org_id and stack_id to all tracking events ([#1758](https://github.com/grafana/synthetic-monitoring-app/issues/1758)) ([510e398](https://github.com/grafana/synthetic-monitoring-app/commit/510e398cf13ad196f2449fce4e0b296d2425c57b))
+* reference secrets from HTTP check credential fields ([#1754](https://github.com/grafana/synthetic-monitoring-app/issues/1754)) ([f4e58da](https://github.com/grafana/synthetic-monitoring-app/commit/f4e58daeaafd04251215126fab6a1440d20d0a96))
+
+
+### Fixes
+
+* distinguish multiple notification policy trees in routing preview ([#1734](https://github.com/grafana/synthetic-monitoring-app/issues/1734)) ([063660c](https://github.com/grafana/synthetic-monitoring-app/commit/063660c4856b6ac392a59c252d3f6c5f6d3a26e4))
+* paginate results by URL table to limit rendering ([#1760](https://github.com/grafana/synthetic-monitoring-app/issues/1760)) ([a1e0860](https://github.com/grafana/synthetic-monitoring-app/commit/a1e0860ccf2054d1cdac94207479ab84afe2b3d2))
+
+## [1.56.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.55.0...v1.56.0) (2026-07-13)
+
+
+### Features
+
+* add Grafana Assistant page context for Synthetic Monitoring ([#1693](https://github.com/grafana/synthetic-monitoring-app/issues/1693)) ([13a2cdc](https://github.com/grafana/synthetic-monitoring-app/commit/13a2cdc4c3fad8d1fd14358e1596fb45a67d13da))
+* link to Frontend Observability sessions from timepoint viewer ([#1667](https://github.com/grafana/synthetic-monitoring-app/issues/1667)) ([dfad710](https://github.com/grafana/synthetic-monitoring-app/commit/dfad710469cdf9bb8e1dc28e551f3846cb189716))
+
+
+### Fixes
+
+* attach default folder UID to POST ([#1757](https://github.com/grafana/synthetic-monitoring-app/issues/1757)) ([8cb1b67](https://github.com/grafana/synthetic-monitoring-app/commit/8cb1b6709da1b3710d2f0dd9d478b23baa2a755c))
+* show checks in folders outside the default folder ([#1759](https://github.com/grafana/synthetic-monitoring-app/issues/1759)) ([f88664c](https://github.com/grafana/synthetic-monitoring-app/commit/f88664caa614d9e3e4b7e50dc2d889b2251dc313))
+
+
+### Code Refactoring
+
+* migrate DataTestIds to category-specific constants ([#1753](https://github.com/grafana/synthetic-monitoring-app/issues/1753)) ([99177e2](https://github.com/grafana/synthetic-monitoring-app/commit/99177e20ce4911c1e0cca0b8f7bf4ad11a374cc5))
+
+## [1.55.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.54.0...v1.55.0) (2026-07-08)
+
+
+### Features
+
+* Frontend Observability context for the Grafana Assistant on browser-check pages ([#1749](https://github.com/grafana/synthetic-monitoring-app/issues/1749)) ([3c27bd1](https://github.com/grafana/synthetic-monitoring-app/commit/3c27bd1dd243c65cc464fc4a8e4cb7b577c41d84))
+
+
+### Fixes
+
+* home summary panels show no data with label filters applied ([#1747](https://github.com/grafana/synthetic-monitoring-app/issues/1747)) ([0a4b289](https://github.com/grafana/synthetic-monitoring-app/commit/0a4b289aa8661a9ddf11bd066d9189d5e9df0009))
+
+## [1.54.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.2...v1.54.0) (2026-06-29)
+
+
+### Features
+
+* auto-enable Synthetic Monitoring on check-creation deep-links ([#1732](https://github.com/grafana/synthetic-monitoring-app/issues/1732)) ([2dd296a](https://github.com/grafana/synthetic-monitoring-app/commit/2dd296a75be847e67e7028d5c34ea7411a9d3e5d))
+* bootstrap OpenFeature provider behind useFeatureFlag ([#1726](https://github.com/grafana/synthetic-monitoring-app/issues/1726)) ([955e375](https://github.com/grafana/synthetic-monitoring-app/commit/955e375595aa7a560dbbdb11aa94d4ff84a585a0))
+* emit event bus event when check created ([#1744](https://github.com/grafana/synthetic-monitoring-app/issues/1744)) ([57672c4](https://github.com/grafana/synthetic-monitoring-app/commit/57672c43a69e39e8e778068317572ca6b74b3570))
+
+
+### Fixes
+
+* dangerjs ([#1746](https://github.com/grafana/synthetic-monitoring-app/issues/1746)) ([8cf019f](https://github.com/grafana/synthetic-monitoring-app/commit/8cf019f393c0d2d676f4170fe0debc18367972d3))
+* **security/high/:** update security undici to v7.28.0 [security] ([#1735](https://github.com/grafana/synthetic-monitoring-app/issues/1735)) ([9057e21](https://github.com/grafana/synthetic-monitoring-app/commit/9057e215bf7f3d2266d1022d5bb73267f68d1061))
+* **security/low/:** update security @babel/core to v7.29.6 [security] ([#1729](https://github.com/grafana/synthetic-monitoring-app/issues/1729)) ([179922c](https://github.com/grafana/synthetic-monitoring-app/commit/179922ca4e26cd0f6ff0624d7712b3721d4c4e74))
+
+## [1.53.2](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.1...v1.53.2) (2026-06-24)
+
+
+### Fixes
+
+* allow editing a check instead of redirecting to the timepoint explorer ([#1742](https://github.com/grafana/synthetic-monitoring-app/issues/1742)) ([953a099](https://github.com/grafana/synthetic-monitoring-app/commit/953a09987e5bb6d910bc9635fbeeedaddfafbdf4))
+
+## [1.53.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.53.0...v1.53.1) (2026-06-24)
+
+
+### Fixes
+
+* automerge deployment prs for ops and prod ([#1737](https://github.com/grafana/synthetic-monitoring-app/issues/1737)) ([c25b51e](https://github.com/grafana/synthetic-monitoring-app/commit/c25b51ef752313425e7680bb1848e49e2a051a56))
+* gracefully degrade when user lacks folder permissions ([#1739](https://github.com/grafana/synthetic-monitoring-app/issues/1739)) ([b52034a](https://github.com/grafana/synthetic-monitoring-app/commit/b52034ab530d6f53cf6cef421ab6080629eef326))
+
+## [1.53.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.52.1...v1.53.0) (2026-06-17)
+
+
+### Features
+
+* add check type to analytics events for check dashboards and timepoint explorer ([#1721](https://github.com/grafana/synthetic-monitoring-app/issues/1721)) ([58bf8ca](https://github.com/grafana/synthetic-monitoring-app/commit/58bf8caf687c5386f33ca6feac2d9ec8fa970c9f))
+* add Testing & synthetics nav landing page extension ([#1666](https://github.com/grafana/synthetic-monitoring-app/issues/1666)) ([f4f1544](https://github.com/grafana/synthetic-monitoring-app/commit/f4f1544c3662ef0a0c0e1814648a8857bbaca19c))
+* exclude execution_id in timepoint explorer ([#1720](https://github.com/grafana/synthetic-monitoring-app/issues/1720)) ([4a6c0c4](https://github.com/grafana/synthetic-monitoring-app/commit/4a6c0c45ed9eb454708191f94aa0a30407e7f583))
+
+
+### Fixes
+
+* address folder view UI feedback ([#1731](https://github.com/grafana/synthetic-monitoring-app/issues/1731)) ([4a9ce8c](https://github.com/grafana/synthetic-monitoring-app/commit/4a9ce8cf95461145b730393e2d8d049ef36560b2))
+* allow check deletion with folder Edit permission ([#1718](https://github.com/grafana/synthetic-monitoring-app/issues/1718)) ([c37bc41](https://github.com/grafana/synthetic-monitoring-app/commit/c37bc412527b60a3fbcc289d88686fb2eeb81b52))
+* detect logs retention period from Loki instead of hardcoding it ([#1724](https://github.com/grafana/synthetic-monitoring-app/issues/1724)) ([b1e36af](https://github.com/grafana/synthetic-monitoring-app/commit/b1e36afaa73d5baf93aeac13ebe43fb840f2d4ff))
+* handle spread operator in browser script options validation ([#1722](https://github.com/grafana/synthetic-monitoring-app/issues/1722)) ([ddf6ef6](https://github.com/grafana/synthetic-monitoring-app/commit/ddf6ef6afa99155554e61d4008958689fe50dd95))
+* **security/high/:** update dependency react-router to v7.15.0 [security] ([#1716](https://github.com/grafana/synthetic-monitoring-app/issues/1716)) ([bb3da0e](https://github.com/grafana/synthetic-monitoring-app/commit/bb3da0e2bdcd479806a337bbbdfa9c634dc10d5b))
+* **security/low/:** update security react-router to v7.15.1 [security] ([#1727](https://github.com/grafana/synthetic-monitoring-app/issues/1727)) ([5223955](https://github.com/grafana/synthetic-monitoring-app/commit/5223955d714cc5d8fbc05e7badceba7f37b0ae12))
+* use prerelease-inclusive semver range for grafanaDependency ([#1723](https://github.com/grafana/synthetic-monitoring-app/issues/1723)) ([7e5b6bc](https://github.com/grafana/synthetic-monitoring-app/commit/7e5b6bc110a1eae8fc0241527369e7af1bec6109))
+
+
+### Miscellaneous Chores
+
+* bump [@grafana](https://github.com/grafana) dependencies to 13.x ([#1728](https://github.com/grafana/synthetic-monitoring-app/issues/1728)) ([5827425](https://github.com/grafana/synthetic-monitoring-app/commit/5827425cd4a27e6f57ceb34c74c888b444027fb6))
+
 ## [1.52.1](https://github.com/grafana/synthetic-monitoring-app/compare/v1.52.0...v1.52.1) (2026-06-01)
 
 

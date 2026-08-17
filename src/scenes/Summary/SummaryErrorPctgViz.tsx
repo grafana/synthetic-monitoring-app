@@ -46,6 +46,7 @@ export const SummaryErrorPctgViz = () => {
     by (job, instance)`;
 
   const dataProvider = useQueryRunner({
+    datasource: { uid: '-- Mixed --', type: 'datasource' },
     queries: [
       {
         exemplar: true,
@@ -54,9 +55,9 @@ export const SummaryErrorPctgViz = () => {
         interval: '1m',
         legendFormat: '{{job}}/{{ instance }}',
         refId: 'A',
+        datasource: metricsDS,
       },
     ],
-    datasource: metricsDS,
   });
 
   const viz = VizConfigBuilders.timeseries()

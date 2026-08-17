@@ -26,6 +26,7 @@ const BUTTON_SPACE = GAP_PX + BUTTON_WIDTH;
 
 export const TimepointMinimap = () => {
   const {
+    checkType,
     handleMiniMapPageChange,
     handleMiniMapSectionChange,
     miniMapCurrentPage,
@@ -50,6 +51,7 @@ export const TimepointMinimap = () => {
             const index = isLastSection ? 0 : miniMapCurrentSectionIndex + 1;
 
             trackMiniMapSectionClicked({
+              checkType,
               index,
               component: 'left-arrow',
             });
@@ -71,6 +73,7 @@ export const TimepointMinimap = () => {
             const index = isFirstSection ? MAX_MINIMAP_SECTIONS - 1 : miniMapCurrentSectionIndex - 1;
 
             trackMiniMapSectionClicked({
+              checkType,
               index,
               component: 'right-arrow',
             });
@@ -177,7 +180,7 @@ interface MiniMapPaginationProps {
 }
 
 const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginationProps) => {
-  const { handleMiniMapPageChange } = useTimepointExplorerContext();
+  const { checkType, handleMiniMapPageChange } = useTimepointExplorerContext();
   const numberOfPages = miniMapPages.length;
   const currentPage = numberOfPages - miniMapCurrentPage;
 
@@ -185,11 +188,12 @@ const MiniMapPagination = ({ miniMapCurrentPage, miniMapPages }: MiniMapPaginati
     (page: number) => {
       const index = numberOfPages - page;
       trackMiniMapPageClicked({
+        checkType,
         index,
       });
       handleMiniMapPageChange(index);
     },
-    [handleMiniMapPageChange, numberOfPages]
+    [checkType, handleMiniMapPageChange, numberOfPages]
   );
 
   return <Pagination currentPage={currentPage} numberOfPages={numberOfPages} onNavigate={handleNavigate} />;

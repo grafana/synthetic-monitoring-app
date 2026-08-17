@@ -1,12 +1,17 @@
 import React, { ReactNode } from 'react';
+import { useLocation } from 'react-router';
 import { screen, waitFor } from '@testing-library/react';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
+import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
 
-import { CheckTypeGroup } from '../../types';
+import { Check, CheckType, CheckTypeGroup, HttpMethod, IpVersion } from '../../types';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 
 import { Checkster } from '../../components/Checkster';
 import { PluginPageNotFound } from '../NotFound';
-import { NewCheckV2 } from './NewCheckV2';
+import { mergePrefilledCheck, NewCheckV2 } from './NewCheckV2';
 
 enum NewCheckTestIds {
   Ready = 'NewCheck.Ready',
@@ -17,6 +22,8 @@ enum NewCheckTestIds {
 function ReadyComponent({ children }: { children: ReactNode }) {
   return <div data-testid={NewCheckTestIds.Ready}>{children}</div>;
 }
+
+const { Checkster: RealCheckster } = jest.requireActual('components/Checkster');
 
 jest.mock('components/Checkster', () => ({
   Checkster: jest.fn().mockImplementation(() => (
@@ -33,6 +40,14 @@ jest.mock('page/NotFound', () => ({
     </ReadyComponent>
   )),
 }));
+
+jest.mock('react-router', () => {
+  const actual = jest.requireActual('react-router');
+  return {
+    ...actual,
+    useLocation: jest.fn((...args: unknown[]) => actual.useLocation(...args)),
+  };
+});
 
 async function renderNewCheck(options?: any) {
   const result = render(<NewCheckV2 />, options);
@@ -67,5 +82,77 @@ describe('<NewCheckV2 />', () => {
     await renderNewCheck();
     expect(screen.getByTestId(NewCheckTestIds.PluginPageNotFound)).toBeInTheDocument();
     expect(PluginPageNotFound).toHaveBeenCalledTimes(1);
+  });
+
+  it('enables Save without user interaction when a valid draft is prefilled', async () => {
+    const PREFILLED_JOB = 'assistant-prefill-test';
+    const prefilledCheck = {
+      job: PREFILLED_JOB,
+      target: 'https://grafana.com/',
+      enabled: true,
+      probes: [PRIVATE_PROBE.id],
+      labels: [],
+      settings: { http: { method: HttpMethod.Get } },
+    } as unknown as Check;
+
+    (Checkster as jest.Mock).mockImplementation(RealCheckster);
+    (useLocation as jest.Mock).mockImplementation(() => ({
+      state: { prefilledCheck },
+    }));
+
+    render(<NewCheckV2 />, {
+      path: `${generateRoutePath(AppRoutes.NewCheck)}/api-endpoint?checkType=${CheckType.Http}`,
+      route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
+    });
+
+    expect(await screen.findByLabelText(/Job name/)).toHaveValue(PREFILLED_JOB);
+    expect(await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeEnabled();
+  });
+});
+
+describe('mergePrefilledCheck (prefilled draft handling)', () => {
+  const draftBase = {
+    job: 'my-check',
+    target: 'https://example.com',
+    enabled: true,
+    probes: [],
+    labels: [],
+  } as unknown as Check;
+
+  it('fills required settings defaults omitted by the draft (HTTP ipVersion)', () => {
+    const result = mergePrefilledCheck(
+      { ...draftBase, settings: { http: { method: 'GET' } } } as unknown as Check,
+      CheckType.Http
+    );
+    const http = (result.settings as Record<string, any>).http;
+    expect(http.method).toBe('GET');
+    expect(http.ipVersion).toBe(IpVersion.V4);
+    expect(result.job).toBe('my-check');
+    expect(result.target).toBe('https://example.com');
+  });
+
+  it('normalizes a legacy `k6` settings key to `scripted`', () => {
+    const result = mergePrefilledCheck(
+      { ...draftBase, settings: { k6: { script: 'export default () => {};' } } } as unknown as Check,
+      CheckType.Http
+    );
+    expect(result.settings).toHaveProperty('scripted');
+    expect(result.settings).not.toHaveProperty('k6');
+    expect((result.settings as Record<string, any>).scripted.script).toBe('export default () => {};');
+  });
+
+  it('uses the fallback check type when the draft has no settings', () => {
+    const result = mergePrefilledCheck({ ...draftBase } as unknown as Check, CheckType.Browser);
+    expect(result.settings).toHaveProperty('browser');
+    expect(result.settings).not.toHaveProperty('http');
+  });
+
+  it('uses the fallback check type when settings is empty (does not default to HTTP)', () => {
+    const result = mergePrefilledCheck(
+      { ...draftBase, settings: {} } as unknown as Check,
+      CheckType.Scripted
+    );
+    expect(result.settings).toHaveProperty('scripted');
+    expect(result.settings).not.toHaveProperty('http');
   });
 });

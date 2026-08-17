@@ -4,7 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, LinkButton, Modal, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { UI_TEST_ID } from 'test/dataTestIds';
 
 import { CheckPageParams } from 'types';
 import { createNavModel } from 'utils';
@@ -26,7 +26,7 @@ export const EditCheckV2 = () => {
   const check = checks?.find((c) => c.id === Number(id));
   const urlSearchParams = useURLSearchParams();
 
-  const { getPermissions } = useCheckFolderAccess(check ? [check] : []);
+  const { getPermissions, isResolving: isResolvingFolders } = useCheckFolderAccess(check ? [check] : []);
   const permissions = getPermissions({ folderUid: check?.folderUid });
 
   const handleSubmit = useHandleSubmitCheckster(check);
@@ -48,8 +48,13 @@ export const EditCheckV2 = () => {
 
   const isReady = !isLoading;
 
-  // Only show spinner for the initial fetch.
-  if (isLoading && !isFetched) {
+  // Only show spinner for the initial fetch, or while folder access is still
+  // resolving. We must not evaluate the canRead redirect until the default
+  // folder request has settled: during that optimistic window a check whose
+  // folder has already returned 403 resolves to `forbidden` (canRead=false)
+  // and would trigger an irreversible redirect, even when the eventual state
+  // is the fallback (default folder 403 -> no-folder-context -> canRead=true).
+  if ((isLoading && !isFetched) || isResolvingFolders) {
     return <CenteredSpinner />;
   }
 
@@ -63,7 +68,7 @@ export const EditCheckV2 = () => {
       pageNav={navModel}
       renderTitle={() => <Text element="h1">{`Editing ${check?.job ?? 'unknown'}`}</Text>}
     >
-      <div className={styles.wrapper} data-testid={isReady ? DataTestIds.PageReady : DataTestIds.PageNotReady}>
+      <div className={styles.wrapper} data-testid={isReady ? UI_TEST_ID.page.ready : UI_TEST_ID.page.notReady}>
         <ChecksterProvider check={check} initialSection={initialSection} disabled={!permissions.canWrite}>
           <Checkster onSave={handleSubmit} />
         </ChecksterProvider>

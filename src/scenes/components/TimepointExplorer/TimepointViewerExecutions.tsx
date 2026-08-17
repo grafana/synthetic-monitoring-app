@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Box, Icon, IconName, Spinner, Stack, Tab, TabContent, TabsBar, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 import { trackTimepointDetailsClicked } from 'features/tracking/timepointExplorerEvents';
 
 import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features/parseCheckLogs/checkLogs.types';
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { PlainButton } from 'components/PlainButton';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { CheckResultMissing } from 'scenes/components/TimepointExplorer/CheckResultMissing';
@@ -37,7 +38,9 @@ export const TimepointViewerExecutions = ({
   probeNameToView,
   timepoint,
 }: TimepointViewerExecutionsProps) => {
-  const { handleHoverStateChange, handleViewerStateChange } = useTimepointExplorerContext();
+  const { checkType, handleHoverStateChange, handleViewerStateChange, viewerState } =
+    useTimepointExplorerContext();
+  const [, , viewerExecutionIndex = 0] = viewerState;
   const tabsToRender = useTimepointViewerExecutions({
     isLoading,
     pendingProbeNames,
@@ -49,11 +52,12 @@ export const TimepointViewerExecutions = ({
     (probeName: string, status: TimepointStatus) => {
       handleViewerStateChange([timepoint, probeName, 0]);
       trackTimepointDetailsClicked({
+        checkType,
         component: 'viewer-tab',
         status,
       });
     },
-    [handleViewerStateChange, timepoint]
+    [checkType, handleViewerStateChange, timepoint]
   );
 
   return (
@@ -110,6 +114,9 @@ export const TimepointViewerExecutions = ({
                   logsView={logsView}
                   from={timepoint.adjustedTime}
                   to={timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency}
+                  probeName={probeName}
+                  timepoint={timepoint}
+                  viewerExecutionIndex={viewerExecutionIndex}
                 />
               );
             }
@@ -191,15 +198,29 @@ const MultipleExecutions = ({
   logsView,
   from,
   to,
+  probeName,
+  timepoint,
+  viewerExecutionIndex,
 }: {
   executions: ExecutionLogs[];
   logsView: LogsView;
   from: number | string;
   to: number | string;
+  probeName: string;
+  timepoint: StatelessTimepoint;
+  viewerExecutionIndex: number;
 }) => {
   const styles = useStyles2(getStyles);
   const success = useTimepointVizOptions('success');
   const failure = useTimepointVizOptions('failure');
+  const { handleViewerStateChange } = useTimepointExplorerContext();
+
+  const handleSelectExecution = useCallback(
+    (index: number) => {
+      handleViewerStateChange([timepoint, probeName, index]);
+    },
+    [handleViewerStateChange, probeName, timepoint]
+  );
 
   return (
     <Stack direction="column" gap={2}>
@@ -211,21 +232,28 @@ const MultipleExecutions = ({
         {executions.map((execution, index) => {
           const { probe_success } = execution[0].labels;
           const id = execution[0][LokiFieldNames.Id];
+          const isSelected = viewerExecutionIndex === index;
 
           return (
-            <>
-              <div className={styles.multipleExecutions} key={id}>
-                <Stack direction="column" gap={2} alignItems="center">
-                  <div className={styles.executionIndex}>{index + 1}</div>
-                  <Icon
-                    name={probe_success === '1' ? 'check' : 'times'}
-                    color={`${probe_success === '1' ? success.statusColor : failure.statusColor}`}
-                  />
-                </Stack>
+            <React.Fragment key={id}>
+              <div
+                className={cx(styles.multipleExecutions, {
+                  [styles.multipleExecutionsSelected]: isSelected,
+                })}
+              >
+                <PlainButton className={styles.executionSelector} onClick={() => handleSelectExecution(index)}>
+                  <Stack direction="column" gap={2} alignItems="center">
+                    <div className={styles.executionIndex}>{index + 1}</div>
+                    <Icon
+                      name={probe_success === '1' ? 'check' : 'times'}
+                      color={`${probe_success === '1' ? success.statusColor : failure.statusColor}`}
+                    />
+                  </Stack>
+                </PlainButton>
                 <LogsRenderer<UnknownExecutionLog> logs={execution} logsView={logsView} mainKey="msg" from={from} to={to} />
               </div>
               {index !== executions.length - 1 && <div className={styles.divider} />}
-            </>
+            </React.Fragment>
           );
         })}
       </Stack>
@@ -239,6 +267,13 @@ const getStyles = (theme: GrafanaTheme2) => {
       display: grid;
       grid-template-columns: 50px 1fr;
       gap: ${theme.spacing(2)};
+    `,
+    multipleExecutionsSelected: css`
+      outline: 2px solid ${theme.colors.primary.border};
+      border-radius: ${theme.shape.radius.default};
+    `,
+    executionSelector: css`
+      width: 100%;
     `,
     executionIndex: css`
       font-size: ${theme.typography.bodySmall.fontSize};

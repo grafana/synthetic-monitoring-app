@@ -3,7 +3,7 @@ import { GrafanaTheme2, SelectableValue } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
 import { Button, Checkbox, Combobox, Field, Icon, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, GrafanaFolder } from 'types';
@@ -21,6 +21,7 @@ type CheckListHeaderProps = {
   currentPageChecks: Check[];
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  isFoldersAvailable: boolean;
   onChangeView: (viewType: CheckListViewType) => void;
   onDelete: () => void;
   onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
@@ -69,6 +70,7 @@ export const CheckListHeader = ({
   currentPageChecks,
   folders,
   defaultFolderUid,
+  isFoldersAvailable,
   onChangeView,
   onDelete,
   onFilterChange,
@@ -113,13 +115,14 @@ export const CheckListHeader = ({
               checkFilters={checkFilters}
               folders={folders}
               defaultFolderUid={defaultFolderUid}
+              isFoldersAvailable={isFoldersAvailable}
               onChange={onFilterChange}
               calNames={calNames}
               className={styles.filters}
             />
             {canWriteThresholds && (
               <Button variant="secondary" fill="outline" onClick={() => setShowThresholdModal((v) => !v)}>
-                <Trans i18nKey="checkList.header.setThresholds">Set Thresholds</Trans>
+                <Trans i18nKey="checkList.header.setThresholds">Set thresholds</Trans>
               </Button>
             )}
             {canWriteChecks && (
@@ -138,13 +141,13 @@ export const CheckListHeader = ({
                 value={isAllSelected}
                 disabled={checks.length === 0}
                 aria-label={t('checkList.header.selectAllAriaLabel', 'Select all')}
-                data-testid={DataTestIds.SelectAllChecks}
+                data-testid={CHECKS_TEST_ID.header.selectAll}
               />
             </Tooltip>
             {selectedCheckIds.size > 0 ? (
               <BulkActions checks={selectedChecks} onResolved={onDelete} />
             ) : (
-              <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} />
+              <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} isFoldersAvailable={isFoldersAvailable} />
             )}
           </div>
 
@@ -175,7 +178,7 @@ export const CheckListHeader = ({
               >
                 <Combobox
                   id="sort-by-select"
-                  data-testid={DataTestIds.SortChecksByCombobox}
+                  data-testid={CHECKS_TEST_ID.header.sortBy}
                   options={CHECK_LIST_SORT_OPTIONS}
                   width={25}
                   onChange={onSort}

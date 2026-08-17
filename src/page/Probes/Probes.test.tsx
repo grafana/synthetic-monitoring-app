@@ -2,7 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { useTheme2 } from '@grafana/ui';
 import { renderHook, screen, waitFor, within } from '@testing-library/react';
-import { DataTestIds, PROBES_TEST_ID } from 'test/dataTestIds';
+import { PROBES_TEST_ID } from 'test/dataTestIds';
 import { OFFLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -19,14 +19,14 @@ const renderProbeList = () => {
 
 it(`renders private probes in the correct list`, async () => {
   renderProbeList();
-  const privateProbesList = await screen.findByTestId(DataTestIds.PrivateProbesList);
+  const privateProbesList = await screen.findByTestId(PROBES_TEST_ID.list.private);
   const privateProbe = await within(privateProbesList).findByText(probeToMetadataProbe(PRIVATE_PROBE).displayName);
   expect(privateProbe).toBeInTheDocument();
 });
 
 it(`renders public probes in the correct list`, async () => {
   renderProbeList();
-  const publicProbesList = await screen.findByTestId(DataTestIds.PublicProbesList);
+  const publicProbesList = await screen.findByTestId(PROBES_TEST_ID.list.public);
   const publicProbe = await within(publicProbesList).findByText(probeToMetadataProbe(PUBLIC_PROBE).displayName);
   expect(publicProbe).toBeInTheDocument();
 });

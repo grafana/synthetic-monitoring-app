@@ -1,6 +1,12 @@
 import { useMemo } from 'react';
 import { type QueryKey, useMutation, UseMutationResult, useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
+import {
+  trackProbeCreated,
+  trackProbeDeleted,
+  trackProbeTokenReset,
+  trackProbeUpdated,
+} from 'features/tracking/probeEvents';
 
 import { type MutationProps } from 'data/types';
 import { ExtendedProbe, type Probe, ProbeWithMetadata } from 'types';
@@ -136,6 +142,7 @@ export function useCreateProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
+      trackProbeCreated();
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
@@ -168,6 +175,7 @@ export function useUpdateProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
+      trackProbeUpdated();
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
@@ -200,6 +208,7 @@ export function useDeleteProbe({ eventInfo, onError, onSuccess }: MutationProps<
       onError?.(error);
     },
     onSuccess: (data) => {
+      trackProbeDeleted();
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },
@@ -223,6 +232,7 @@ export function useResetProbeToken({ eventInfo, onError, onSuccess }: MutationPr
       onError?.(error);
     },
     onSuccess: (data) => {
+      trackProbeTokenReset();
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(data);
     },

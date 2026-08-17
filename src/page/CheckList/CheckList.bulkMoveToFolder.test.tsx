@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { CHECK_IN_PRODUCTION, CHECK_IN_READONLY_FOLDER, CHECK_IN_STAGING } from 'test/fixtures/folderChecks';
 import { FOLDER_STAGING } from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
@@ -43,7 +43,7 @@ describe('CheckList - Bulk Move to Folder', () => {
 
     it('shows the "Move to folder" button when checks are selected', async () => {
       const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_STAGING]);
-      const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+      const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
       await user.click(selectAll);
 
       const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
@@ -52,7 +52,7 @@ describe('CheckList - Bulk Move to Folder', () => {
 
     it('opens a modal with a folder selector when "Move to folder" is clicked', async () => {
       const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_STAGING]);
-      const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+      const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
       await user.click(selectAll);
 
       const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
@@ -68,7 +68,7 @@ describe('CheckList - Bulk Move to Folder', () => {
 
     it('disables "Move to folder" when selected checks include one in a read-only folder', async () => {
       const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_READONLY_FOLDER]);
-      const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+      const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
       await user.click(selectAll);
 
       const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
@@ -78,7 +78,7 @@ describe('CheckList - Bulk Move to Folder', () => {
 
     it('closes the modal when cancel is clicked', async () => {
       const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_STAGING]);
-      const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+      const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
       await user.click(selectAll);
 
       const moveButtons = await screen.findAllByRole('button', { name: /Move to folder/i });
@@ -95,7 +95,7 @@ describe('CheckList - Bulk Move to Folder', () => {
   describe('with folders feature disabled', () => {
     it('does not show the "Move to folder" button', async () => {
       const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_STAGING]);
-      const selectAll = await screen.findByTestId(DataTestIds.SelectAllChecks);
+      const selectAll = await screen.findByTestId(CHECKS_TEST_ID.header.selectAll);
       await user.click(selectAll);
 
       await screen.findByText('2 checks are selected.');

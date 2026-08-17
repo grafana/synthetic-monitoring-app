@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
-import { CHECKSTER_TEST_ID, DataTestIds } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -109,7 +109,7 @@ describe('adhoc-check', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId(DataTestIds.PageReady)).toBeInTheDocument();
+      expect(screen.getByTestId(UI_TEST_ID.page.ready)).toBeInTheDocument();
     });
 
     return result;
@@ -139,7 +139,7 @@ describe('adhoc-check', () => {
     await user.click(screen.getAllByText(PRIVATE_PROBE.name).at(-1)!);
     await user.click(screen.getByText('second log'));
 
-    expect(screen.getByTestId('preformatted')).toHaveTextContent('status_code: 202');
+    expect(screen.getByTestId(UI_TEST_ID.preformatted)).toHaveTextContent('status_code: 202');
 
     const initialProbeRequestCount = probeRequests.length;
 
@@ -153,6 +153,6 @@ describe('adhoc-check', () => {
 
     expect(screen.getByTestId(CHECKSTER_TEST_ID.feature.adhocCheck.TestButton.root)).toBeInTheDocument();
     expect(screen.getByText('Logs: 1, Metrics: 1')).toBeInTheDocument();
-    expect(screen.getByTestId('preformatted')).toHaveTextContent('status_code: 202');
+    expect(screen.getByTestId(UI_TEST_ID.preformatted)).toHaveTextContent('status_code: 202');
   });
 });

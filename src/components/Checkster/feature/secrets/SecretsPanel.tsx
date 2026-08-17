@@ -5,7 +5,7 @@ import { css } from '@emotion/css';
 import { CheckType } from 'types';
 import { SecretsManagementUI } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementUI';
 
-export const SECRETS_CHECK_COMPATIBILITY: CheckType[] = [CheckType.Browser, CheckType.Scripted];
+export const SECRETS_CHECK_COMPATIBILITY: CheckType[] = [CheckType.Browser, CheckType.Scripted, CheckType.Http];
 
 export function SecretsPanel() {
   const theme = useTheme2();

@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Switch, useStyles2 } from '@grafana/ui';
+import { Badge, Switch, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackHideScreenshotsToggled } from 'features/tracking/screenshotEvents';
+import { LOGS_TEST_ID } from 'test/dataTestIds';
 
 import { LokiFieldNames, UnknownParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { FeatureName } from 'types';
@@ -89,8 +90,17 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
     [logs]
   );
 
+  const executionId = logs[0]?.[LokiFieldNames.Labels]?.execution_id;
+
   return (
     <div className={styles.timelineContainer}>
+      {executionId && (
+        <div className={styles.executionId} data-testid={LOGS_TEST_ID.executionId}>
+          <Text color="secondary" variant="bodySmall">
+            <strong>Execution ID:</strong> {executionId}
+          </Text>
+        </div>
+      )}
       {screenshotsEnabled && (
         <div className={styles.filterBar}>
           <Badge text="NEW" color="orange" />
@@ -114,6 +124,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     width: 100%;
     font-family: ${theme.typography.fontFamilyMonospace};
     overflow-x: auto;
+  `,
+  executionId: css`
+    padding: ${theme.spacing(0.5, 0)};
+    word-break: break-all;
   `,
   filterBar: css`
     padding: ${theme.spacing(1, 2)};

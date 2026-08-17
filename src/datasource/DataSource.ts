@@ -22,6 +22,8 @@ import {
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
+  LabelMode,
+  LabelModeResponse,
   ListCheckResult,
   ListProbeResult,
   ListTenantCostAttributionLabelsResponse,
@@ -36,6 +38,7 @@ import {
 } from './responses.types';
 import { QueryType, SMOptions, SMQuery } from './types';
 import { findLinkedDatasource, getRandomProbes, queryLogs } from 'utils';
+import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'datasource/constants';
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 
 import { LokiQueryResults } from '../components/Checkster/feature/adhoc-check/useAdHocLogs';
@@ -105,7 +108,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       return configuredDs;
     }
     // Fall back to the default Grafana Cloud metrics datasource if configured one doesn't exist
-    return findLinkedDatasource({ ...info, uid: 'grafanacloud-metrics' });
+    return findLinkedDatasource({ ...info, uid: DEFAULT_METRICS_DS_UID });
   }
 
   getLogsDS() {
@@ -116,7 +119,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       return configuredDs;
     }
     // Fall back to the default Grafana Cloud logs datasource if configured one doesn't exist
-    return findLinkedDatasource({ ...info, uid: 'grafanacloud-logs' });
+    return findLinkedDatasource({ ...info, uid: DEFAULT_LOGS_DS_UID });
   }
 
   async query(options: DataQueryRequest<SMQuery>): Promise<DataQueryResponse> {
@@ -373,6 +376,20 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       data: {
         ...settings,
       },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // LABEL MODE
+
+  async getLabelMode() {
+    return this.fetchAPI<LabelModeResponse>(`${this.instanceSettings.url}/sm/tenant/label-mode`);
+  }
+
+  async setLabelMode(mode: LabelMode) {
+    return this.fetchAPI<LabelModeResponse>(`${this.instanceSettings.url}/sm/tenant/label-mode`, {
+      method: 'PUT',
+      data: { mode },
     });
   }
 

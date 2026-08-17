@@ -5,9 +5,11 @@ import { AppRootProps } from '@grafana/data';
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { config, getAppPluginVersion } from '@grafana/runtime';
 import { css, Global } from '@emotion/react';
+import { TrackingIdentity } from 'features/tracking/TrackingIdentity';
 
 import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
+import { registerFaroInteractionEchoBackend } from 'faroEchoBackend';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
@@ -15,15 +17,17 @@ import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { queryClient } from 'data/queryClient';
 import { QUERY_KEYS as alertingQueryKeys } from 'data/useAlerts';
 
+import { AssistantContext } from './AssistantContext';
 import { DevTools } from './DevTools';
 import { FeatureFlagProvider } from './FeatureFlagProvider';
+import { SMOpenFeatureProvider } from './SMOpenFeatureProvider';
 
 const { env, url, name } = getFaroConfig();
 
 // faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
 if (window.location.hostname !== 'localhost') {
   getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
-    initializeFaro({
+    const faro = initializeFaro({
       url,
       app: {
         name,
@@ -35,7 +39,20 @@ if (window.location.hostname !== 'localhost') {
         id: config.bootData.user.orgName,
       },
       instrumentations: getWebInstrumentations(),
+      // only send signals emitted while the user is on this plugin's pages
+      beforeSend: (event) => {
+        if ((event.meta.page?.url ?? '').includes('grafana-synthetic-monitoring-app')) {
+          return event;
+        }
+
+        return null;
+      },
+      experimental: {
+        trackNavigation: true,
+      },
     });
+
+    registerFaroInteractionEchoBackend(faro);
   });
 }
 
@@ -55,17 +72,21 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MetaContextProvider meta={meta}>
-        <FeatureFlagProvider>
-          <GlobalStyles />
-          <SMDatasourceProvider>
-            <PermissionsContextProvider>
-              <DevTools>
-                <InitialisedRouter />
-              </DevTools>
-            </PermissionsContextProvider>
-            <ReactQueryDevtools />
-          </SMDatasourceProvider>
-        </FeatureFlagProvider>
+        <SMOpenFeatureProvider>
+          <FeatureFlagProvider>
+            <GlobalStyles />
+            <SMDatasourceProvider>
+              <PermissionsContextProvider>
+                <AssistantContext />
+                <TrackingIdentity />
+                <DevTools>
+                  <InitialisedRouter />
+                </DevTools>
+              </PermissionsContextProvider>
+              <ReactQueryDevtools />
+            </SMDatasourceProvider>
+          </FeatureFlagProvider>
+        </SMOpenFeatureProvider>
       </MetaContextProvider>
     </QueryClientProvider>
   );

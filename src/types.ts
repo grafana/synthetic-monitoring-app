@@ -212,6 +212,11 @@ export interface HttpSettings {
   bearerToken?: string;
   basicAuth?: BasicAuth;
 
+  // When true, the agent resolves `${secrets.*}` references in this check's
+  // credential fields. Inferred by the UI from field values, never shown to the
+  // user, so it is intentionally excluded from `HttpSettingsFormValues`.
+  secretManagerEnabled?: boolean;
+
   // validations
   failIfSSL?: boolean;
   failIfNotSSL?: boolean;
@@ -259,6 +264,7 @@ export interface HttpSettingsFormValues
     | 'failIfHeaderNotMatchesRegexp'
     | 'noFollowRedirects'
     | 'compression'
+    | 'secretManagerEnabled'
   > {
   sslOptions: HttpSslOption;
   headers?: HttpHeaderFormValue[];
@@ -749,6 +755,7 @@ export enum FeatureName {
   CALs = 'synthetic-monitoring-cost-attribution',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
+  LabelMigration = 'synthetic-monitoring-label-migration',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',

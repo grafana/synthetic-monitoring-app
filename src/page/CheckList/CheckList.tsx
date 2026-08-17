@@ -24,6 +24,7 @@ import { useSuspenseProbes } from 'data/useProbes';
 import { useChecksReachabilitySuccessRate } from 'data/useSuccessRates';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
+import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
@@ -38,6 +39,11 @@ import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
 import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
+import {
+  FolderErrorBanner,
+  FolderNotProvisionedBanner,
+  FolderPermissionBanner,
+} from 'page/CheckList/components/FolderBanners';
 
 export const CheckList = () => {
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
@@ -71,8 +77,19 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const location = useLocation();
   const { data: checks } = useSuspenseChecks();
 
+  useDemAssistantContext(checks);
+
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { folders: allFolders, foldersMap, defaultFolderUid, isLoading: isFoldersLoading, isError: isFoldersError, refetch: refetchFolders } = useAllFolders();
+  const {
+    folders: allFolders,
+    foldersMap,
+    defaultFolderUid,
+    isLoading: isFoldersLoading,
+    isError: isFoldersError,
+    folderStatus,
+    isFoldersAvailable,
+    refetch: refetchFolders,
+  } = useAllFolders();
   const {
     data: checkAlertStates = {},
     isFetched: isAlertStatesFetched,
@@ -85,7 +102,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const filters = useCheckFilters();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData } = useTenantCostAttributionLabels();
-  const calNames = useMemo(() => (isCALsEnabled ? calData?.names ?? [] : []), [isCALsEnabled, calData?.names]);
+  const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);
+
+  // When folders are unavailable, fall back to card view synchronously so the
+  // folder view never renders, while preserving the user's stored preference
+  // (so folder view returns automatically if folders become available again).
+  const effectiveViewType =
+    viewType === CheckListViewType.Folder && !isFoldersAvailable ? CheckListViewType.Card : viewType;
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.
@@ -129,20 +152,21 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           ? ({ label: status.label, value: status.value } as CheckFiltersType['status'])
           : CHECK_LIST_STATUS_OPTIONS[0],
       probes,
-      folders: isFoldersEnabled ? folders : [],
+      folders: isFoldersAvailable ? folders : [],
     }),
-    [labels, search, type, alerts, status, probes, folders, isFoldersEnabled]
+    [labels, search, type, alerts, status, probes, folders, isFoldersAvailable]
   );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCheckIds, setSelectedChecksIds] = useState<Set<number>>(new Set());
+  const [folderBannerDismissed, setFolderBannerDismissed] = useState(false);
   const styles = useStyles2(getStyles);
-  const CHECKS_PER_PAGE = viewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
+  const CHECKS_PER_PAGE = effectiveViewType === CheckListViewType.Card ? CHECKS_PER_PAGE_CARD : CHECKS_PER_PAGE_LIST;
 
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const folderAccess = useCheckFolderAccess(sortedChecks);
-  const { visibleChecks } = folderAccess;
+  const { visibleChecks, externalFolders } = folderAccess;
 
   const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
   const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
@@ -258,6 +282,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     return <ChecksEmptyState />;
   }
 
+  const foldersUnavailable = isFoldersEnabled && !isFoldersLoading && !isFoldersAvailable;
+
   return (
     <CheckFolderAccessValueProvider value={folderAccess}>
       <CheckListHeader
@@ -266,6 +292,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         currentPageChecks={currentPageChecks}
         folders={allFolders}
         defaultFolderUid={defaultFolderUid}
+        isFoldersAvailable={isFoldersAvailable}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
         onSelectAll={handleSelectAll}
@@ -274,16 +301,30 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         onDelete={handleUnselectAll}
         selectedCheckIds={selectedCheckIds}
         sortType={sortType}
-        viewType={viewType}
+        viewType={effectiveViewType}
         alertStatesFetching={isAlertStatesFetching}
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
         calNames={calNames}
       />
-      {viewType === CheckListViewType.Folder ? (
+      {foldersUnavailable &&
+        // The error banner is actionable (Retry) and not dismissible, so it
+        // always shows. The info banners are dismissible for the session.
+        (folderStatus === 'error' ? (
+          <FolderErrorBanner onRetry={refetchFolders} />
+        ) : (
+          !folderBannerDismissed &&
+          (folderStatus === 'not-provisioned' ? (
+            <FolderNotProvisionedBanner onDismiss={() => setFolderBannerDismissed(true)} />
+          ) : (
+            <FolderPermissionBanner onDismiss={() => setFolderBannerDismissed(true)} />
+          ))
+        ))}
+      {effectiveViewType === CheckListViewType.Folder ? (
         <CheckListFolderView
           checks={visibleChecks}
           folders={allFolders}
+          externalFolders={externalFolders}
           foldersMap={foldersMap}
           foldersLoading={isFoldersLoading}
           foldersError={isFoldersError}
@@ -298,6 +339,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onSelectChecks={handleSelectChecks}
           onDeselectChecks={handleDeselectChecks}
           selectedCheckIds={selectedCheckIds}
+          sortType={sortType}
         />
       ) : (
         <div>
@@ -305,17 +347,17 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
             <div className={styles.list}>
               {currentPageChecks.map((check) => (
                 <div key={check.id} style={{ viewTransitionName: `check-${check.id}` }}>
-                <CheckListItem
-                  check={check}
-                  calNames={calNames}
-                  onLabelSelect={handleLabelSelect}
-                  onStatusSelect={handleStatusSelect}
-                  onTypeSelect={handleTypeSelect}
-                  onToggleCheckbox={handleCheckSelect}
-                  runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
-                  selected={selectedCheckIds.has(check.id!)}
-                  viewType={viewType}
-                />
+                  <CheckListItem
+                    check={check}
+                    calNames={calNames}
+                    onLabelSelect={handleLabelSelect}
+                    onStatusSelect={handleStatusSelect}
+                    onTypeSelect={handleTypeSelect}
+                    onToggleCheckbox={handleCheckSelect}
+                    runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
+                    selected={selectedCheckIds.has(check.id!)}
+                    viewType={effectiveViewType}
+                  />
                 </div>
               ))}
             </div>
