@@ -8,6 +8,7 @@ There are two different "modes" for developing this plugin. You can either work 
 
 - Set up a Grafana Cloud account
 - Make sure you have Docker installed
+- Make sure you have Go installed (see the `go` directive in [`go.mod`](./go.mod) for the version). The plugin has a Go backend, and Grafana will not load the plugin at all without its binary — so Go is required even for frontend-only work.
 - Clone this repo to your local machine
 
 ### Package manager
@@ -70,9 +71,36 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 ### Run
 
 - Run `yarn dev`
-- In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable
-- Go to `localhost:3000`
+- In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable. If port 3000 is already in use (e.g. a local Grafana instance), set `GRAFANA_HOST_PORT` to bind elsewhere, e.g. `GRAFANA_HOST_PORT=3001 yarn server`
+- Go to `localhost:3000` (or the port set via `GRAFANA_HOST_PORT`)
 - Changes to the plugin code will hot reload. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `yarn server` command).
+
+`yarn server` runs `yarn build:backend` before starting Grafana, which compiles
+the Go backend into `dist/` alongside the webpack output. The backend belongs to
+the nested `synthetic-monitoring-datasource` plugin, not to the app, so it builds
+to `dist/datasource/gpx_sm_datasource_<os>_<arch>`. If the binary for the
+container's platform is missing, the app still loads but the datasource is
+dropped, and the Grafana logs will show `Could not start plugin backend
+pluginId=synthetic-monitoring-datasource`.
+
+Changes to Go code under `pkg/` do **not** hot reload. Rerun `yarn server` (or
+`yarn build:backend` followed by `docker compose restart`) to pick them up.
+
+To check the backend is running, health-check a configured SM datasource
+(substitute its UID):
+
+```bash
+curl -u admin:admin localhost:3000/api/datasources/uid/<uid>/health
+# {"message":"ok","status":"OK"}
+```
+
+If you would rather not run the full dev setup — for example when reviewing a
+change that touches `pkg/` — `./scripts/validate-backend` checks the backend on
+its own. It builds the binary, starts a throwaway Grafana on port 3199 in an
+isolated compose project, provisions a throwaway SM datasource, asserts that the
+app and the nested datasource both registered and that the datasource's health
+check responds, and then removes everything it created. It needs no Grafana Cloud
+credentials, and it will not disturb a `yarn server` you already have running.
 
 To start using the app:
 

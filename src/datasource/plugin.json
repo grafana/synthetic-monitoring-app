@@ -3,6 +3,8 @@
   "name": "Synthetic Monitoring API",
   "id": "synthetic-monitoring-datasource",
   "metrics": true,
+  "backend": true,
+  "executable": "gpx_sm_datasource",
 
   "routes": [
     {

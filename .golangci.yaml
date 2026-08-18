@@ -1,0 +1,147 @@
+# Kept intentionally close to the configuration in
+# github.com/grafana/synthetic-monitoring-api so that Go code reads the same
+# across Synthetic Monitoring repositories. When changing this file, consider
+# whether the change belongs in that repository too.
+#
+# CI runs `golangci-lint run --timeout=5m` without an explicit --config or
+# package argument, relying on this file being discovered at the repository
+# root. No package argument means CI lints ./..., and it runs after the frontend
+# CI action has installed node_modules, which contains Go files.
+#
+# The `paths` exclusion lists below are therefore what keep CI green -- they are
+# load-bearing, not cosmetic. Local `mage go:lint` scopes to ./pkg/... instead,
+# so it will not catch a regression introduced by removing them.
+version: "2"
+linters:
+  default: none
+  enable:
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - copyloopvar
+    - decorder
+    - depguard
+    - dogsled
+    - dupword
+    - durationcheck
+    - errcheck
+    - errorlint
+    - exptostd
+    - fatcontext
+    - gocheckcompilerdirectives
+    - gochecksumtype
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - goprintffuncname
+    - gosec
+    - gosmopolitan
+    - govet
+    - iface
+    - importas
+    - ineffassign
+    - intrange
+    - makezero
+    - mirror
+    - misspell
+    - nakedret
+    - nlreturn
+    - nolintlint
+    - nosprintfhostport
+    - perfsprint
+    - reassign
+    - sloglint
+    - spancheck
+    - staticcheck
+    - tagalign
+    - testableexamples
+    - testifylint
+    - unconvert
+    - unused
+    - usestdlibvars
+    - usetesting
+    - whitespace
+    - wsl_v5
+    - zerologlint
+  settings:
+    depguard:
+      rules:
+        Main:
+          list-mode: strict
+          files:
+            - $all
+            - "!$test"
+          allow:
+            - $gostd
+            - github.com/grafana/grafana-plugin-sdk-go
+            - github.com/grafana/synthetic-monitoring-app
+        Tests:
+          list-mode: strict
+          files:
+            - $test
+          allow:
+            - $gostd
+            - github.com/google/go-cmp/cmp
+            - github.com/grafana/grafana-plugin-sdk-go
+            - github.com/grafana/synthetic-monitoring-app
+    goconst:
+      min-len: 5
+      min-occurrences: 5
+    gocyclo:
+      min-complexity: 25
+    iface:
+      enable:
+        - identical
+    nlreturn:
+      block-size: 3
+    tagalign:
+      align: true
+      sort: true
+      order:
+        - env
+        - json
+        - yaml
+        - yml
+    usetesting:
+      os-create-temp: true # Enable `os.CreateTemp("", ...)` detections.
+      os-mkdir-temp: true # Enable `os.MkdirTemp()` detections.
+      os-setenv: true # Enable `os.Setenv()` detections.
+      os-temp-dir: true # Enable `os.TempDir()` detections.
+      os-chdir: true # Enable `os.Chdir()` detections.
+      context-background: true # Enable `context.Background()` detections.
+      context-todo: true # Enable `context.TODO()` detections.
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: (.+)\.go$
+        text: (func|method|type|var|struct field|func parameter|method parameter) [^ ]+ should be .*
+      - linters:
+          - goconst
+        path: (.+)_test\.go
+    paths:
+      # Unanchored, matching the plugin-tools scaffold: node_modules contains Go
+      # files, and an anchored `node_modules$` would not match paths beneath it.
+      - node_modules
+      - third_party$
+      - builtin$
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      # Unanchored, matching the plugin-tools scaffold: node_modules contains Go
+      # files, and an anchored `node_modules$` would not match paths beneath it.
+      - node_modules
+      - third_party$
+      - builtin$

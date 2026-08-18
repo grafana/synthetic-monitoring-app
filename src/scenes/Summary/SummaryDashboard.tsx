@@ -14,6 +14,7 @@ import { VariableRefresh } from '@grafana/schema';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ReliabilityInboxBanner } from 'features/reliabilityInbox';
+import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 
 import { Check, FeatureName } from 'types';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
@@ -144,6 +145,7 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
 
   return (
     <SceneContextProvider timeRange={{ from: `now-${DEFAULT_QUERY_FROM_TIME}`, to: 'now' }} withQueryController>
+      <TrackingTimeRangeScope />
       <QueryVariable
         name="probe"
         isMulti={true}
