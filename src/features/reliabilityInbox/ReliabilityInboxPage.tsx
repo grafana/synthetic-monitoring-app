@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   ClipboardButton,
-  Divider,
   Grid,
   Icon,
   LinkButton,
@@ -45,8 +44,7 @@ export function ReliabilityInboxPage() {
     <PluginPage pageNav={RELIABILITY_INBOX_PAGE_NAV} renderTitle={() => <ReliabilityInboxTitle />}>
       <Stack direction="column" gap={2}>
         <Text element="p" color="secondary">
-          Actionable monitoring recommendations from observed traffic, ordered by technical signals—not business
-          criticality. Nothing is created without your confirmation.
+          Review monitoring gaps discovered from recent traffic.
         </Text>
         <ReliabilityInboxReview />
       </Stack>
@@ -122,6 +120,9 @@ function ReliabilityInboxReview() {
       ? 'Grafana Assistant is unavailable'
       : undefined;
   const evidenceExploreUrl = getEvidenceExploreUrl(selected.suggestion.evidence);
+  const hasAggregateEvidence = Boolean(
+    selected.requestVolume || selected.requestRate || selected.errorRate || selected.p99
+  );
 
   const setUpWithAssistant = () => {
     if (!openAssistant) {
@@ -159,47 +160,50 @@ function ReliabilityInboxReview() {
 
   return (
     <div className={styles.reviewLayout}>
-      <aside className={styles.queue} aria-label="Review queue">
-        <Box padding={1.5}>
-          <Stack alignItems="center" justifyContent="space-between" gap={1}>
-            <strong>Review queue</strong>
-            <Badge color="blue" text={`${sortedOpportunities.length}`} />
-          </Stack>
-        </Box>
-        {sortedOpportunities.map((opportunity, index) => (
-          <button
-            className={cx(styles.queueItem, { [styles.selectedQueueItem]: opportunity.id === selected.id })}
-            key={opportunity.id}
-            type="button"
-            aria-pressed={opportunity.id === selected.id}
-            onClick={() => setSelectedId(opportunity.id)}
-          >
-            <Stack direction="column" alignItems="flex-start" gap={0.5}>
-              {index === 0 && (
-                <Text variant="bodySmall" color="info" weight="bold">
-                  Recommended next
-                </Text>
-              )}
-              <Text weight="bold" truncate title={opportunity.proposedCheck.target}>
-                {opportunity.subject}
-              </Text>
-              <Text variant="bodySmall" color="secondary">
-                No matching check found
-              </Text>
-              <Text color="secondary">
-                Public HTTP{opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}
-              </Text>
+      <aside className={styles.queue} aria-label="Recommendations">
+        <div className={styles.queueHeader}>
+          <Stack direction="column" gap={0.5}>
+            <Stack alignItems="center" justifyContent="space-between" gap={1}>
+              <strong>Recommendations</strong>
+              <Badge color="blue" text={`${sortedOpportunities.length}`} />
             </Stack>
-          </button>
-        ))}
+            <Text variant="bodySmall" color="secondary">
+              Ordered by technical signals
+            </Text>
+          </Stack>
+        </div>
+        <ol className={styles.queueList}>
+          {sortedOpportunities.map((opportunity, index) => (
+            <li className={styles.queueListItem} key={opportunity.id}>
+              <button
+                className={cx(styles.queueItem, {
+                  [styles.selectedQueueItem]: opportunity.id === selected.id,
+                })}
+                type="button"
+                aria-pressed={opportunity.id === selected.id}
+                onClick={() => setSelectedId(opportunity.id)}
+              >
+                <Badge aria-hidden="true" className={styles.queueRank} color="darkgrey" text={`${index + 1}`} />
+                <Stack direction="column" alignItems="flex-start" gap={0.5} minWidth={0}>
+                  <span className={styles.queueSubject} title={opportunity.proposedCheck.target}>
+                    {opportunity.subject}
+                  </span>
+                  <Text variant="bodySmall" color="secondary">
+                    Missing check{opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}
+                  </Text>
+                </Stack>
+              </button>
+            </li>
+          ))}
+        </ol>
       </aside>
 
       <article className={styles.review}>
-        <Box element="header" padding={2.5}>
+        <section
+          className={cx(styles.panel, styles.recommendationPanel)}
+          aria-labelledby="reliability-inbox-suggested-check-title"
+        >
           <Stack direction="column" gap={1}>
-            <Text variant="bodySmall" color="secondary" weight="bold">
-              Recommended next step
-            </Text>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
               justifyContent="space-between"
@@ -207,18 +211,24 @@ function ReliabilityInboxReview() {
               gap={2}
             >
               <Stack direction="column" gap={1} minWidth={0} flex={1}>
-                <Text element="h2" variant="h3">
-                  Add an HTTP check for {selected.subject}
+                <Text variant="bodySmall" color="info" weight="bold">
+                  Suggested check
                 </Text>
-                <Stack alignItems="center" gap={1} aria-label="Recommended endpoint" minWidth={0}>
-                  <Badge color="darkgrey" text={selected.proposedCheck.method} />
-                  <Text truncate>{selected.subject}</Text>
-                </Stack>
-                <Text element="p">
-                  {selected.requestVolume
-                    ? `We observed ${selected.requestVolume} requests in the last hour, and no matching Synthetic Monitoring check was found.`
-                    : 'We observed recent traffic, and no matching Synthetic Monitoring check was found.'}
+                <Text element="h2" id="reliability-inbox-suggested-check-title" variant="h3">
+                  Create an HTTP check
                 </Text>
+                <dl className={styles.endpointSummary} aria-label="Suggested check endpoint">
+                  <div>
+                    <dt>Method</dt>
+                    <dd>
+                      <Badge color="darkgrey" text={selected.proposedCheck.method} />
+                    </dd>
+                  </div>
+                  <div className={styles.endpointTarget}>
+                    <dt>Target</dt>
+                    <dd title={selected.proposedCheck.target}>{selected.subject}</dd>
+                  </div>
+                </dl>
               </Stack>
               <Stack direction="column" alignItems={{ xs: 'flex-start', md: 'flex-end' }} gap={1} maxWidth={280}>
                 <Button
@@ -230,7 +240,7 @@ function ReliabilityInboxReview() {
                   variant="secondary"
                   onClick={setUpWithAssistant}
                 >
-                  Review and customize check
+                  Review and customize
                 </Button>
                 <Text id="reliability-inbox-assistant-action-help" variant="bodySmall" color="secondary">
                   Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or
@@ -238,143 +248,113 @@ function ReliabilityInboxReview() {
                 </Text>
               </Stack>
             </Stack>
-          </Stack>
-        </Box>
-
-        <Divider spacing={0} />
-        <Box element="section" padding={2.5}>
-          <Stack alignItems="center" justifyContent="space-between" gap={1}>
-            <Text element="h3" variant="h3">
-              Evidence at a glance
-            </Text>
-            {evidenceExploreUrl && (
-              <LinkButton href={evidenceExploreUrl} icon="compass" variant="secondary">
-                Investigate in Explore
-              </LinkButton>
-            )}
-          </Stack>
-          <Grid columns={{ xs: 2, lg: 4 }} gap={1}>
-            {selected.requestVolume && (
-              <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
-            )}
-            {selected.requestRate && <EvidenceMetric value={selected.requestRate} label="observed request rate" />}
-            {selected.errorRate && <EvidenceMetric value={selected.errorRate} label="5xx responses" />}
-            {selected.p99 && <EvidenceMetric value={selected.p99} label="p99 response time" />}
-          </Grid>
-          {selected.requestVolume || selected.requestRate || selected.errorRate || selected.p99 ? (
-            <Text element="p" color="secondary">
-              These values come from recent request telemetry.
-            </Text>
-          ) : (
-            <Text element="p" color="secondary" role="status">
-              No aggregate traffic values were returned for this suggestion.
-            </Text>
-          )}
-        </Box>
-
-        <Divider spacing={0} />
-        <Box element="section" padding={2.5} backgroundColor="secondary">
-          <Stack direction="column" gap={1}>
-            <Stack alignItems="flex-start" gap={1}>
-              <Icon name="info-circle" />
-              <Stack direction="column" gap={0.5}>
-                <Text variant="bodySmall" color="secondary" weight="bold">
-                  Coverage check
-                </Text>
-                <Text element="h3" variant="h5">
-                  No matching check found
-                </Text>
+            <div className={styles.checkSummary}>
+              <Stack alignItems="center" gap={1} wrap="wrap">
+                <Badge color="darkgrey" icon="globe" text="Public HTTP" />
+                <Badge
+                  color="darkgrey"
+                  icon="clock-nine"
+                  text={`Every ${formatDuration(selected.proposedCheck.frequencyMs)}`}
+                />
+                {selected.proposedCheck.failIfNotSSL && <Badge color="darkgrey" icon="lock" text="Require HTTPS" />}
               </Stack>
-            </Stack>
+            </div>
             <details className={styles.disclosure}>
-              <summary>
-                <Icon name="angle-right" />
-                <span>How we checked</span>
-              </summary>
-              <div className={styles.disclosureContent}>
-                <p>We compared this endpoint and path with the HTTP checks available to us.</p>
-                <p>
-                  Similar or indirect monitoring may still exist through aliases, redirects, upstream checks, checks we
-                  cannot access, or other paths.
-                </p>
-              </div>
+              <summary>View configuration details</summary>
+              <dl className={styles.proposalSummary}>
+                <div className={styles.exactTarget}>
+                  <dt>Target URL</dt>
+                  <dd className={styles.targetValue}>
+                    <code>{selected.proposedCheck.target}</code>
+                    <ClipboardButton
+                      aria-label="Copy target URL"
+                      fill="text"
+                      getText={() => selected.proposedCheck.target}
+                      icon="clipboard-alt"
+                      size="sm"
+                      variant="secondary"
+                    >
+                      Copy
+                    </ClipboardButton>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Timeout</dt>
+                  <dd>{formatDuration(selected.proposedCheck.timeoutMs)}</dd>
+                </div>
+                <div>
+                  <dt>Expected response</dt>
+                  <dd>HTTP {selected.proposedCheck.validStatusCodes.join(', ')}</dd>
+                </div>
+                <div>
+                  <dt>TLS requirement</dt>
+                  <dd>{selected.proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}</dd>
+                </div>
+                <div>
+                  <dt>Probe / location policy</dt>
+                  <dd>{selected.proposedCheck.locationPolicy}</dd>
+                </div>
+              </dl>
             </details>
           </Stack>
-        </Box>
+        </section>
 
-        <Divider spacing={0} />
-        <Box element="section" backgroundColor="secondary" paddingTop={2.5}>
-          <Box paddingX={2.5}>
-            <Stack direction="column" gap={0.5}>
-              <Text variant="bodySmall" color="secondary" weight="bold">
-                Proposed check
+        <section className={styles.panel} aria-labelledby="reliability-inbox-recommendation-evidence-title">
+          <Stack direction="column" gap={1.5}>
+            <Stack alignItems="center" justifyContent="space-between" gap={1}>
+              <Text element="h2" id="reliability-inbox-recommendation-evidence-title" variant="h3">
+                Why this recommendation
               </Text>
-              <Text element="h3" variant="h3">
-                {selected.proposedCheck.method} {selected.subject}
+              {evidenceExploreUrl && (
+                <LinkButton href={evidenceExploreUrl} icon="compass" variant="secondary">
+                  Explore telemetry
+                </LinkButton>
+              )}
+            </Stack>
+            <Text element="p">
+              {selected.requestVolume
+                ? `We observed ${selected.requestVolume} requests in the last hour, and no matching Synthetic Monitoring check was found.`
+                : 'We observed recent traffic, and no matching Synthetic Monitoring check was found.'}
+            </Text>
+            <Text element="h3" variant="h4">
+              Observed traffic evidence
+            </Text>
+            {hasAggregateEvidence && (
+              <Text element="p" variant="bodySmall" color="secondary">
+                Based on Prometheus telemetry from the last hour.
               </Text>
-            </Stack>
-          </Box>
-
-          <Box
-            marginX={2.5}
-            marginTop={2}
-            padding={1.5}
-            borderStyle="solid"
-            borderColor="weak"
-            borderRadius="default"
-            backgroundColor="primary"
-          >
-            <Stack alignItems="flex-start" gap={1}>
-              <Icon name="globe" />
-              <Stack direction="column" gap={0.5} minWidth={0}>
-                <Text weight="bold">
-                  HTTP {selected.proposedCheck.method} · Every {formatDuration(selected.proposedCheck.frequencyMs)}
-                </Text>
-                <Text color="secondary">{selected.proposedCheck.locationPolicy}</Text>
-              </Stack>
-            </Stack>
-          </Box>
-          <details className={cx(styles.disclosure, styles.configurationDisclosure)}>
-            <summary>
-              <Icon name="angle-right" />
-              <span>View configuration details</span>
-            </summary>
-            <dl className={styles.proposalSummary}>
-              <div className={styles.exactTarget}>
-                <dt>Target URL</dt>
-                <dd className={styles.targetValue}>
-                  <code>{selected.proposedCheck.target}</code>
-                  <ClipboardButton
-                    aria-label="Copy target URL"
-                    fill="text"
-                    getText={() => selected.proposedCheck.target}
-                    icon="clipboard-alt"
-                    size="sm"
-                    variant="secondary"
-                  >
-                    Copy
-                  </ClipboardButton>
-                </dd>
-              </div>
-              <div>
-                <dt>Timeout</dt>
-                <dd>{formatDuration(selected.proposedCheck.timeoutMs)}</dd>
-              </div>
-              <div>
-                <dt>Expected response</dt>
-                <dd>HTTP {selected.proposedCheck.validStatusCodes.join(', ')}</dd>
-              </div>
-              <div>
-                <dt>TLS requirement</dt>
-                <dd>{selected.proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}</dd>
-              </div>
-              <div>
-                <dt>Probe / location policy</dt>
-                <dd>{selected.proposedCheck.locationPolicy}</dd>
-              </div>
-            </dl>
-          </details>
-        </Box>
+            )}
+            <Grid columns={{ xs: 2, lg: 4 }} gap={1}>
+              {selected.requestVolume && (
+                <EvidenceMetric value={selected.requestVolume} label="estimated requests in the last hour" />
+              )}
+              {selected.requestRate && <EvidenceMetric value={selected.requestRate} label="observed request rate" />}
+              {selected.errorRate && <EvidenceMetric value={selected.errorRate} label="5xx responses" />}
+              {selected.p99 && <EvidenceMetric value={selected.p99} label="p99 response time" />}
+            </Grid>
+            {!hasAggregateEvidence && (
+              <Text element="p" color="secondary" role="status">
+                No aggregate traffic values were returned for this suggestion.
+              </Text>
+            )}
+            <div className={styles.coverageAssessment}>
+              <Text element="h3" variant="h4">
+                Coverage assessment
+              </Text>
+              <Text element="p" color="secondary">
+                We found no matching HTTP check for this endpoint and path among the checks available to us. Indirect or
+                inaccessible monitoring may still exist.
+              </Text>
+              <details className={cx(styles.disclosure, styles.inlineDisclosure)}>
+                <summary>How we checked</summary>
+                <p className={styles.disclosureContent}>
+                  We compared the endpoint and path with accessible HTTP checks. Aliases, redirects, upstream checks,
+                  and checks for other paths may not match directly.
+                </p>
+              </details>
+            </div>
+          </Stack>
+        </section>
       </article>
     </div>
   );
@@ -382,7 +362,7 @@ function ReliabilityInboxReview() {
 
 function EvidenceMetric({ value, label }: { value: string; label: string }) {
   return (
-    <Box padding={1.5} borderRadius="default" backgroundColor="secondary">
+    <Box padding={1.5} borderStyle="solid" borderColor="weak" borderRadius="default" backgroundColor="secondary">
       <Stack direction="column" gap={0.5}>
         <Text variant="h4" weight="bold">
           {value}
@@ -399,7 +379,7 @@ function ReliabilityInboxTitle() {
   return (
     <Stack alignItems="center" gap={1.5}>
       <h1>Reliability Inbox</h1>
-      <Badge color="blue" text="Experimental" />
+      <Badge color="blue" icon="ai-sparkle" text="Experimental" />
     </Stack>
   );
 }
@@ -408,11 +388,13 @@ const getStyles = (theme: GrafanaTheme2) => ({
   assistantAction: getAssistantActionStyle(theme),
   reviewLayout: css({
     display: 'grid',
-    gridTemplateColumns: 'minmax(220px, 280px) minmax(0, 1fr)',
+    gridTemplateColumns: 'minmax(320px, 360px) minmax(0, 1fr)',
     gap: theme.spacing(2),
-    alignItems: 'start',
+    alignItems: 'stretch',
+    minHeight: `calc(100vh - ${theme.spacing(22)})`,
     [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
       gridTemplateColumns: '1fr',
+      minHeight: 'auto',
     },
   }),
   queue: css({
@@ -421,47 +403,75 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background: theme.colors.background.secondary,
     overflow: 'hidden',
   }),
-  queueItem: css({
-    width: '100%',
+  queueHeader: css({
+    background: theme.colors.background.primary,
+    borderBottom: `1px solid ${theme.colors.border.weak}`,
     padding: theme.spacing(1.5),
+  }),
+  queueList: css({
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+  }),
+  queueListItem: css({
+    borderBottom: `1px solid ${theme.colors.border.weak}`,
+    '&:last-child': { borderBottom: 0 },
+  }),
+  queueItem: css({
+    alignItems: 'flex-start',
+    display: 'grid',
+    gap: theme.spacing(1),
+    gridTemplateColumns: '24px minmax(0, 1fr)',
+    width: '100%',
+    padding: theme.spacing(1.25, 1.5),
     color: theme.colors.text.secondary,
     background: 'transparent',
     border: 0,
-    borderBottom: `1px solid ${theme.colors.border.weak}`,
     textAlign: 'left',
     cursor: 'pointer',
-    '&:last-child': { borderBottom: 0 },
     '&:hover': { background: theme.colors.action.hover },
+  }),
+  queueRank: css({
+    boxSizing: 'border-box',
+    fontVariantNumeric: 'tabular-nums',
+    fontWeight: theme.typography.fontWeightBold,
+    justifyContent: 'center',
+    minWidth: theme.spacing(3),
+  }),
+  queueSubject: css({
+    fontWeight: theme.typography.fontWeightBold,
+    overflowWrap: 'anywhere',
+    width: '100%',
   }),
   selectedQueueItem: css({
     background: theme.colors.info.transparent,
+    color: theme.colors.text.primary,
     boxShadow: `inset 3px 0 0 ${theme.colors.info.border}`,
   }),
   review: css({
-    display: 'flex',
-    flexDirection: 'column',
+    display: 'grid',
+    gap: theme.spacing(2),
+    minWidth: 0,
+    alignSelf: 'start',
+  }),
+  panel: css({
     border: `1px solid ${theme.colors.border.medium}`,
     borderRadius: theme.shape.radius.default,
     background: theme.colors.background.primary,
-    overflow: 'hidden',
+    padding: theme.spacing(2.5),
+  }),
+  recommendationPanel: css({
+    borderLeft: `3px solid ${theme.colors.info.border}`,
   }),
   disclosure: css({
     borderTop: `1px solid ${theme.colors.border.weak}`,
     marginTop: theme.spacing(1.5),
     '& summary': {
-      alignItems: 'center',
-      boxSizing: 'border-box',
       color: theme.colors.text.secondary,
       cursor: 'pointer',
-      display: 'flex',
       fontSize: theme.typography.bodySmall.fontSize,
       fontWeight: theme.typography.fontWeightMedium,
-      gap: theme.spacing(0.75),
-      listStyle: 'none',
       padding: theme.spacing(1.25, 0),
-      transition: 'background-color 0.1s ease, color 0.1s ease',
-      width: '100%',
-      '&::-webkit-details-marker': { display: 'none' },
       '&:hover': {
         background: theme.colors.action.hover,
         color: theme.colors.text.primary,
@@ -471,25 +481,75 @@ const getStyles = (theme: GrafanaTheme2) => ({
         outline: `2px solid ${theme.colors.primary.border}`,
         outlineOffset: -2,
       },
-      '& svg': {
-        flexShrink: 0,
-        transition: 'transform 0.1s ease',
-      },
-    },
-    '&[open] > summary svg': {
-      transform: 'rotate(90deg)',
     },
   }),
   disclosureContent: css({
+    color: theme.colors.text.secondary,
+    margin: 0,
+    padding: theme.spacing(1, 0, 0, 2.5),
+  }),
+  inlineDisclosure: css({
+    borderTop: 0,
+    marginTop: 0,
+    '& summary': {
+      padding: theme.spacing(0.5, 0),
+    },
+  }),
+  endpointSummary: css({
+    display: 'grid',
+    gap: theme.spacing(2),
+    gridTemplateColumns: 'max-content minmax(0, 1fr)',
+    margin: 0,
+    minWidth: 0,
+    '& > div': {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.25),
+      minWidth: 0,
+    },
+    '& dt': {
+      color: theme.colors.text.secondary,
+      fontSize: theme.typography.bodySmall.fontSize,
+      fontWeight: theme.typography.fontWeightMedium,
+    },
+    '& dd': {
+      margin: 0,
+      minWidth: 0,
+    },
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      gridTemplateColumns: '1fr',
+    },
+  }),
+  endpointTarget: css({
+    '& dd': {
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    },
+  }),
+  checkSummary: css({
+    alignItems: 'center',
+    background: theme.colors.background.secondary,
+    borderRadius: theme.shape.radius.default,
+    display: 'flex',
+    gap: theme.spacing(2),
+    justifyContent: 'flex-start',
+    marginTop: theme.spacing(2),
+    padding: theme.spacing(1.5),
+    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+      alignItems: 'flex-start',
+      flexDirection: 'column',
+    },
+  }),
+  coverageAssessment: css({
+    borderTop: `1px solid ${theme.colors.border.weak}`,
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(1),
-    padding: theme.spacing(1, 0, 0, 2.5),
-    '& p': { color: theme.colors.text.secondary, margin: 0 },
-  }),
-  configurationDisclosure: css({
-    margin: theme.spacing(1.5, 2.5, 0),
-    paddingBottom: theme.spacing(1.5),
+    gap: theme.spacing(0.5),
+    paddingTop: theme.spacing(1.5),
+    '& > p': {
+      margin: 0,
+    },
   }),
   proposalSummary: css({
     display: 'grid',

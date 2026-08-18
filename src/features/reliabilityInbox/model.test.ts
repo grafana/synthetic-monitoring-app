@@ -118,10 +118,26 @@ describe('Reliability Inbox model', () => {
       )
       .sort(compareReliabilityOpportunities);
 
-    expect(opportunities.map(({ id }) => id)).toEqual([
-      'higher-technical-relevance',
-      'lower-technical-relevance',
-    ]);
+    expect(opportunities.map(({ id }) => id)).toEqual(['higher-technical-relevance', 'lower-technical-relevance']);
+  });
+
+  it('falls back to the service score when technical relevance is unavailable', () => {
+    const opportunities = [
+      { id: 'lower-service-score', score: 0.2 },
+      { id: 'higher-service-score', score: 0.8 },
+    ]
+      .map(({ id, score }) =>
+        toReliabilityOpportunity({
+          ...HTTP_SUGGESTION,
+          id,
+          score,
+          relevance: undefined,
+          target: `https://${id}.example.com/`,
+        })
+      )
+      .sort(compareReliabilityOpportunities);
+
+    expect(opportunities.map(({ id }) => id)).toEqual(['higher-service-score', 'lower-service-score']);
   });
 
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
@@ -132,14 +148,17 @@ describe('Reliability Inbox model', () => {
     expect(opportunity.proposedCheck.target).toBe(target);
   });
 
-  it('builds the proposal deterministically before Assistant is involved', () => {
-    expect(getProposedHttpCheckDraft(HTTP_SUGGESTION)).toEqual(
+  it('defers probe location selection to review when the suggestion does not specify probes', () => {
+    const draft = getProposedHttpCheckDraft({
+      ...HTTP_SUGGESTION,
+      prompt:
+        'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [].',
+    });
+
+    expect(draft).toEqual(
       expect.objectContaining({
-        job: 'mcp.goagain.dev',
-        frequencyMs: 60_000,
-        timeoutMs: 2000,
-        validStatusCodes: [200],
-        probeIds: [7],
+        probeIds: [],
+        locationPolicy: 'Probe locations will be selected during review.',
       })
     );
   });

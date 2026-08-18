@@ -1,3 +1,5 @@
+import { durationToMilliseconds, isValidDuration, parseDuration } from '@grafana/data';
+
 import { ProposedHttpCheckDraft, ReliabilityOpportunity, ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
 
@@ -12,8 +14,8 @@ export function parseSuggestedCheckConfig(prompt: string) {
 
   return {
     job,
-    frequencyMs: frequency ? parseDuration(frequency) : undefined,
-    timeoutMs: timeout ? parseDuration(timeout) : undefined,
+    frequencyMs: frequency ? parsePromptDuration(frequency) : undefined,
+    timeoutMs: timeout ? parsePromptDuration(timeout) : undefined,
     validStatusCodes: parseNumberList(statusCodes),
     failIfNotSSL: /fail if not SSL/i.test(prompt),
     probeIds: parseNumberList(probeIds),
@@ -86,7 +88,7 @@ export function getProposedHttpCheckDraft(suggestion: ReliabilitySuggestion): Pr
     locationPolicy:
       probeIds.length > 0
         ? `Run from the configured public probe${probeIds.length === 1 ? '' : 's'} with ID${probeIds.length === 1 ? '' : 's'} ${probeIds.join(', ')}.`
-        : 'Select at least one public probe before creating the check.',
+        : 'Probe locations will be selected during review.',
   };
 }
 
@@ -143,15 +145,9 @@ function parseNumberList(value?: string) {
     .filter(Number.isFinite);
 }
 
-function parseDuration(value: string) {
-  const units: Record<string, number> = { ms: 1, s: 1000, m: ONE_MINUTE_IN_MS, h: 60 * ONE_MINUTE_IN_MS };
-  const matches = [...value.matchAll(/(\d+(?:\.\d+)?)(ms|h|m|s)/g)];
-
-  if (matches.length === 0) {
-    return undefined;
-  }
-
-  return matches.reduce((total, [, amount, unit]) => total + Number(amount) * units[unit], 0);
+function parsePromptDuration(value: string) {
+  const duration = value.replace(/([hms])(?=\d)/g, '$1 ');
+  return isValidDuration(duration) ? durationToMilliseconds(parseDuration(duration)) : undefined;
 }
 
 function formatCompactNumber(value: number) {
