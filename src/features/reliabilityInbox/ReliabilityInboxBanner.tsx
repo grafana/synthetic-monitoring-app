@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useAssistant } from '@grafana/assistant';
 import { Box, Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { trackInboxExposure, trackReviewEntryClicked } from 'features/tracking/reliabilityInboxEvents';
 
@@ -10,11 +11,16 @@ import { useCachedReliabilityInboxSuggestions } from './data';
 
 export function ReliabilityInboxBanner() {
   const assistantAction = useStyles2(getAssistantActionStyle);
+  const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistant();
   const { data: opportunities = [] } = useCachedReliabilityInboxSuggestions();
   const exposureTracked = useRef(false);
   const topOpportunity = opportunities[0];
 
   useEffect(() => {
+    if (isAssistantLoading || !isAssistantAvailable) {
+      return;
+    }
+
     if (!topOpportunity || exposureTracked.current) {
       return;
     }
@@ -24,7 +30,11 @@ export function ReliabilityInboxBanner() {
       opportunityCount: opportunities.length,
       topOpportunityId: topOpportunity.id,
     });
-  }, [opportunities.length, topOpportunity]);
+  }, [opportunities.length, topOpportunity, isAssistantLoading, isAssistantAvailable]);
+
+  if (isAssistantLoading || !isAssistantAvailable) {
+    return null;
+  }
 
   return (
     <Box
