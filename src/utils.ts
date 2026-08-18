@@ -474,7 +474,8 @@ export function getExploreUrl(datasourceUid: string, queries: Query[], { from, t
   const left = encodeURIComponent(
     JSON.stringify({
       datasource: datasourceUid,
-      queries: queries.map((query) => ({
+      queries: queries.map((query, index) => ({
+        refId: String.fromCharCode(65 + index),
         expr: query.expr,
         instant: query.instant,
         format: query.format,
