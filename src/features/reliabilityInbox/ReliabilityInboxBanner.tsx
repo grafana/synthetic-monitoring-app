@@ -49,8 +49,8 @@ export function ReliabilityInboxBanner() {
             </Text>
             <Text color="secondary" variant="bodySmall">
               {topOpportunity
-                ? `Highest priority: ${topOpportunity.subject}`
-                : 'Generate prioritized suggestions when you are ready to review them.'}
+                ? `Recommended next: ${topOpportunity.subject}`
+                : 'Generate actionable recommendations when you are ready to review them.'}
             </Text>
           </Stack>
         </Stack>

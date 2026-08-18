@@ -52,11 +52,22 @@ const HTTP_SUGGESTION: ReliabilitySuggestion = {
     'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [7].',
 };
 
+const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = {
+  ...HTTP_SUGGESTION,
+  id: 'lower-priority-http-suggestion',
+  target: 'https://secondary.goagain.dev/',
+  relevance: 20,
+  evidence: {
+    ...HTTP_SUGGESTION.evidence,
+    reqPerS: 0.5,
+  },
+};
+
 const openAssistant = jest.fn();
 
-function mockSuggestions(suggestion = HTTP_SUGGESTION) {
+function mockSuggestions(suggestions: ReliabilitySuggestion[] = [HTTP_SUGGESTION]) {
   const result = {
-    data: [toReliabilityOpportunity(suggestion)],
+    data: suggestions.map(toReliabilityOpportunity),
     isLoading: false,
     isError: false,
     refetch: jest.fn(),
@@ -65,8 +76,8 @@ function mockSuggestions(suggestion = HTTP_SUGGESTION) {
   jest.mocked(useReliabilityInboxSuggestions).mockReturnValue(result);
 }
 
-function renderPage() {
-  mockSuggestions();
+function renderPage(suggestions?: ReliabilitySuggestion[]) {
+  mockSuggestions(suggestions);
 
   return render(<ReliabilityInboxPage />, {
     path: generateRoutePath(AppRoutes.ReliabilityInbox),
@@ -86,64 +97,65 @@ describe('ReliabilityInboxPage', () => {
     });
   });
 
-  it('leads with a decision-oriented recommendation and neutral coverage status', async () => {
+  it('separates the suggested check from the evidence behind it', async () => {
     const { user } = renderPage();
 
-    expect(await screen.findByRole('heading', { name: 'Add an HTTP check for mcp.goagain.dev' })).toBeInTheDocument();
-    expect(screen.getByText('Recommended next step')).toBeInTheDocument();
-    expect(screen.getByText('Highest priority')).toBeInTheDocument();
+    await screen.findByRole('heading', { name: 'Create an HTTP check' });
 
-    const endpoint = screen.getByLabelText('Recommended endpoint');
-    expect(within(endpoint).getByText('GET')).toBeInTheDocument();
-    expect(within(endpoint).getByText('mcp.goagain.dev')).toBeInTheDocument();
-    expect(within(endpoint).queryByText('https://mcp.goagain.dev/')).not.toBeInTheDocument();
-
-    const queueSubject = within(screen.getByLabelText('Review queue')).getByText('mcp.goagain.dev');
-    expect(queueSubject).toHaveAttribute('title', 'https://mcp.goagain.dev/');
-
-    const queueSignals = screen.getByLabelText('Decision signals for mcp.goagain.dev');
-    expect(within(queueSignals).getByText('High value')).toBeInTheDocument();
-    expect(within(queueSignals).getByText('High confidence')).toBeInTheDocument();
-
-    const recommendationSignals = screen.getByLabelText('Recommendation signals');
-    expect(within(recommendationSignals).getByText('High value')).toBeInTheDocument();
-    expect(within(recommendationSignals).getByText('High confidence')).toBeInTheDocument();
-
-    expect(
-      screen.getByText(
-        'Synthetic Monitoring does not appear to monitor this traffic yet, so we recommend adding this check.'
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText('5.8k')).toBeInTheDocument();
-    expect(screen.getByText('estimated requests in the last hour')).toBeInTheDocument();
-    expect(screen.getByText('5xx responses')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Investigate in Explore' })).toHaveAttribute(
+    const suggestedCheck = screen.getByRole('region', { name: 'Create an HTTP check' });
+    const evidence = screen.getByRole('region', { name: 'Why this recommendation' });
+    expect(within(suggestedCheck).getByText('Suggested check')).toBeInTheDocument();
+    expect(within(evidence).getByRole('heading', { name: 'Observed traffic evidence' })).toBeInTheDocument();
+    expect(within(suggestedCheck).getByLabelText('Suggested check endpoint')).toHaveTextContent(
+      'MethodGETTargetmcp.goagain.dev'
+    );
+    expect(within(evidence).getByRole('link', { name: 'Explore telemetry' })).toHaveAttribute(
       'href',
       expect.stringContaining('/explore?')
     );
 
-    const coverageDisclosure = screen.getByText('How we checked').closest('details');
-    expect(coverageDisclosure).not.toHaveAttribute('open');
-    await user.click(screen.getByText('How we checked'));
-    expect(coverageDisclosure).toHaveAttribute('open');
-    expect(screen.getByText(/Similar or indirect monitoring may still exist/)).toBeVisible();
-
-    expect(screen.queryByText('host.docker.internal')).not.toBeInTheDocument();
-    expect(openAssistant).not.toHaveBeenCalled();
+    await user.click(within(evidence).getByText('How we checked'));
+    expect(
+      within(evidence).getByText(
+        'We compared the endpoint and path with accessible HTTP checks. Aliases, redirects, upstream checks, and checks for other paths may not match directly.'
+      )
+    ).toBeVisible();
     expect(trackRecommendationReviewed).toHaveBeenCalledWith({
       opportunityId: 'http-suggestion',
       checkType: 'http',
     });
   });
 
-  it('does not render missing aggregate evidence as zero', async () => {
-    mockSuggestions({
-      ...HTTP_SUGGESTION,
-      evidence: {
-        statusDistribution: {},
-        families: HTTP_SUGGESTION.evidence.families,
-      },
+  it('updates the detail pane when a different recommendation is selected', async () => {
+    const { user } = renderPage([HTTP_SUGGESTION, LOWER_PRIORITY_HTTP_SUGGESTION]);
+
+    await screen.findByRole('heading', { name: 'Create an HTTP check' });
+
+    const queue = screen.getByLabelText('Recommendations');
+    const queueItems = within(queue).getAllByRole('button');
+    await user.click(queueItems[1]);
+
+    expect(queueItems[0]).toHaveAttribute('aria-pressed', 'false');
+    expect(queueItems[1]).toHaveAttribute('aria-pressed', 'true');
+    expect(
+      within(screen.getByLabelText('Suggested check endpoint')).getByText('secondary.goagain.dev')
+    ).toBeInTheDocument();
+    expect(trackRecommendationReviewed).toHaveBeenCalledWith({
+      opportunityId: 'lower-priority-http-suggestion',
+      checkType: 'http',
     });
+  });
+
+  it('does not render missing aggregate evidence as zero', async () => {
+    mockSuggestions([
+      {
+        ...HTTP_SUGGESTION,
+        evidence: {
+          statusDistribution: {},
+          families: HTTP_SUGGESTION.evidence.families,
+        },
+      },
+    ]);
 
     render(<ReliabilityInboxPage />, {
       path: generateRoutePath(AppRoutes.ReliabilityInbox),
@@ -156,7 +168,7 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.queryByText('0 req/s')).not.toBeInTheDocument();
     expect(screen.queryByText('0 ms')).not.toBeInTheDocument();
     expect(screen.queryByText('0.0%')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Investigate in Explore' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Explore telemetry' })).not.toBeInTheDocument();
   });
 
   it('keeps the existing page-level loading state while evidence is loading', async () => {
@@ -173,33 +185,36 @@ describe('ReliabilityInboxPage', () => {
     });
 
     expect(await screen.findByText('Loading Reliability Inbox…')).toBeInTheDocument();
-    expect(screen.queryByText('Evidence at a glance')).not.toBeInTheDocument();
+    expect(screen.queryByText('Why this recommendation')).not.toBeInTheDocument();
   });
 
   it('shows a compact proposed check with configuration details on demand', async () => {
     const { user } = renderPage();
 
-    expect(await screen.findByRole('heading', { name: 'GET mcp.goagain.dev' })).toBeInTheDocument();
-    expect(screen.getByText('HTTP GET · Every 1 minute')).toBeInTheDocument();
-    expect(screen.getAllByText('Run from the configured public probe with ID 7.')[0]).toBeVisible();
+    const suggestedCheck = await screen.findByRole('region', { name: 'Create an HTTP check' });
+    expect(within(suggestedCheck).getByText('Public HTTP')).toBeInTheDocument();
+    expect(within(suggestedCheck).getByText('Every 1 minute')).toBeInTheDocument();
+    expect(within(suggestedCheck).getAllByText('Require HTTPS')[0]).toBeInTheDocument();
+    expect(within(suggestedCheck).getByText('Run from the configured public probe with ID 7.')).not.toBeVisible();
 
-    const configurationDisclosure = screen.getByText('View configuration details').closest('details');
+    const configurationDisclosure = within(suggestedCheck).getByText('View configuration details').closest('details');
     expect(configurationDisclosure).not.toHaveAttribute('open');
-    expect(screen.getByText('https://mcp.goagain.dev/')).not.toBeVisible();
-    await user.click(screen.getByText('View configuration details'));
+    expect(within(suggestedCheck).getByText('https://mcp.goagain.dev/')).not.toBeVisible();
+    await user.click(within(suggestedCheck).getByText('View configuration details'));
     expect(configurationDisclosure).toHaveAttribute('open');
-    expect(screen.getByText('https://mcp.goagain.dev/')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Copy target URL' })).toBeVisible();
-    expect(screen.getByText('2 seconds')).toBeVisible();
-    expect(screen.getByText('Require HTTPS')).toBeVisible();
+    expect(within(suggestedCheck).getByText('https://mcp.goagain.dev/')).toBeVisible();
+    expect(within(suggestedCheck).getByRole('button', { name: 'Copy target URL' })).toBeVisible();
+    expect(within(suggestedCheck).getByText('2 seconds')).toBeVisible();
+    expect(within(configurationDisclosure!).getByText('Require HTTPS')).toBeVisible();
+    expect(within(configurationDisclosure!).getByText('Run from the configured public probe with ID 7.')).toBeVisible();
 
-    expect(screen.getByRole('button', { name: 'Review and customize check' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Review and customize check' })).toHaveAttribute(
+    expect(within(suggestedCheck).getByRole('button', { name: 'Review and customize' })).toBeInTheDocument();
+    expect(within(suggestedCheck).getByRole('button', { name: 'Review and customize' })).toHaveAttribute(
       'aria-describedby',
       'reliability-inbox-assistant-action-help'
     );
     expect(
-      screen.getByText(
+      within(suggestedCheck).getByText(
         'Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved until you confirm.'
       )
     ).toBeInTheDocument();
@@ -209,7 +224,7 @@ describe('ReliabilityInboxPage', () => {
   it('hands structured evidence and draft to Assistant as bounded setup guidance', async () => {
     const { user } = renderPage();
 
-    await user.click(await screen.findByRole('button', { name: 'Review and customize check' }));
+    await user.click(await screen.findByRole('button', { name: 'Review and customize' }));
 
     expect(trackSetupWithAssistant).toHaveBeenCalledWith({
       opportunityId: 'http-suggestion',
@@ -240,5 +255,25 @@ describe('ReliabilityInboxPage', () => {
         ],
       })
     );
+  });
+
+  it('defers probe location selection to the review flow', async () => {
+    mockSuggestions([
+      {
+        ...HTTP_SUGGESTION,
+        prompt:
+          'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [].',
+      },
+    ]);
+
+    const { user } = render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    const suggestedCheck = await screen.findByRole('region', { name: 'Create an HTTP check' });
+    expect(within(suggestedCheck).queryByText('Probe selection required')).not.toBeInTheDocument();
+    await user.click(within(suggestedCheck).getByText('View configuration details'));
+    expect(within(suggestedCheck).getByText('Probe locations will be selected during review.')).toBeVisible();
   });
 });
