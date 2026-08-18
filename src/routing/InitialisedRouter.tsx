@@ -133,16 +133,18 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      <Route
-        path={AppRoutes.ReliabilityInbox}
-        element={
-          canReadChecks ? (
-            <ReliabilityInboxPage />
-          ) : (
-            <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
-          )
-        }
-      />
+      {isFeatureEnabled(FeatureName.ReliabilityInbox) && (
+        <Route
+          path={AppRoutes.ReliabilityInbox}
+          element={
+            canReadChecks ? (
+              <ReliabilityInboxPage />
+            ) : (
+              <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+            )
+          }
+        />
+      )}
 
       <Route path={`${AppRoutes.Config}`} element={<ConfigPageLayout />}>
         <Route index element={<GeneralTab />} />
