@@ -1,6 +1,8 @@
+import fs from 'fs';
+import path from 'path';
 import { faro } from '@grafana/faro-web-sdk';
 
-import { FaroEvent, reportError } from 'faro';
+import { FaroEvent, FaroUserAction, reportError } from 'faro';
 
 const mockPushError = jest.fn();
 
@@ -53,5 +55,46 @@ describe(`reportError`, () => {
     });
 
     expect(() => reportError('test')).not.toThrow();
+  });
+});
+
+function collectAppSource(dir: string): string {
+  return fs
+    .readdirSync(dir, { withFileTypes: true })
+    .flatMap((entry) => {
+      const fullPath = path.join(dir, entry.name);
+
+      if (entry.isDirectory()) {
+        if (entry.name === '__tests__' || entry.name === 'node_modules') {
+          return [];
+        }
+
+        return collectAppSource(fullPath);
+      }
+
+      if (entry.name === 'faro.ts' || /\.test\.(ts|tsx)$/.test(entry.name) || !/\.(ts|tsx)$/.test(entry.name)) {
+        return [];
+      }
+
+      return [fs.readFileSync(fullPath, 'utf8')];
+    })
+    .join('\n');
+}
+
+function unusedMembers(enumName: string, members: string[], source: string) {
+  // \b after the member name stops `Init` from matching inside `InitializeAccessToken`
+  // (plain `.includes` would count that as a use and hide a genuinely dead member).
+  return members.filter((member) => !new RegExp(`\\b${enumName}\\.${member}\\b`).test(source));
+}
+
+describe(`Faro enums are referenced in the app`, () => {
+  const source = collectAppSource(path.join(__dirname));
+
+  it(`uses every FaroEvent at least once`, () => {
+    expect(unusedMembers('FaroEvent', Object.keys(FaroEvent), source)).toEqual([]);
+  });
+
+  it(`uses every FaroUserAction at least once`, () => {
+    expect(unusedMembers('FaroUserAction', Object.keys(FaroUserAction), source)).toEqual([]);
   });
 });

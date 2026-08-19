@@ -9,6 +9,7 @@ import { TrackingIdentity } from 'features/tracking/TrackingIdentity';
 
 import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
+import { registerFaroInteractionEchoBackend } from 'faroEchoBackend';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
@@ -24,9 +25,10 @@ import { SMOpenFeatureProvider } from './SMOpenFeatureProvider';
 const { env, url, name } = getFaroConfig();
 
 // faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
+// To test Faro events while developing, either comment out this check
 if (window.location.hostname !== 'localhost') {
   getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
-    initializeFaro({
+    const faro = initializeFaro({
       url,
       app: {
         name,
@@ -38,7 +40,20 @@ if (window.location.hostname !== 'localhost') {
         id: config.bootData.user.orgName,
       },
       instrumentations: getWebInstrumentations(),
+      // only send signals emitted while the user is on this plugin's pages
+      beforeSend: (event) => {
+        if ((event.meta.page?.url ?? '').includes('grafana-synthetic-monitoring-app')) {
+          return event;
+        }
+
+        return null;
+      },
+      experimental: {
+        trackNavigation: true,
+      },
     });
+
+    registerFaroInteractionEchoBackend(faro);
   });
 }
 

@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { LinkedDatasourceInfo, LogLine, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
+  AlertSensitivity,
   CalculateUsageValues,
   Check,
   CheckFormValues,
@@ -143,6 +144,18 @@ export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
   }
 
   return group;
+}
+
+/**
+ * Whether the check has any alerting configured: either per-check alerts or a legacy
+ * alert sensitivity (any value, including custom strings, other than
+ * `AlertSensitivity.None`).
+ */
+export function checkHasAlerting(check: Check): boolean {
+  const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
+  const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
+
+  return hasPerCheckAlerts || hasAlertSensitivity;
 }
 
 export interface MetricQueryOptions {

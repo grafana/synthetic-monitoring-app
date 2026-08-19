@@ -6,6 +6,8 @@ import { CheckType, CheckTypeGroup, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
+import { FaroUserAction } from '../faro';
+import { trackFaroUserAction } from '../features/tracking/userAction';
 import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
 import { useFeatureFlagContext } from './useFeatureFlagContext';
 
@@ -25,6 +27,11 @@ export interface CheckTypeGroupOption {
   protocols: ProtocolOption[];
 }
 
+function trackAndStartUserAction(checkTypeGroup: CheckTypeGroup, protocol: string) {
+  trackAddCheckTypeButtonClicked({ checkTypeGroup, protocol });
+  trackFaroUserAction(FaroUserAction.SelectCheckTypeClicked, { checkTypeGroup, protocol });
+}
+
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   {
     label: 'API Endpoint',
@@ -35,7 +42,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       label: option.label,
       href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
       featureToggle: option.featureToggle,
-      onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.ApiTest, protocol: option.value }),
+      onClick: () => trackAndStartUserAction(CheckTypeGroup.ApiTest, option.value),
     })),
   },
   {
@@ -47,7 +54,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.MultiStep}?checkType=${CheckType.MultiHttp}`,
-        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.MultiStep, protocol: `HTTP` }),
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.MultiStep, `HTTP`),
       },
     ],
   },
@@ -60,7 +67,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Scripted}`,
-        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Scripted, protocol: `HTTP` }),
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.Scripted, `HTTP`),
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
@@ -92,7 +99,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       {
         label: `HTTP`,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
-        onClick: () => trackAddCheckTypeButtonClicked({ checkTypeGroup: CheckTypeGroup.Browser, protocol: `HTTP` }),
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.Browser, `HTTP`),
       },
     ],
   },

@@ -22,6 +22,8 @@ import {
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
+  LabelMode,
+  LabelModeResponse,
   ListCheckResult,
   ListProbeResult,
   ListTenantCostAttributionLabelsResponse,
@@ -374,6 +376,20 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       data: {
         ...settings,
       },
+    });
+  }
+
+  //--------------------------------------------------------------------------------
+  // LABEL MODE
+
+  async getLabelMode() {
+    return this.fetchAPI<LabelModeResponse>(`${this.instanceSettings.url}/sm/tenant/label-mode`);
+  }
+
+  async setLabelMode(mode: LabelMode) {
+    return this.fetchAPI<LabelModeResponse>(`${this.instanceSettings.url}/sm/tenant/label-mode`, {
+      method: 'PUT',
+      data: { mode },
     });
   }
 

@@ -169,7 +169,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   wrapDetailItem: css({
     backgroundColor: theme.colors.background.primary,
-    borderRadius: '2px',
+    borderRadius: theme.shape.radius.sm,
     padding: `${theme.spacing(0.5)} ${theme.spacing(1)}`,
   }),
   separator: css({
