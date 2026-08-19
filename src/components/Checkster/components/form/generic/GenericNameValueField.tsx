@@ -27,6 +27,13 @@ interface GenericNameValueFieldProps {
   namePlaceholder?: string;
   valuePlaceholder?: string;
   limit?: number;
+  /**
+   * Names managed by a dedicated control elsewhere in the form (e.g. the Knowledge Graph
+   * service link). Rows carrying these names are not rendered here — they surface in their
+   * dedicated control instead. While the user is typing one, the row stays visible with a
+   * message redirecting them to that control.
+   */
+  reservedNames?: { names: string[]; message: (name: string) => string };
 }
 
 export function GenericNameValueField({
@@ -41,15 +48,24 @@ export function GenericNameValueField({
   limit,
   namePlaceholder = 'Name',
   valuePlaceholder = 'Value',
+  reservedNames,
 }: GenericNameValueFieldProps) {
   const id = useDOMId();
   const {
     register,
     setFocus,
+    watch,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
   const { fields, append, remove } = useFieldArray({ name: fieldName });
   const styles = useStyles2(getStyles);
+
+  // Current row values (the useFieldArray fields are snapshots), for the reserved-name checks
+  const watchedRows: Array<{ name?: string; value?: string }> = watch(fieldName) ?? [];
+  // Reserved rows are hidden unless the user is editing them, so a row being typed doesn't
+  // vanish mid-keystroke; it disappears into the dedicated control on blur.
+  const [focusedRow, setFocusedRow] = useState<number | null>(null);
+  const isReservedName = (name?: string) => Boolean(name && reservedNames?.names.includes(name));
 
   // State for the unregistered row
   const [unregisteredRow, setUnregisteredRow] = useState({ name: '', value: '' });
@@ -86,41 +102,67 @@ export function GenericNameValueField({
       emulate
     >
       <Stack direction="column" gap={0.5}>
-        {fields.map((field, index) => (
-          <Stack key={field.id} alignItems="start">
-            <StyledField
-              className={styles.field}
-              {...getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables)}
+        {fields.map((field, index) => {
+          const isReserved = isReservedName(watchedRows[index]?.name);
+
+          if (isReserved && focusedRow !== index) {
+            return null;
+          }
+
+          return (
+            <div
+              key={field.id}
+              onFocus={() => setFocusedRow(index)}
+              onBlur={(event) => {
+                if (event.currentTarget.contains(event.relatedTarget as Node)) {
+                  return; // focus moved between inputs within the same row
+                }
+                setFocusedRow((prev) => (prev === index ? null : prev));
+                // An abandoned reserved row with no value would linger hidden and fail
+                // validation on submit, so drop it — its dedicated control owns the name.
+                if (isReserved && !watchedRows[index]?.value) {
+                  remove(index);
+                }
+              }}
             >
-              <Input
-                prefix={namePrefix}
-                {...register(`${fieldName}.${index}.name`)}
-                placeholder={namePlaceholder}
-                disabled={disabled}
-                aria-label={`${label} ${index + 1} name`}
-              />
-            </StyledField>
-            <StyledField
-              className={styles.field}
-              {...getFieldErrorProps(errors, [fieldName, index, 'value'], interpolationVariables)}
-            >
-              <Input
-                {...register(`${fieldName}.${index}.value`)}
-                placeholder={valuePlaceholder}
-                disabled={disabled}
-                aria-label={`${label} ${index + 1} value`}
-              />
-            </StyledField>
-            <IconButton
-              data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
-              style={{ marginTop: '8px' }}
-              aria-label="Remove row"
-              name="minus"
-              onClick={() => remove(index)}
-              tooltip="Remove"
-            />
-          </Stack>
-        ))}
+              <Stack alignItems="start">
+                <StyledField
+                  className={styles.field}
+                  {...(isReserved
+                    ? { invalid: true, error: reservedNames?.message(watchedRows[index]?.name ?? '') }
+                    : getFieldErrorProps(errors, [fieldName, index, 'name'], interpolationVariables))}
+                >
+                  <Input
+                    prefix={namePrefix}
+                    {...register(`${fieldName}.${index}.name`)}
+                    placeholder={namePlaceholder}
+                    disabled={disabled}
+                    aria-label={`${label} ${index + 1} name`}
+                  />
+                </StyledField>
+                <StyledField
+                  className={styles.field}
+                  {...getFieldErrorProps(errors, [fieldName, index, 'value'], interpolationVariables)}
+                >
+                  <Input
+                    {...register(`${fieldName}.${index}.value`)}
+                    placeholder={valuePlaceholder}
+                    disabled={disabled}
+                    aria-label={`${label} ${index + 1} value`}
+                  />
+                </StyledField>
+                <IconButton
+                  data-testid={CHECKSTER_TEST_ID.form.components.GenericNameValueField.addButton}
+                  style={{ marginTop: '8px' }}
+                  aria-label="Remove row"
+                  name="minus"
+                  onClick={() => remove(index)}
+                  tooltip="Remove"
+                />
+              </Stack>
+            </div>
+          );
+        })}
 
         {allowEmpty && !limitReached && (
           <Stack alignItems="start">
@@ -175,7 +217,7 @@ function getStyles(theme: GrafanaTheme2) {
       display: flex;
     `,
     field: css`
-      flex-grow: 1;
+      flex: 1 1 0;
     `,
     buttonContainer: css`
       padding-top: ${theme.spacing(0.75)};

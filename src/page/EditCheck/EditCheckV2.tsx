@@ -17,6 +17,7 @@ import { useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { Checkster } from 'components/Checkster';
+import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
 
@@ -33,8 +34,12 @@ export const EditCheckV2 = () => {
 
   const styles = useStyles2(getStyles);
 
-  // Check for runbook missing notification to determine initial section
-  const initialSection = !!urlSearchParams.get('runbookMissing') ? FormSectionName.Alerting : undefined;
+  // Determine which section the form should open on. The runbook-missing notification jumps to
+  // Alerting; otherwise a `?section=<name>` param (e.g. from the dashboard's connected-services
+  // empty state linking to `labels`) opens that section directly.
+  const sectionParam = urlSearchParams.get(FORM_SECTION_QUERY_PARAM);
+  const sectionFromParam = Object.values(FormSectionName).find((name) => name === sectionParam);
+  const initialSection = urlSearchParams.get('runbookMissing') ? FormSectionName.Alerting : sectionFromParam;
 
   const navModel = useMemo(() => {
     return createNavModel(
