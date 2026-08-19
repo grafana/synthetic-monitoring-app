@@ -3,14 +3,18 @@ import { createAssistantContextItem, useAssistant } from '@grafana/assistant';
 import { GrafanaTheme2, NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import {
+  Alert,
   Badge,
   Box,
   Button,
   ClipboardButton,
   EmptyState,
   Grid,
+  IconButton,
   LinkButton,
   LoadingPlaceholder,
+  Portal,
+  Spinner,
   Stack,
   Text,
   useStyles2,
@@ -25,7 +29,7 @@ import { getUserPermissions } from 'data/permissions';
 import { ErrorAlert } from 'components/ErrorAlert';
 
 import { getAssistantActionStyle } from './assistantActionStyles';
-import { useReliabilityInboxSuggestions } from './data';
+import { useReliabilityInboxDismissals, useReliabilityInboxSuggestions } from './data';
 import { getEvidenceExploreUrl } from './evidence';
 
 const ASSISTANT_ORIGIN = 'grafana-synthetic-monitoring-app/reliability-inbox';
@@ -63,8 +67,11 @@ function ReliabilityInboxReview() {
   const styles = useStyles2(getStyles);
   const { canWriteChecks } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
-  const { data: opportunities = [], isLoading, isError, refetch } = useReliabilityInboxSuggestions();
+  const { data, isLoading, isFetching, isError, refetch } = useReliabilityInboxSuggestions();
+  const { dismissSuggestion, restoreSuggestion } = useReliabilityInboxDismissals();
+  const opportunities = data ?? [];
   const [selectedId, setSelectedId] = useState<string>();
+  const [lastDismissedId, setLastDismissedId] = useState<string>();
   const reviewedIds = useRef(new Set<string>());
 
   const selected = opportunities.find((opportunity) => opportunity.id === selectedId) ?? opportunities[0];
@@ -82,7 +89,7 @@ function ReliabilityInboxReview() {
     return <LoadingPlaceholder text="Loading Reliability Inbox…" />;
   }
 
-  if (isError) {
+  if (isError && !data) {
     return (
       <ErrorAlert
         buttonText="Retry"
@@ -93,11 +100,58 @@ function ReliabilityInboxReview() {
     );
   }
 
+  const refreshStatus = isFetching ? (
+    <Stack role="status" alignItems="center" gap={1}>
+      <Spinner size="xs" inline />
+      <Text color="secondary" variant="bodySmall">
+        Showing saved suggestions · Looking for new opportunities…
+      </Text>
+    </Stack>
+  ) : isError ? (
+    <ErrorAlert
+      buttonText="Retry"
+      content="Showing saved suggestions. Try again later for newer opportunities."
+      onClick={() => refetch()}
+      title="Suggestions could not be refreshed"
+    />
+  ) : null;
+
+  const dismissalToast = lastDismissedId ? (
+    <Portal>
+      <Alert
+        className={styles.dismissalToast}
+        severity="success"
+        title="Suggestion dismissed in this browser"
+        elevated
+        bottomSpacing={0}
+        action={
+          <Button
+            variant="secondary"
+            fill="text"
+            size="sm"
+            onClick={() => {
+              restoreSuggestion(lastDismissedId);
+              setSelectedId(lastDismissedId);
+              setLastDismissedId(undefined);
+            }}
+          >
+            Undo
+          </Button>
+        }
+        onRemove={() => setLastDismissedId(undefined)}
+      />
+    </Portal>
+  ) : null;
+
   if (!selected) {
     return (
-      <EmptyState message="No reviewable opportunities" variant="completed">
-        Only public HTTP endpoints with enough evidence of missing coverage are shown.
-      </EmptyState>
+      <Stack direction="column" gap={1}>
+        {refreshStatus}
+        <EmptyState message="No reviewable opportunities" variant="completed">
+          Only public HTTP endpoints with enough evidence of missing coverage are shown.
+        </EmptyState>
+        {dismissalToast}
+      </Stack>
     );
   }
 
@@ -111,6 +165,10 @@ function ReliabilityInboxReview() {
   const hasAggregateEvidence = Boolean(
     selected.requestVolume || selected.requestRate || selected.errorRate || selected.p99
   );
+  const dismissSelected = () => {
+    dismissSuggestion(selected.id);
+    setLastDismissedId(selected.id);
+  };
 
   const setUpWithAssistant = () => {
     if (!openAssistant) {
@@ -145,6 +203,7 @@ function ReliabilityInboxReview() {
 
   return (
     <div className={styles.reviewLayout}>
+      {refreshStatus && <div className={styles.refreshStatus}>{refreshStatus}</div>}
       <aside className={styles.queue} aria-label="Recommendations">
         <div className={styles.queueHeader}>
           <Stack direction="column" gap={0.5}>
@@ -189,6 +248,19 @@ function ReliabilityInboxReview() {
           aria-labelledby="reliability-inbox-suggested-check-title"
         >
           <Stack direction="column" gap={1}>
+            <Stack alignItems="center" justifyContent="space-between" gap={1}>
+              <Text variant="bodySmall" color="info" weight="bold">
+                Suggested check
+              </Text>
+              <IconButton
+                name="times"
+                size="sm"
+                variant="secondary"
+                tooltip="Dismiss suggestion"
+                tooltipPlacement="left"
+                onClick={dismissSelected}
+              />
+            </Stack>
             <Stack
               direction={{ xs: 'column', md: 'row' }}
               justifyContent="space-between"
@@ -196,9 +268,6 @@ function ReliabilityInboxReview() {
               gap={2}
             >
               <Stack direction="column" gap={1} minWidth={0} flex={1}>
-                <Text variant="bodySmall" color="info" weight="bold">
-                  Suggested check
-                </Text>
                 <Text element="h2" id="reliability-inbox-suggested-check-title" variant="h3">
                   Create an HTTP check
                 </Text>
@@ -341,6 +410,7 @@ function ReliabilityInboxReview() {
           </Stack>
         </section>
       </article>
+      {dismissalToast}
     </div>
   );
 }
@@ -362,6 +432,14 @@ function EvidenceMetric({ value, label }: { value: string; label: string }) {
 
 const getStyles = (theme: GrafanaTheme2) => ({
   assistantAction: getAssistantActionStyle(theme),
+  dismissalToast: css({
+    position: 'fixed',
+    right: theme.spacing(2),
+    bottom: theme.spacing(2),
+    width: `calc(100vw - ${theme.spacing(4)})`,
+    maxWidth: 420,
+  }),
+  refreshStatus: css({ gridColumn: '1 / -1' }),
   reviewLayout: css({
     display: 'grid',
     gridTemplateColumns: 'minmax(320px, 360px) minmax(0, 1fr)',
