@@ -4,9 +4,12 @@ import { LinkButton } from '@grafana/ui';
 import { trackAddNewCheckButtonClicked } from 'features/tracking/checkCreationEvents';
 import { ACTIONS_TEST_ID } from 'test/dataTestIds';
 
+import { FaroUserAction } from 'faro';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
+
+import { trackFaroUserAction } from '../../features/tracking/userAction';
 
 interface AddNewCheckButtonProps {
   source: 'check-list-empty-state' | 'check-list' | 'homepage';
@@ -17,6 +20,7 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
 
   const handleClick = useCallback(() => {
     trackAddNewCheckButtonClicked({ source });
+    trackFaroUserAction(FaroUserAction.CreateNewCheckClicked, { source: source });
   }, [source]);
 
   return (
@@ -28,9 +32,7 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
       onClick={handleClick}
       variant="primary"
     >
-      <Trans i18nKey="addNewCheckButton.createNewCheck">
-        Create new check
-      </Trans>
+      <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>
     </LinkButton>
   );
 }

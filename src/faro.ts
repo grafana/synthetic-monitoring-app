@@ -24,6 +24,36 @@ export enum FaroEvent {
   NoProbeMappingFound = 'no_probe_mapping_found',
 }
 
+export enum FaroUserAction {
+  CreateNewCheckClicked = 'create-new-check-clicked',
+  CheckWizardNextClicked = 'check-wizard-next-clicked',
+  CheckWizardPrevClicked = 'check-wizard-prev-clicked',
+  CheckWizardTabClicked = 'check-wizard-tab-clicked',
+  CheckCreateSubmitClicked = 'check-create-submit-clicked',
+  CheckUpdateSubmitClicked = 'check-update-submit-clicked',
+  CheckEditClicked = 'check-edit-clicked',
+  CheckDuplicateClicked = 'check-duplicate-clicked',
+  CheckDisableClicked = 'check-disable-clicked',
+  CheckEnableClicked = 'check-enable-clicked',
+  CheckDeleteClicked = 'check-delete-clicked',
+  CheckDeleteConfirmationClicked = 'check-delete-confirmation-clicked',
+  CheckDeleteCancellationClicked = 'check-delete-cancelation-clicked',
+  AdhocCheckTestClicked = 'adhoc-check-test-clicked',
+  ProbeEditorSubmitClicked = 'probe-editor-submit-clicked',
+  ProbeSetupModalCopyValueClicked = 'probe-setup-modal-copy-value-clicked',
+  SelectCheckTypeClicked = 'select-check-type-clicked',
+  EditProbeSetupModalDismissClicked = 'edit-probe-setup-modal-dismiss-clicked',
+  NewProbeCreateModalDismissClicked = 'new-probe-create-probe-modal-dismiss-clicked',
+  EditPrivateProbeClicked = 'edit-private-probe-clicked',
+  AddPrivateProbeClicked = 'add-private-probe-clicked',
+  DeletePrivateProbeClicked = 'delete-private-probe-clicked',
+  DeletePrivateProbeConfirmationClicked = 'delete-private-probe-confirmation-clicked',
+  DeletePrivateProbeCancellationClicked = 'delete-private-probe-cancelation-clicked',
+  ResetAccessTokenClicked = 'reset-access-token-clicked',
+  ResetAccessTokenConfirmationClicked = 'reset-access-token-confirmation-clicked',
+  ResetAccessTokenCancellationClicked = 'reset-access-token-cancelation-clicked',
+}
+
 export enum FaroEnv {
   Dev = 'development',
   Staging = 'staging',

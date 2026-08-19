@@ -4,6 +4,8 @@ import { Button, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
+import { FaroUserAction } from '../../../../faro';
+import { trackFaroUserAction } from '../../../../features/tracking/userAction';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 
 export function FormFooter() {
@@ -38,7 +40,15 @@ export function FormFooter() {
     >
       <div>
         {previous && (
-          <Button type="button" icon="arrow-left" variant="secondary" onClick={() => setSectionActive(previous.name)}>
+          <Button
+            type="button"
+            icon="arrow-left"
+            variant="secondary"
+            onClick={() => {
+              trackFaroUserAction(FaroUserAction.CheckWizardPrevClicked);
+              setSectionActive(previous.name);
+            }}
+          >
             {previous.label}
           </Button>
         )}
@@ -54,7 +64,10 @@ export function FormFooter() {
           <Button
             type="button"
             variant={isStepsComplete ? 'secondary' : 'primary'}
-            onClick={() => setSectionActive(next.name)}
+            onClick={() => {
+              trackFaroUserAction(FaroUserAction.CheckWizardNextClicked);
+              setSectionActive(next.name);
+            }}
             iconPlacement="right"
             icon="arrow-right"
           >
@@ -66,6 +79,9 @@ export function FormFooter() {
           data-testid={CHECKSTER_TEST_ID.form.submitButton}
           variant={isStepsComplete || !next ? 'primary' : 'secondary'}
           disabled={disableSubmit}
+          // Do not add data-faro-user-action-name="save" here: this shared submit button
+          // is used for both create and edit flows, so the action must be named where
+          // the submit handler can distinguish create vs. update. (@see useHandleSubmitCheckster)
         >
           Save
         </Button>
