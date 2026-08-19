@@ -25,6 +25,7 @@ import { SMOpenFeatureProvider } from './SMOpenFeatureProvider';
 const { env, url, name } = getFaroConfig();
 
 // faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
+// To test Faro events while developing, either comment out this check
 if (window.location.hostname !== 'localhost') {
   getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
     const faro = initializeFaro({

@@ -15,6 +15,8 @@ import { Card } from 'components/Card';
 import { CheckStatusInfo } from 'components/CheckStatusInfo';
 import { NewStatusBadge } from 'components/NewStatusBadge';
 
+import { FaroUserAction } from '../../../faro';
+import { trackFaroUserAction } from '../../../features/tracking/userAction';
 import { Protocol } from './Protocol';
 
 export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
@@ -50,7 +52,10 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
             disabled={disabled}
             href={`${getRoute(AppRoutes.NewCheck)}/${group.value}`}
             tooltip={getTooltip(limits, group.value)}
-            onClick={() => trackAddCheckTypeGroupButtonClicked({ checkTypeGroup: group.value })}
+            onClick={() => {
+              trackAddCheckTypeGroupButtonClicked({ checkTypeGroup: group.value });
+              trackFaroUserAction(FaroUserAction.SelectCheckTypeClicked, { checkTypeGroup: group.value });
+            }}
           >
             {group.label}
           </LinkButton>

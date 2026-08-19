@@ -8,6 +8,8 @@ import { AdHocCheckState, ProbeStateStatus } from './types.adhoc-check';
 import { useProbes } from 'data/useProbes';
 import { useCanReadLogs } from 'hooks/useDSPermission';
 
+import { FaroUserAction } from '../../../../faro';
+import { trackFaroUserAction } from '../../../../features/tracking/userAction';
 import { CenteredSpinner } from '../../../CenteredSpinner';
 import { Column } from '../../components/ui/Column';
 import {
@@ -129,6 +131,7 @@ export function AdhocCheckPanel() {
   }, [newHocCheckRequest, probes]);
 
   const handleAdHocCheck = () => {
+    trackFaroUserAction(FaroUserAction.AdhocCheckTestClicked);
     doAdhocCheck();
   };
 
