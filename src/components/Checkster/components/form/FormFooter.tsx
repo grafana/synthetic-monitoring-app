@@ -79,9 +79,6 @@ export function FormFooter() {
           data-testid={CHECKSTER_TEST_ID.form.submitButton}
           variant={isStepsComplete || !next ? 'primary' : 'secondary'}
           disabled={disableSubmit}
-          // Do not add data-faro-user-action-name="save" here: this shared submit button
-          // is used for both create and edit flows, so the action must be named where
-          // the submit handler can distinguish create vs. update. (@see useHandleSubmitCheckster)
         >
           Save
         </Button>

@@ -28,11 +28,8 @@ export interface CheckTypeGroupOption {
 }
 
 function trackAndStartUserAction(checkTypeGroup: CheckTypeGroup, protocol: string) {
-  trackAddCheckTypeButtonClicked({ checkTypeGroup: checkTypeGroup, protocol: protocol });
-  trackFaroUserAction(FaroUserAction.SelectCheckTypeClicked, {
-    checkTypeGroup: checkTypeGroup,
-    protocol: protocol,
-  });
+  trackAddCheckTypeButtonClicked({ checkTypeGroup, protocol });
+  trackFaroUserAction(FaroUserAction.SelectCheckTypeClicked, { checkTypeGroup, protocol });
 }
 
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [

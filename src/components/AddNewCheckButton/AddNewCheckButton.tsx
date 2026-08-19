@@ -20,7 +20,7 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
 
   const handleClick = useCallback(() => {
     trackAddNewCheckButtonClicked({ source });
-    trackFaroUserAction(FaroUserAction.CreateNewCheckClicked, { source: source });
+    trackFaroUserAction(FaroUserAction.CreateNewCheckClicked, { source });
   }, [source]);
 
   return (

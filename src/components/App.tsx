@@ -24,37 +24,38 @@ import { SMOpenFeatureProvider } from './SMOpenFeatureProvider';
 
 const { env, url, name } = getFaroConfig();
 
-// Used to be disabled on localhost because it was filling up the console with error logs.
-// That's no longer the case, so it's safe to leave enabled everywhere - which we now need
-// to actually test user action tracking during local development.
-getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
-  const faro = initializeFaro({
-    url,
-    app: {
-      name,
-      version: version ?? undefined,
-      environment: env,
-    },
-    isolate: true,
-    user: {
-      id: config.bootData.user.orgName,
-    },
-    instrumentations: getWebInstrumentations(),
-    // only send signals emitted while the user is on this plugin's pages
-    beforeSend: (event) => {
-      if ((event.meta.page?.url ?? '').includes('grafana-synthetic-monitoring-app')) {
-        return event;
-      }
+// faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
+// To test Faro events while developing, either comment out this check
+if (window.location.hostname !== 'localhost') {
+  getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
+    const faro = initializeFaro({
+      url,
+      app: {
+        name,
+        version: version ?? undefined,
+        environment: env,
+      },
+      isolate: true,
+      user: {
+        id: config.bootData.user.orgName,
+      },
+      instrumentations: getWebInstrumentations(),
+      // only send signals emitted while the user is on this plugin's pages
+      beforeSend: (event) => {
+        if ((event.meta.page?.url ?? '').includes('grafana-synthetic-monitoring-app')) {
+          return event;
+        }
 
-      return null;
-    },
-    experimental: {
-      trackNavigation: true,
-    },
+        return null;
+      },
+      experimental: {
+        trackNavigation: true,
+      },
+    });
+
+    registerFaroInteractionEchoBackend(faro);
   });
-
-  registerFaroInteractionEchoBackend(faro);
-});
+}
 
 const App = (props: AppRootProps<ProvisioningJsonData>) => {
   const { meta } = props;
