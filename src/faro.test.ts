@@ -82,7 +82,9 @@ function collectAppSource(dir: string): string {
 }
 
 function unusedMembers(enumName: string, members: string[], source: string) {
-  return members.filter((member) => !source.includes(`${enumName}.${member}`));
+  // \b after the member name stops `Init` from matching inside `InitializeAccessToken`
+  // (plain `.includes` would count that as a use and hide a genuinely dead member).
+  return members.filter((member) => !new RegExp(`\\b${enumName}\\.${member}\\b`).test(source));
 }
 
 describe(`Faro enums are referenced in the app`, () => {
