@@ -13,8 +13,8 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 import { ReliabilityInboxBanner } from 'features/reliabilityInbox';
+import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 
 import { Check, FeatureName } from 'types';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
