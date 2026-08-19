@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.59.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.58.0...v1.59.0) (2026-08-19)
+
+
+### Features
+
+* attach check, form and time-range scope props to tracking events ([#1802](https://github.com/grafana/synthetic-monitoring-app/issues/1802)) ([662c877](https://github.com/grafana/synthetic-monitoring-app/commit/662c8777f7843dcf6155d4f0c5856b595098fe72))
+* attach Time Point Explorer display state to tracking events fired inside it ([#1804](https://github.com/grafana/synthetic-monitoring-app/issues/1804)) ([9eb83b4](https://github.com/grafana/synthetic-monitoring-app/commit/9eb83b48a65b7623d9689747eb5b5f5e29d9e8d5))
+* introduce backend component to plugin ([#1806](https://github.com/grafana/synthetic-monitoring-app/issues/1806)) ([4a8bb52](https://github.com/grafana/synthetic-monitoring-app/commit/4a8bb524dc0b4533511ded2a31c8ac90dae05653))
+
+
+### Fixes
+
+* **security/high/:** update dependency react-router to v7.18.2 [security] ([#1794](https://github.com/grafana/synthetic-monitoring-app/issues/1794)) ([66c62de](https://github.com/grafana/synthetic-monitoring-app/commit/66c62dea96731ef320c30392d9712a54152a35b9))
+
+
+### Miscellaneous Chores
+
+* bump grafana github actions ([#1820](https://github.com/grafana/synthetic-monitoring-app/issues/1820)) ([a359e6b](https://github.com/grafana/synthetic-monitoring-app/commit/a359e6b59dc9b44600788c9e3d004e75e296e6a0))
+
 ## [1.58.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.57.1...v1.58.0) (2026-08-12)
 
 
