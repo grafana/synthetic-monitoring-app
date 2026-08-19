@@ -223,4 +223,36 @@ describe('ReliabilityInboxPage', () => {
     await user.click(within(suggestedCheck).getByText('View configuration details'));
     expect(within(suggestedCheck).getByText('Probe locations will be selected during review.')).toBeVisible();
   });
+
+  it('hides the banner when Assistant is unavailable', () => {
+    mockSuggestions();
+    jest.mocked(useAssistant).mockReturnValue({
+      isAvailable: false,
+      isLoading: false,
+      openAssistant: undefined,
+      closeAssistant: undefined,
+      toggleAssistant: undefined,
+    });
+
+    const { container } = renderWithoutApp(<ReliabilityInboxBanner />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(trackInboxExposure).not.toHaveBeenCalled();
+  });
+
+  it('hides the banner while Assistant availability is still resolving', () => {
+    mockSuggestions();
+    jest.mocked(useAssistant).mockReturnValue({
+      isAvailable: true,
+      isLoading: true,
+      openAssistant,
+      closeAssistant: jest.fn(),
+      toggleAssistant: jest.fn(),
+    });
+
+    const { container } = renderWithoutApp(<ReliabilityInboxBanner />);
+
+    expect(container).toBeEmptyDOMElement();
+    expect(trackInboxExposure).not.toHaveBeenCalled();
+  });
 });
