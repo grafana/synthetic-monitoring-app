@@ -91,7 +91,7 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
           confirmText="Delete probe"
           onConfirm={() => {
             trackFaroUserAction(FaroUserAction.DeletePrivateProbeConfirmationClicked);
-            deleteProbe(probe);
+            return deleteProbe(probe);
           }}
           onDismiss={() => {
             trackFaroUserAction(FaroUserAction.DeletePrivateProbeCancellationClicked);
