@@ -68,13 +68,7 @@ export function useServiceNeighbourhood(check: Check) {
   const [timeRange] = useTimeRange();
 
   return useQuery({
-    queryKey: [
-      'kg-service-neighbourhood',
-      kgDS?.uid,
-      checkEntityName,
-      timeRange.from.valueOf(),
-      timeRange.to.valueOf(),
-    ],
+    queryKey: ['kg-service-neighbourhood', kgDS?.uid, checkEntityName, timeRange],
     enabled: Boolean(kgDS),
     queryFn: () => fetchServiceNeighbourhood(kgDS!.uid, checkEntityName, timeRange),
     refetchInterval: STANDARD_REFRESH_INTERVAL,
