@@ -5,14 +5,18 @@ const ASSISTANT_GRADIENT = 'linear-gradient(90deg, rgb(168, 85, 247), rgb(249, 1
 
 export function getAssistantActionStyle(theme: GrafanaTheme2) {
   const baseBackground = theme.colors.secondary.main;
+  const background = `linear-gradient(${baseBackground}, ${baseBackground}) padding-box, ${ASSISTANT_GRADIENT} border-box`;
 
   return css({
     label: 'reliability-inbox-assistant-action',
     width: 'fit-content',
     maxWidth: '100%',
     border: '1px solid transparent',
-    background: `linear-gradient(${baseBackground}, ${baseBackground}) padding-box, ${ASSISTANT_GRADIENT} border-box`,
+    background,
     color: theme.colors.text.primary,
+    '&&:hover': {
+      background,
+    },
     '& > span': {
       color: `${theme.colors.text.primary} !important`,
     },
