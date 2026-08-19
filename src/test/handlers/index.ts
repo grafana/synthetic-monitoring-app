@@ -6,6 +6,7 @@ import {
   checkInfo,
   deleteCheck,
   listChecks,
+  renameCheckLabels,
   testCheck,
   updateCheck,
 } from 'test/handlers/checks';
@@ -72,6 +73,7 @@ const API_ROUTES = {
   listProbes,
   listSecrets,
   moveFolder,
+  renameCheckLabels,
   setLabelMode,
   testCheck,
   updateAlertsForCheck,

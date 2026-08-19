@@ -30,6 +30,7 @@ import {
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   LogsQueryResponse,
+  RenameCheckLabelsResponse,
   type ResetProbeTokenResult,
   TenantResponse,
   UpdateCheckResult,
@@ -391,6 +392,16 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'PUT',
       data: { mode },
     });
+  }
+
+  async renameCheckLabels(key: string, name: string) {
+    return this.fetchAPI<RenameCheckLabelsResponse>(
+      `${this.instanceSettings.url}/sm/check/labels/${encodeURIComponent(key)}`,
+      {
+        method: 'POST',
+        data: { name },
+      }
+    );
   }
 
   //--------------------------------------------------------------------------------

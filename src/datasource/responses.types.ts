@@ -193,6 +193,10 @@ export type LabelModeResponse = {
   systemLabels: string[];
 };
 
+export type RenameCheckLabelsResponse = {
+  updated_ids: number[];
+};
+
 export type CheckAlertsResponse = {
   alerts: CheckAlertPublished[];
 };
