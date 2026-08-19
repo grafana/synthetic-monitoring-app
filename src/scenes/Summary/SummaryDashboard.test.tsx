@@ -28,4 +28,13 @@ describe('SummaryDashboard', () => {
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
     expect(await screen.findByText('Create new check')).toBeInTheDocument();
   });
+
+  it('hides the Reliability Inbox banner when the flag is disabled', async () => {
+    mockFeatureToggles({ [FeatureName.ReliabilityInbox]: false });
+    render(<SummaryDashboard checks={[]} />);
+
+    expect(screen.queryByTestId('reliability-inbox-banner')).not.toBeInTheDocument();
+    expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
+    expect(await screen.findByText('Create new check')).toBeInTheDocument();
+  });
 });
