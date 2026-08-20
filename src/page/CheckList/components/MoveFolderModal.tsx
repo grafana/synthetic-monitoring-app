@@ -18,20 +18,19 @@ interface MoveFolderModalProps {
  * inherits from the new parent).
  */
 export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
-  const { foldersMap, defaultFolderUid } = useAllFolders();
+  const { foldersMap } = useAllFolders();
   const { canCreateFolders } = useUserPermissions();
   const { mutateAsync: moveFolder, isPending } = useMoveFolder();
   const [error, setError] = useState<string | null>(null);
 
-  // Exclude the folder itself, its current parent (a no-op move) and its
-  // known descendants. Descendants outside the SM subtree are not known
-  // client-side; Grafana rejects circular moves server-side and the error is
-  // surfaced below.
+  // Exclude the folder itself and its known descendants. The current parent
+  // stays visible (hiding it made users think their target folder was
+  // missing and move to root by accident); picking it is handled as a no-op
+  // below. Descendants outside the SM subtree are not known client-side;
+  // Grafana rejects circular moves server-side and the error is surfaced
+  // below.
   const excludeUIDs = useMemo(() => {
     const excluded = new Set<string>([folder.uid]);
-    if (folder.parentUid) {
-      excluded.add(folder.parentUid);
-    }
 
     const isDescendantOfMoved = (candidate: GrafanaFolder): boolean => {
       let current: GrafanaFolder | undefined = candidate;
@@ -53,20 +52,19 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
     });
 
     return [...excluded];
-  }, [folder.uid, folder.parentUid, foldersMap]);
+  }, [folder.uid, foldersMap]);
 
-  // '' selects the Grafana root level. Preselect the "other" location:
-  // the default folder for folders at root, root for everything else
-  // (when the user is allowed to create at root).
-  const [destination, setDestination] = useState<string | undefined>(() => {
-    if (!folder.parentUid) {
-      return defaultFolderUid;
-    }
-    return canCreateFolders ? '' : undefined;
-  });
+  // No destination is preselected: moving a folder is deliberate, so the
+  // user must pick one explicitly before Move enables ('' means the Grafana
+  // root level).
+  const [destination, setDestination] = useState<string | undefined>(undefined);
+
+  // Picking the folder's current location is a no-op; Move stays disabled
+  // and we say why instead of hiding the parent from the picker.
+  const isNoOpMove = destination !== undefined && destination === (folder.parentUid ?? '');
 
   const handleMove = async () => {
-    if (destination === undefined) {
+    if (destination === undefined || isNoOpMove) {
       return;
     }
     setError(null);
@@ -84,7 +82,12 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
 
   return (
     <Modal title={`Move folder "${folder.title}"`} isOpen onDismiss={onDismiss}>
-      <Field label="New location">
+      <Field
+        label="New location"
+        description={showRootFolder ? `"Dashboards" is the top level of Grafana.` : undefined}
+        invalid={isNoOpMove}
+        error={isNoOpMove ? 'The folder is already in this location.' : undefined}
+      >
         <FolderPicker
           value={destination}
           onChange={(uid) => setDestination(uid)}
@@ -100,7 +103,7 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
         <Button variant="secondary" onClick={onDismiss} type="button">
           Cancel
         </Button>
-        <Button type="button" onClick={handleMove} disabled={destination === undefined || isPending}>
+        <Button type="button" onClick={handleMove} disabled={destination === undefined || isNoOpMove || isPending}>
           {isPending ? 'Moving...' : 'Move'}
         </Button>
       </Modal.ButtonRow>

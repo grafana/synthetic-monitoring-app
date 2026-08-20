@@ -180,11 +180,35 @@ describe('CheckList - Move folder', () => {
     const modal = await screen.findByRole('dialog');
     expect(within(modal).getByText(`Move folder "${FOLDER_PRODUCTION.title}"`)).toBeInTheDocument();
 
-    // Root ("Dashboards") is preselected as the "other" location for subtree folders
+    // No destination is preselected; Move stays disabled until an explicit pick
+    expect(within(modal).getByRole('button', { name: 'Move' })).toBeDisabled();
+
+    const picker = within(modal).getByLabelText('Folder picker');
+    await user.selectOptions(picker, within(modal).getByRole('option', { name: 'Dashboards' }));
     await user.click(within(modal).getByRole('button', { name: 'Move' }));
 
     const { body } = await read();
     expect(body).toEqual({ parentUid: '' });
+  });
+
+  test('picking the current parent is a no-op: Move stays disabled with an explanation', async () => {
+    const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+    expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
+    await user.click(screen.getByLabelText(`Select all checks in ${FOLDER_PRODUCTION.title}`));
+    await user.click(await screen.findByRole('button', { name: `Move folder ${FOLDER_PRODUCTION.title}` }));
+
+    const modal = await screen.findByRole('dialog');
+    const picker = within(modal).getByLabelText('Folder picker');
+
+    // The current parent (the default folder) is offered rather than hidden,
+    // so users looking for it don't fall back to another destination...
+    expect(await within(modal).findByRole('option', { name: DEFAULT_FOLDER.title })).toBeInTheDocument();
+    await user.selectOptions(picker, DEFAULT_FOLDER.uid);
+
+    // ...but picking it keeps Move disabled and explains why
+    expect(within(modal).getByRole('button', { name: 'Move' })).toBeDisabled();
+    expect(within(modal).getByText('The folder is already in this location.')).toBeInTheDocument();
   });
 
   test('moves an outside folder into the default folder', async () => {
@@ -200,8 +224,11 @@ describe('CheckList - Move folder', () => {
     await user.click(moveButton);
 
     const modal = await screen.findByRole('dialog');
+    expect(within(modal).getByRole('button', { name: 'Move' })).toBeDisabled();
 
-    // The default folder is preselected as the "other" location for folders at root
+    const picker = within(modal).getByLabelText('Folder picker');
+    expect(await within(modal).findByRole('option', { name: DEFAULT_FOLDER.title })).toBeInTheDocument();
+    await user.selectOptions(picker, DEFAULT_FOLDER.uid);
     await user.click(within(modal).getByRole('button', { name: 'Move' }));
 
     const { body } = await read();
