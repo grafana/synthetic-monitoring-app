@@ -42,6 +42,19 @@ describe('Api endpoint checks - common fields UI', () => {
       expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeDisabled();
     });
 
+    it('seeds the folder before the form mounts even when permission lookups are slow', async () => {
+      mockFeatureToggles({ [FeatureName.Folders]: true });
+      runTestWithSingleEditableFolder({ delayMs: 100 });
+      await renderNewForm(CheckType.Http);
+
+      // The form must not mount until the seed decision is final: mounting
+      // earlier would let a submit record a folder error that the later
+      // defaults reset leaves stale. So the moment the picker exists, the
+      // seeded folder must already be in it.
+      const folderInput = await screen.findByPlaceholderText(/Select a folder/);
+      expect(folderInput).toHaveValue(FOLDER_PRODUCTION.title);
+    });
+
     it('does not preselect a default folder the user cannot edit', async () => {
       mockFeatureToggles({ [FeatureName.Folders]: true });
       runTestWithReadOnlyDefaultFolder();

@@ -55,9 +55,13 @@ export function useFolderSelection({ value, enabled = true }: UseFolderSelection
     [allFolders, folderDetailsByUid]
   );
 
-  // Decisions that depend on the full editable set must wait for every
-  // permission lookup to settle, so they don't fire on partial data.
+  const isLoading = isDefaultLoading || isChildrenLoading;
+
+  // Decisions that depend on the full editable set must wait for the folder
+  // list and every permission lookup to settle, so they don't fire on
+  // partial data.
   const permissionsSettled =
+    !isLoading &&
     allFolders.length > 0 &&
     allFolders.every((folder) => {
       const state = folderDetailsByUid.get(folder.uid);
@@ -80,6 +84,14 @@ export function useFolderSelection({ value, enabled = true }: UseFolderSelection
   // renders an explanatory alert instead of an empty dropdown.
   const noStorableFolders = permissionsSettled && editableFolders.length === 0 && !defaultFolder?.canSave;
 
+  // True once we know which folder to preselect, or that there is none.
+  // An editable default folder decides it right away; a read-only one means
+  // waiting for the other folders' permissions.
+  const isPreselectReady =
+    !enabled ||
+    isDefaultError ||
+    (!isDefaultLoading && (!defaultFolder || defaultFolder.canEdit || permissionsSettled));
+
   return {
     defaultFolder,
     defaultFolderUid,
@@ -89,7 +101,8 @@ export function useFolderSelection({ value, enabled = true }: UseFolderSelection
     permissionsSettled,
     preselectUid,
     noStorableFolders,
-    isLoading: isDefaultLoading || isChildrenLoading,
+    isPreselectReady,
+    isLoading,
     isDefaultError,
     isChildrenError,
     refetchDefault,

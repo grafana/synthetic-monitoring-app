@@ -117,16 +117,11 @@ export function ChecksterProvider({
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const {
-    status: defaultFolderStatus,
-    isLoading: isFolderLoading,
-    isError: isFolderError,
-  } = useDefaultFolder(isFoldersEnabled);
-  const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
-  // Seed the folder through the form defaults so a new form stays pristine:
-  // the default folder when the user can edit it, else their only editable
-  // folder. With several candidates nothing is seeded — the choice is theirs.
-  const { preselectUid: seedFolderUid } = useFolderSelection({ enabled: isFoldersEnabled });
+  const { status: defaultFolderStatus } = useDefaultFolder(isFoldersEnabled);
+  // Pre-fill the folder through the form defaults so a new form stays
+  // pristine: the default folder when the user can edit it, else their only
+  // editable folder. With several candidates the choice is theirs.
+  const { preselectUid: seedFolderUid, isPreselectReady } = useFolderSelection({ enabled: isFoldersEnabled });
   // A folder-less check effectively lives in the default folder, which the
   // user may not be able to edit — so a folder is required when folder data
   // is available. When it isn't, checks save without one, as before.
@@ -302,7 +297,8 @@ export function ChecksterProvider({
     canChangeCheckType,
   ]);
 
-  if (!isFolderReady) {
+  // Don't mount the form until we know which folder to pre-fill.
+  if (!isPreselectReady) {
     return null;
   }
 

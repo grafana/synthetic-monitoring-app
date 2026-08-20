@@ -197,10 +197,13 @@ export function runTestWithReadOnlyDefaultFolder() {
  * folder and a folder-level Edit grant on a single subfolder (Production),
  * e.g. a team member whose admin segments checks per team.
  */
-export function runTestWithSingleEditableFolder() {
+export function runTestWithSingleEditableFolder({ delayMs = 0 }: { delayMs?: number } = {}) {
   server.use(
     apiRoute(`getFolder`, {
-      result: (req: Request) => {
+      result: async (req: Request) => {
+        if (delayMs > 0) {
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
         const uid = new URL(req.url).pathname.split('/').pop();
         const folder = uid === DEFAULT_FOLDER.uid ? DEFAULT_FOLDER : MOCK_FOLDERS.find((f) => f.uid === uid);
         if (!folder) {
