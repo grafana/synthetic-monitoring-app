@@ -1,21 +1,23 @@
-import { type QueryKey, useMutation, UseMutationResult, useQuery, useQueryClient } from '@tanstack/react-query';
+import { type QueryKey, useInfiniteQuery, useMutation, UseMutationResult, useQueryClient } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 
 import { type MutationProps } from 'data/types';
 import { FaroEvent } from 'faro';
-import type { ListTokensResponse, TokenInfo } from 'datasource/responses.types';
+import type { TokenInfo } from 'datasource/responses.types';
 import { useSMDS } from 'hooks/useSMDS';
 
 export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['tokens'],
 };
 
-export function useTokens(limit = 50, offset = 0, enabled = true) {
+export function useTokens(pageSize = 50, enabled = true) {
   const smDS = useSMDS();
 
-  return useQuery<ListTokensResponse>({
-    queryKey: [...QUERY_KEYS.list, limit, offset],
-    queryFn: () => smDS.listTokens(limit, offset),
+  return useInfiniteQuery({
+    queryKey: [...QUERY_KEYS.list, pageSize],
+    initialPageParam: ``,
+    queryFn: ({ pageParam }) => smDS.listTokens(pageSize, pageParam || undefined),
+    getNextPageParam: (lastPage) => lastPage.next_cursor || undefined,
     enabled,
   });
 }
@@ -46,7 +48,7 @@ export function useDeleteToken({ onError, onSuccess }: MutationProps<void> = {})
   const qc = useQueryClient();
 
   return useMutation<void, Error, TokenInfo['id'], UseMutationResult>({
-    mutationFn: async (id: number) => {
+    mutationFn: async (id: TokenInfo['id']) => {
       try {
         return await smDS.deleteToken(id);
       } catch (error) {
@@ -68,6 +70,7 @@ export function useDeleteToken({ onError, onSuccess }: MutationProps<void> = {})
       event: {
         type: FaroEvent.DeleteAccessToken,
       },
+      errorAlert: (error: Error) => error.message,
     },
   });
 }

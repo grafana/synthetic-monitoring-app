@@ -420,14 +420,18 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     }).then((data) => data.token);
   }
 
-  async listTokens(limit = 50, offset = 0): Promise<ListTokensResponse> {
-    return this.fetchAPI<ListTokensResponse>(
-      `${this.instanceSettings.url}/sm/token/list?limit=${limit}&offset=${offset}`
-    );
+  async listTokens(pageSize = 50, cursor?: string): Promise<ListTokensResponse> {
+    const params = new URLSearchParams({ page_size: String(pageSize) });
+
+    if (cursor) {
+      params.set('cursor', cursor);
+    }
+
+    return this.fetchAPI<ListTokensResponse>(`${this.instanceSettings.url}/sm/token/list?${params.toString()}`);
   }
 
-  async deleteToken(tokenId: number): Promise<void> {
-    await this.fetchAPI(`${this.instanceSettings.url}/sm/token/${tokenId}`, {
+  async deleteToken(tokenId: string): Promise<void> {
+    await this.fetchAPI(`${this.instanceSettings.url}/sm/token/${encodeURIComponent(tokenId)}`, {
       method: 'DELETE',
     });
   }
