@@ -12,8 +12,15 @@ const EVIDENCE: ReliabilityEvidence = {
     datasource: 'prometheus-uid',
     range: { from: '1784800800000', to: '1784804400000' },
     queries: [
-      { expr: 'sum(rate(http_requests_total[1h]))' },
-      { expr: 'sum by (status) (rate(http_requests_total[1h]))' },
+      { refId: 'A', expr: 'sum(rate({__name__="http_requests_total", host=~"example"}[1h]))' },
+      {
+        refId: 'B',
+        expr: 'sum by (status) (rate({__name__="http_requests_total", host=~"example"}[1h]))',
+      },
+      {
+        refId: 'C',
+        expr: 'histogram_quantile(0.99, sum by (le) (rate({__name__="http_request_duration_seconds_bucket", host=~"example"}[1h])))',
+      },
     ],
   },
 };
@@ -27,8 +34,24 @@ describe('Reliability Inbox evidence provenance', () => {
       expect.objectContaining({
         datasource: 'prometheus-uid',
         queries: [
-          { refId: 'A', expr: 'sum(rate(http_requests_total[1h]))' },
-          { refId: 'B', expr: 'sum by (status) (rate(http_requests_total[1h]))' },
+          {
+            refId: 'RequestRate',
+            expr: 'sum(rate({__name__="http_requests_total", host=~"example"}[5m]))',
+            instant: false,
+            legendFormat: 'Requests per second',
+          },
+          {
+            refId: 'ServerErrorRatio',
+            expr: 'sum(rate({__name__="http_requests_total", host=~"example", status=~"5.."}[5m])) / sum(rate({__name__="http_requests_total", host=~"example"}[5m]))',
+            instant: false,
+            legendFormat: '5xx response ratio',
+          },
+          {
+            refId: 'P99ResponseTime',
+            expr: 'histogram_quantile(0.99, sum by (le) (rate({__name__="http_request_duration_seconds_bucket", host=~"example"}[5m])))',
+            instant: false,
+            legendFormat: 'p99 response time',
+          },
         ],
       })
     );

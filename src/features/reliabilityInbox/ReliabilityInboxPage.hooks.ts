@@ -1,20 +1,28 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAssistant } from '@grafana/assistant';
+import { locationService } from '@grafana/runtime';
 import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
 
 import { getUserPermissions } from 'data/permissions';
 
 import { useReliabilityInboxDismissals, useReliabilityInboxSuggestions } from './data';
-import { getAssistantActionState, getAssistantOpenPayload } from './ReliabilityInboxPage.utils';
+import {
+  getAssistantActionState,
+  getAssistantOpenPayload,
+  getManualCreateLocation,
+} from './ReliabilityInboxPage.utils';
 
-export function useReliabilityInboxReview() {
+export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof useReliabilityInboxSuggestions>) {
   const { canWriteChecks } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
-  const { data, isLoading, isFetching, isError, refetch } = useReliabilityInboxSuggestions();
-  const { dismissSuggestion, restoreSuggestion } = useReliabilityInboxDismissals();
-  const opportunities = data ?? [];
+  const { data, isLoading, isFetching, isError, refetch } = suggestionsQuery;
+  const { dismissedSuggestionIds, dismissSuggestion, restoreSuggestion } = useReliabilityInboxDismissals();
+  const [queueView, setQueueView] = useState<'active' | 'dismissed'>('active');
+  const allOpportunities = data ?? [];
+  const activeOpportunities = allOpportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id));
+  const dismissedOpportunities = allOpportunities.filter(({ id }) => dismissedSuggestionIds.includes(id));
+  const opportunities = queueView === 'active' ? activeOpportunities : dismissedOpportunities;
   const [selectedId, setSelectedId] = useState<string>();
-  const [lastDismissedId, setLastDismissedId] = useState<string>();
   const reviewedIds = useRef(new Set<string>());
 
   const selected = opportunities.find((opportunity) => opportunity.id === selectedId) ?? opportunities[0];
@@ -41,17 +49,14 @@ export function useReliabilityInboxReview() {
     }
 
     dismissSuggestion(selected.id);
-    setLastDismissedId(selected.id);
   };
 
-  const undoDismiss = () => {
-    if (!lastDismissedId) {
+  const restoreSelected = () => {
+    if (!selected) {
       return;
     }
 
-    restoreSuggestion(lastDismissedId);
-    setSelectedId(lastDismissedId);
-    setLastDismissedId(undefined);
+    restoreSuggestion(selected.id);
   };
 
   const setUpWithAssistant = () => {
@@ -63,20 +68,31 @@ export function useReliabilityInboxReview() {
     openAssistant(getAssistantOpenPayload(selected));
   };
 
+  const createManually = () => {
+    if (!selected) {
+      return;
+    }
+
+    locationService.push(getManualCreateLocation(selected));
+  };
+
   return {
     opportunities,
+    activeOpportunities,
+    dismissedOpportunities,
+    queueView,
     selected,
     isLoading,
     isFetching,
     isError,
     data,
-    lastDismissedId,
     assistantAction,
     refetch,
     selectOpportunity: setSelectedId,
+    setQueueView,
     dismissSelected,
-    undoDismiss,
-    clearDismissalToast: () => setLastDismissedId(undefined),
+    restoreSelected,
+    createManually,
     setUpWithAssistant,
   };
 }

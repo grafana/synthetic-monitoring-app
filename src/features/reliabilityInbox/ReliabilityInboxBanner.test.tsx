@@ -22,7 +22,7 @@ const OPPORTUNITY = toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION);
 describe('ReliabilityInboxBanner', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('links the next recommendation to the review page', async () => {
+  it('summarizes cached suggestions and links to the review page', async () => {
     jest.mocked(useCachedReliabilityInboxSuggestions).mockReturnValue({
       data: [OPPORTUNITY],
     } as ReturnType<typeof useCachedReliabilityInboxSuggestions>);
@@ -30,8 +30,10 @@ describe('ReliabilityInboxBanner', () => {
 
     render(<ReliabilityInboxBanner />);
 
-    expect(screen.getByText('Reliability Inbox · 1 opportunity')).toBeInTheDocument();
-    expect(screen.getByText('Recommended next: mcp.goagain.dev')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Check Suggestions' })).toBeInTheDocument();
+    expect(
+      screen.getByText('1 suggestion is ready to review · turn traffic signals into proactive monitoring')
+    ).toBeInTheDocument();
     const reviewLink = screen.getByRole('link', { name: 'Review suggestions' });
     expect(reviewLink).toHaveAttribute('href', generateRoutePath(AppRoutes.ReliabilityInbox));
     await waitFor(() =>
@@ -52,8 +54,15 @@ describe('ReliabilityInboxBanner', () => {
 
     render(<ReliabilityInboxBanner />);
 
-    expect(screen.getByText('Generate actionable recommendations when you are ready to review them.')).toBeInTheDocument();
-    expect(screen.queryByText(/Recommended next:/)).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Check Suggestions' })).toBeInTheDocument();
+    expect(
+      screen.getByText('Generate actionable recommendations when you are ready to review them.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Generate suggestions' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.ReliabilityInbox)
+    );
+    expect(screen.queryByText(/turn traffic signals into proactive monitoring/)).not.toBeInTheDocument();
     expect(trackInboxExposure).not.toHaveBeenCalled();
   });
 });

@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, ClipboardButton, IconButton, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Badge, Button, ClipboardButton, Icon, IconName, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
-import { formatDuration } from 'utils';
+import { HttpMethod } from 'types';
+import { formatDuration, getMethodColor } from 'utils';
 
 import { getAssistantActionStyle } from '../assistantActionStyles';
-import { ReliabilityOpportunity } from '../model';
-import { InboxDisclosure } from './InboxDisclosure';
+import { ProposedHttpCheckDraft, ReliabilityOpportunity } from '../model';
+import { RecommendationEvidence } from './RecommendationEvidence';
+
+const CONTAINER_NAME = 'suggestedCheck';
+const CREATION_ENCOURAGEMENT = [
+  'Turn this traffic signal into proactive coverage.',
+  'Start monitoring this endpoint in under a minute.',
+  'Catch outages before your users do.',
+] as const;
 
 interface SuggestedCheckPanelProps {
   opportunity: ReliabilityOpportunity;
   assistantDisabled: boolean;
   assistantTooltip?: string;
+  dismissed: boolean;
+  onCreateManually: () => void;
   onDismiss: () => void;
+  onRestore: () => void;
   onSetUpWithAssistant: () => void;
 }
 
@@ -21,207 +32,428 @@ export function SuggestedCheckPanel({
   opportunity,
   assistantDisabled,
   assistantTooltip,
+  dismissed,
+  onCreateManually,
   onDismiss,
+  onRestore,
   onSetUpWithAssistant,
 }: SuggestedCheckPanelProps) {
-  const styles = useStyles2(getStyles);
   const { proposedCheck } = opportunity;
+  const styles = useStyles2(getStyles);
+  const [creationEncouragement] = useState(selectCreationEncouragement);
 
   return (
-    <section
-      className={cx(styles.panel, styles.recommendationPanel)}
-      aria-labelledby="reliability-inbox-suggested-check-title"
-    >
-      <Stack direction="column" gap={1}>
-        <Stack alignItems="center" justifyContent="space-between" gap={1}>
-          <Text variant="bodySmall" color="info" weight="bold">
-            Suggested check
-          </Text>
-          <IconButton
-            name="times"
-            size="sm"
-            variant="secondary"
-            tooltip="Dismiss suggestion"
-            tooltipPlacement="left"
-            onClick={onDismiss}
-          />
-        </Stack>
-        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems="flex-start" gap={2}>
-          <Stack direction="column" gap={1} minWidth={0} flex={1}>
-            <Text element="h2" id="reliability-inbox-suggested-check-title" variant="h3">
-              Create an HTTP check
-            </Text>
-            <dl className={styles.endpointSummary} aria-label="Suggested check endpoint">
-              <div>
-                <dt>Method</dt>
-                <dd>
-                  <Badge color="darkgrey" text={proposedCheck.method} />
-                </dd>
-              </div>
-              <div className={styles.endpointTarget}>
-                <dt>Target</dt>
-                <dd title={proposedCheck.target}>{opportunity.subject}</dd>
-              </div>
-            </dl>
-          </Stack>
-          <Stack direction="column" alignItems={{ xs: 'flex-start', md: 'flex-end' }} gap={1} maxWidth={280}>
-            <Button
-              aria-describedby="reliability-inbox-assistant-action-help"
-              className={styles.assistantAction}
-              icon="ai-sparkle"
-              disabled={assistantDisabled}
-              tooltip={assistantTooltip}
-              variant="secondary"
-              onClick={onSetUpWithAssistant}
-            >
-              Review and customize
-            </Button>
-            <Text id="reliability-inbox-assistant-action-help" variant="bodySmall" color="secondary">
-              Assistant will guide setup and recommend a configuration from this proposal. Nothing is created or saved
-              until you confirm.
-            </Text>
-          </Stack>
-        </Stack>
-        <div className={styles.checkSummary}>
-          <Stack alignItems="center" gap={1} wrap="wrap">
-            <Badge color="darkgrey" icon="globe" text="Public HTTP" />
-            <Badge color="darkgrey" icon="clock-nine" text={`Every ${formatDuration(proposedCheck.frequencyMs)}`} />
-            {proposedCheck.failIfNotSSL && <Badge color="darkgrey" icon="lock" text="Require HTTPS" />}
-          </Stack>
-        </div>
-        <InboxDisclosure summary="View configuration details">
-          <dl className={styles.proposalSummary}>
-            <div className={styles.exactTarget}>
-              <dt>Target URL</dt>
-              <dd className={styles.targetValue}>
-                <code>{proposedCheck.target}</code>
-                <ClipboardButton
-                  aria-label="Copy target URL"
-                  fill="text"
-                  getText={() => proposedCheck.target}
-                  icon="clipboard-alt"
-                  size="sm"
-                  variant="secondary"
-                >
-                  Copy
-                </ClipboardButton>
-              </dd>
-            </div>
-            <div>
-              <dt>Timeout</dt>
-              <dd>{formatDuration(proposedCheck.timeoutMs)}</dd>
-            </div>
-            <div>
-              <dt>Expected response</dt>
-              <dd>HTTP {proposedCheck.validStatusCodes.join(', ')}</dd>
-            </div>
-            <div>
-              <dt>TLS requirement</dt>
-              <dd>{proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}</dd>
-            </div>
-            <div>
-              <dt>Probe / location policy</dt>
-              <dd>{proposedCheck.locationPolicy}</dd>
-            </div>
-          </dl>
-        </InboxDisclosure>
-      </Stack>
+    <section aria-label="Suggested HTTP check">
+      <div className={styles.card}>
+        <RecommendationEvidence
+          opportunity={opportunity}
+          headerContent={
+            <Stack direction="row" alignItems="center" gap={2} wrap="wrap">
+              <Text element="h2" variant="h3" color="info" weight="medium">
+                Suggested check
+              </Text>
+              <Badge color="darkgrey" icon="globe" text="HTTP" />
+              {dismissed && <Badge color="darkgrey" text="Dismissed" />}
+              {!dismissed && (
+                <div className={styles.creationEncouragement}>
+                  <Icon name="shield" size="sm" />
+                  <Text variant="bodySmall" color="primary">
+                    {creationEncouragement}
+                  </Text>
+                </div>
+              )}
+            </Stack>
+          }
+        />
+
+        <ConfigurationSection>
+          <CheckIdentity proposedCheck={proposedCheck} />
+        </ConfigurationSection>
+
+        <ConfigurationSection titleId="reliability-inbox-uptime-heading">
+          <ConfigurationTitle title="Uptime definition" id="reliability-inbox-uptime-heading" />
+          <OptionGrid columns={3}>
+            <CheckField icon="hourglass" label="Timeout">
+              {formatDuration(proposedCheck.timeoutMs)}
+            </CheckField>
+            <CheckField icon="check-circle" label="Expected response">
+              HTTP {proposedCheck.validStatusCodes.join(', ')}
+            </CheckField>
+            <CheckField icon="shield" label="TLS requirement">
+              {proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}
+            </CheckField>
+          </OptionGrid>
+        </ConfigurationSection>
+
+        <ConfigurationSection titleId="reliability-inbox-configuration-heading">
+          <ConfigurationTitle title="Configuration" id="reliability-inbox-configuration-heading" />
+          <OptionGrid columns={4}>
+            <CheckField icon="clock-nine" label="Frequency">
+              Every {formatDuration(proposedCheck.frequencyMs)}
+            </CheckField>
+            <CheckField icon="map-marker" label="Locations">
+              {proposedCheck.locationPolicy}
+            </CheckField>
+            <CheckField icon="tag-alt" label="Labels">
+              Added during creation
+            </CheckField>
+            <CheckField icon="bell" label="Alerts">
+              Configured during creation
+            </CheckField>
+          </OptionGrid>
+        </ConfigurationSection>
+        <SuggestedCheckActions
+          assistantDisabled={assistantDisabled}
+          assistantTooltip={assistantTooltip}
+          dismissed={dismissed}
+          onCreateManually={onCreateManually}
+          onDismiss={onDismiss}
+          onRestore={onRestore}
+          onSetUpWithAssistant={onSetUpWithAssistant}
+        />
+      </div>
     </section>
   );
 }
 
-const getStyles = (theme: GrafanaTheme2) => ({
-  assistantAction: getAssistantActionStyle(theme),
-  panel: css({
-    border: `1px solid ${theme.colors.border.medium}`,
-    borderRadius: theme.shape.radius.default,
-    background: theme.colors.background.primary,
-    padding: theme.spacing(2.5),
-  }),
-  recommendationPanel: css({
-    borderLeft: `3px solid ${theme.colors.info.border}`,
-  }),
-  endpointSummary: css({
-    display: 'grid',
-    gap: theme.spacing(2),
-    gridTemplateColumns: 'max-content minmax(0, 1fr)',
-    margin: 0,
-    minWidth: 0,
-    '& > div': {
+function selectCreationEncouragement() {
+  return CREATION_ENCOURAGEMENT[Math.floor(Math.random() * CREATION_ENCOURAGEMENT.length)];
+}
+
+function ConfigurationSection({ children, titleId }: { children: React.ReactNode; titleId?: string }) {
+  const styles = useStyles2(getConfigurationSectionStyles);
+  return (
+    <section className={styles.section} aria-labelledby={titleId}>
+      {children}
+    </section>
+  );
+}
+
+const ConfigurationTitle = ({ title, id }: { title: string; id?: string }) => {
+  return (
+    <Text element="h3" variant="h4" id={id} weight="medium">
+      {title}
+    </Text>
+  );
+};
+
+function CheckIdentity({ proposedCheck }: { proposedCheck: ProposedHttpCheckDraft }) {
+  return (
+    <div>
+      <CheckField icon="tag-alt" label="Job name" layout="row">
+        {proposedCheck.job}
+      </CheckField>
+      <CheckField icon="link" label="Target URL" layout="row">
+        <TargetUrl method={proposedCheck.method} target={proposedCheck.target} />
+      </CheckField>
+    </div>
+  );
+}
+
+function CheckField({
+  children,
+  icon,
+  label,
+  layout = 'stack',
+  valueClassName,
+}: {
+  children: React.ReactNode;
+  icon: IconName;
+  label: string;
+  layout?: 'row' | 'stack';
+  valueClassName?: string;
+}) {
+  const styles = useStyles2(getCheckFieldStyles);
+
+  return (
+    <div className={layout === 'row' ? styles.row : styles.field}>
+      <div className={styles.label}>
+        <Icon name={icon} size="sm" />
+        {label}
+      </div>
+      <div className={cx(styles.value, layout === 'stack' && styles.stackedValue, valueClassName)}>{children}</div>
+    </div>
+  );
+}
+
+function TargetUrl({ method, target }: { method: string; target: string }) {
+  const styles = useStyles2(getTargetUrlStyles, method as HttpMethod);
+
+  return (
+    <div className={styles.value}>
+      <span className={styles.method}>{method}</span>
+      <code>{target}</code>
+      <ClipboardButton
+        aria-label="Copy target URL"
+        fill="text"
+        getText={() => target}
+        icon="clipboard-alt"
+        size="sm"
+        variant="secondary"
+      >
+        Copy
+      </ClipboardButton>
+    </div>
+  );
+}
+
+function OptionGrid({ children, columns }: { children: React.ReactNode; columns: 2 | 3 | 4 }) {
+  const styles = useStyles2(getOptionGridStyles);
+
+  return (
+    <div className={cx(styles.grid, columns === 4 ? styles.four : columns === 3 ? styles.three : styles.two)}>
+      {children}
+    </div>
+  );
+}
+
+function SuggestedCheckActions({
+  assistantDisabled,
+  assistantTooltip,
+  dismissed,
+  onCreateManually,
+  onDismiss,
+  onRestore,
+  onSetUpWithAssistant,
+}: {
+  assistantDisabled: boolean;
+  assistantTooltip?: string;
+  dismissed: boolean;
+  onCreateManually: () => void;
+  onDismiss: () => void;
+  onRestore: () => void;
+  onSetUpWithAssistant: () => void;
+}) {
+  const styles = useStyles2(getSuggestedCheckActionsStyles);
+
+  if (dismissed) {
+    return (
+      <footer className={styles.footer}>
+        <Text variant="bodySmall" color="secondary">
+          This suggestion was dismissed in this browser.
+        </Text>
+        <Button className={styles.restoreAction} variant="primary" onClick={onRestore}>
+          Restore suggestion
+        </Button>
+      </footer>
+    );
+  }
+
+  return (
+    <footer className={styles.footer}>
+      <div className={styles.leftContent}>
+        <div className={styles.createActions}>
+          <Button variant="secondary" onClick={onCreateManually}>
+            Create manually
+          </Button>
+          <Button
+            aria-describedby="reliability-inbox-assistant-action-help"
+            className={styles.assistantAction}
+            icon="ai-sparkle"
+            disabled={assistantDisabled}
+            tooltip={assistantTooltip}
+            variant="secondary"
+            onClick={onSetUpWithAssistant}
+          >
+            Create with Grafana Assistant
+          </Button>
+        </div>
+        <div className={styles.guidance}>
+          <Text id="reliability-inbox-assistant-action-help" variant="bodySmall" color="secondary">
+            You can review and adjust every setting in the check editor before anything is created.
+          </Text>
+        </div>
+      </div>
+      <Button className={styles.dismissAction} variant="secondary" fill="text" onClick={onDismiss}>
+        Dismiss suggestion
+      </Button>
+    </footer>
+  );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    card: css({
+      background: theme.colors.background.primary,
+      border: `1px solid ${theme.colors.border.medium}`,
+      borderLeft: `3px solid ${theme.colors.info.text}`,
+      borderRadius: theme.shape.radius.default,
+      containerName: CONTAINER_NAME,
+      containerType: 'inline-size',
+      marginInline: 'auto',
+      maxWidth: theme.breakpoints.values.xxl,
+      overflow: 'hidden',
+      width: '100%',
+    }),
+    creationEncouragement: css({
+      alignItems: 'center',
+      color: theme.colors.info.text,
+      display: 'flex',
+      gap: theme.spacing(0.75),
+      marginLeft: 'auto',
+      textAlign: 'right',
+    }),
+  };
+}
+
+function getConfigurationSectionStyles(theme: GrafanaTheme2) {
+  return {
+    section: css({
+      padding: theme.spacing(2, 2.5),
       display: 'flex',
       flexDirection: 'column',
-      gap: theme.spacing(0.25),
+      gap: theme.spacing(1.5),
+      '& + &': {
+        borderTop: `1px solid ${theme.colors.border.medium}`,
+      },
+    }),
+  };
+}
+
+function getCheckFieldStyles(theme: GrafanaTheme2) {
+  const atMd = `@container ${CONTAINER_NAME} (min-width: ${theme.breakpoints.values.md}px)`;
+
+  return {
+    field: css({
       minWidth: 0,
-    },
-    '& dt': {
-      color: theme.colors.text.secondary,
-      fontSize: theme.typography.bodySmall.fontSize,
-      fontWeight: theme.typography.fontWeightMedium,
-    },
-    '& dd': {
-      margin: 0,
-      minWidth: 0,
-    },
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+    }),
+    row: css({
+      alignItems: 'stretch',
+      display: 'grid',
+      gap: theme.spacing(0.5),
       gridTemplateColumns: '1fr',
-    },
-  }),
-  endpointTarget: css({
-    '& dd': {
-      overflow: 'hidden',
-      textOverflow: 'ellipsis',
-      whiteSpace: 'nowrap',
-    },
-  }),
-  checkSummary: css({
-    alignItems: 'center',
-    background: theme.colors.background.secondary,
-    borderRadius: theme.shape.radius.default,
-    display: 'flex',
-    gap: theme.spacing(2),
-    justifyContent: 'flex-start',
-    marginTop: theme.spacing(2),
-    padding: theme.spacing(1.5),
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
-      alignItems: 'flex-start',
-      flexDirection: 'column',
-    },
-  }),
-  proposalSummary: css({
-    display: 'grid',
-    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-    gap: theme.spacing(1),
-    margin: theme.spacing(1, 0, 0),
-    padding: 0,
-    '& > div': {
-      padding: theme.spacing(1.25),
-      border: `1px solid ${theme.colors.border.weak}`,
-      borderRadius: theme.shape.radius.default,
-      background: theme.colors.background.primary,
-    },
-    '& dt': {
+      padding: theme.spacing(1.25, 0),
+      [atMd]: {
+        alignItems: 'baseline',
+        gap: theme.spacing(2),
+        gridTemplateColumns: 'minmax(120px, max-content) minmax(0, 1fr)',
+      },
+    }),
+    label: css({
+      alignItems: 'center',
       color: theme.colors.text.secondary,
+      display: 'flex',
       fontSize: theme.typography.bodySmall.fontSize,
-      fontWeight: theme.typography.fontWeightBold,
-    },
-    '& dd': { margin: theme.spacing(0.5, 0, 0), overflowWrap: 'anywhere' },
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
-      gridTemplateColumns: '1fr',
-    },
-  }),
-  exactTarget: css({
-    gridColumn: '1 / -1',
-  }),
-  targetValue: css({
-    alignItems: 'center',
-    display: 'flex',
-    gap: theme.spacing(1),
-    justifyContent: 'space-between',
-    minWidth: 0,
-    '& code': {
-      fontFamily: theme.typography.fontFamilyMonospace,
+      gap: theme.spacing(0.75),
+    }),
+    value: css({
       minWidth: 0,
       overflowWrap: 'anywhere',
-    },
-  }),
-});
+    }),
+    stackedValue: css({
+      margin: theme.spacing(0.75, 0, 0),
+    }),
+  };
+}
+
+function getTargetUrlStyles(theme: GrafanaTheme2, method: HttpMethod) {
+  return {
+    value: css({
+      alignItems: 'center',
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: theme.spacing(1.5),
+      minWidth: 0,
+      '& code': {
+        flex: 1,
+        fontFamily: theme.typography.fontFamilyMonospace,
+        minWidth: 0,
+        overflowWrap: 'anywhere',
+      },
+    }),
+    method: css({
+      color: getMethodColor(theme, method),
+      flex: '0 0 auto',
+      fontWeight: theme.typography.fontWeightMedium,
+    }),
+  };
+}
+
+function getOptionGridStyles(theme: GrafanaTheme2) {
+  const atSm = `@container ${CONTAINER_NAME} (min-width: ${theme.breakpoints.values.sm}px)`;
+  const atMd = `@container ${CONTAINER_NAME} (min-width: ${theme.breakpoints.values.md}px)`;
+  const atLg = `@container ${CONTAINER_NAME} (min-width: ${theme.breakpoints.values.lg}px)`;
+
+  return {
+    grid: css({
+      display: 'grid',
+      gap: theme.spacing(1.25),
+      marginTop: theme.spacing(1.5),
+      [atMd]: {
+        gap: theme.spacing(2),
+      },
+    }),
+    two: css({
+      gridTemplateColumns: '1fr',
+      [atMd]: {
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+      },
+    }),
+    three: css({
+      gridTemplateColumns: '1fr',
+      [atSm]: {
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+      },
+    }),
+    four: css({
+      gridTemplateColumns: '1fr',
+      [atSm]: {
+        gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+      },
+      [atLg]: {
+        gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+      },
+    }),
+  };
+}
+
+function getSuggestedCheckActionsStyles(theme: GrafanaTheme2) {
+  const atSm = `@container ${CONTAINER_NAME} (min-width: ${theme.breakpoints.values.sm}px)`;
+  const atMd = `@container ${CONTAINER_NAME} (min-width: ${theme.breakpoints.values.md}px)`;
+
+  return {
+    assistantAction: getAssistantActionStyle(theme),
+    footer: css({
+      alignItems: 'stretch',
+      background: theme.colors.background.secondary,
+      borderTop: `1px solid ${theme.colors.border.medium}`,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1.5),
+      padding: theme.spacing(2, 2.5),
+      [atMd]: {
+        alignItems: 'flex-start',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+    }),
+    leftContent: css({
+      alignItems: 'stretch',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1),
+      minWidth: 0,
+    }),
+    createActions: css({
+      alignItems: 'stretch',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(1),
+      [atSm]: {
+        alignItems: 'center',
+        flexDirection: 'row',
+      },
+    }),
+    guidance: css({
+      textAlign: 'left',
+    }),
+    restoreAction: css({
+      alignSelf: 'flex-start',
+      flex: '0 0 auto',
+    }),
+    dismissAction: css({
+      alignSelf: 'flex-end',
+      flex: '0 0 auto',
+    }),
+  };
+}

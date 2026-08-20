@@ -20,7 +20,9 @@ export const reliabilitySuggestionSchema = z
         provenance: z
           .object({
             datasource: z.string(),
-            queries: z.array(z.object({ expr: z.string(), instant: z.boolean().optional() }).loose()),
+            queries: z.array(
+              z.object({ refId: z.string().optional(), expr: z.string(), instant: z.boolean().optional() }).loose()
+            ),
             range: z.object({ from: z.string(), to: z.string() }),
           })
           .optional(),

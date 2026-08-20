@@ -1,10 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
+import { DataFrame, DataSourceInstanceSettings } from '@grafana/data';
+import { queryDS } from 'features/queryDatasources/queryDS';
 import { useLocalStorage } from 'usehooks-ts';
 import { z } from 'zod';
 
-import { reliabilitySuggestionSchema, reliabilitySuggestionsSchema } from './types';
+import { ReliabilityEvidence, reliabilitySuggestionSchema, reliabilitySuggestionsSchema } from './types';
 import { useSMDS } from 'hooks/useSMDS';
 
+import { getRecommendationTelemetryProvenance } from './evidence';
 import { compareReliabilityOpportunities, isInitialReviewCandidate, toReliabilityOpportunity } from './model';
 
 const STALE_TIME = 6 * 60 * 60 * 1000;
@@ -30,8 +33,8 @@ export const reliabilityInboxDismissalsKey = (apiHost: string, stackId: number) 
 /**
  * Fetches suggestions from the reliability-inbox experiment.
  */
-export function useReliabilityInboxSuggestions() {
-  return useReliabilityInboxQuery(true);
+export function useReliabilityInboxSuggestions({ includeDismissed = false } = {}) {
+  return useReliabilityInboxQuery(true, includeDismissed);
 }
 
 /**
@@ -39,7 +42,7 @@ export function useReliabilityInboxSuggestions() {
  * triggering the paid generation request. The homepage banner uses this hook.
  */
 export function useCachedReliabilityInboxSuggestions() {
-  return useReliabilityInboxQuery(false);
+  return useReliabilityInboxQuery(false, false);
 }
 
 export function useReliabilityInboxDismissals() {
@@ -50,7 +53,46 @@ export function useReliabilityInboxDismissals() {
   );
 }
 
-function useReliabilityInboxQuery(generateSuggestions: boolean) {
+export function useRecommendationTelemetry(evidence: ReliabilityEvidence, enabled: boolean) {
+  const provenance = getRecommendationTelemetryProvenance(evidence);
+  const metricsDatasource = useSMDS().getMetricsDS();
+
+  return useQuery<DataFrame[]>({
+    queryKey: ['reliability-inbox', 'recommendation-telemetry', metricsDatasource, evidence, provenance],
+    enabled: enabled && Boolean(provenance) && Boolean(metricsDatasource),
+    queryFn: () => (metricsDatasource ? queryRecommendationTelemetry(evidence, metricsDatasource) : []),
+    retry: false,
+    staleTime: Infinity,
+  });
+}
+
+export async function queryRecommendationTelemetry(
+  evidence: ReliabilityEvidence,
+  metricsDatasource: DataSourceInstanceSettings,
+  executeQuery: typeof queryDS = queryDS
+) {
+  const provenance = getRecommendationTelemetryProvenance(evidence);
+
+  if (!provenance) {
+    return [];
+  }
+
+  const result = await executeQuery({
+    start: provenance.from,
+    end: provenance.to,
+    queries: provenance.queries.map((query) => ({
+      ...query,
+      datasource: { uid: metricsDatasource.uid, type: metricsDatasource.type },
+      interval: '1m',
+      intervalMs: 60_000,
+      maxDataPoints: 120,
+    })),
+  });
+
+  return provenance.queries.flatMap(({ refId }) => result[refId] ?? []);
+}
+
+function useReliabilityInboxQuery(generateSuggestions: boolean, includeDismissed: boolean) {
   const smDS = useSMDS();
   const apiHost = smDS.instanceSettings.jsonData.apiHost;
   const stackId = smDS.instanceSettings.jsonData.metrics.hostedId;
@@ -75,7 +117,7 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
         throw new Error(result.warnings.join('; '));
       }
 
-      writeSnapshot(storageKey, result.suggestions);
+      writeSnapshot(reliabilityInboxStorageKey(apiHost, stackId), result.suggestions);
 
       return toOpportunities(result.suggestions);
     },
@@ -85,7 +127,8 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
     // the result for the lifetime of the SPA session, even when no component is
     // temporarily subscribed, so navigation cannot cause accidental regeneration.
     gcTime: Infinity,
-    select: (opportunities) => opportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id)),
+    select: (opportunities) =>
+      includeDismissed ? opportunities : opportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id)),
   });
 }
 

@@ -1,5 +1,10 @@
 import { createAssistantContextItem } from '@grafana/assistant';
 
+import { CheckType, CheckTypeGroup, HTTPCheck, HttpMethod } from 'types';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
+import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
+
 import { ReliabilityOpportunity } from './model';
 import { ASSISTANT_ORIGIN } from './ReliabilityInboxPage.constants';
 
@@ -47,6 +52,35 @@ export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
     ].join(' '),
     context: [context],
     autoSend: true,
+  };
+}
+
+export function getManualCreateLocation(opportunity: ReliabilityOpportunity) {
+  const { proposedCheck } = opportunity;
+  const defaultCheck = DEFAULT_CHECK_CONFIG_MAP[CheckType.Http] as HTTPCheck;
+
+  return {
+    pathname: `${generateRoutePath(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}`,
+    search: `?checkType=${CheckType.Http}`,
+    state: {
+      prefilledCheck: {
+        ...defaultCheck,
+        job: proposedCheck.job,
+        target: proposedCheck.target,
+        frequency: proposedCheck.frequencyMs,
+        timeout: proposedCheck.timeoutMs,
+        labels: [...defaultCheck.labels],
+        probes: [...proposedCheck.probeIds],
+        settings: {
+          http: {
+            ...defaultCheck.settings.http,
+            method: proposedCheck.method as HttpMethod,
+            failIfNotSSL: proposedCheck.failIfNotSSL,
+            validStatusCodes: [...proposedCheck.validStatusCodes],
+          },
+        },
+      },
+    },
   };
 }
 

@@ -1,28 +1,49 @@
 import React from 'react';
 import { PluginPage } from '@grafana/runtime';
-import { Badge, Stack, Text } from '@grafana/ui';
+import { Stack, Text } from '@grafana/ui';
+
+import { Feedback } from 'components/Feedback';
 
 import { ReliabilityInboxReview } from './components/ReliabilityInboxReview';
+import { SuggestionsRefreshControl } from './components/SuggestionsRefreshControl';
+import { useReliabilityInboxSuggestions } from './data';
 import { RELIABILITY_INBOX_PAGE_NAV } from './ReliabilityInboxPage.constants';
 
 export { RELIABILITY_INBOX_PAGE_NAV };
 
+export function ReliabilityInboxPageTitle() {
+  return (
+    <Stack alignItems="center" gap={1.5}>
+      <Text element="h1">Check Suggestions</Text>
+      <Feedback
+        feature="reliability-inbox"
+        placement="bottom-start"
+        about={{ icon: 'ai-sparkle', text: 'Experimental' }}
+      />
+    </Stack>
+  );
+}
+
 export function ReliabilityInboxPage() {
+  const suggestionsQuery = useReliabilityInboxSuggestions({ includeDismissed: true });
+
   return (
     <PluginPage
+      actions={
+        <SuggestionsRefreshControl
+          generatedAt={suggestionsQuery.dataUpdatedAt || undefined}
+          isFetching={suggestionsQuery.isFetching}
+          onRefresh={() => void suggestionsQuery.refetch()}
+        />
+      }
       pageNav={RELIABILITY_INBOX_PAGE_NAV}
-      renderTitle={() => (
-        <Stack alignItems="center" gap={1.5}>
-          <h1>Reliability Inbox</h1>
-          <Badge color="blue" icon="ai-sparkle" text="Experimental" />
-        </Stack>
-      )}
+      renderTitle={() => <ReliabilityInboxPageTitle />}
     >
       <Stack direction="column" gap={2}>
         <Text element="p" color="secondary">
           Review monitoring gaps discovered from recent traffic.
         </Text>
-        <ReliabilityInboxReview />
+        <ReliabilityInboxReview suggestionsQuery={suggestionsQuery} />
       </Stack>
     </PluginPage>
   );
