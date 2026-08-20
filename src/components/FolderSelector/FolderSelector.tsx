@@ -3,6 +3,7 @@ import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlacehold
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
+import { FolderAccessState } from 'data/folderPermissions';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useFolderPermissions } from 'data/useFolderPermissions';
 import { getFolderPathParts, useCreateFolder, useFolderChildren } from 'data/useFolders';
@@ -21,11 +22,38 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
-  const allFolderUids = useMemo(() => allFolders.map((f) => f.uid), [allFolders]);
+  // Include the selected value: it can reference a folder outside the default
+  // subtree (assigned via the API/Terraform) that still needs a proper label.
+  const allFolderUids = useMemo(() => {
+    const uids = allFolders.map((f) => f.uid);
+    if (value && !uids.includes(value)) {
+      uids.push(value);
+    }
+    return uids;
+  }, [allFolders, value]);
   const { folderDetailsByUid } = useFolderPermissions(allFolderUids);
 
   const isLoading = isDefaultLoading || isChildrenLoading;
   const isError = isDefaultError || isChildrenError;
+
+  // Only editable folders are offered: a check must be manageable by its creator.
+  const editableFolders = useMemo(
+    () =>
+      allFolders.filter((folder) => {
+        const state = folderDetailsByUid.get(folder.uid);
+        return state?.type === 'accessible' && state.permissions.canEdit;
+      }),
+    [allFolders, folderDetailsByUid]
+  );
+
+  // Decisions that depend on the full editable set must wait for every
+  // permission lookup to settle, so they don't fire on partial data.
+  const permissionsSettled =
+    allFolders.length > 0 &&
+    allFolders.every((folder) => {
+      const state = folderDetailsByUid.get(folder.uid);
+      return state !== undefined && state.type !== 'loading';
+    });
 
   const options: Array<ComboboxOption<string>> = useMemo(() => {
     if (!defaultFolder) {
@@ -33,11 +61,6 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     }
 
     const foldersMap = new Map(allFolders.map((f) => [f.uid, f]));
-
-    const editableFolders = allFolders.filter((folder) => {
-      const state = folderDetailsByUid.get(folder.uid);
-      return state?.type === 'accessible' && state.permissions.canEdit;
-    });
 
     const result: Array<ComboboxOption<string>> = editableFolders.map((folder) => {
       if (folder.uid === defaultFolder.uid) {
@@ -60,17 +83,29 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     });
 
     if (value && !result.some((opt) => opt.value === value)) {
-      result.push({ label: `${value} (folder not found)`, value });
+      result.push(toSelectedFolderOption(value, folderDetailsByUid.get(value)));
     }
 
     return result;
-  }, [allFolders, defaultFolder, value, folderDetailsByUid]);
+  }, [allFolders, editableFolders, defaultFolder, value, folderDetailsByUid]);
+
+  // Preselect the default folder if editable, else the user's only editable
+  // folder; with several candidates the choice is theirs.
+  const preselectUid = useMemo(() => {
+    if (defaultFolder?.canEdit) {
+      return defaultFolder.uid;
+    }
+    if (permissionsSettled && editableFolders.length === 1) {
+      return editableFolders[0].uid;
+    }
+    return undefined;
+  }, [defaultFolder, permissionsSettled, editableFolders]);
 
   useEffect(() => {
-    if (autoSelectDefault && value === undefined && defaultFolderUid) {
-      onChange(defaultFolderUid);
+    if (autoSelectDefault && value === undefined && preselectUid) {
+      onChange(preselectUid);
     }
-  }, [autoSelectDefault, value, defaultFolderUid, onChange]);
+  }, [autoSelectDefault, value, preselectUid, onChange]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
     if (selected?.value) {
@@ -85,7 +120,7 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     setShowCreateModal(false);
   };
 
-  const selectedValue = value ?? (autoSelectDefault ? defaultFolderUid : null) ?? null;
+  const selectedValue = value ?? (autoSelectDefault ? preselectUid : null) ?? null;
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
@@ -103,6 +138,18 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
 
     return (
       <Alert title="Unable to load folders" severity="warning" buttonContent="Retry" onRemove={handleRetry} />
+    );
+  }
+
+  // No editable folder and no rights to create one: explain the dead end
+  // instead of rendering an empty dropdown. The suggestion points at the
+  // default subtree because that is all this picker can list.
+  if (permissionsSettled && editableFolders.length === 0 && !value && !defaultFolder?.canSave) {
+    return (
+      <Alert title="You don't have permission to store checks in any folder" severity="warning">
+        Storing a check requires Edit permission on a folder. Ask an administrator to grant you Edit access to the
+        &quot;{defaultFolder?.title}&quot; folder or one of its subfolders.
+      </Alert>
     );
   }
 
@@ -140,6 +187,42 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
       )}
     </Stack>
   );
+}
+
+/**
+ * Labels a selected folder the picker doesn't list (read-only, inaccessible,
+ * or deleted). The suffix lives in the label because the closed combobox only
+ * shows the label; the description explains it in the dropdown.
+ */
+function toSelectedFolderOption(value: string, state: FolderAccessState | undefined): ComboboxOption<string> {
+  switch (state?.type) {
+    case 'accessible': {
+      const title = state.folder?.title ?? value;
+      if (state.permissions.canEdit) {
+        return { label: title, value };
+      }
+      return {
+        label: `${title} (read-only)`,
+        value,
+        description: 'You can view this folder but not save checks into it.',
+      };
+    }
+    case 'forbidden':
+      return {
+        label: `${value} (no access)`,
+        value,
+        description: "You don't have permission to view this folder, so its identifier is shown instead of its name.",
+      };
+    case 'loading':
+      // Lookup in flight: don't flash a false "not found".
+      return { label: value, value };
+    default:
+      return {
+        label: `${value} (folder not found)`,
+        value,
+        description: 'This folder no longer exists. It may have been deleted.',
+      };
+  }
 }
 
 interface CreateFolderModalProps {

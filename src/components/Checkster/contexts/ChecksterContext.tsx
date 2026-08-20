@@ -75,12 +75,18 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[], defaultFolderUid?: string) {
+function useFormValuesMeta(
+  checkType: CheckType,
+  check: Check | undefined,
+  probesWithMetadata: ProbeWithMetadata[],
+  defaultFolderUid?: string,
+  requiresFolder = false
+) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
-    const refinedSchema = addRefinements<CheckFormValues>(schema);
+    const refinedSchema = addRefinements<CheckFormValues>(schema, { requiresFolder });
     const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
 
     if (defaultFolderUid && !formValues.folderUid) {
@@ -94,7 +100,7 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder]);
 }
 
 export function ChecksterProvider({
@@ -110,8 +116,21 @@ export function ChecksterProvider({
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { defaultFolderUid, isLoading: isFolderLoading, isError: isFolderError } = useDefaultFolder(isFoldersEnabled);
+  const {
+    defaultFolder,
+    defaultFolderUid,
+    status: defaultFolderStatus,
+    isLoading: isFolderLoading,
+    isError: isFolderError,
+  } = useDefaultFolder(isFoldersEnabled);
   const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
+  // Pre-fill the default folder only if the user can edit it; seeding via form
+  // defaults keeps a new form pristine (FolderSelector handles fallbacks).
+  const seedFolderUid = defaultFolder?.canEdit ? defaultFolderUid : undefined;
+  // A folder-less check effectively lives in the default folder, which the
+  // user may not be able to edit — so a folder is required when folder data
+  // is available. When it isn't, checks save without one, as before.
+  const requiresFolder = isFoldersEnabled && defaultFolderStatus === 'available';
 
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
@@ -129,7 +148,13 @@ export function ChecksterProvider({
     check_is_duplicate: isDuplicate,
   });
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
+  const { schema, defaultFormValues } = useFormValuesMeta(
+    checkType,
+    check,
+    probesWithMetadata,
+    seedFolderUid,
+    requiresFolder
+  );
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 

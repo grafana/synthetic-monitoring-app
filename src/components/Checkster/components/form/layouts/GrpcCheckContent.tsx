@@ -22,7 +22,7 @@ const GRPC_REQUEST_OPTIONS_FIELDS = GRPC_REQUEST_OPTIONS_TAB_FIELDS.filter((fiel
   return field !== undefined;
 }).flat();
 
-export const GRPC_CHECK_FIELDS = ['job', 'target', ...GRPC_REQUEST_OPTIONS_FIELDS];
+export const GRPC_CHECK_FIELDS = ['job', 'target', 'folderUid', ...GRPC_REQUEST_OPTIONS_FIELDS];
 
 export function GrpcCheckContent() {
   const hasRequestOptionError = useHasFieldsError(GRPC_REQUEST_OPTIONS_FIELDS);

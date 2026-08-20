@@ -1,5 +1,6 @@
 import { screen } from '@testing-library/react';
-import { mockFeatureToggles } from 'test/utils';
+import { DEFAULT_FOLDER } from 'test/fixtures/folders';
+import { mockFeatureToggles, runTestWithReadOnlyDefaultFolder } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 
@@ -19,6 +20,22 @@ describe('Api endpoint checks - common fields UI', () => {
       await renderNewForm(CheckType.Http);
 
       expect(screen.queryByText('Folder')).not.toBeInTheDocument();
+    });
+
+    it('preselects the default folder when the user can edit it', async () => {
+      mockFeatureToggles({ [FeatureName.Folders]: true });
+      await renderNewForm(CheckType.Http);
+
+      expect(await screen.findByDisplayValue(`${DEFAULT_FOLDER.title} (Default)`)).toBeInTheDocument();
+    });
+
+    it('does not preselect a default folder the user cannot edit', async () => {
+      mockFeatureToggles({ [FeatureName.Folders]: true });
+      runTestWithReadOnlyDefaultFolder();
+      await renderNewForm(CheckType.Http);
+
+      const folderInput = await screen.findByPlaceholderText(/Select a folder/);
+      expect(folderInput).toHaveValue('');
     });
   });
 });

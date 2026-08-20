@@ -23,6 +23,7 @@ import {
   SECRETS_READ_ONLY_ACCESS,
   WRITER_NO_DELETE_ACCESS,
 } from './fixtures/rbacPermissions';
+import { DEFAULT_FOLDER, FOLDER_PRODUCTION, MOCK_FOLDERS } from './fixtures/folders';
 import { apiRoute } from './handlers';
 import { setTestFlag } from './openFeatureTestProvider';
 import { server } from './server';
@@ -168,6 +169,70 @@ export function runTestWithoutMetricsAccess() {
       [LOGS_DATASOURCE.name]: LOGS_DATASOURCE,
     },
   });
+}
+
+/**
+ * The user holds View (but not Edit) on the default Synthetic Monitoring
+ * folder, e.g. a Viewer with the SM checks writer role and a folder-level
+ * Edit grant on a subfolder only. Folders in MOCK_FOLDERS keep their own
+ * permission flags.
+ */
+export function runTestWithReadOnlyDefaultFolder() {
+  server.use(
+    apiRoute(`getFolder`, {
+      result: (req: Request) => {
+        const uid = new URL(req.url).pathname.split('/').pop();
+        if (uid === DEFAULT_FOLDER.uid) {
+          return { json: { ...DEFAULT_FOLDER, canEdit: false, canSave: false } };
+        }
+        const folder = MOCK_FOLDERS.find((f) => f.uid === uid);
+        return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
+      },
+    })
+  );
+}
+
+/**
+ * The user holds View (but not Edit) on the default Synthetic Monitoring
+ * folder and a folder-level Edit grant on a single subfolder (Production),
+ * e.g. a team member whose admin segments checks per team.
+ */
+export function runTestWithSingleEditableFolder() {
+  server.use(
+    apiRoute(`getFolder`, {
+      result: (req: Request) => {
+        const uid = new URL(req.url).pathname.split('/').pop();
+        const folder = uid === DEFAULT_FOLDER.uid ? DEFAULT_FOLDER : MOCK_FOLDERS.find((f) => f.uid === uid);
+        if (!folder) {
+          return { status: 404, json: { message: 'Folder not found' } };
+        }
+        if (folder.uid === FOLDER_PRODUCTION.uid) {
+          return { json: folder };
+        }
+        return { json: { ...folder, canEdit: false, canSave: false } };
+      },
+    })
+  );
+}
+
+/**
+ * The user holds View (but not Edit) on the default Synthetic Monitoring
+ * folder and every other folder, e.g. a Viewer with the SM checks writer
+ * role and no folder-level grants.
+ */
+export function runTestWithNoEditableFolders() {
+  server.use(
+    apiRoute(`getFolder`, {
+      result: (req: Request) => {
+        const uid = new URL(req.url).pathname.split('/').pop();
+        const folder = uid === DEFAULT_FOLDER.uid ? DEFAULT_FOLDER : MOCK_FOLDERS.find((f) => f.uid === uid);
+        if (!folder) {
+          return { status: 404, json: { message: 'Folder not found' } };
+        }
+        return { json: { ...folder, canEdit: false, canSave: false } };
+      },
+    })
+  );
 }
 
 export function runTestWithoutLogsAccess() {

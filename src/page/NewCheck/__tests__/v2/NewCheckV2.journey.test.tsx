@@ -3,16 +3,24 @@ import { emitCheckCreatedEvent } from 'features/tracking/appEvents';
 import { trackCheckCreated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { DEFAULT_FOLDER, FOLDER_PRODUCTION } from 'test/fixtures/folders';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
+import {
+  mockFeatureToggles,
+  probeToMetadataProbe,
+  runTestAsHGFreeUserOverLimit,
+  runTestWithoutLogsAccess,
+  runTestWithReadOnlyDefaultFolder,
+  runTestWithSingleEditableFolder,
+} from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
-import { CheckAlertType, CheckType } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import { gotoSection, selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
@@ -30,6 +38,54 @@ jest.mock('features/tracking/appEvents', () => ({
 }));
 
 describe(`<NewCheckV2 /> journey`, () => {
+  it(`should save the check into the default folder when the user can edit it`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    const { user, read } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.folderUid).toBe(DEFAULT_FOLDER.uid);
+  });
+
+  it(`should require picking an editable folder when the user cannot edit the default folder`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    // A user with folder Edit on several subfolders, holding View on the
+    // default SM folder. Nothing is preselected (the choice is theirs), and
+    // saving without a pick is blocked instead of silently stranding the
+    // check in the read-only default folder.
+    runTestWithReadOnlyDefaultFolder();
+    const { user, read } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    expect(await screen.findByText(/Select a folder to store this check in/)).toBeInTheDocument();
+
+    await selectComboboxOption(user, screen.getByPlaceholderText(/Select a folder/), FOLDER_PRODUCTION.title);
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.folderUid).toBe(FOLDER_PRODUCTION.uid);
+  });
+
+  it(`should preselect the user's only editable folder when the default folder is read-only`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    // A user with folder Edit on a single subfolder, holding View on the
+    // default SM folder (the support escalation setup). Their folder is
+    // preselected, so saving just works and the check lands somewhere they
+    // can manage.
+    runTestWithSingleEditableFolder();
+    const { user, read } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.folderUid).toBe(FOLDER_PRODUCTION.uid);
+  });
+
   it(`should show an error message when it fails to save a check`, async () => {
     const { user } = await renderNewForm(CheckType.Http);
 
