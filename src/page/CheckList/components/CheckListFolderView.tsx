@@ -123,11 +123,17 @@ export function CheckListFolderView({
     });
   };
 
-  const expandAll = () => setCollapsedFolders(new Set());
-  const collapseAll = () => setCollapsedFolders(new Set(allUids));
-
+  // Same pattern as Alerting → Notification policies: one button that flips
+  // between expand-all and collapse-all based on whether everything is open.
   const allExpanded = collapsedFolders.size === 0;
-  const allCollapsed = allUids.length > 0 && allUids.every((uid) => collapsedFolders.has(uid));
+
+  const toggleAllExpanded = () => {
+    if (allExpanded) {
+      setCollapsedFolders(new Set(allUids));
+    } else {
+      setCollapsedFolders(new Set());
+    }
+  };
 
   const checkItemProps = {
     checkAlertStates,
@@ -157,28 +163,14 @@ export function CheckListFolderView({
               Folders ({allUids.length})
               <Feedback feature="folder-view" about={{ text: 'New feature!' }} />
             </h3>
-            <Stack gap={1}>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={expandAll}
-                disabled={allExpanded}
-                icon="angle-down"
-                tooltip="Expand all folders"
-              >
-                Expand all
-              </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={collapseAll}
-                disabled={allCollapsed}
-                icon="angle-right"
-                tooltip="Collapse all folders"
-              >
-                Collapse all
-              </Button>
-            </Stack>
+            <Button
+              variant="secondary"
+              icon={allExpanded ? 'table-collapse-all' : 'table-expand-all'}
+              onClick={toggleAllExpanded}
+              aria-label={allExpanded ? 'Collapse all folders' : 'Expand all folders'}
+            >
+              {allExpanded ? 'Collapse all' : 'Expand all'}
+            </Button>
           </div>
 
           {foldersWithChecks.map((node) => (
