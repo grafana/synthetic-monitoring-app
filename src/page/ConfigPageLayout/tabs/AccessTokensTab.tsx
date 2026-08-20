@@ -15,7 +15,6 @@ const PAGE_SIZE = 50;
 
 export function AccessTokensTab() {
   const { canReadTokens, canWriteTokens, canDeleteTokens } = getUserPermissions();
-  console.log('canReadTokens!!!', canReadTokens);
   const styles = useStyles2(getStyles);
 
   // write permission implies read for users who have not had the explicit :read
