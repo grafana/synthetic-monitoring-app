@@ -70,10 +70,10 @@ describe('AccessTokensTab', () => {
         expect(queryByText(contactAdminMessage)).toBeInTheDocument();
       });
 
-      it(`Does not display a contact admin message when permissions are met`, async () => {
+      it(`Displays a contact admin message for editors because token actions are admin-only`, async () => {
         runTestAsSMEditor();
         const { queryByText } = await renderAccessTokensTab();
-        expect(queryByText(contactAdminMessage)).not.toBeInTheDocument();
+        expect(queryByText(contactAdminMessage)).toBeInTheDocument();
       });
     });
   });
@@ -124,6 +124,19 @@ describe('AccessTokensTab', () => {
       expect(currentButton.closest('span')).toBeTruthy();
       // Non-current button's immediate parent is a <td>.
       expect(nonCurrentButton.parentElement?.tagName).toBe('TD');
+    });
+
+    it('shows an error alert instead of the empty state when the list fails to load', async () => {
+      server.use(
+        apiRoute('listAccessTokens', {
+          result: () => ({ status: 500, json: { msg: 'internal error' } }),
+        })
+      );
+
+      await renderAccessTokensTab();
+
+      expect(await screen.findByText(/Failed to load access tokens/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No tokens found/i)).not.toBeInTheDocument();
     });
 
     it('appends the next page when Load more is clicked', async () => {

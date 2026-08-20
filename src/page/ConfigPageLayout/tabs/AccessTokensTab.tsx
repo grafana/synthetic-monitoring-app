@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Alert, Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { TokenInfo } from 'datasource/responses.types';
@@ -28,7 +28,10 @@ export function AccessTokensTab() {
   // Delete confirmation state
   const [tokenToDelete, setTokenToDelete] = useState<TokenInfo | null>(null);
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useTokens(PAGE_SIZE, canViewList);
+  const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = useTokens(
+    PAGE_SIZE,
+    canViewList
+  );
 
   const createToken = useCreateToken({
     onSuccess: (token) => {
@@ -48,7 +51,10 @@ export function AccessTokensTab() {
       {!canViewList && (
         <ContactAdminAlert
           title="Contact your administrator to generate Access Tokens"
-          missingPermissions={['grafana-synthetic-monitoring-app.access-tokens:write']}
+          missingPermissions={[
+            'grafana-synthetic-monitoring-app.access-tokens:read',
+            'grafana-synthetic-monitoring-app.access-tokens:write',
+          ]}
         />
       )}
 
@@ -77,7 +83,12 @@ export function AccessTokensTab() {
 
       <ConfigContent.Section title="Existing tokens">
         {isLoading && canViewList && <Spinner />}
-        {!isLoading && canViewList && tokens.length === 0 && <span>No tokens found.</span>}
+        {isError && canViewList && (
+          <Alert severity="error" title="Failed to load access tokens">
+            Refresh the page to try again.
+          </Alert>
+        )}
+        {!isLoading && !isError && canViewList && tokens.length === 0 && <span>No tokens found.</span>}
         {canViewList && tokens.length > 0 && (
           <>
             <table className={styles.table}>
