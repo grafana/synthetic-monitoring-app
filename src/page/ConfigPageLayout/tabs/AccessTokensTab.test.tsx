@@ -2,11 +2,13 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { LIST_ACCESS_TOKENS } from 'test/fixtures/tokens';
+import { CURRENT_TOKEN_ID, LIST_ACCESS_TOKENS, OTHER_TOKEN_ID } from 'test/fixtures/tokens';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { runTestAsRBACAdmin, runTestAsRBACReader, runTestAsSMEditor, runTestAsSMViewer } from 'test/utils';
+
+import { ListTokensResponse } from 'datasource/responses.types';
 
 import { CONFIG_TEST_ID } from '../../../test/dataTestIds';
 import { AccessTokensTab } from './AccessTokensTab';
@@ -34,7 +36,10 @@ describe('AccessTokensTab', () => {
     expect(getByText('Access tokens', { selector: 'h2' })).toBeInTheDocument();
   });
 
-  it('should have a section on synthetic monitoring', async () => {});
+  it('should have a section on synthetic monitoring', async () => {
+    const { getByText } = await renderAccessTokensTab();
+    expect(getByText('Synthetic Monitoring', { selector: 'h3' })).toBeInTheDocument();
+  });
 
   it('should have a section on private probes', async () => {
     const { getByText } = await renderAccessTokensTab();
@@ -89,8 +94,8 @@ describe('AccessTokensTab', () => {
       await screen.findByText(/2023-11-1/);
 
       expect(screen.getByRole('columnheader', { name: /^id$/i })).toBeInTheDocument();
-      expect(screen.getByText('2')).toBeInTheDocument();
-      expect(screen.getByText('1')).toBeInTheDocument();
+      expect(screen.getByText(OTHER_TOKEN_ID)).toBeInTheDocument();
+      expect(screen.getByText(CURRENT_TOKEN_ID)).toBeInTheDocument();
     });
 
     it('disables the revoke button for the current token', async () => {
@@ -101,7 +106,7 @@ describe('AccessTokensTab', () => {
       const revokeButtons = screen.getAllByRole('button', { name: /revoke/i });
       expect(revokeButtons).toHaveLength(2);
 
-      // Fixture: currentTokenId=1. id=2 is first row (non-current), id=1 is second (current).
+      // Fixture: OTHER_TOKEN_ID is the first row (non-current), CURRENT_TOKEN_ID the second (current).
       expect(revokeButtons[0]).not.toBeDisabled();
       expect(revokeButtons[1]).toBeDisabled();
     });
@@ -112,13 +117,52 @@ describe('AccessTokensTab', () => {
       await screen.findByText(/2023-11-1/);
 
       const revokeButtons = screen.getAllByRole('button', { name: /revoke/i });
-      const currentButton = revokeButtons[1]; // id=1, current
-      const nonCurrentButton = revokeButtons[0]; // id=2, non-current
+      const currentButton = revokeButtons[1]; // CURRENT_TOKEN_ID, current
+      const nonCurrentButton = revokeButtons[0]; // OTHER_TOKEN_ID, non-current
 
       // Current button is wrapped in a <span> inside a Tooltip.
       expect(currentButton.closest('span')).toBeTruthy();
       // Non-current button's immediate parent is a <td>.
       expect(nonCurrentButton.parentElement?.tagName).toBe('TD');
+    });
+
+    it('appends the next page when Load more is clicked', async () => {
+      const PAGE_TWO_TOKEN_ID = '01838aaa-0000-7000-8000-000000000003';
+      const pageOne: ListTokensResponse = {
+        ...LIST_ACCESS_TOKENS,
+        next_cursor: 'cursor-to-page-two',
+        total_count: 3,
+      };
+      const pageTwo: ListTokensResponse = {
+        items: [{ id: PAGE_TWO_TOKEN_ID, created: 1650000000, lastUsed: 0 }],
+        next_cursor: '',
+        prev_cursor: 'cursor-to-page-one',
+        total_count: 3,
+        current_token_id: CURRENT_TOKEN_ID,
+      };
+
+      server.use(
+        apiRoute('listAccessTokens', {
+          result: (req) => {
+            const cursor = new URL(req.url).searchParams.get('cursor');
+            return { json: cursor ? pageTwo : pageOne };
+          },
+        })
+      );
+
+      const user = userEvent.setup();
+      await renderAccessTokensTab();
+
+      await screen.findByText(OTHER_TOKEN_ID);
+      await user.click(screen.getByRole('button', { name: /load more \(1 remaining\)/i }));
+
+      expect(await screen.findByText(PAGE_TWO_TOKEN_ID)).toBeInTheDocument();
+      // The first page is still visible: pages append rather than replace.
+      expect(screen.getByText(OTHER_TOKEN_ID)).toBeInTheDocument();
+      expect(screen.getByText(CURRENT_TOKEN_ID)).toBeInTheDocument();
+      // The never-used page-two token renders 'Never' and there is no further page.
+      expect(screen.getByText('Never')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /load more/i })).not.toBeInTheDocument();
     });
 
     it('opens confirmation modal on revoke click', async () => {

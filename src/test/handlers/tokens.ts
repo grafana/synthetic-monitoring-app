@@ -1,7 +1,7 @@
 import { CREATE_ACCESS_TOKEN, LIST_ACCESS_TOKENS } from 'test/fixtures/tokens';
 
 import { ApiEntry } from 'test/handlers/types';
-import { AccessTokenResponse, ListTokensResponse } from 'datasource/responses.types';
+import { AccessTokenResponse, ListTokensResponse, RevokeTokenByIDResponse } from 'datasource/responses.types';
 
 export const createAccessToken: ApiEntry<AccessTokenResponse> = {
   route: `/sm/token/create`,
@@ -24,7 +24,7 @@ export const listAccessTokens: ApiEntry<ListTokensResponse> = {
   }),
 };
 
-export const revokeAccessToken: ApiEntry<{ msg: string }> = {
+export const revokeAccessToken: ApiEntry<RevokeTokenByIDResponse> = {
   route: `/sm/token/([^/]+)`,
   method: `delete`,
   result: () => ({

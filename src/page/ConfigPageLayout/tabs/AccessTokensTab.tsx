@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { TokenInfo } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
@@ -15,13 +15,12 @@ const PAGE_SIZE = 50;
 
 export function AccessTokensTab() {
   const { canReadTokens, canWriteTokens, canDeleteTokens } = getUserPermissions();
+  console.log('canReadTokens!!!', canReadTokens);
   const styles = useStyles2(getStyles);
 
   // write permission implies read for users who have not had the explicit :read
   // permission assigned yet (e.g. before a plugin.json update is rolled out).
   const canViewList = canReadTokens || canWriteTokens;
-
-  const [offset, setOffset] = useState(0);
 
   // New token modal state
   const [showModal, setShowModal] = useState(false);
@@ -30,7 +29,7 @@ export function AccessTokensTab() {
   // Delete confirmation state
   const [tokenToDelete, setTokenToDelete] = useState<TokenInfo | null>(null);
 
-  const { data, isLoading, isFetching } = useTokens(PAGE_SIZE, offset, canViewList);
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } = useTokens(PAGE_SIZE, canViewList);
 
   const createToken = useCreateToken({
     onSuccess: (token) => {
@@ -39,16 +38,11 @@ export function AccessTokensTab() {
     },
   });
 
-  const deleteToken = useDeleteToken({
-    onSuccess: () => {
-      setOffset(0);
-    },
-  });
+  const deleteToken = useDeleteToken();
 
-  const tokens = data?.tokens ?? [];
-  const totalCount = data?.totalCount ?? 0;
-  const currentTokenId = data?.currentTokenId ?? 0;
-  const hasMore = offset + PAGE_SIZE < totalCount;
+  const tokens = data?.pages.flatMap((page) => page.items) ?? [];
+  const totalCount = data?.pages[data.pages.length - 1]?.total_count ?? 0;
+  const currentTokenId = data?.pages[0]?.current_token_id ?? '';
 
   return (
     <ConfigContent title="Access tokens">
@@ -104,7 +98,7 @@ export function AccessTokensTab() {
               </thead>
               <tbody>
                 {tokens.map((t) => {
-                  const isCurrent = currentTokenId !== 0 && t.id === currentTokenId;
+                  const isCurrent = currentTokenId !== '' && t.id === currentTokenId;
                   const revokeButton = (
                     <Button
                       variant="destructive"
@@ -118,9 +112,9 @@ export function AccessTokensTab() {
 
                   return (
                     <tr key={t.id} className={styles.tr}>
-                      <td className={styles.td}>{t.id}</td>
-                      <td className={styles.td}>{formatNano(t.created)}</td>
-                      <td className={styles.td}>{formatNano(t.lastUsed)}</td>
+                      <td className={cx(styles.td, styles.tdId)}>{t.id}</td>
+                      <td className={styles.td}>{formatUnixSeconds(t.created)}</td>
+                      <td className={styles.td}>{formatUnixSeconds(t.lastUsed)}</td>
                       {canDeleteTokens && (
                         <td className={cx(styles.td, styles.tdAction)}>
                           {isCurrent ? (
@@ -138,16 +132,15 @@ export function AccessTokensTab() {
               </tbody>
             </table>
 
-            {hasMore && (
+            {hasNextPage && (
               <>
                 <Space v={2} />
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setOffset(offset + PAGE_SIZE)}
-                  disabled={isFetching}
-                >
-                  {isFetching ? <Spinner /> : `Load more (${totalCount - tokens.length - offset} remaining)`}
+                <Button variant="secondary" size="sm" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                  {isFetchingNextPage ? (
+                    <Spinner />
+                  ) : (
+                    `Load more (${Math.max(totalCount - tokens.length, 0)} remaining)`
+                  )}
                 </Button>
               </>
             )}
@@ -171,7 +164,7 @@ export function AccessTokensTab() {
       <ConfirmModal
         isOpen={!!tokenToDelete}
         title="Revoke access token"
-        body={`Revoke the token created on ${tokenToDelete ? formatNano(tokenToDelete.created) : ''}? This action cannot be undone.`}
+        body={`Revoke the token created on ${tokenToDelete ? formatUnixSeconds(tokenToDelete.created) : ''}? This action cannot be undone.`}
         confirmText="Revoke"
         onConfirm={() => {
           if (tokenToDelete) {
@@ -186,17 +179,13 @@ export function AccessTokensTab() {
   );
 }
 
-function formatNano(ns: number): string {
-  if (ns === 0) {
+// Renders in the user's configured timezone, unlike Date.toISOString (UTC).
+function formatUnixSeconds(seconds: number): string {
+  if (seconds === 0) {
     return 'Never';
   }
 
-  return new Date(ns / 1_000_000).toISOString().slice(0, 16).replace('T', ' ');
-}
-
-// cx is a minimal class name joiner — avoids adding a new dependency.
-function cx(...classes: Array<string | undefined>) {
-  return classes.filter(Boolean).join(' ');
+  return dateTimeFormat(seconds * 1000);
 }
 
 function getStyles(theme: GrafanaTheme2) {
@@ -206,7 +195,7 @@ function getStyles(theme: GrafanaTheme2) {
       borderCollapse: 'collapse',
     }),
     colId: css({
-      width: '60px',
+      width: '300px',
     }),
     colDate: css({
       width: '180px',
@@ -231,6 +220,11 @@ function getStyles(theme: GrafanaTheme2) {
     td: css({
       padding: theme.spacing(1, 2, 1, 0),
       verticalAlign: 'middle',
+    }),
+    tdId: css({
+      fontFamily: theme.typography.fontFamilyMonospace,
+      fontSize: theme.typography.bodySmall.fontSize,
+      wordBreak: 'break-all',
     }),
     tdAction: css({
       textAlign: 'right',
