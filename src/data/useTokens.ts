@@ -39,6 +39,7 @@ export function useCreateToken({ onError, onSuccess }: MutationProps<string> = {
       event: {
         type: FaroEvent.CreateAccessToken,
       },
+      errorAlert: () => `Failed to create access token`,
     },
   });
 }
