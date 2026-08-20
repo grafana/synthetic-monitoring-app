@@ -66,7 +66,8 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
     initialData: snapshot ? toOpportunities(snapshot.suggestions) : undefined,
     initialDataUpdatedAt: snapshot?.savedAt,
     queryFn: async () => {
-      const result = reliabilitySuggestionsSchema.parse(await smDS.getReliabilityInboxSuggestions());
+      const suggestions = await smDS.getReliabilityInboxSuggestions();
+      const result = reliabilitySuggestionsSchema.parse(suggestions);
 
       // The experiment reports degraded failures as HTTP 200 with warnings.
       // Keep the last useful inbox instead of replacing it with that empty response.
@@ -97,16 +98,17 @@ function useScopedReliabilityInboxDismissals(apiHost: string, stackId: number) {
   return {
     dismissedSuggestionIds,
     dismissSuggestion: (id: string) =>
-      setDismissedSuggestionIds((dismissedIds) =>
-        dismissedIds.includes(id) ? dismissedIds : [...dismissedIds, id]
-      ),
+      setDismissedSuggestionIds((dismissedIds) => (dismissedIds.includes(id) ? dismissedIds : [...dismissedIds, id])),
     restoreSuggestion: (id: string) =>
       setDismissedSuggestionIds((dismissedIds) => dismissedIds.filter((dismissedId) => dismissedId !== id)),
   };
 }
 
 function toOpportunities(suggestions: Array<z.infer<typeof reliabilitySuggestionSchema>>) {
-  return suggestions.filter(isInitialReviewCandidate).map(toReliabilityOpportunity).sort(compareReliabilityOpportunities);
+  return suggestions
+    .filter(isInitialReviewCandidate)
+    .map(toReliabilityOpportunity)
+    .sort(compareReliabilityOpportunities);
 }
 
 function readSnapshot(key: string) {
