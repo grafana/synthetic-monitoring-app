@@ -11,6 +11,7 @@ import {
   mockFeatureToggles,
   probeToMetadataProbe,
   runTestAsHGFreeUserOverLimit,
+  runTestWithNoEditableFolders,
   runTestWithoutLogsAccess,
   runTestWithReadOnlyDefaultFolder,
   runTestWithSingleEditableFolder,
@@ -84,6 +85,21 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     const { body } = await read();
     expect(body.folderUid).toBe(FOLDER_PRODUCTION.uid);
+  });
+
+  it(`should not show a folder field error when the user cannot store checks in any folder`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    // With no editable folder the picker is replaced by a permissions alert,
+    // so the "select a folder" error would point at a picker that isn't
+    // there. Submission stays blocked, only the alert explains why.
+    runTestWithNoEditableFolders();
+    const { user } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    expect(await screen.findByText(/You don't have permission to store checks in any folder/)).toBeInTheDocument();
+    expect(screen.queryByText(/Select a folder to store this check in/)).not.toBeInTheDocument();
   });
 
   it(`should show an error message when it fails to save a check`, async () => {

@@ -1,7 +1,7 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { renderHook, screen, waitFor } from '@testing-library/react';
 import { DEFAULT_FOLDER, FOLDER_EXTERNAL, FOLDER_PRODUCTION, FOLDER_READONLY } from 'test/fixtures/folders';
-import { render } from 'test/render';
+import { createWrapper, render } from 'test/render';
 import {
   runTestWithNoEditableFolders,
   runTestWithReadOnlyDefaultFolder,
@@ -9,6 +9,7 @@ import {
 } from 'test/utils';
 
 import { FolderSelector } from './FolderSelector';
+import { useFolderSelection } from './FolderSelector.hooks';
 
 describe('FolderSelector', () => {
   it('renders with placeholder', async () => {
@@ -31,32 +32,6 @@ describe('FolderSelector', () => {
 
     await screen.findByPlaceholderText(/Select a folder/);
     expect(screen.queryByRole('button', { name: /Create folder/ })).not.toBeInTheDocument();
-  });
-
-  it('auto-selects the default folder when the user can edit it', async () => {
-    const onChange = jest.fn();
-    render(<FolderSelector onChange={onChange} />);
-
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith(DEFAULT_FOLDER.uid));
-  });
-
-  it('does not preselect anything when the default folder is read-only and several folders are editable', async () => {
-    runTestWithReadOnlyDefaultFolder();
-
-    const onChange = jest.fn();
-    render(<FolderSelector onChange={onChange} />);
-
-    expect(await screen.findByPlaceholderText(/Select a folder/)).toBeInTheDocument();
-    expect(onChange).not.toHaveBeenCalled();
-  });
-
-  it('preselects the only editable folder when the default folder is read-only', async () => {
-    runTestWithSingleEditableFolder();
-
-    const onChange = jest.fn();
-    render(<FolderSelector onChange={onChange} />);
-
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith(FOLDER_PRODUCTION.uid));
   });
 
   it('explains the dead end when the user cannot edit any folder', async () => {
@@ -90,5 +65,45 @@ describe('FolderSelector', () => {
     render(<FolderSelector value={FOLDER_EXTERNAL.uid} onChange={onChange} />);
 
     expect(await screen.findByDisplayValue(FOLDER_EXTERNAL.title)).toBeInTheDocument();
+  });
+});
+
+describe('useFolderSelection', () => {
+  function renderFolderSelection() {
+    const { Wrapper } = createWrapper();
+    return renderHook(() => useFolderSelection(), { wrapper: Wrapper });
+  }
+
+  it('preselects the default folder when the user can edit it', async () => {
+    const { result } = renderFolderSelection();
+
+    await waitFor(() => expect(result.current.preselectUid).toBe(DEFAULT_FOLDER.uid));
+  });
+
+  it('preselects nothing when the default folder is read-only and several folders are editable', async () => {
+    runTestWithReadOnlyDefaultFolder();
+
+    const { result } = renderFolderSelection();
+
+    await waitFor(() => expect(result.current.permissionsSettled).toBe(true));
+    expect(result.current.preselectUid).toBeUndefined();
+    expect(result.current.noStorableFolders).toBe(false);
+  });
+
+  it('preselects the only editable folder when the default folder is read-only', async () => {
+    runTestWithSingleEditableFolder();
+
+    const { result } = renderFolderSelection();
+
+    await waitFor(() => expect(result.current.preselectUid).toBe(FOLDER_PRODUCTION.uid));
+  });
+
+  it('reports no storable folders when the user cannot edit any folder', async () => {
+    runTestWithNoEditableFolders();
+
+    const { result } = renderFolderSelection();
+
+    await waitFor(() => expect(result.current.noStorableFolders).toBe(true));
+    expect(result.current.preselectUid).toBeUndefined();
   });
 });

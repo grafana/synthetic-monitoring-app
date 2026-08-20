@@ -1,59 +1,37 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
 import { FolderAccessState } from 'data/folderPermissions';
-import { useDefaultFolder } from 'data/useDefaultFolder';
-import { useFolderPermissions } from 'data/useFolderPermissions';
-import { getFolderPathParts, useCreateFolder, useFolderChildren } from 'data/useFolders';
+import { getFolderPathParts, useCreateFolder } from 'data/useFolders';
+
+import { useFolderSelection } from './FolderSelector.hooks';
 
 interface FolderSelectorProps {
   value?: string;
   onChange: (folderUid: string | undefined) => void;
   disabled?: boolean;
-  autoSelectDefault?: boolean;
   'aria-label'?: string;
 }
 
-export function FolderSelector({ value, onChange, disabled, autoSelectDefault = true, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError, refetch: refetchDefault } = useDefaultFolder();
-  const { data: childFolders = [], isLoading: isChildrenLoading, isError: isChildrenError, refetch: refetchChildren } = useFolderChildren(defaultFolderUid);
+export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
+  const {
+    defaultFolder,
+    defaultFolderUid,
+    allFolders,
+    folderDetailsByUid,
+    editableFolders,
+    noStorableFolders,
+    isLoading,
+    isDefaultError,
+    isChildrenError,
+    refetchDefault,
+    refetchChildren,
+  } = useFolderSelection({ value });
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
-  // Include the selected value: it can reference a folder outside the default
-  // subtree (assigned via the API/Terraform) that still needs a proper label.
-  const allFolderUids = useMemo(() => {
-    const uids = allFolders.map((f) => f.uid);
-    if (value && !uids.includes(value)) {
-      uids.push(value);
-    }
-    return uids;
-  }, [allFolders, value]);
-  const { folderDetailsByUid } = useFolderPermissions(allFolderUids);
-
-  const isLoading = isDefaultLoading || isChildrenLoading;
   const isError = isDefaultError || isChildrenError;
-
-  // Only editable folders are offered: a check must be manageable by its creator.
-  const editableFolders = useMemo(
-    () =>
-      allFolders.filter((folder) => {
-        const state = folderDetailsByUid.get(folder.uid);
-        return state?.type === 'accessible' && state.permissions.canEdit;
-      }),
-    [allFolders, folderDetailsByUid]
-  );
-
-  // Decisions that depend on the full editable set must wait for every
-  // permission lookup to settle, so they don't fire on partial data.
-  const permissionsSettled =
-    allFolders.length > 0 &&
-    allFolders.every((folder) => {
-      const state = folderDetailsByUid.get(folder.uid);
-      return state !== undefined && state.type !== 'loading';
-    });
 
   const options: Array<ComboboxOption<string>> = useMemo(() => {
     if (!defaultFolder) {
@@ -89,24 +67,6 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     return result;
   }, [allFolders, editableFolders, defaultFolder, value, folderDetailsByUid]);
 
-  // Preselect the default folder if editable, else the user's only editable
-  // folder; with several candidates the choice is theirs.
-  const preselectUid = useMemo(() => {
-    if (defaultFolder?.canEdit) {
-      return defaultFolder.uid;
-    }
-    if (permissionsSettled && editableFolders.length === 1) {
-      return editableFolders[0].uid;
-    }
-    return undefined;
-  }, [defaultFolder, permissionsSettled, editableFolders]);
-
-  useEffect(() => {
-    if (autoSelectDefault && value === undefined && preselectUid) {
-      onChange(preselectUid);
-    }
-  }, [autoSelectDefault, value, preselectUid, onChange]);
-
   const handleChange = (selected: ComboboxOption<string> | null) => {
     if (selected?.value) {
       trackFolderSelected({ isDefault: selected.value === defaultFolderUid });
@@ -120,7 +80,7 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     setShowCreateModal(false);
   };
 
-  const selectedValue = value ?? (autoSelectDefault ? preselectUid : null) ?? null;
+  const selectedValue = value ?? null;
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
@@ -144,7 +104,7 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
   // No editable folder and no rights to create one: explain the dead end
   // instead of rendering an empty dropdown. The suggestion points at the
   // default subtree because that is all this picker can list.
-  if (permissionsSettled && editableFolders.length === 0 && !value && !defaultFolder?.canSave) {
+  if (noStorableFolders && !value) {
     return (
       <Alert title="You don't have permission to store checks in any folder" severity="warning">
         Storing a check requires Edit permission on a folder. Ask an administrator to grant you Edit access to the

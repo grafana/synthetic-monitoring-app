@@ -25,6 +25,7 @@ import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
+import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
@@ -117,16 +118,15 @@ export function ChecksterProvider({
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const {
-    defaultFolder,
-    defaultFolderUid,
     status: defaultFolderStatus,
     isLoading: isFolderLoading,
     isError: isFolderError,
   } = useDefaultFolder(isFoldersEnabled);
   const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
-  // Pre-fill the default folder only if the user can edit it; seeding via form
-  // defaults keeps a new form pristine (FolderSelector handles fallbacks).
-  const seedFolderUid = defaultFolder?.canEdit ? defaultFolderUid : undefined;
+  // Seed the folder through the form defaults so a new form stays pristine:
+  // the default folder when the user can edit it, else their only editable
+  // folder. With several candidates nothing is seeded — the choice is theirs.
+  const { preselectUid: seedFolderUid } = useFolderSelection({ enabled: isFoldersEnabled });
   // A folder-less check effectively lives in the default folder, which the
   // user may not be able to edit — so a folder is required when folder data
   // is available. When it isn't, checks save without one, as before.
