@@ -25,6 +25,7 @@ import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useDOMId } from 'hooks/useDOMId';
+import { CenteredSpinner } from 'components/CenteredSpinner';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
@@ -297,9 +298,10 @@ export function ChecksterProvider({
     canChangeCheckType,
   ]);
 
-  // Don't mount the form until we know which folder to pre-fill.
-  if (!isPreselectReady) {
-    return null;
+  // Don't mount the form until we know which folder to pre-fill. Checks that
+  // already have a folder don't need the pre-fill, so they don't wait.
+  if (!isPreselectReady && !check?.folderUid) {
+    return <CenteredSpinner aria-label="Loading check form" />;
   }
 
   return (
