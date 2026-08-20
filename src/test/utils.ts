@@ -12,6 +12,7 @@ import {
 import { ExtendedProbe, FeatureName, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
 import { pascalCaseToSentence } from 'utils';
 
+import { DEFAULT_FOLDER, FOLDER_PRODUCTION, MOCK_FOLDERS } from './fixtures/folders';
 import {
   FULL_ADMIN_ACCESS,
   FULL_READONLY_ACCESS,
@@ -23,7 +24,6 @@ import {
   SECRETS_READ_ONLY_ACCESS,
   WRITER_NO_DELETE_ACCESS,
 } from './fixtures/rbacPermissions';
-import { DEFAULT_FOLDER, FOLDER_PRODUCTION, MOCK_FOLDERS } from './fixtures/folders';
 import { apiRoute } from './handlers';
 import { setTestFlag } from './openFeatureTestProvider';
 import { server } from './server';
