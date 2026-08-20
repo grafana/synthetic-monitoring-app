@@ -10096,10 +10096,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.7.7":
-  version: 3.7.7
-  resolution: "js-base64@npm:3.7.7"
-  checksum: 10c0/3c905a7e78b601e4751b5e710edd0d6d045ce2d23eb84c9df03515371e1b291edc72808dc91e081cb9855aef6758292a2407006f4608ec3705373dd8baf2f80f
+"js-base64@npm:3.9.3":
+  version: 3.9.3
+  resolution: "js-base64@npm:3.9.3"
+  checksum: 10c0/bb293c11b946139a45624b1daf7ba8a996994ffd1694a2676f2df30047df96335967b9b1a8159ae58dd9dd6978c841e9f7a478bc378609bbe586835a36a9e4e7
   languageName: node
   linkType: hard
 
@@ -13843,7 +13843,7 @@ __metadata:
     jest: "npm:30.2.0"
     jest-canvas-mock: "npm:2.5.2"
     jest-environment-jsdom: "npm:30.2.0"
-    js-base64: "npm:3.7.7"
+    js-base64: "npm:3.9.3"
     lodash: "npm:4.18.1"
     msw: "npm:2.12.3"
     ol: "npm:10.7.0"
