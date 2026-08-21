@@ -14,6 +14,9 @@ import { DocsLink } from 'components/DocsLink';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
+
 export const Probes = () => {
   const theme = useTheme2();
 
@@ -44,7 +47,14 @@ const Actions = () => {
     return null;
   }
 
-  return <LinkButton href={getRoute(AppRoutes.NewProbe)}>Add Private Probe</LinkButton>;
+  return (
+    <LinkButton
+      href={getRoute(AppRoutes.NewProbe)}
+      onClick={() => trackFaroUserAction(FaroUserAction.AddPrivateProbeClicked)}
+    >
+      Add Private Probe
+    </LinkButton>
+  );
 };
 
 const ProbesContent = () => {

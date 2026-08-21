@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { FolderPicker } from '@grafana/runtime';
 import { Alert, Button, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
@@ -13,7 +13,6 @@ interface FolderSelectorProps {
   value?: string;
   onChange: (folderUid: string | undefined) => void;
   disabled?: boolean;
-  autoSelectDefault?: boolean;
 }
 
 /**
@@ -21,8 +20,12 @@ interface FolderSelectorProps {
  * a lazily-loaded, searchable tree of every folder the user can edit
  * (server-side permission filtering), so checks can live in any Grafana
  * folder, not just the default SM subtree.
+ *
+ * Preselection is not handled here: the check form seeds the default folder
+ * through its form defaults (only when the user can edit it, see
+ * useFolderSelection), so a pristine form stays clean.
  */
-export function FolderSelector({ value, onChange, disabled, autoSelectDefault = true }: FolderSelectorProps) {
+export function FolderSelector({ value, onChange, disabled }: FolderSelectorProps) {
   const { defaultFolder, defaultFolderUid, isLoading, isError, refetch } = useDefaultFolder();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -30,12 +33,6 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
   // FolderPicker has no disabled prop), which needs the folder's title.
   const disabledValueUids = disabled && value ? [value] : [];
   const { folderDetailsByUid } = useFolderPermissions(disabledValueUids);
-
-  useEffect(() => {
-    if (autoSelectDefault && value === undefined && defaultFolderUid) {
-      onChange(defaultFolderUid);
-    }
-  }, [autoSelectDefault, value, defaultFolderUid, onChange]);
 
   const handleChange = (folderUid: string | undefined) => {
     if (folderUid) {
@@ -49,8 +46,6 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     onChange(folder.uid);
     setShowCreateModal(false);
   };
-
-  const selectedValue = value ?? (autoSelectDefault ? defaultFolderUid : undefined);
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
@@ -68,7 +63,7 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
 
   return (
     <Stack gap={1.5} alignItems="center">
-      <FolderPicker value={selectedValue} onChange={handleChange} showRootFolder={false} />
+      <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
       {defaultFolder?.canSave && (
         <>
           <span>or</span>
@@ -125,11 +120,7 @@ function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFol
       >
         {/* Root creation requires org-level folders:create, so the root item
             is only offered when the user has it. */}
-        <FolderPicker
-          value={parentUid}
-          onChange={(uid) => setParentUid(uid ?? '')}
-          showRootFolder={canCreateFolders}
-        />
+        <FolderPicker value={parentUid} onChange={(uid) => setParentUid(uid ?? '')} showRootFolder={canCreateFolders} />
       </Field>
       <Field label="Folder name">
         <Input

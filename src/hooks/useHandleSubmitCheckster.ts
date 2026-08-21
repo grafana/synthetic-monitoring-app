@@ -6,6 +6,8 @@ import { getAlertsPayload } from '../components/Checkster/transformations/toPayl
 import { queryClient } from '../data/queryClient';
 import { useUpdateAlertsForCheck } from '../data/useCheckAlerts';
 import { QUERY_KEYS, useCUDChecks } from '../data/useChecks';
+import { FaroUserAction } from '../faro';
+import { trackFaroUserAction } from '../features/tracking/userAction';
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
 
 export function useHandleSubmitCheckster(initialCheck?: Check) {
@@ -31,8 +33,10 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
     async (payload: Check, formValues: CheckFormValues) => {
       // todo: add try-catch
       let result;
+      const isUpdate = initialCheck && 'id' in initialCheck && initialCheck?.id;
+      trackFaroUserAction(isUpdate ? FaroUserAction.CheckUpdateSubmitClicked : FaroUserAction.CheckCreateSubmitClicked);
       // TODO: Perhaps getting the Check by id and source the tenant ID from there is better than relying on a "global" variable?
-      if (initialCheck && 'id' in initialCheck && initialCheck?.id) {
+      if (isUpdate) {
         result = await updateCheck({
           id: initialCheck.id,
           tenantId: initialCheck.tenantId,

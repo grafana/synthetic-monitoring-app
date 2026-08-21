@@ -30,7 +30,7 @@ const REQUEST_OPTIONS_FIELDS = REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
   return field !== undefined;
 }).flat();
 
-export const HTTP_CHECK_FIELDS = ['job', 'target', ...REQUEST_OPTIONS_FIELDS];
+export const HTTP_CHECK_FIELDS = ['job', 'target', 'folderUid', ...REQUEST_OPTIONS_FIELDS];
 
 export function HttpCheckContent() {
   const hasRequestOptionError = useHasFieldsError(REQUEST_OPTIONS_FIELDS);

@@ -1,22 +1,24 @@
 import React from 'react';
-import { screen, waitFor, within } from '@testing-library/react';
+import { renderHook, screen, waitFor, within } from '@testing-library/react';
 import { DEFAULT_FOLDER, FOLDER_READONLY, FOLDER_ROOT, FOLDER_ROOT_CHILD } from 'test/fixtures/folders';
 import { apiRoute, getServerRequests } from 'test/handlers';
-import { render } from 'test/render';
+import { createWrapper, render } from 'test/render';
 import { server } from 'test/server';
+import { runTestWithReadOnlyDefaultFolder } from 'test/utils';
 
 import { FolderSelector } from './FolderSelector';
+import { useFolderSelection } from './FolderSelector.hooks';
 
 // The folder picker itself is Grafana core's nested folder picker, mocked in
 // the runtime mock as a native select (labelled "Folder picker") backed by
 // the same MSW folders API, including server-side permission filtering.
 describe('FolderSelector', () => {
-  it('renders the folder picker and auto-selects the default folder', async () => {
+  it('renders the folder picker without selecting anything by itself', async () => {
     const onChange = jest.fn();
     render(<FolderSelector onChange={onChange} />);
 
     expect(await screen.findByLabelText('Folder picker')).toBeInTheDocument();
-    await waitFor(() => expect(onChange).toHaveBeenCalledWith(DEFAULT_FOLDER.uid));
+    expect(onChange).not.toHaveBeenCalled();
   });
 
   it('shows the create folder button', async () => {
@@ -54,7 +56,7 @@ describe('FolderSelector', () => {
 
   it('assigns the folder selected in the picker', async () => {
     const onChange = jest.fn();
-    const { user } = render(<FolderSelector onChange={onChange} autoSelectDefault={false} />);
+    const { user } = render(<FolderSelector onChange={onChange} />);
 
     const picker = await screen.findByLabelText('Folder picker');
     await within(picker).findByRole('option', { name: FOLDER_ROOT_CHILD.title });
@@ -103,5 +105,27 @@ describe('FolderSelector', () => {
 
     const { body } = await read();
     expect(body).toEqual({ title: 'Nested Folder', parentUid: FOLDER_ROOT.uid });
+  });
+});
+
+describe('useFolderSelection', () => {
+  function renderFolderSelection() {
+    const { Wrapper } = createWrapper();
+    return renderHook(() => useFolderSelection(), { wrapper: Wrapper });
+  }
+
+  it('preselects the default folder when the user can edit it', async () => {
+    const { result } = renderFolderSelection();
+
+    await waitFor(() => expect(result.current.preselectUid).toBe(DEFAULT_FOLDER.uid));
+  });
+
+  it('preselects nothing when the user cannot edit the default folder', async () => {
+    runTestWithReadOnlyDefaultFolder();
+
+    const { result } = renderFolderSelection();
+
+    await waitFor(() => expect(result.current.isPreselectReady).toBe(true));
+    expect(result.current.preselectUid).toBeUndefined();
   });
 });

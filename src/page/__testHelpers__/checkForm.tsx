@@ -1,7 +1,7 @@
 import React from 'react';
 import { act, screen, waitFor } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
-import { UI_TEST_ID } from 'test/dataTestIds';
+import { CHECKSTER_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -55,6 +55,9 @@ export async function renderNewForm(
   });
 
   await waitFor(async () => await screen.findByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
+  // The Checkster form mounts only once folder data has settled (when the
+  // folders feature is on), which can be later than the page-ready marker.
+  await screen.findByTestId(CHECKSTER_TEST_ID.navigation.root, {}, { timeout: 10000 });
 
   const typeButReallyPaste = async (target: Element, value: string, args?: any) => {
     if (target instanceof HTMLElement) {
@@ -91,6 +94,8 @@ export async function renderEditForm(id: Check['id']) {
   });
 
   await waitFor(async () => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });
+  // See renderNewForm: the form can mount later than the page-ready marker.
+  await screen.findByTestId(CHECKSTER_TEST_ID.navigation.root, {}, { timeout: 10000 });
 
   return {
     ...res,
