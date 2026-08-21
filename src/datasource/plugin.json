@@ -32,6 +32,42 @@
       ]
     },
     {
+      "path": "sm/token/list",
+      "method": "GET",
+      "url": "{{.JsonData.apiHost}}/api/v1/token/list",
+      "reqAction": "grafana-synthetic-monitoring-app.access-tokens:read",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "sm/token/create",
+      "method": "POST",
+      "url": "{{.JsonData.apiHost}}/api/v1/token/create",
+      "reqAction": "grafana-synthetic-monitoring-app.access-tokens:write",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
+      "path": "sm/token",
+      "method": "DELETE",
+      "url": "{{.JsonData.apiHost}}/api/v1/token",
+      "reqAction": "grafana-synthetic-monitoring-app.access-tokens:delete",
+      "headers": [
+        {
+          "name": "Authorization",
+          "content": "Bearer {{.SecureJsonData.accessToken}}"
+        }
+      ]
+    },
+    {
       "path": "sm",
       "method": "GET",
       "url": "{{.JsonData.apiHost}}/api/v1/",

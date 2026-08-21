@@ -15,6 +15,7 @@ export enum FaroEvent {
   DeleteProbe = 'delete_probe',
   ResetProbeToken = 'reset_probe_token',
   CreateAccessToken = 'create_access_token',
+  DeleteAccessToken = 'delete_access_token',
   SaveThresholds = 'save_thresholds',
   ShowTerraformConfig = 'show_terraform_config',
   RefetchTenantLimits = 'refetch_tenant_limits',
