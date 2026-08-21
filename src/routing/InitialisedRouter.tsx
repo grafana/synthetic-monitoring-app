@@ -8,6 +8,7 @@ import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
 import { AppRoutes } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
@@ -39,6 +40,7 @@ export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
+  const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -133,7 +135,7 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      {isFeatureEnabled(FeatureName.ReliabilityInbox) && (
+      {isCheckSuggestionsEnabled && (
         <Route
           path={AppRoutes.ReliabilityInbox}
           element={
