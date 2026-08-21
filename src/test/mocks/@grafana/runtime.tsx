@@ -141,14 +141,23 @@ jest.mock('@grafana/runtime', () => {
 
       const load = async () => {
         const result: Array<{ uid: string; title: string }> = [];
+        // The tree structure comes from the unfiltered listing (like the real
+        // picker, which browses through folders the user can only view), while
+        // selectable options come from the server-side permission filter — so
+        // editable folders nested under read-only parents are still offered.
+        const list = (params: Record<string, string>) =>
+          axios.request({ url: '/api/folders', method: 'GET', params }).then((res) => res.data);
+
         const walk = async (parentUid?: string) => {
-          const params: Record<string, string> = permission === 'view' ? {} : { permission: 'Edit' };
-          if (parentUid) {
-            params.parentUid = parentUid;
-          }
-          const res = await axios.request({ url: '/api/folders', method: 'GET', params });
-          for (const folder of res.data) {
-            result.push({ uid: folder.uid, title: folder.title });
+          const baseParams: Record<string, string> = parentUid ? { parentUid } : {};
+          const viewable = await list(baseParams);
+          const selectable = permission === 'view' ? viewable : await list({ ...baseParams, permission: 'Edit' });
+          const selectableUids = new Set<string>(selectable.map((f: { uid: string }) => f.uid));
+
+          for (const folder of viewable) {
+            if (selectableUids.has(folder.uid)) {
+              result.push({ uid: folder.uid, title: folder.title });
+            }
             await walk(folder.uid);
           }
         };
