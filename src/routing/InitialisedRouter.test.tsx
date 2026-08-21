@@ -25,7 +25,7 @@ jest.mock('page/SceneHomepage', () => ({
 }));
 
 jest.mock('features/reliabilityInbox', () => ({
-  ReliabilityInboxPage: () => <h1>Reliability inbox page</h1>,
+  ReliabilityInboxPage: () => <h1>Check suggestions page</h1>,
 }));
 
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
@@ -83,14 +83,14 @@ describe('Routes to pages correctly', () => {
     expect(sceneText).toBeInTheDocument();
   });
 
-  test('Reliability inbox route renders when the flag is enabled', async () => {
-    mockFeatureToggles({ [FeatureName.ReliabilityInbox]: true });
+  test('Check suggestions route renders when the flag is enabled', async () => {
+    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
     renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
-    const pageText = await screen.findByText('Reliability inbox page', { selector: 'h1' });
+    const pageText = await screen.findByText('Check suggestions page', { selector: 'h1' });
     expect(pageText).toBeInTheDocument();
   });
 
-  test('Reliability inbox route shows a 404 page when the flag is disabled', async () => {
+  test('Check suggestions route shows a 404 page when the flag is disabled', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
     const notFoundText = await screen.findByText('Not found', { selector: 'span' });
     expect(notFoundText).toBeInTheDocument();

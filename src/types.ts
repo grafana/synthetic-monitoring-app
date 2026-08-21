@@ -753,11 +753,11 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   CALs = 'synthetic-monitoring-cost-attribution',
+  CheckSuggestions = 'synthetic-monitoring-check-suggestions',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
   KnowledgeGraph = 'synthetic-monitoring-knowledge-graph',
   LabelMigration = 'synthetic-monitoring-label-migration',
-  ReliabilityInbox = 'synthetic-monitoring-reliability-inbox',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',

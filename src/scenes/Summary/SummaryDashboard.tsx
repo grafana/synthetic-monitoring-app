@@ -40,7 +40,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
   const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
   const annotations = useSummaryDashboardAnnotations();
-  const { isEnabled: isReliabilityInboxEnabled } = useFeatureFlag(FeatureName.ReliabilityInbox);
+  const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
   const scene = useSceneContext();
   const [filtersAdded, setFiltersAdded] = useState(false);
 
@@ -92,7 +92,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
     <>
       <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => <h1>Home</h1>}>
         <Stack direction="column" gap={1}>
-          {isReliabilityInboxEnabled && <ReliabilityInboxBanner />}
+          {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
           <DashboardContainerAnnotations annotations={annotations}>
             <div className={styles.header}>
               <VariableControl name="region" />
@@ -132,12 +132,12 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
 export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
   const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
-  const { isEnabled: isReliabilityInboxEnabled } = useFeatureFlag(FeatureName.ReliabilityInbox);
+  const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
 
   if (checks.length === 0) {
     return (
       <Stack direction="column" gap={1}>
-        {isReliabilityInboxEnabled && <ReliabilityInboxBanner />}
+        {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
         <ChecksEmptyState className={styles.emptyState} />
       </Stack>
     );

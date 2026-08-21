@@ -40,7 +40,7 @@ export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
-  const { isEnabled: isReliabilityInboxEnabled } = useFeatureFlag(FeatureName.ReliabilityInbox);
+  const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -135,7 +135,7 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      {isReliabilityInboxEnabled && (
+      {isCheckSuggestionsEnabled && (
         <Route
           path={AppRoutes.ReliabilityInbox}
           element={
