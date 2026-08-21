@@ -3,13 +3,7 @@ import { HTTP_RELIABILITY_SUGGESTION } from 'test/fixtures/reliabilityInbox';
 import { ReliabilitySuggestion, reliabilitySuggestionSchema } from './types';
 import { CheckType } from 'types';
 
-import {
-  compareReliabilityOpportunities,
-  getProposedHttpCheckDraft,
-  isInitialReviewCandidate,
-  parseSuggestedCheckConfig,
-  toReliabilityOpportunity,
-} from './model';
+import { compareReliabilityOpportunities, isInitialReviewCandidate, toReliabilityOpportunity } from './model';
 
 const DNS_SUGGESTION: ReliabilitySuggestion = {
   id: 'dns-suggestion',
@@ -33,17 +27,6 @@ const DNS_SUGGESTION: ReliabilitySuggestion = {
 };
 
 describe('Reliability Inbox model', () => {
-  it('parses the structured check configuration embedded in the prototype prompt', () => {
-    expect(parseSuggestedCheckConfig(HTTP_RELIABILITY_SUGGESTION.prompt)).toEqual({
-      job: 'mcp.goagain.dev',
-      frequencyMs: 60_000,
-      timeoutMs: 2000,
-      validStatusCodes: [200],
-      failIfNotSSL: true,
-      probeIds: [7],
-    });
-  });
-
   it('derives user-facing evidence from structured telemetry instead of trusting prompt copy', () => {
     const opportunity = toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION);
 
@@ -124,21 +107,6 @@ describe('Reliability Inbox model', () => {
     expect(opportunity.proposedCheck.target).toBe(target);
   });
 
-  it('defers probe location selection to review when the suggestion does not specify probes', () => {
-    const draft = getProposedHttpCheckDraft({
-      ...HTTP_RELIABILITY_SUGGESTION,
-      prompt:
-        'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [].',
-    });
-
-    expect(draft).toEqual(
-      expect.objectContaining({
-        probeIds: [],
-        locationPolicy: 'Probe locations will be selected during review.',
-      })
-    );
-  });
-
   it.each([
     'http://localhost/',
     'http://service.localhost/',
@@ -161,9 +129,9 @@ describe('Reliability Inbox model', () => {
   it('keeps public IPv4 and IPv6 targets in the initial queue', () => {
     expect(isInitialReviewCandidate(HTTP_RELIABILITY_SUGGESTION)).toBe(true);
     expect(isInitialReviewCandidate({ ...HTTP_RELIABILITY_SUGGESTION, target: 'http://8.8.8.8/' })).toBe(true);
-    expect(
-      isInitialReviewCandidate({ ...HTTP_RELIABILITY_SUGGESTION, target: 'http://[2606:4700:4700::1111]/' })
-    ).toBe(true);
+    expect(isInitialReviewCandidate({ ...HTTP_RELIABILITY_SUGGESTION, target: 'http://[2606:4700:4700::1111]/' })).toBe(
+      true
+    );
     expect(isInitialReviewCandidate(DNS_SUGGESTION)).toBe(false);
   });
 

@@ -465,9 +465,11 @@ export function formatSmallDurations(milliseconds: number) {
 }
 
 interface Query {
+  refId?: string;
   expr: string;
   instant?: boolean;
   format?: 'heatmap' | 'table' | 'timeseries';
+  legendFormat?: string;
 }
 
 export function getExploreUrl(datasourceUid: string, queries: Query[], { from, to }: { from: number; to: number }) {
@@ -475,10 +477,11 @@ export function getExploreUrl(datasourceUid: string, queries: Query[], { from, t
     JSON.stringify({
       datasource: datasourceUid,
       queries: queries.map((query, index) => ({
-        refId: String.fromCharCode(65 + index),
+        refId: query.refId ?? String.fromCharCode(65 + index),
         expr: query.expr,
         instant: query.instant,
         format: query.format,
+        legendFormat: query.legendFormat,
       })),
       range: {
         from: dateTime(from),

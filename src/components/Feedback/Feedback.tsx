@@ -1,7 +1,7 @@
 import React, { ComponentProps, useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, Icon, Label, Link, Stack, Text, TextArea, Tooltip, useStyles2 } from '@grafana/ui';
+import { Badge, Button, Icon, IconName, Label, Link, Stack, Text, TextArea, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackFeatureFeedback, trackFeatureFeedbackComment } from 'features/tracking/feedbackEvents';
 
@@ -9,6 +9,7 @@ import { onDocsLinkClick } from 'components/DocsLink/DocsLink.utils';
 import { Toggletip } from 'components/Toggletip';
 
 interface FeedbackAboutProps {
+  icon?: IconName;
   text: string;
   link?: string;
   tooltipText?: string;
@@ -55,13 +56,14 @@ export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
 };
 
 const FeedbackAbout = ({
+  icon = 'rocket',
   text,
   link,
   tooltipText = `Learn more`,
   feature,
 }: FeedbackAboutProps & { feature: string }) => {
   if (!link) {
-    return <Badge color="blue" icon="rocket" text={text} />;
+    return <Badge color="blue" icon={icon} text={text} />;
   }
 
   return (
@@ -69,7 +71,7 @@ const FeedbackAbout = ({
       <Link href={link} target="_blank" onClick={() => onDocsLinkClick(link, `feedback_${feature}`)}>
         <Badge
           color="blue"
-          icon="rocket"
+          icon={icon}
           text={
             <Stack direction="row" gap={0.5} alignItems="center">
               {text}
