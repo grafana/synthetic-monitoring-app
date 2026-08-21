@@ -15,6 +15,12 @@ export interface CreateFolderPayload {
   parentUid?: string;
 }
 
+export interface MoveFolderPayload {
+  uid: string;
+  /** UID of the new parent folder. An empty string moves the folder to the Grafana root. */
+  parentUid: string;
+}
+
 export const folderQueryKeys = {
   all: ['folders'] as const,
   children: (parentUid: string) => [...folderQueryKeys.all, 'children', parentUid] as const,
@@ -77,6 +83,70 @@ export function useFolderChildren(parentUid: string | undefined): UseQueryResult
     refetchOnWindowFocus: false,
     enabled: Boolean(parentUid),
   });
+}
+
+export interface FolderWithDepth {
+  folder: GrafanaFolder;
+  depth: number;
+}
+
+/**
+ * Flatten a folder subtree into display order (parent before children,
+ * siblings alphabetical), annotated with depth for indentation. The root
+ * folder itself comes first at depth 0. Folders whose parent is not part of
+ * the given list are treated as direct children of the root so they still
+ * appear.
+ */
+export function flattenFolderTree(folders: GrafanaFolder[], rootUid: string): FolderWithDepth[] {
+  const byUid = new Map(folders.map((f) => [f.uid, f]));
+  const byParent = new Map<string, GrafanaFolder[]>();
+
+  folders.forEach((folder) => {
+    if (folder.uid === rootUid) {
+      return;
+    }
+    const parentUid = folder.parentUid && byUid.has(folder.parentUid) ? folder.parentUid : rootUid;
+    const siblings = byParent.get(parentUid) ?? [];
+    siblings.push(folder);
+    byParent.set(parentUid, siblings);
+  });
+
+  const result: FolderWithDepth[] = [];
+  const visited = new Set<string>([rootUid]);
+  const root = byUid.get(rootUid);
+  if (root) {
+    result.push({ folder: root, depth: 0 });
+  }
+
+  const walk = (uid: string, depth: number) => {
+    const children = [...(byParent.get(uid) ?? [])].sort((a, b) => a.title.localeCompare(b.title));
+    children.forEach((child) => {
+      if (visited.has(child.uid)) {
+        return;
+      }
+      visited.add(child.uid);
+      result.push({ folder: child, depth });
+      walk(child.uid, depth + 1);
+    });
+  };
+  walk(rootUid, 1);
+
+  // Guard against parentUid cycles making folders unreachable from the root.
+  folders.forEach((folder) => {
+    if (!visited.has(folder.uid)) {
+      visited.add(folder.uid);
+      result.push({ folder, depth: 1 });
+    }
+  });
+
+  return result;
+}
+
+const INDENT = '\u00A0\u00A0\u00A0\u00A0';
+
+/** Indent a label with non-breaking spaces to convey tree depth in comboboxes. */
+export function indentFolderLabel(title: string, depth: number): string {
+  return `${INDENT.repeat(Math.max(depth, 0))}${title}`;
 }
 
 /**
@@ -151,6 +221,7 @@ export function useAllFolders() {
   const refetch = () => queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
 
   return {
+    /** The default folder and its descendants (the SM subtree). */
     folders,
     foldersMap,
     defaultFolderUid,
@@ -193,6 +264,26 @@ export function deleteFolder(uid: string) {
 export function useDeleteFolder() {
   return useMutation({
     mutationFn: deleteFolder,
+    onSuccess: invalidateAllFolders,
+  });
+}
+
+/**
+ * Move a folder to a new parent via POST /api/folders/:uid/move.
+ * Passing an empty parentUid moves the folder to the Grafana root level,
+ * which requires root-level folders:create permission (enforced server-side).
+ */
+export function useMoveFolder() {
+  return useMutation({
+    mutationFn: ({ uid, parentUid }: MoveFolderPayload) =>
+      firstValueFrom(
+        getBackendSrv().fetch<GrafanaFolder>({
+          method: 'POST',
+          url: `${FOLDERS_API}/${uid}/move`,
+          data: { parentUid },
+          showErrorAlert: false,
+        })
+      ).then((res) => res.data),
     onSuccess: invalidateAllFolders,
   });
 }

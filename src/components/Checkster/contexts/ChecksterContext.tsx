@@ -119,9 +119,9 @@ export function ChecksterProvider({
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const { status: defaultFolderStatus } = useDefaultFolder(isFoldersEnabled);
-  // Pre-fill the folder through the form defaults so a new form stays
-  // pristine: the default folder when the user can edit it, else their only
-  // editable folder. With several candidates the choice is theirs.
+  // Pre-fill the default folder through the form defaults (only when the
+  // user can edit it) so a new form stays pristine. Everyone else picks a
+  // folder themselves from the org-wide picker.
   const { preselectUid: seedFolderUid, isPreselectReady } = useFolderSelection({ enabled: isFoldersEnabled });
   // A folder-less check effectively lives in the default folder, which the
   // user may not be able to edit — so a folder is required when folder data

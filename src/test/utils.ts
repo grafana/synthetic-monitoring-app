@@ -9,10 +9,10 @@ import {
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
-import { ExtendedProbe, FeatureName, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
+import { ExtendedProbe, FeatureName, GrafanaFolder, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
 import { pascalCaseToSentence } from 'utils';
 
-import { DEFAULT_FOLDER, FOLDER_PRODUCTION, MOCK_FOLDERS } from './fixtures/folders';
+import { DEFAULT_FOLDER, FOLDER_ROOT, FOLDER_ROOT_CHILD, MOCK_FOLDERS } from './fixtures/folders';
 import {
   FULL_ADMIN_ACCESS,
   FULL_READONLY_ACCESS,
@@ -171,48 +171,45 @@ export function runTestWithoutMetricsAccess() {
   });
 }
 
-/**
- * The user holds View (but not Edit) on the default Synthetic Monitoring
- * folder, e.g. a Viewer with the SM checks writer role and a folder-level
- * Edit grant on a subfolder only. Folders in MOCK_FOLDERS keep their own
- * permission flags.
- */
-export function runTestWithReadOnlyDefaultFolder() {
-  server.use(
-    apiRoute(`getFolder`, {
-      result: (req: Request) => {
-        const uid = new URL(req.url).pathname.split('/').pop();
-        if (uid === DEFAULT_FOLDER.uid) {
-          return { json: { ...DEFAULT_FOLDER, canEdit: false, canSave: false } };
-        }
-        const folder = MOCK_FOLDERS.find((f) => f.uid === uid);
-        return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
-      },
-    })
-  );
-}
+const ALL_MOCK_FOLDERS = [...MOCK_FOLDERS, FOLDER_ROOT, FOLDER_ROOT_CHILD];
 
 /**
- * The user holds View (but not Edit) on the default Synthetic Monitoring
- * folder and a folder-level Edit grant on a single subfolder (Production),
- * e.g. a team member whose admin segments checks per team.
+ * Overrides both folder endpoints consistently: the detail endpoint returns
+ * permission fields honouring `isEditable`, and the list endpoint's
+ * `permission=Edit` filter (which the folder picker relies on for
+ * server-side filtering) excludes non-editable folders the same way.
  */
-export function runTestWithSingleEditableFolder({ delayMs = 0 }: { delayMs?: number } = {}) {
+function mockFolderPermissions(isEditable: (folder: GrafanaFolder) => boolean, { delayMs = 0 } = {}) {
+  const delay = () => (delayMs > 0 ? new Promise((resolve) => setTimeout(resolve, delayMs)) : Promise.resolve());
+
   server.use(
     apiRoute(`getFolder`, {
       result: async (req: Request) => {
-        if (delayMs > 0) {
-          await new Promise((resolve) => setTimeout(resolve, delayMs));
-        }
+        await delay();
         const uid = new URL(req.url).pathname.split('/').pop();
-        const folder = uid === DEFAULT_FOLDER.uid ? DEFAULT_FOLDER : MOCK_FOLDERS.find((f) => f.uid === uid);
+        const folder = ALL_MOCK_FOLDERS.find((f) => f.uid === uid);
         if (!folder) {
           return { status: 404, json: { message: 'Folder not found' } };
         }
-        if (folder.uid === FOLDER_PRODUCTION.uid) {
-          return { json: folder };
+        return { json: isEditable(folder) ? folder : { ...folder, canEdit: false, canSave: false } };
+      },
+    }),
+    apiRoute(`listFolders`, {
+      result: async (req: Request) => {
+        await delay();
+        const url = new URL(req.url);
+        const parentUid = url.searchParams.get('parentUid');
+        const permission = url.searchParams.get('permission');
+
+        let filtered = parentUid
+          ? ALL_MOCK_FOLDERS.filter((f) => f.parentUid === parentUid)
+          : ALL_MOCK_FOLDERS.filter((f) => !f.parentUid);
+
+        if (permission === 'Edit') {
+          filtered = filtered.filter(isEditable);
         }
-        return { json: { ...folder, canEdit: false, canSave: false } };
+
+        return { json: filtered.map(({ uid, title, url, parentUid }) => ({ uid, title, url, parentUid })) };
       },
     })
   );
@@ -220,22 +217,28 @@ export function runTestWithSingleEditableFolder({ delayMs = 0 }: { delayMs?: num
 
 /**
  * The user holds View (but not Edit) on the default Synthetic Monitoring
- * folder and every other folder, e.g. a Viewer with the SM checks writer
- * role and no folder-level grants.
+ * folder, e.g. a Viewer with the SM checks writer role and folder-level
+ * Edit grants elsewhere. Other folders keep their own permission flags.
+ */
+export function runTestWithReadOnlyDefaultFolder() {
+  mockFolderPermissions((folder) => folder.uid !== DEFAULT_FOLDER.uid && !!folder.canEdit);
+}
+
+/**
+ * The user holds View (but not Edit) on every folder, e.g. a Viewer with
+ * the SM checks writer role and no folder-level grants.
  */
 export function runTestWithNoEditableFolders() {
-  server.use(
-    apiRoute(`getFolder`, {
-      result: (req: Request) => {
-        const uid = new URL(req.url).pathname.split('/').pop();
-        const folder = uid === DEFAULT_FOLDER.uid ? DEFAULT_FOLDER : MOCK_FOLDERS.find((f) => f.uid === uid);
-        if (!folder) {
-          return { status: 404, json: { message: 'Folder not found' } };
-        }
-        return { json: { ...folder, canEdit: false, canSave: false } };
-      },
-    })
-  );
+  mockFolderPermissions(() => false);
+}
+
+/**
+ * Folder permissions are unchanged, but every folder lookup responds slowly.
+ * Used to prove the check form waits for the folder pre-fill decision
+ * instead of racing it.
+ */
+export function runTestWithSlowFolderLookups({ delayMs = 100 }: { delayMs?: number } = {}) {
+  mockFolderPermissions((folder) => !!folder.canEdit, { delayMs });
 }
 
 export function runTestWithoutLogsAccess() {

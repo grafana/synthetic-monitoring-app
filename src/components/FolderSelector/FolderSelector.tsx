@@ -1,77 +1,44 @@
-import React, { useMemo, useState } from 'react';
-import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
+import React, { useState } from 'react';
+import { FolderPicker } from '@grafana/runtime';
+import { Alert, Button, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
-import { FolderAccessState } from 'data/folderPermissions';
-import { getFolderPathParts, useCreateFolder } from 'data/useFolders';
-
-import { useFolderSelection } from './FolderSelector.hooks';
+import { useUserPermissions } from 'data/permissions';
+import { useDefaultFolder } from 'data/useDefaultFolder';
+import { useFolderPermissions } from 'data/useFolderPermissions';
+import { useCreateFolder } from 'data/useFolders';
 
 interface FolderSelectorProps {
   value?: string;
   onChange: (folderUid: string | undefined) => void;
   disabled?: boolean;
-  'aria-label'?: string;
 }
 
-export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const {
-    defaultFolder,
-    defaultFolderUid,
-    allFolders,
-    folderDetailsByUid,
-    editableFolders,
-    noStorableFolders,
-    isLoading,
-    isDefaultError,
-    isChildrenError,
-    refetchDefault,
-    refetchChildren,
-  } = useFolderSelection({ value });
+/**
+ * Folder assignment for checks, built on Grafana's own nested folder picker:
+ * a lazily-loaded, searchable tree of every folder the user can edit
+ * (server-side permission filtering), so checks can live in any Grafana
+ * folder, not just the default SM subtree.
+ *
+ * Preselection is not handled here: the check form seeds the default folder
+ * through its form defaults (only when the user can edit it, see
+ * useFolderSelection), so a pristine form stays clean.
+ */
+export function FolderSelector({ value, onChange, disabled }: FolderSelectorProps) {
+  const { defaultFolder, defaultFolderUid, isLoading, isError, refetch } = useDefaultFolder();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const isError = isDefaultError || isChildrenError;
+  // In the disabled state we render a plain read-only input (the runtime
+  // FolderPicker has no disabled prop), which needs the folder's title.
+  const disabledValueUids = disabled && value ? [value] : [];
+  const { folderDetailsByUid } = useFolderPermissions(disabledValueUids);
 
-  const options: Array<ComboboxOption<string>> = useMemo(() => {
-    if (!defaultFolder) {
-      return [];
+  const handleChange = (folderUid: string | undefined) => {
+    if (folderUid) {
+      trackFolderSelected({ isDefault: folderUid === defaultFolderUid });
     }
-
-    const foldersMap = new Map(allFolders.map((f) => [f.uid, f]));
-
-    const result: Array<ComboboxOption<string>> = editableFolders.map((folder) => {
-      if (folder.uid === defaultFolder.uid) {
-        return { label: `${folder.title} (Default)`, value: folder.uid };
-      }
-
-      const parts = getFolderPathParts(folder, foldersMap);
-      const withoutRoot = parts.length > 1 ? parts.slice(1) : parts;
-      return { label: withoutRoot.join(' > '), value: folder.uid };
-    });
-
-    result.sort((a, b) => {
-      if (a.value === defaultFolder.uid) {
-        return -1;
-      }
-      if (b.value === defaultFolder.uid) {
-        return 1;
-      }
-      return (a.label ?? '').localeCompare(b.label ?? '');
-    });
-
-    if (value && !result.some((opt) => opt.value === value)) {
-      result.push(toSelectedFolderOption(value, folderDetailsByUid.get(value)));
-    }
-
-    return result;
-  }, [allFolders, editableFolders, defaultFolder, value, folderDetailsByUid]);
-
-  const handleChange = (selected: ComboboxOption<string> | null) => {
-    if (selected?.value) {
-      trackFolderSelected({ isDefault: selected.value === defaultFolderUid });
-    }
-    onChange(selected?.value ?? undefined);
+    onChange(folderUid || undefined);
   };
 
   const handleFolderCreated = (folder: GrafanaFolder) => {
@@ -80,66 +47,33 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
     setShowCreateModal(false);
   };
 
-  const selectedValue = value ?? null;
-
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
   }
 
   if (isError) {
-    const handleRetry = () => {
-      if (isDefaultError) {
-        refetchDefault();
-      }
-      if (isChildrenError) {
-        refetchChildren();
-      }
-    };
-
-    return (
-      <Alert title="Unable to load folders" severity="warning" buttonContent="Retry" onRemove={handleRetry} />
-    );
+    return <Alert title="Unable to load folders" severity="warning" buttonContent="Retry" onRemove={() => refetch()} />;
   }
 
-  // No editable folder and no rights to create one: explain the dead end
-  // instead of rendering an empty dropdown. The suggestion points at the
-  // default subtree because that is all this picker can list.
-  if (noStorableFolders && !value) {
-    return (
-      <Alert title="You don't have permission to store checks in any folder" severity="warning">
-        Storing a check requires Edit permission on a folder. Ask an administrator to grant you Edit access to the
-        &quot;{defaultFolder?.title}&quot; folder or one of its subfolders.
-      </Alert>
-    );
+  if (disabled) {
+    const valueState = value ? folderDetailsByUid.get(value) : undefined;
+    const title = valueState?.type === 'accessible' ? valueState.folder?.title : value;
+    return <Input value={title ?? ''} disabled aria-label="Folder" />;
   }
 
   return (
     <Stack gap={1.5} alignItems="center">
-      <Combobox
-        options={options}
-        value={selectedValue}
-        onChange={handleChange}
-        placeholder="Select a folder"
-        disabled={disabled}
-        aria-label={ariaLabel}
-      />
-      {!disabled && defaultFolder?.canSave && (
+      <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
+      {defaultFolder?.canSave && (
         <>
           <span>or</span>
-          <Button
-            variant="secondary"
-            size="md"
-            icon="plus"
-            onClick={() => setShowCreateModal(true)}
-            type="button"
-          >
+          <Button variant="secondary" size="md" icon="plus" onClick={() => setShowCreateModal(true)} type="button">
             Create folder
           </Button>
         </>
       )}
       {showCreateModal && defaultFolderUid && (
         <CreateFolderModal
-          parentOptions={options}
           defaultParentUid={defaultFolderUid}
           onCreated={handleFolderCreated}
           onDismiss={() => setShowCreateModal(false)}
@@ -149,54 +83,19 @@ export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLa
   );
 }
 
-/**
- * Labels a selected folder the picker doesn't list (read-only, inaccessible,
- * or deleted). The suffix lives in the label because the closed combobox only
- * shows the label; the description explains it in the dropdown.
- */
-function toSelectedFolderOption(value: string, state: FolderAccessState | undefined): ComboboxOption<string> {
-  switch (state?.type) {
-    case 'accessible': {
-      const title = state.folder?.title ?? value;
-      if (state.permissions.canEdit) {
-        return { label: title, value };
-      }
-      return {
-        label: `${title} (read-only)`,
-        value,
-        description: 'You can view this folder but not save checks into it.',
-      };
-    }
-    case 'forbidden':
-      return {
-        label: `${value} (no access)`,
-        value,
-        description: "You don't have permission to view this folder, so its identifier is shown instead of its name.",
-      };
-    case 'loading':
-      // Lookup in flight: don't flash a false "not found".
-      return { label: value, value };
-    default:
-      return {
-        label: `${value} (folder not found)`,
-        value,
-        description: 'This folder no longer exists. It may have been deleted.',
-      };
-  }
-}
-
 interface CreateFolderModalProps {
-  parentOptions: Array<ComboboxOption<string>>;
   defaultParentUid: string;
   onCreated: (folder: GrafanaFolder) => void;
   onDismiss: () => void;
 }
 
-function CreateFolderModal({ parentOptions, defaultParentUid, onCreated, onDismiss }: CreateFolderModalProps) {
+function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFolderModalProps) {
   const [title, setTitle] = useState('');
-  const [selectedParentUid, setSelectedParentUid] = useState<string>(defaultParentUid);
+  // '' selects the Grafana root level (the picker's "Dashboards" item).
+  const [parentUid, setParentUid] = useState<string>(defaultParentUid);
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync: createFolder, isPending } = useCreateFolder();
+  const { canCreateFolders } = useUserPermissions();
 
   const handleSubmit = async () => {
     if (!title.trim()) {
@@ -206,7 +105,7 @@ function CreateFolderModal({ parentOptions, defaultParentUid, onCreated, onDismi
     setError(null);
 
     try {
-      const folder = await createFolder({ title: title.trim(), parentUid: selectedParentUid });
+      const folder = await createFolder({ title: title.trim(), parentUid: parentUid === '' ? undefined : parentUid });
       onCreated(folder);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to create folder');
@@ -215,21 +114,23 @@ function CreateFolderModal({ parentOptions, defaultParentUid, onCreated, onDismi
 
   return (
     <Modal title="Create folder" isOpen onDismiss={onDismiss}>
-      {parentOptions.length > 1 && (
-        <Field label="Parent folder">
-          <Combobox
-            options={parentOptions}
-            value={selectedParentUid}
-            onChange={(selected) => { if (selected) { setSelectedParentUid(selected.value); } }}
-            aria-label="Select parent folder"
-          />
-        </Field>
-      )}
+      <Field
+        label="Parent folder"
+        description="Where the new folder is created. Creating at the top level (Dashboards) requires org-level folder creation rights."
+      >
+        {/* Root creation requires org-level folders:create, so the root item
+            is only offered when the user has it. */}
+        <FolderPicker value={parentUid} onChange={(uid) => setParentUid(uid ?? '')} showRootFolder={canCreateFolders} />
+      </Field>
       <Field label="Folder name">
         <Input
           value={title}
           onChange={(e) => setTitle(e.currentTarget.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter') { handleSubmit(); } }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleSubmit();
+            }
+          }}
           placeholder="Enter folder name"
           autoFocus
         />
