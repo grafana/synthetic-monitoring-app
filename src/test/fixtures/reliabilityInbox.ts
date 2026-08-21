@@ -1,6 +1,8 @@
+import { DB } from 'test/db';
+
 import { ReliabilitySuggestion } from 'features/reliabilityInbox/types';
 
-export const HTTP_RELIABILITY_SUGGESTION: ReliabilitySuggestion = {
+export const HTTP_RELIABILITY_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
   id: 'http-suggestion',
   target: 'https://mcp.goagain.dev/',
   checkType: 'http',
@@ -29,4 +31,4 @@ export const HTTP_RELIABILITY_SUGGESTION: ReliabilitySuggestion = {
   rationale: 'Public endpoint with steady traffic serving likely critical MCP protocol functions.',
   prompt:
     'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/. Suggested configuration: job "mcp.goagain.dev", frequency 1m0s, timeout 2s, expect HTTP status [200], fail if not SSL, probe IDs [7]. Why: Public endpoint with steady traffic serving likely critical MCP protocol functions.; the endpoint served 1.6 req/s (0.00% errors) over the last hour.',
-};
+});

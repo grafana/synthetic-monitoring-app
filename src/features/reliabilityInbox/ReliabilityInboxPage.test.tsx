@@ -4,23 +4,24 @@ import { FieldType, toDataFrame } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { fireEvent, screen, within } from '@testing-library/react';
 import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
+import { delay } from 'msw';
+import { DB } from 'test/db';
 import { HTTP_RELIABILITY_SUGGESTION } from 'test/fixtures/reliabilityInbox';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 
 import { ReliabilitySuggestion } from './types';
 import { CheckType, CheckTypeGroup, HttpMethod } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 
-import { useRecommendationTelemetry, useReliabilityInboxDismissals, useReliabilityInboxSuggestions } from './data';
-import { toReliabilityOpportunity } from './model';
+import { reliabilityInboxDismissalsKey, useRecommendationTelemetry } from './data';
 import { ReliabilityInboxPage, ReliabilityInboxPageTitle } from './ReliabilityInboxPage';
 
 jest.mock('./data', () => ({
   ...jest.requireActual('./data'),
   useRecommendationTelemetry: jest.fn(),
-  useReliabilityInboxDismissals: jest.fn(),
-  useReliabilityInboxSuggestions: jest.fn(),
 }));
 
 jest.mock('features/tracking/reliabilityInboxEvents', () => ({
@@ -28,7 +29,7 @@ jest.mock('features/tracking/reliabilityInboxEvents', () => ({
   trackSetupWithAssistant: jest.fn(),
 }));
 
-const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = {
+const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
   ...HTTP_RELIABILITY_SUGGESTION,
   id: 'lower-priority-http-suggestion',
   target: 'https://secondary.goagain.dev/',
@@ -37,33 +38,27 @@ const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = {
     ...HTTP_RELIABILITY_SUGGESTION.evidence,
     reqPerS: 0.5,
   },
-};
+});
 
 const openAssistant = jest.fn();
-const dismissSuggestion = jest.fn();
-const restoreSuggestion = jest.fn();
 const originalMatchMedia = window.matchMedia;
 const GENERATED_AT = Date.UTC(2026, 7, 20, 13, 30);
+const DISMISSALS_KEY = reliabilityInboxDismissalsKey('https://synthetic-monitoring-api-dev.grafana-dev.net', 15629);
 
 function enableMotionAnimations() {
   window.matchMedia = jest.fn().mockReturnValue({ matches: true });
 }
 
-function renderPage(
-  suggestions: ReliabilitySuggestion[] = [HTTP_RELIABILITY_SUGGESTION],
-  overrides: Partial<ReturnType<typeof useReliabilityInboxSuggestions>> = {}
-) {
-  const result = {
-    data: suggestions.map(toReliabilityOpportunity),
-    dataUpdatedAt: GENERATED_AT,
-    isLoading: false,
-    isFetching: false,
-    isError: false,
-    refetch: jest.fn(),
-    ...overrides,
-  } as unknown as ReturnType<typeof useReliabilityInboxSuggestions>;
+function mockSuggestions(suggestions: ReliabilitySuggestion[] = [HTTP_RELIABILITY_SUGGESTION]) {
+  server.use(
+    apiRoute('reliabilityInboxSuggestions', {
+      result: () => ({ json: { suggestions, warnings: [] } }),
+    })
+  );
+}
 
-  jest.mocked(useReliabilityInboxSuggestions).mockReturnValue(result);
+function renderPage(suggestions: ReliabilitySuggestion[] = [HTTP_RELIABILITY_SUGGESTION]) {
+  mockSuggestions(suggestions);
 
   return render(<ReliabilityInboxPage />, {
     path: generateRoutePath(AppRoutes.ReliabilityInbox),
@@ -74,11 +69,7 @@ function renderPage(
 describe('ReliabilityInboxPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.mocked(useReliabilityInboxDismissals).mockReturnValue({
-      dismissedSuggestionIds: [],
-      dismissSuggestion,
-      restoreSuggestion,
-    });
+    window.localStorage.clear();
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: true,
       isLoading: false,
@@ -110,6 +101,7 @@ describe('ReliabilityInboxPage', () => {
   });
 
   it('shows when suggestions were generated in the page actions', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(GENERATED_AT);
     renderPage();
 
     expect((await screen.findByText(/Generated/)).closest('time')).toHaveAttribute(
@@ -120,8 +112,14 @@ describe('ReliabilityInboxPage', () => {
   });
 
   it('requires confirmation before refreshing suggestions', async () => {
-    const refetch = jest.fn();
-    const { user } = renderPage(undefined, { refetch });
+    const request = jest.fn(() => ({ json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } }));
+    server.use(apiRoute('reliabilityInboxSuggestions', { result: request }));
+    const { user } = render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    await screen.findByRole('region', { name: 'Suggested HTTP check' });
 
     await user.click(await screen.findByRole('button', { name: 'Refresh suggestions' }));
 
@@ -130,16 +128,30 @@ describe('ReliabilityInboxPage', () => {
     expect(
       within(confirmation).getByText(/reruns the traffic analysis and replaces the current suggestions/i)
     ).toBeVisible();
-    expect(refetch).not.toHaveBeenCalled();
+    expect(request).toHaveBeenCalledTimes(1);
 
     await user.click(within(confirmation).getByRole('button', { name: 'Refresh suggestions' }));
 
-    expect(refetch).toHaveBeenCalledTimes(1);
+    expect(request).toHaveBeenCalledTimes(2);
     expect(screen.queryByTestId('toggletip-content')).not.toBeInTheDocument();
   });
 
   it('disables refresh while suggestions are being generated', async () => {
-    renderPage(undefined, { isFetching: true });
+    const { user } = renderPage();
+    await screen.findByRole('region', { name: 'Suggested HTTP check' });
+    server.use(
+      apiRoute('reliabilityInboxSuggestions', {
+        result: async () => {
+          await delay(10_000);
+          return { json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } };
+        },
+      })
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Refresh suggestions' }));
+    await user.click(
+      within(await screen.findByTestId('toggletip-content')).getByRole('button', { name: 'Refresh suggestions' })
+    );
 
     expect(await screen.findByRole('button', { name: 'Refresh suggestions' })).toBeDisabled();
     expect(screen.getByText('Refreshing suggestions…')).toBeVisible();
@@ -220,14 +232,12 @@ describe('ReliabilityInboxPage', () => {
 
     const evidenceDisclosure = within(suggestedCheckHeader!).getByRole('button', { name: 'Why this check?' });
     expect(evidenceDisclosure).toHaveAttribute('aria-expanded', 'false');
-    expect(within(suggestedCheck).queryByRole('region', { name: 'Recommendation evidence' })).not.toBeInTheDocument();
+    expect(suggestedCheck.querySelector('#reliability-inbox-recommendation-evidence')).not.toBeInTheDocument();
 
     await user.click(evidenceDisclosure);
 
-    const evidence = within(suggestedCheck).getByRole('region', { name: 'Recommendation evidence' });
+    const evidence = suggestedCheck.querySelector<HTMLElement>('#reliability-inbox-recommendation-evidence')!;
     expect(evidenceDisclosure).toHaveAttribute('aria-expanded', 'true');
-    expect(within(evidence).getByRole('heading', { name: 'Traffic signals' })).toBeVisible();
-    expect(within(evidence).getByText('Last 60 minutes')).toBeVisible();
     expect(within(evidence).getByText('Request activity')).toBeVisible();
     expect(within(evidence).getByText('5xx responses')).toBeVisible();
     expect(within(evidence).getByText('p99 response time')).toBeVisible();
@@ -263,7 +273,7 @@ describe('ReliabilityInboxPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Why this check?' }));
 
-    const evidence = await screen.findByRole('region', { name: 'Recommendation evidence' });
+    const evidence = document.getElementById('reliability-inbox-recommendation-evidence')!;
     expect(within(evidence).getByRole('status', { name: 'Loading request activity trend' })).toBeVisible();
     expect(within(evidence).getByRole('status', { name: 'Loading 5xx responses trend' })).toBeVisible();
     expect(within(evidence).getByRole('status', { name: 'Loading p99 response time trend' })).toBeVisible();
@@ -335,12 +345,14 @@ describe('ReliabilityInboxPage', () => {
   });
 
   it('explains the telemetry analysis while suggestions are generated', async () => {
-    jest.mocked(useReliabilityInboxSuggestions).mockReturnValue({
-      data: undefined,
-      isLoading: true,
-      isError: false,
-      refetch: jest.fn(),
-    } as unknown as ReturnType<typeof useReliabilityInboxSuggestions>);
+    server.use(
+      apiRoute('reliabilityInboxSuggestions', {
+        result: async () => {
+          await delay(10_000);
+          return { json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } };
+        },
+      })
+    );
 
     render(<ReliabilityInboxPage />, {
       path: generateRoutePath(AppRoutes.ReliabilityInbox),
@@ -361,25 +373,74 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.queryByText('Why this recommendation')).not.toBeInTheDocument();
   });
 
-  it('keeps saved suggestions usable while looking for new opportunities', async () => {
-    renderPage(undefined, { isFetching: true });
+  it('explains when the user cannot access suggestions', async () => {
+    server.use(
+      apiRoute('reliabilityInboxSuggestions', {
+        result: () => ({ status: 403, json: { message: 'Access denied' } }),
+      })
+    );
 
-    expect(await screen.findByText('Showing saved suggestions · Looking for new opportunities…')).toBeInTheDocument();
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('You do not have permission to load Reliability Inbox suggestions.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
+  });
+
+  it('explains when the suggestions service is unavailable', async () => {
+    server.use(apiRoute('reliabilityInboxSuggestions', { result: () => ({ status: 500 }) }));
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('The Reliability Inbox service is unavailable. Try again later.')).toBeVisible();
+  });
+
+  it('keeps current suggestions usable while looking for new opportunities', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('region', { name: 'Suggested HTTP check' });
+    server.use(
+      apiRoute('reliabilityInboxSuggestions', {
+        result: async () => {
+          await delay(10_000);
+          return { json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } };
+        },
+      })
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Refresh suggestions' }));
+    await user.click(
+      within(await screen.findByTestId('toggletip-content')).getByRole('button', { name: 'Refresh suggestions' })
+    );
+
+    expect(await screen.findByText('Showing current suggestions · Looking for new opportunities…')).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Suggested HTTP check' })).toBeInTheDocument();
   });
 
-  it('keeps saved suggestions usable when the refresh fails', async () => {
-    renderPage(undefined, { isError: true });
+  it('keeps current suggestions usable when the refresh fails', async () => {
+    const { user } = renderPage();
+    await screen.findByRole('region', { name: 'Suggested HTTP check' });
+    server.use(apiRoute('reliabilityInboxSuggestions', { result: () => ({ status: 500 }) }));
+
+    await user.click(screen.getByRole('button', { name: 'Refresh suggestions' }));
+    await user.click(
+      within(await screen.findByTestId('toggletip-content')).getByRole('button', { name: 'Refresh suggestions' })
+    );
 
     expect(await screen.findByText('Suggestions could not be refreshed')).toBeInTheDocument();
-    expect(screen.getByText('Showing saved suggestions. Try again later for newer opportunities.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Showing current suggestions. Try again later for newer opportunities.')
+    ).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Suggested HTTP check' })).toBeInTheDocument();
   });
 
   it('dismisses suggestions from the card footer, advances, and keeps them available to restore', async () => {
     enableMotionAnimations();
-    const first = toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION);
-    const second = toReliabilityOpportunity({
+    const second = DB.reliabilitySuggestion.build({
       ...HTTP_RELIABILITY_SUGGESTION,
       id: 'api-suggestion',
       target: 'https://api.example.com/',
@@ -387,23 +448,8 @@ describe('ReliabilityInboxPage', () => {
       relevance: 50,
       prompt: HTTP_RELIABILITY_SUGGESTION.prompt.replaceAll('mcp.goagain.dev', 'api.example.com'),
     });
-    jest.mocked(useReliabilityInboxDismissals).mockImplementation(() => {
-      const [dismissedSuggestionIds, setDismissedSuggestionIds] = React.useState<string[]>([]);
 
-      return {
-        dismissedSuggestionIds,
-        dismissSuggestion: (id) => {
-          dismissSuggestion(id);
-          setDismissedSuggestionIds((dismissedIds) => [...dismissedIds, id]);
-        },
-        restoreSuggestion: (id) => {
-          restoreSuggestion(id);
-          setDismissedSuggestionIds((dismissedIds) => dismissedIds.filter((dismissedId) => dismissedId !== id));
-        },
-      };
-    });
-
-    const { user } = renderPage([first.suggestion, second.suggestion]);
+    const { user } = renderPage([HTTP_RELIABILITY_SUGGESTION, second]);
 
     const dismissButton = await screen.findByRole('button', { name: 'Dismiss suggestion' });
     const currentSuggestion = screen.getByRole('region', { name: 'Suggested HTTP check' });
@@ -413,7 +459,7 @@ describe('ReliabilityInboxPage', () => {
     expect(within(currentSuggestion).getByText('https://mcp.goagain.dev/')).toBeInTheDocument();
     fireEvent.animationEnd(currentSuggestion.parentElement!);
 
-    expect(dismissSuggestion).toHaveBeenCalledWith('http-suggestion');
+    expect(JSON.parse(window.localStorage.getItem(DISMISSALS_KEY)!)).toEqual(['http-suggestion']);
     expect(
       within(screen.getByRole('region', { name: 'Suggested HTTP check' })).getByText('https://api.example.com/')
     ).toBeInTheDocument();
@@ -427,33 +473,21 @@ describe('ReliabilityInboxPage', () => {
     await user.click(within(dismissedSuggestion).getByRole('button', { name: 'Restore suggestion' }));
     fireEvent.animationEnd(dismissedSuggestion.parentElement!);
 
-    expect(restoreSuggestion).toHaveBeenCalledWith('http-suggestion');
+    expect(JSON.parse(window.localStorage.getItem(DISMISSALS_KEY)!)).toEqual([]);
     expect(screen.getByRole('tab', { name: 'Dismissed 0' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'Active 2' })).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByText('No dismissed suggestions')).toBeVisible();
   });
 
   it('stays on the dismissed tab after restoring its final suggestion', async () => {
-    const activeSuggestion = toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION);
-    const dismissedSuggestion = toReliabilityOpportunity({
+    const dismissedSuggestion = DB.reliabilitySuggestion.build({
       ...LOWER_PRIORITY_HTTP_SUGGESTION,
       id: 'dismissed-http-suggestion',
       target: 'https://dismissed.goagain.dev/',
     });
-    jest.mocked(useReliabilityInboxDismissals).mockImplementation(() => {
-      const [dismissedSuggestionIds, setDismissedSuggestionIds] = React.useState([dismissedSuggestion.id]);
+    window.localStorage.setItem(DISMISSALS_KEY, JSON.stringify([dismissedSuggestion.id]));
 
-      return {
-        dismissedSuggestionIds,
-        dismissSuggestion,
-        restoreSuggestion: (id) => {
-          restoreSuggestion(id);
-          setDismissedSuggestionIds((dismissedIds) => dismissedIds.filter((dismissedId) => dismissedId !== id));
-        },
-      };
-    });
-
-    const { user } = renderPage([activeSuggestion.suggestion, dismissedSuggestion.suggestion]);
+    const { user } = renderPage([HTTP_RELIABILITY_SUGGESTION, dismissedSuggestion]);
 
     expect(await screen.findByRole('tablist')).toBeInTheDocument();
     const dismissedFilter = await screen.findByRole('tab', { name: 'Dismissed 1' });
@@ -469,7 +503,7 @@ describe('ReliabilityInboxPage', () => {
 
     await user.click(within(suggestedCheck).getByRole('button', { name: 'Restore suggestion' }));
 
-    expect(restoreSuggestion).toHaveBeenCalledWith('dismissed-http-suggestion');
+    expect(JSON.parse(window.localStorage.getItem(DISMISSALS_KEY)!)).toEqual([]);
     expect(await screen.findByRole('tab', { name: 'Dismissed 0' })).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByRole('tab', { name: 'Active 2' })).toHaveAttribute('aria-selected', 'false');
     expect(screen.getByText('No dismissed suggestions')).toBeVisible();
@@ -484,16 +518,7 @@ describe('ReliabilityInboxPage', () => {
   });
 
   it('links to dismissed suggestions when no active recommendations remain', async () => {
-    let dismissedSuggestionIds = [HTTP_RELIABILITY_SUGGESTION.id];
-
-    restoreSuggestion.mockImplementation((id) => {
-      dismissedSuggestionIds = dismissedSuggestionIds.filter((dismissedId) => dismissedId !== id);
-    });
-    jest.mocked(useReliabilityInboxDismissals).mockImplementation(() => ({
-      dismissedSuggestionIds,
-      dismissSuggestion,
-      restoreSuggestion,
-    }));
+    window.localStorage.setItem(DISMISSALS_KEY, JSON.stringify([HTTP_RELIABILITY_SUGGESTION.id]));
 
     const { user } = renderPage();
 

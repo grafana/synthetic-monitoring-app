@@ -4,7 +4,8 @@ import { queryDS } from 'features/queryDatasources/queryDS';
 import { useLocalStorage } from 'usehooks-ts';
 import { z } from 'zod';
 
-import { ReliabilityEvidence, reliabilitySuggestionSchema, reliabilitySuggestionsSchema } from './types';
+import { ReliabilityEvidence, ReliabilitySuggestion, reliabilitySuggestionsSchema } from './types';
+import { reliabilityInboxURL } from 'datasource/reliabilityInboxRegion';
 import { useSMDS } from 'hooks/useSMDS';
 
 import { getRecommendationTelemetryProvenance } from './evidence';
@@ -12,10 +13,6 @@ import { compareReliabilityOpportunities, isInitialReviewCandidate, toReliabilit
 
 const STALE_TIME = 6 * 60 * 60 * 1000;
 
-const reliabilityInboxSnapshotSchema = z.object({
-  savedAt: z.number(),
-  suggestions: z.array(reliabilitySuggestionSchema),
-});
 const dismissedSuggestionIdsSchema = z.array(z.string());
 const dismissedSuggestionIdsStorageOptions = {
   deserializer: (value: string) => dismissedSuggestionIdsSchema.parse(JSON.parse(value)),
@@ -23,9 +20,6 @@ const dismissedSuggestionIdsStorageOptions = {
 
 export const reliabilityInboxQueryKey = (apiHost: string, stackId: number) =>
   ['reliability-inbox', 'suggestions', apiHost, stackId] as const;
-
-export const reliabilityInboxStorageKey = (apiHost: string, stackId: number) =>
-  `synthetic-monitoring:reliability-inbox:v1:${apiHost}:${stackId}`;
 
 export const reliabilityInboxDismissalsKey = (apiHost: string, stackId: number) =>
   `synthetic-monitoring:reliability-inbox-dismissals:v1:${apiHost}:${stackId}`;
@@ -96,17 +90,13 @@ function useReliabilityInboxQuery(generateSuggestions: boolean, includeDismissed
   const smDS = useSMDS();
   const apiHost = smDS.instanceSettings.jsonData.apiHost;
   const stackId = smDS.instanceSettings.jsonData.metrics.hostedId;
-  const storageKey = reliabilityInboxStorageKey(apiHost, stackId);
-  const snapshot = readSnapshot(storageKey);
   const { dismissedSuggestionIds } = useScopedReliabilityInboxDismissals(apiHost, stackId);
 
   return useQuery({
     // apiHost is in the key because it selects the region, and therefore which
     // instance answered.
     queryKey: reliabilityInboxQueryKey(apiHost, stackId),
-    enabled: generateSuggestions && smDS.supportsReliabilityInbox(),
-    initialData: snapshot ? toOpportunities(snapshot.suggestions) : undefined,
-    initialDataUpdatedAt: snapshot?.savedAt,
+    enabled: generateSuggestions && reliabilityInboxURL(apiHost) !== undefined,
     queryFn: async () => {
       const suggestions = await smDS.getReliabilityInboxSuggestions();
       const result = reliabilitySuggestionsSchema.parse(suggestions);
@@ -117,18 +107,17 @@ function useReliabilityInboxQuery(generateSuggestions: boolean, includeDismissed
         throw new Error(result.warnings.join('; '));
       }
 
-      writeSnapshot(reliabilityInboxStorageKey(apiHost, stackId), result.suggestions);
-
-      return toOpportunities(result.suggestions);
+      return result.suggestions;
     },
     retry: false,
     staleTime: STALE_TIME,
-    // Suggestion generation creates a token and invokes a paid service. Retain
-    // the result for the lifetime of the SPA session, even when no component is
-    // temporarily subscribed, so navigation cannot cause accidental regeneration.
+    // Suggestion generation invokes a paid service. Retain the result for the
+    // lifetime of the SPA session so navigation cannot regenerate it accidentally.
     gcTime: Infinity,
-    select: (opportunities) =>
-      includeDismissed ? opportunities : opportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id)),
+    select: (suggestions) => {
+      const opportunities = toOpportunities(suggestions);
+      return includeDismissed ? opportunities : opportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id));
+    },
   });
 }
 
@@ -147,26 +136,9 @@ function useScopedReliabilityInboxDismissals(apiHost: string, stackId: number) {
   };
 }
 
-function toOpportunities(suggestions: Array<z.infer<typeof reliabilitySuggestionSchema>>) {
+function toOpportunities(suggestions: ReliabilitySuggestion[]) {
   return suggestions
     .filter(isInitialReviewCandidate)
     .map(toReliabilityOpportunity)
     .sort(compareReliabilityOpportunities);
-}
-
-function readSnapshot(key: string) {
-  try {
-    const value = window.localStorage.getItem(key);
-    return value ? reliabilityInboxSnapshotSchema.parse(JSON.parse(value)) : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function writeSnapshot(key: string, suggestions: Array<z.infer<typeof reliabilitySuggestionSchema>>) {
-  try {
-    window.localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), suggestions }));
-  } catch {
-    // Browser storage is an optimization; generation still works without it.
-  }
 }

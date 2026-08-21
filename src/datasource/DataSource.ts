@@ -42,7 +42,6 @@ import { DEFAULT_LOGS_DS_UID, DEFAULT_METRICS_DS_UID } from 'datasource/constant
 import { ExtendedBulkUpdateCheckResult } from 'data/useChecks';
 
 import { LokiQueryResults } from '../components/Checkster/feature/adhoc-check/useAdHocLogs';
-import { reliabilityInboxURL } from './reliabilityInboxRegion';
 import { parseTracerouteLogs } from './traceroute-utils';
 
 export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
@@ -276,44 +275,17 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   //--------------------------------------------------------------------------------
 
   /**
-   * Whether a reliability-inbox instance serves this stack's region. Callers
-   * should hide the feature when this is false, rather than calling and handling
-   * the error.
-   */
-  supportsReliabilityInbox(): boolean {
-    return reliabilityInboxURL(this.instanceSettings.jsonData.apiHost) !== undefined;
-  }
-
-  /**
    * Asks which checks this tenant should consider adding.
    */
   async getReliabilityInboxSuggestions(): Promise<unknown> {
-    const url = reliabilityInboxURL(this.instanceSettings.jsonData.apiHost);
-    if (!url) {
-      throw new Error('The reliability inbox is not available in this region');
-    }
-
-    // Called directly instead of through the datasource proxy. The proxy would
-    // inject the token from secureJsonData, but its route cannot exist until
-    // these plugin.json changes ship in a released plugin version — Grafana
-    // registers proxy routes server-side from the installed plugin. So we mint a
-    // token ourselves and the service accepts our origin via CORS.
-    //
-    // createApiToken adds a token rather than rotating the stored one, so this
-    // does not disturb the datasource.
-    const token = await this.createApiToken();
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: '{}',
-    });
-
-    if (!response.ok) {
-      throw new Error(`The reliability inbox returned ${response.status}`);
-    }
-
-    return response.json();
+    return this.fetchAPI<unknown>(
+      `/api/datasources/uid/${this.instanceSettings.uid}/resources/reliability-inbox/suggestions`,
+      {
+        method: 'POST',
+        data: {},
+        showErrorAlert: false,
+      }
+    );
   }
 
   //--------------------------------------------------------------------------------

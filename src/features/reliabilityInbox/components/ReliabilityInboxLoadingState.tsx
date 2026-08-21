@@ -3,6 +3,8 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Spinner, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
+import { RELIABILITY_INBOX_CONTAINER } from '../ReliabilityInboxPage.constants';
+
 const ANALYSIS_STEPS = [
   { icon: 'search' as const, text: 'Discovering services and endpoints from recent traffic' },
   { icon: 'chart-line' as const, text: 'Reviewing request volume, errors, latency, and outage history' },
@@ -67,7 +69,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     borderRadius: theme.shape.radius.default,
     background: theme.colors.background.primary,
     boxShadow: theme.shadows.z1,
-    [`@media (max-width: ${theme.breakpoints.values.sm}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.sm}px)`]: {
       gridTemplateColumns: '1fr',
       gap: theme.spacing(2),
       padding: theme.spacing(2.5),
@@ -110,7 +112,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(1, 1.5),
     borderRadius: theme.shape.radius.default,
     background: theme.colors.background.secondary,
-    [`@media (max-width: ${theme.breakpoints.values.sm}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.sm}px)`]: {
       alignItems: 'flex-start',
     },
   }),

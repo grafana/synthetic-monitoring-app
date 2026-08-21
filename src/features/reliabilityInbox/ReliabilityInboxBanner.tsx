@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 import { trackInboxExposure, trackReviewEntryClicked } from 'features/tracking/reliabilityInboxEvents';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
-import { getAssistantActionStyle } from './assistantActionStyles';
 import { useCachedReliabilityInboxSuggestions } from './data';
 
+const CONTAINER_NAME = 'reliabilityInboxBanner';
+
 export function ReliabilityInboxBanner() {
-  const assistantAction = useStyles2(getAssistantActionStyle);
   const styles = useStyles2(getStyles);
   const { data: opportunities = [] } = useCachedReliabilityInboxSuggestions();
   const exposureTracked = useRef(false);
@@ -33,42 +33,48 @@ export function ReliabilityInboxBanner() {
   }, [opportunities.length, topOpportunity]);
 
   return (
-    <section className={styles.banner}>
-      <div className={styles.layout}>
-        <div className={styles.message}>
-          <span className={styles.icon} aria-hidden="true">
-            <Icon name="ai-sparkle" size="xl" />
-          </span>
-          <Stack direction="column" alignItems="flex-start" gap={2}>
-            <Text element="h2" weight="medium">
-              Check Suggestions
-            </Text>
-            <Text element="p" variant="h5" color="secondary">
-              {topOpportunity
-                ? suggestionSummary
-                : 'Generate actionable recommendations when you are ready to review them.'}
-            </Text>
-          </Stack>
+    <div className={styles.container}>
+      <section className={styles.banner}>
+        <div className={styles.layout}>
+          <div className={styles.message}>
+            <span className={styles.icon} aria-hidden="true">
+              <Icon name="ai-sparkle" size="xl" />
+            </span>
+            <Stack direction="column" alignItems="flex-start" gap={2}>
+              <Text element="h2" weight="medium">
+                Check Suggestions
+              </Text>
+              <Text element="p" variant="h5" color="secondary">
+                {topOpportunity
+                  ? suggestionSummary
+                  : 'Generate actionable recommendations when you are ready to review them.'}
+              </Text>
+            </Stack>
+          </div>
+          <LinkButton
+            className={styles.action}
+            icon="ai-sparkle"
+            variant="secondary"
+            href={generateRoutePath(AppRoutes.ReliabilityInbox)}
+            onClick={() => {
+              if (topOpportunity) {
+                trackReviewEntryClicked({ opportunityId: topOpportunity.id });
+              }
+            }}
+          >
+            {topOpportunity ? 'Review suggestions' : 'Generate suggestions'}
+          </LinkButton>
         </div>
-        <LinkButton
-          className={cx(assistantAction, styles.action)}
-          icon="ai-sparkle"
-          variant="secondary"
-          href={generateRoutePath(AppRoutes.ReliabilityInbox)}
-          onClick={() => {
-            if (topOpportunity) {
-              trackReviewEntryClicked({ opportunityId: topOpportunity.id });
-            }
-          }}
-        >
-          {topOpportunity ? 'Review suggestions' : 'Generate suggestions'}
-        </LinkButton>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  container: css({
+    containerName: CONTAINER_NAME,
+    containerType: 'inline-size',
+  }),
   banner: css({
     label: 'reliability-inbox-banner',
     position: 'relative',
@@ -88,7 +94,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
       width: 4,
       background: 'linear-gradient(180deg, rgb(168, 85, 247), rgb(249, 115, 22))',
     },
-    [`@media (max-width: ${theme.breakpoints.values.sm}px)`]: {
+    [`@container ${CONTAINER_NAME} (max-width: ${theme.breakpoints.values.sm}px)`]: {
       minHeight: 'auto',
       padding: theme.spacing(2.5),
     },
@@ -125,7 +131,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
   action: css({
     label: 'reliability-inbox-banner-action',
     minHeight: theme.spacing(5.75),
-    [`@media (max-width: ${theme.breakpoints.values.sm}px)`]: {
+    [`@container ${CONTAINER_NAME} (max-width: ${theme.breakpoints.values.sm}px)`]: {
       width: '100%',
       justifyContent: 'center',
     },

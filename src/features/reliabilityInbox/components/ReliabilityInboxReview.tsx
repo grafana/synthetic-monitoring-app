@@ -1,11 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { isFetchError } from '@grafana/runtime';
 import { Button, EmptyState, Stack, useStyles2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
 
 import { ErrorAlert } from 'components/ErrorAlert';
 
 import { useReliabilityInboxSuggestions } from '../data';
+import { RELIABILITY_INBOX_CONTAINER } from '../ReliabilityInboxPage.constants';
 import { useReliabilityInboxReview } from '../ReliabilityInboxPage.hooks';
 import { RecommendationQueue } from './RecommendationQueue';
 import { RefreshStatus } from './RefreshStatus';
@@ -29,6 +31,7 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
     isLoading,
     isFetching,
     isError,
+    error,
     data,
     assistantAction,
     refetch,
@@ -45,10 +48,15 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
   }
 
   if (isError && !data) {
+    const isPermissionError = isFetchError(error) && (error.status === 401 || error.status === 403);
     return (
       <ErrorAlert
         buttonText="Retry"
-        content="Check your permissions and the live Reliability Inbox service, then try again."
+        content={
+          isPermissionError
+            ? 'You do not have permission to load Reliability Inbox suggestions.'
+            : 'The Reliability Inbox service is unavailable. Try again later.'
+        }
         onClick={() => refetch()}
         title="Unable to load Reliability Inbox"
       />
@@ -208,7 +216,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(2),
     alignItems: 'stretch',
     minHeight: `calc(100vh - ${theme.spacing(22)})`,
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`]: {
       gridTemplateColumns: '1fr',
       minHeight: 'auto',
     },

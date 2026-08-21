@@ -15,7 +15,7 @@ export function RefreshStatus({ isFetching, isError, onRetry }: RefreshStatusPro
       <Stack role="status" alignItems="center" gap={1}>
         <Spinner size="xs" inline />
         <Text color="secondary" variant="bodySmall">
-          Showing saved suggestions · Looking for new opportunities…
+          Showing current suggestions · Looking for new opportunities…
         </Text>
       </Stack>
     );
@@ -25,7 +25,7 @@ export function RefreshStatus({ isFetching, isError, onRetry }: RefreshStatusPro
     return (
       <ErrorAlert
         buttonText="Retry"
-        content="Showing saved suggestions. Try again later for newer opportunities."
+        content="Showing current suggestions. Try again later for newer opportunities."
         onClick={onRetry}
         title="Suggestions could not be refreshed"
       />

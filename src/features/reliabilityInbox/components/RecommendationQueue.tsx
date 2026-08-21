@@ -5,6 +5,7 @@ import { css, cx } from '@emotion/css';
 import pluralize from 'pluralize';
 
 import { ReliabilityOpportunity } from '../model';
+import { RELIABILITY_INBOX_CONTAINER } from '../ReliabilityInboxPage.constants';
 
 interface RecommendationQueueProps {
   opportunities: ReliabilityOpportunity[];
@@ -132,23 +133,23 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(1.25, 1.5),
     textAlign: 'left',
     width: '100%',
-    [`@media (min-width: ${theme.breakpoints.values.md + 1}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (min-width: ${theme.breakpoints.values.md + 1}px)`]: {
       display: 'none',
     },
   }),
   expandedDisclosure: css({
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`]: {
       borderBottom: `1px solid ${theme.colors.border.weak}`,
     },
   }),
   content: css({
     display: 'block',
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`]: {
       display: 'none',
     },
   }),
   expandedContent: css({
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`]: {
       display: 'block',
     },
   }),
@@ -158,7 +159,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(1.5),
   }),
   queueSummary: css({
-    [`@media (max-width: ${theme.breakpoints.values.md}px)`]: {
+    [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`]: {
       display: 'none',
     },
   }),

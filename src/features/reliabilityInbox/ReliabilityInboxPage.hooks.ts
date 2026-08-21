@@ -15,7 +15,7 @@ import {
 export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof useReliabilityInboxSuggestions>) {
   const { canWriteChecks } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
-  const { data, isLoading, isFetching, isError, refetch } = suggestionsQuery;
+  const { data, error, isLoading, isFetching, isError, refetch } = suggestionsQuery;
   const { dismissedSuggestionIds, dismissSuggestion, restoreSuggestion } = useReliabilityInboxDismissals();
   const [queueView, setQueueView] = useState<'active' | 'dismissed'>('active');
   const allOpportunities = data ?? [];
@@ -85,6 +85,7 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
     isLoading,
     isFetching,
     isError,
+    error,
     data,
     assistantAction,
     refetch,
