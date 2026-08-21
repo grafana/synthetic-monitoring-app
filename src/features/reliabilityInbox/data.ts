@@ -54,8 +54,7 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
   const smDS = useSMDS();
   const apiHost = smDS.instanceSettings.jsonData.apiHost;
   const stackId = smDS.instanceSettings.jsonData.metrics.hostedId;
-  const storageKey = reliabilityInboxStorageKey(apiHost, stackId);
-  const snapshot = readSnapshot(storageKey);
+  const snapshot = readSnapshot(reliabilityInboxStorageKey(apiHost, stackId));
   const { dismissedSuggestionIds } = useScopedReliabilityInboxDismissals(apiHost, stackId);
 
   return useQuery({
@@ -74,7 +73,7 @@ function useReliabilityInboxQuery(generateSuggestions: boolean) {
         throw new Error(result.warnings.join('; '));
       }
 
-      writeSnapshot(storageKey, result.suggestions);
+      writeSnapshot(reliabilityInboxStorageKey(apiHost, stackId), result.suggestions);
 
       return toOpportunities(result.suggestions);
     },

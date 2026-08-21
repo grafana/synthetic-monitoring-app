@@ -6,8 +6,8 @@ import { getQueryClient } from 'data/queryClient';
 import { useSMDS } from 'hooks/useSMDS';
 
 import {
-  reliabilityInboxQueryKey,
   reliabilityInboxDismissalsKey,
+  reliabilityInboxQueryKey,
   reliabilityInboxStorageKey,
   useCachedReliabilityInboxSuggestions,
   useReliabilityInboxDismissals,
