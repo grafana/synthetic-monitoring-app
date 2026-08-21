@@ -1,30 +1,36 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Alert, Button, Combobox, ComboboxOption, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
-import { useDefaultFolder } from 'data/useDefaultFolder';
-import { useFolderPermissions } from 'data/useFolderPermissions';
-import { getFolderPathParts, useCreateFolder, useFolderChildren } from 'data/useFolders';
+import { FolderAccessState } from 'data/folderPermissions';
+import { getFolderPathParts, useCreateFolder } from 'data/useFolders';
+
+import { useFolderSelection } from './FolderSelector.hooks';
 
 interface FolderSelectorProps {
   value?: string;
   onChange: (folderUid: string | undefined) => void;
   disabled?: boolean;
-  autoSelectDefault?: boolean;
   'aria-label'?: string;
 }
 
-export function FolderSelector({ value, onChange, disabled, autoSelectDefault = true, 'aria-label': ariaLabel }: FolderSelectorProps) {
-  const { defaultFolder, defaultFolderUid, isLoading: isDefaultLoading, isError: isDefaultError, refetch: refetchDefault } = useDefaultFolder();
-  const { data: childFolders = [], isLoading: isChildrenLoading, isError: isChildrenError, refetch: refetchChildren } = useFolderChildren(defaultFolderUid);
+export function FolderSelector({ value, onChange, disabled, 'aria-label': ariaLabel }: FolderSelectorProps) {
+  const {
+    defaultFolder,
+    defaultFolderUid,
+    allFolders,
+    folderDetailsByUid,
+    editableFolders,
+    noStorableFolders,
+    isLoading,
+    isDefaultError,
+    isChildrenError,
+    refetchDefault,
+    refetchChildren,
+  } = useFolderSelection({ value });
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
-  const allFolderUids = useMemo(() => allFolders.map((f) => f.uid), [allFolders]);
-  const { folderDetailsByUid } = useFolderPermissions(allFolderUids);
-
-  const isLoading = isDefaultLoading || isChildrenLoading;
   const isError = isDefaultError || isChildrenError;
 
   const options: Array<ComboboxOption<string>> = useMemo(() => {
@@ -33,11 +39,6 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     }
 
     const foldersMap = new Map(allFolders.map((f) => [f.uid, f]));
-
-    const editableFolders = allFolders.filter((folder) => {
-      const state = folderDetailsByUid.get(folder.uid);
-      return state?.type === 'accessible' && state.permissions.canEdit;
-    });
 
     const result: Array<ComboboxOption<string>> = editableFolders.map((folder) => {
       if (folder.uid === defaultFolder.uid) {
@@ -60,17 +61,11 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     });
 
     if (value && !result.some((opt) => opt.value === value)) {
-      result.push({ label: `${value} (folder not found)`, value });
+      result.push(toSelectedFolderOption(value, folderDetailsByUid.get(value)));
     }
 
     return result;
-  }, [allFolders, defaultFolder, value, folderDetailsByUid]);
-
-  useEffect(() => {
-    if (autoSelectDefault && value === undefined && defaultFolderUid) {
-      onChange(defaultFolderUid);
-    }
-  }, [autoSelectDefault, value, defaultFolderUid, onChange]);
+  }, [allFolders, editableFolders, defaultFolder, value, folderDetailsByUid]);
 
   const handleChange = (selected: ComboboxOption<string> | null) => {
     if (selected?.value) {
@@ -85,7 +80,7 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
     setShowCreateModal(false);
   };
 
-  const selectedValue = value ?? (autoSelectDefault ? defaultFolderUid : null) ?? null;
+  const selectedValue = value ?? null;
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading folders..." />;
@@ -103,6 +98,18 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
 
     return (
       <Alert title="Unable to load folders" severity="warning" buttonContent="Retry" onRemove={handleRetry} />
+    );
+  }
+
+  // No editable folder and no rights to create one: explain the dead end
+  // instead of rendering an empty dropdown. The suggestion points at the
+  // default subtree because that is all this picker can list.
+  if (noStorableFolders && !value) {
+    return (
+      <Alert title="You don't have permission to store checks in any folder" severity="warning">
+        Storing a check requires Edit permission on a folder. Ask an administrator to grant you Edit access to the
+        &quot;{defaultFolder?.title}&quot; folder or one of its subfolders.
+      </Alert>
     );
   }
 
@@ -140,6 +147,42 @@ export function FolderSelector({ value, onChange, disabled, autoSelectDefault = 
       )}
     </Stack>
   );
+}
+
+/**
+ * Labels a selected folder the picker doesn't list (read-only, inaccessible,
+ * or deleted). The suffix lives in the label because the closed combobox only
+ * shows the label; the description explains it in the dropdown.
+ */
+function toSelectedFolderOption(value: string, state: FolderAccessState | undefined): ComboboxOption<string> {
+  switch (state?.type) {
+    case 'accessible': {
+      const title = state.folder?.title ?? value;
+      if (state.permissions.canEdit) {
+        return { label: title, value };
+      }
+      return {
+        label: `${title} (read-only)`,
+        value,
+        description: 'You can view this folder but not save checks into it.',
+      };
+    }
+    case 'forbidden':
+      return {
+        label: `${value} (no access)`,
+        value,
+        description: "You don't have permission to view this folder, so its identifier is shown instead of its name.",
+      };
+    case 'loading':
+      // Lookup in flight: don't flash a false "not found".
+      return { label: value, value };
+    default:
+      return {
+        label: `${value} (folder not found)`,
+        value,
+        description: 'This folder no longer exists. It may have been deleted.',
+      };
+  }
 }
 
 interface CreateFolderModalProps {

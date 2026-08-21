@@ -104,6 +104,7 @@ export const CheckItemActionButtons = ({
         disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
+        className={cx({ [styles.disabledLinkButton]: !canWriteChecks })}
         onClick={() => trackFaroUserAction(FaroUserAction.CheckEditClicked)}
       />
       <LinkButton
@@ -117,6 +118,7 @@ export const CheckItemActionButtons = ({
         }}
         variant="secondary"
         fill="text"
+        className={cx({ [styles.disabledLinkButton]: !canWriteChecks })}
       />
       <IconButton
         tooltip="Delete check"
@@ -169,6 +171,13 @@ const getStyles = (theme: GrafanaTheme2) => {
       [containerQuery]: {
         display: 'inline-flex',
       },
+    }),
+    // Disabled text-fill LinkButtons use text.disabled, which is nearly
+    // indistinguishable from the enabled text.secondary in the dark theme.
+    // Match IconButton's disabled treatment (which adds opacity) so all
+    // disabled row actions read the same.
+    disabledLinkButton: css({
+      opacity: 0.65,
     }),
   };
 };

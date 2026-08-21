@@ -37,6 +37,15 @@ jest.mock('data/useDefaultFolder', () => ({
   })),
 }));
 
+// ChecksterProvider is rendered without a QueryClient here, so the folder
+// selection hook (react-query based) must be mocked like useDefaultFolder above.
+jest.mock('components/FolderSelector/FolderSelector.hooks', () => ({
+  useFolderSelection: jest.fn(() => ({
+    preselectUid: undefined,
+    isPreselectReady: true,
+  })),
+}));
+
 const defaultProps = {
   field: 'labels',
   label: 'Labels',

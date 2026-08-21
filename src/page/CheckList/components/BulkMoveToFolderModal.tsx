@@ -52,12 +52,7 @@ function BulkMoveToFolderModalContent({ checks, isOpen, onDismiss, onMoved }: Bu
         </Alert>
       )}
       <Field label="Target folder" description="All selected checks will be moved to this folder.">
-        <FolderSelector
-          value={targetFolderUid}
-          onChange={setTargetFolderUid}
-          autoSelectDefault={false}
-          aria-label="Select target folder"
-        />
+        <FolderSelector value={targetFolderUid} onChange={setTargetFolderUid} aria-label="Select target folder" />
       </Field>
       <Modal.ButtonRow>
         <Button variant="secondary" onClick={onDismiss} type="button">

@@ -6,7 +6,7 @@ import { BROWSER_EXAMPLES } from 'components/WelcomeTabs/constants';
 
 import { ScriptedCheckContent } from './ScriptedCheckContent';
 
-export const BROWSER_CHECK_FIELDS = ['job', 'target', 'channels.k6', 'settings.browser.script'];
+export const BROWSER_CHECK_FIELDS = ['job', 'target', 'folderUid', 'channels.k6', 'settings.browser.script'];
 
 const SCREENSHOT_EXAMPLE_VALUES = ['screenshotsLoki.js', 'screenshotsGCS.js'];
 
