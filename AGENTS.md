@@ -200,3 +200,4 @@ Agent skill (auto-trigger workflow): [`.agents/skills/write-tests/SKILL.md`](./.
 - `yarn test <filename>` runs a single file; `yarn test:changed` watches changed files.
 - Tests use MSW handlers from `src/test/handlers` for API mocking.
 - The test suite passes cleanly with no configuration needed beyond `yarn install`.
+- Security issues should be reported via [Grafana's security issue reporting page](https://grafana.com/legal/report-a-security-issue/) and not directly in this repository.
