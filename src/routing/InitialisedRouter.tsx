@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { TextLink } from '@grafana/ui';
+import { ReliabilityInboxPage } from 'features/reliabilityInbox';
 
 import { FeatureName } from 'types';
 import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
@@ -131,6 +132,19 @@ export const InitialisedRouter = () => {
       </Route>
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
+
+      {isFeatureEnabled(FeatureName.ReliabilityInbox) && (
+        <Route
+          path={AppRoutes.ReliabilityInbox}
+          element={
+            canReadChecks ? (
+              <ReliabilityInboxPage />
+            ) : (
+              <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+            )
+          }
+        />
+      )}
 
       <Route path={`${AppRoutes.Config}`} element={<ConfigPageLayout />}>
         <Route index element={<GeneralTab />} />

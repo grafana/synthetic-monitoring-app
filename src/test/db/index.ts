@@ -1,6 +1,7 @@
 import { faker } from '@faker-js/faker';
 import { Factory } from 'fishery';
 
+import { ReliabilitySuggestion } from 'features/reliabilityInbox/types';
 import {
   AlertSensitivity,
   Check,
@@ -19,9 +20,9 @@ import {
 
 const baseCheckModel = ({ sequence }: { sequence: number }) => {
   const timeout = faker.number.int({ min: 1000, max: 60 * 1000 });
-  const frequency = faker.number.int({ 
-    min: Math.max(timeout, 10 * 1000), 
-    max: 60 * 60 * 1000
+  const frequency = faker.number.int({
+    min: Math.max(timeout, 10 * 1000),
+    max: 60 * 60 * 1000,
   });
 
   return {
@@ -61,7 +62,9 @@ const baseProbeModel = ({ sequence }: { sequence: number }) => ({
   },
   k6Versions: faker.helpers.maybe(() => ({
     v1: `1.${faker.number.int({ min: 0, max: 20 })}.${faker.number.int({ min: 0, max: 9 })}`,
-    v2: faker.datatype.boolean() ? `2.${faker.number.int({ min: 0, max: 10 })}.${faker.number.int({ min: 0, max: 9 })}` : null,
+    v2: faker.datatype.boolean()
+      ? `2.${faker.number.int({ min: 0, max: 10 })}.${faker.number.int({ min: 0, max: 9 })}`
+      : null,
   })),
 });
 
@@ -78,6 +81,25 @@ type CheckTransientParams = {
 };
 
 export const DB = {
+  reliabilitySuggestion: Factory.define<ReliabilitySuggestion>(({ sequence }) => ({
+    id: `reliability-suggestion-${sequence}`,
+    target: faker.internet.url(),
+    checkType: CheckType.Http,
+    evidence: {
+      reqPerS: faker.number.float({ min: 0.1, max: 10 }),
+      errorRatio: faker.number.float({ min: 0, max: 0.1 }),
+      p99Ms: faker.number.int({ min: 1, max: 1000 }),
+      statusDistribution: { '200': 1 },
+      families: ['http_server_request_duration_seconds_bucket'],
+    },
+    reachability: 'public',
+    reachabilitySource: 'service_dns_hint',
+    confidence: 'high',
+    score: faker.number.float({ min: 0, max: 1 }),
+    dedupStatus: 'uncovered',
+    authRequired: false,
+    prompt: `Create a Grafana Synthetic Monitoring http check for suggestion ${sequence}.`,
+  })),
   check: Factory.define<Check, CheckTransientParams>(({ transientParams, sequence }) => {
     const { type } = transientParams;
 

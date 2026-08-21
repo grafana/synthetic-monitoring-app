@@ -271,6 +271,24 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
   }
 
   //--------------------------------------------------------------------------------
+  // RELIABILITY INBOX (experimental)
+  //--------------------------------------------------------------------------------
+
+  /**
+   * Asks which checks this tenant should consider adding.
+   */
+  async getReliabilityInboxSuggestions(): Promise<unknown> {
+    return this.fetchAPI<unknown>(
+      `/api/datasources/uid/${this.instanceSettings.uid}/resources/reliability-inbox/suggestions`,
+      {
+        method: 'POST',
+        data: {},
+        showErrorAlert: false,
+      }
+    );
+  }
+
+  //--------------------------------------------------------------------------------
   // PROBES
   //--------------------------------------------------------------------------------
 
@@ -315,9 +333,7 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     return this.fetchAPI<ListCheckResult>(
       `${this.instanceSettings.url}/sm/check/list?includeAlerts=${includeAlerts}`
     ).then((checks) =>
-      checks.map((check) =>
-        check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }
-      )
+      checks.map((check) => (check.alertSensitivity ? check : { ...check, alertSensitivity: AlertSensitivity.None }))
     );
   }
 
