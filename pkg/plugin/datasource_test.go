@@ -25,9 +25,11 @@ func TestNewDatasource(t *testing.T) {
 	if !ok {
 		t.Fatalf("got instance of type %T, want *Datasource", instance)
 	}
+
 	if ds.accessToken != "stored-token" {
 		t.Errorf("got access token %q, want stored token", ds.accessToken)
 	}
+
 	if ds.suggestionsURL != "https://k6-experiments-dev-us-central-0.grafana-dev.net/api/v1alpha1/reliability-inbox/suggestions" {
 		t.Errorf("got suggestions URL %q", ds.suggestionsURL)
 	}
@@ -83,6 +85,7 @@ func TestCallResourceProxiesSuggestionsWithStoredToken(t *testing.T) {
 		if req.Method != http.MethodPost {
 			t.Errorf("got method %q, want POST", req.Method)
 		}
+
 		if got := req.Header.Get("Authorization"); got != "Bearer stored-token" {
 			t.Errorf("got authorization %q", got)
 		}
@@ -91,12 +94,14 @@ func TestCallResourceProxiesSuggestionsWithStoredToken(t *testing.T) {
 		if err != nil {
 			t.Errorf("reading request body: %v", err)
 		}
+
 		if string(body) != "{}" {
 			t.Errorf("got body %q, want {}", body)
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusAccepted)
+
 		if _, err := w.Write([]byte(`{"suggestions":[]}`)); err != nil {
 			t.Errorf("writing response: %v", err)
 		}
@@ -117,9 +122,11 @@ func TestCallResourceProxiesSuggestionsWithStoredToken(t *testing.T) {
 	if err != nil {
 		t.Fatalf("calling resource: %v", err)
 	}
+
 	if sender.response.Status != http.StatusAccepted {
 		t.Errorf("got status %d, want %d", sender.response.Status, http.StatusAccepted)
 	}
+
 	if string(sender.response.Body) != `{"suggestions":[]}` {
 		t.Errorf("got body %q", sender.response.Body)
 	}

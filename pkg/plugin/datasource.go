@@ -97,12 +97,15 @@ func (d *Datasource) CallResource(
 	if req.Path != "reliability-inbox/suggestions" {
 		return sendResourceResponse(sender, http.StatusNotFound, "resource not found")
 	}
+
 	if req.Method != http.MethodPost {
 		return sendResourceResponse(sender, http.StatusMethodNotAllowed, "method not allowed")
 	}
+
 	if d.suggestionsURL == "" {
 		return sendResourceResponse(sender, http.StatusNotFound, "reliability inbox is not available in this region")
 	}
+
 	if d.accessToken == "" {
 		return sendResourceResponse(sender, http.StatusServiceUnavailable, "synthetic monitoring is not configured")
 	}
@@ -111,6 +114,7 @@ func (d *Datasource) CallResource(
 	if err != nil {
 		return fmt.Errorf("creating reliability inbox request: %w", err)
 	}
+
 	outbound.Header.Set("Authorization", "Bearer "+d.accessToken)
 	outbound.Header.Set("Content-Type", "application/json")
 
@@ -121,10 +125,12 @@ func (d *Datasource) CallResource(
 	defer response.Body.Close()
 
 	const maxResponseBytes = 1 << 20
+
 	body, err := io.ReadAll(io.LimitReader(response.Body, maxResponseBytes+1))
 	if err != nil {
 		return fmt.Errorf("reading reliability inbox response: %w", err)
 	}
+
 	if len(body) > maxResponseBytes {
 		return sendResourceResponse(sender, http.StatusBadGateway, "reliability inbox response is too large")
 	}
@@ -143,6 +149,7 @@ func reliabilityInboxURL(apiHost string) string {
 	if trimmed == "" {
 		return ""
 	}
+
 	if !strings.Contains(trimmed, "://") {
 		trimmed = "https://" + trimmed
 	}
@@ -151,23 +158,28 @@ func reliabilityInboxURL(apiHost string) string {
 	if err != nil {
 		return ""
 	}
+
 	hostname := strings.ToLower(parsed.Hostname())
 
 	const apiPrefix = "synthetic-monitoring-api-"
+
 	hostParts := strings.Split(hostname, ".")
 	if len(hostParts) < 2 {
 		return ""
 	}
+
 	label := hostParts[0]
 	domain := strings.Join(hostParts[1:], ".")
 
 	environment := ""
+
 	switch {
 	case strings.HasSuffix(hostname, ".grafana-dev.net"):
 		environment = "dev"
 	case strings.HasSuffix(hostname, ".grafana-ops.net"):
 		environment = "ops"
 	}
+
 	if environment == "" || !strings.HasPrefix(label, apiPrefix) {
 		return ""
 	}
@@ -176,6 +188,7 @@ func reliabilityInboxURL(apiHost string) string {
 	if environment == "dev" && region == "dev" {
 		region = "us-central-0"
 	}
+
 	if region == "" {
 		return ""
 	}
