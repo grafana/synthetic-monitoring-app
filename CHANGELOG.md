@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.60.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.59.0...v1.60.0) (2026-08-21)
+
+
+### Features
+
+* **faro:** instrument user actions across check and probe flows ([#1821](https://github.com/grafana/synthetic-monitoring-app/issues/1821)) ([df77842](https://github.com/grafana/synthetic-monitoring-app/commit/df778424549c70bf8575b7320af9cc5f50a67a8f))
+* surface Knowledge Graph insights and service linking on checks ([#1736](https://github.com/grafana/synthetic-monitoring-app/issues/1736)) ([c4523c0](https://github.com/grafana/synthetic-monitoring-app/commit/c4523c08f1fbfda0acc914a61f60c227b151f8ec))
+
+
+### Fixes
+
+* prevent creating checks in folders the user cannot edit ([#1826](https://github.com/grafana/synthetic-monitoring-app/issues/1826)) ([0005e83](https://github.com/grafana/synthetic-monitoring-app/commit/0005e832cd834bdc5787d6685d8b8ea57e720ac1))
+
 ## [1.59.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.58.0...v1.59.0) (2026-08-19)
 
 
