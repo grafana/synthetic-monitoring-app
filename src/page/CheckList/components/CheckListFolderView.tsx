@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
-  Badge,
   Button,
   Checkbox,
   ConfirmModal,
@@ -38,7 +37,6 @@ interface CheckListFolderViewProps {
   checks: Check[];
   folders: GrafanaFolder[];
   outsideFolders?: GrafanaFolder[];
-  foldersMap: Map<string, GrafanaFolder>;
   foldersLoading?: boolean;
   foldersError?: boolean;
   onRetryFolders?: () => void;
@@ -59,7 +57,6 @@ export function CheckListFolderView({
   checks,
   folders,
   outsideFolders,
-  foldersMap,
   foldersLoading,
   foldersError,
   onRetryFolders,
@@ -77,35 +74,12 @@ export function CheckListFolderView({
 }: CheckListFolderViewProps) {
   const styles = useStyles2(getStyles);
   const reverseFolderSort = sortType === CheckSort.ZToA;
-  const { folderTree, rootChecks } = useMemo(
+  const { folderTree } = useMemo(
     () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort, outsideFolders),
     [checks, folders, defaultFolderUid, reverseFolderSort, outsideFolders]
   );
 
-  const defaultFolderNode: FolderNode | null = useMemo(() => {
-    if (!defaultFolderUid) {
-      return null;
-    }
-    const folder = foldersMap.get(defaultFolderUid);
-    return {
-      folderUid: defaultFolderUid,
-      folder: folder ? { ...folder, title: `${folder.title} (default)` } : undefined,
-      folderPath: folder?.title ?? 'Default folder',
-      checks: rootChecks,
-      children: [],
-      isAccessible: !!folder,
-      isOrphaned: false,
-      isDefault: true,
-    };
-  }, [rootChecks, defaultFolderUid, foldersMap]);
-
-  const allUids = useMemo(() => {
-    const uids = collectAllFolderUids(folderTree);
-    if (defaultFolderNode) {
-      uids.unshift(defaultFolderNode.folderUid);
-    }
-    return uids;
-  }, [folderTree, defaultFolderNode]);
+  const allUids = useMemo(() => collectAllFolderUids(folderTree), [folderTree]);
 
   // Track collapsed folders rather than expanded ones so that folders
   // arriving from async data (e.g. permission queries) appear expanded
@@ -144,10 +118,7 @@ export function CheckListFolderView({
     selectedCheckIds,
   };
 
-  const foldersWithChecks = useMemo(() => folderTree.filter((n) => getTotalCheckCount(n) > 0), [folderTree]);
-  const emptyFolders = useMemo(() => folderTree.filter((n) => getTotalCheckCount(n) === 0), [folderTree]);
-
-  const hasAnyContent = folderTree.length > 0 || defaultFolderNode !== null;
+  const hasAnyContent = folderTree.length > 0;
 
   return (
     <div className={styles.container}>
@@ -182,31 +153,7 @@ export function CheckListFolderView({
             </Stack>
           </div>
 
-          {foldersWithChecks.map((node) => (
-            <FolderTreeBranch
-              key={node.folderUid}
-              node={node}
-              depth={0}
-              collapsedFolders={collapsedFolders}
-              toggleFolder={toggleFolder}
-              checkItemProps={checkItemProps}
-              onRetryFolders={onRetryFolders}
-            />
-          ))}
-
-          {defaultFolderNode && (
-            <FolderTreeBranch
-              key={defaultFolderNode.folderUid}
-              node={defaultFolderNode}
-              depth={0}
-              collapsedFolders={collapsedFolders}
-              toggleFolder={toggleFolder}
-              checkItemProps={checkItemProps}
-              onRetryFolders={onRetryFolders}
-            />
-          )}
-
-          {emptyFolders.map((node) => (
+          {folderTree.map((node) => (
             <FolderTreeBranch
               key={node.folderUid}
               node={node}
@@ -276,6 +223,13 @@ function FolderTreeBranch({
   const selectedCount = selectedChecksInFolder.length;
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
+  // The inline action row belongs to the folder whose own checks are
+  // selected. Ancestors reflect descendant selections through their
+  // (indeterminate) checkbox only — repeating the action row at every
+  // level would just duplicate it.
+  const hasDirectSelection = node.checks.some((c) => checkItemProps.selectedCheckIds.has(c.id!));
+
+  const displayTitle = node.isDefault ? `${node.folder?.title ?? node.folderUid} (default)` : node.folder?.title;
 
   // Folders outside the SM subtree may hold unrelated content (dashboards,
   // subfolders, alert rules), so we never offer to delete them from SM --
@@ -286,8 +240,7 @@ function FolderTreeBranch({
       : undefined;
 
   const isEmpty = totalChecks === 0;
-  const canDeleteEmptyFolder =
-    isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isOutside;
+  const canDeleteEmptyFolder = isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isOutside;
 
   // Any editable folder can be moved anywhere in the Grafana folder tree
   // (destinations picked with Grafana's folder picker). Orphaned folders are
@@ -329,16 +282,14 @@ function FolderTreeBranch({
     checkItemProps.onDeselectChecks(allFolderCheckIds);
   };
 
-  const showActions = isEmpty ? emptyFolderSelected : selectedCount > 0;
+  const showActions = isEmpty ? emptyFolderSelected : hasDirectSelection;
 
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
       <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
         <Checkbox
           aria-label={
-            isEmpty
-              ? `Select folder ${node.folder?.title ?? 'folder'}`
-              : `Select all checks in ${node.folder?.title ?? 'folder'}`
+            isEmpty ? `Select folder ${displayTitle ?? 'folder'}` : `Select all checks in ${displayTitle ?? 'folder'}`
           }
           checked={isEmpty ? emptyFolderSelected : isAllInFolderSelected}
           indeterminate={!isEmpty && isSomeInFolderSelected}
@@ -368,18 +319,9 @@ function FolderTreeBranch({
               ) : node.isOrphaned ? (
                 <span className={styles.orphanedLabel}>Folder not found</span>
               ) : (
-                (node.folder?.title ?? node.folderUid)
+                (displayTitle ?? node.folderUid)
               )}
             </span>
-            {/* Outside folders nested under a visible parent need no badge:
-                their location is evident from the nesting. */}
-            {node.isOutside && !node.folder?.parentUid && (
-              <Badge
-                text="Root"
-                color="darkgrey"
-                tooltip="This folder lives at the top level of Grafana, outside the default Synthetic Monitoring folder."
-              />
-            )}
             {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
               <Button
                 variant="secondary"

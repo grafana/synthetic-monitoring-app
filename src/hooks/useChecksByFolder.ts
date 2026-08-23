@@ -58,9 +58,12 @@ export function collectAllChecks(node: FolderNode): Check[] {
 /**
  * Build a folder tree from checks and a pre-fetched list of folders.
  *
- * The default folder is treated as an invisible root: its child folders are
- * promoted to top level, and checks assigned to it (or without a folderUid)
- * go into rootChecks.
+ * The tree mirrors Grafana's real folder hierarchy: the default folder is an
+ * ordinary (pinned-first) top-level node whose subtree nests inside it, and
+ * folders outside it render at top level or under their own parents. Checks
+ * without a folderUid effectively live in the default folder, so they land
+ * in its node; they only fall back to `rootChecks` when no default folder is
+ * known.
  *
  * `outsideFolders` are readable folders outside the default folder's subtree
  * (at the Grafana root level, inside a team folder, etc.) — first-class
@@ -92,28 +95,33 @@ export function buildChecksByFolder(
         children: [],
         isAccessible: !!folder,
         isOrphaned: !folder,
+        isDefault: uid === defaultFolderUid,
         isOutside: outsideUids.has(uid),
       });
     }
     return nodeMap.get(uid)!;
   };
 
-  const isDefaultFolder = (uid: string | undefined): boolean => !!defaultFolderUid && uid === defaultFolderUid;
+  const rootChecks: Check[] = [];
 
-  const unassignedChecks: Check[] = [];
+  // The default folder always has a node, even with zero checks: it is the
+  // home of SM checks and anchors the hierarchy.
+  if (defaultFolderUid) {
+    getOrCreateNode(defaultFolderUid);
+  }
 
   checks.forEach((check) => {
-    if (!check.folderUid || isDefaultFolder(check.folderUid)) {
-      unassignedChecks.push(check);
+    // `||` (not `??`): an empty-string folderUid also means the default folder.
+    const folderUid = check.folderUid || defaultFolderUid;
+    if (!folderUid) {
+      rootChecks.push(check);
       return;
     }
-    getOrCreateNode(check.folderUid).checks.push(check);
+    getOrCreateNode(folderUid).checks.push(check);
   });
 
   folders.forEach((folder) => {
-    if (!isDefaultFolder(folder.uid)) {
-      getOrCreateNode(folder.uid);
-    }
+    getOrCreateNode(folder.uid);
   });
 
   nodeMap.forEach((node) => {
@@ -122,7 +130,7 @@ export function buildChecksByFolder(
     // references) are skipped instead of creating bogus "not found" nodes;
     // the node then renders at top level.
     let current = node.folder;
-    while (current?.parentUid && !isDefaultFolder(current.parentUid)) {
+    while (current?.parentUid) {
       const parent = foldersById.get(current.parentUid);
       if (!parent) {
         break;
@@ -134,12 +142,8 @@ export function buildChecksByFolder(
 
   const rootNodes: FolderNode[] = [];
   nodeMap.forEach((node) => {
-    if (isDefaultFolder(node.folderUid)) {
-      return;
-    }
-
     const parentUid = node.folder?.parentUid;
-    if (parentUid && !isDefaultFolder(parentUid) && nodeMap.has(parentUid)) {
+    if (parentUid && nodeMap.has(parentUid)) {
       nodeMap.get(parentUid)!.children.push(node);
     } else {
       rootNodes.push(node);
@@ -164,5 +168,11 @@ export function buildChecksByFolder(
   };
   sortNodes(rootNodes);
 
-  return { folderTree: rootNodes, rootChecks: unassignedChecks };
+  // The default folder leads the list regardless of check counts.
+  const defaultIndex = rootNodes.findIndex((n) => n.isDefault);
+  if (defaultIndex > 0) {
+    rootNodes.unshift(...rootNodes.splice(defaultIndex, 1));
+  }
+
+  return { folderTree: rootNodes, rootChecks };
 }

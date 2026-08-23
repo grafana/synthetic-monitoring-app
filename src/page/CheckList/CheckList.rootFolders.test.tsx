@@ -87,13 +87,9 @@ describe('buildChecksByFolder - outside folders', () => {
   });
 
   test('an outside folder with an unknown parent renders at top level without bogus ancestor nodes', () => {
-    const { folderTree } = buildChecksByFolder(
-      [CHECK_IN_ROOT_CHILD_FOLDER],
-      MOCK_FOLDERS,
-      DEFAULT_FOLDER.uid,
-      false,
-      [FOLDER_ROOT_CHILD]
-    );
+    const { folderTree } = buildChecksByFolder([CHECK_IN_ROOT_CHILD_FOLDER], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false, [
+      FOLDER_ROOT_CHILD,
+    ]);
 
     const childNode = folderTree.find((n) => n.folderUid === FOLDER_ROOT_CHILD.uid);
     expect(childNode).toBeDefined();
@@ -104,22 +100,22 @@ describe('buildChecksByFolder - outside folders', () => {
 describe('CheckList - Outside folders', () => {
   beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
 
-  test('shows a root-level folder containing checks with a Root badge', async () => {
+  test('shows a root-level folder containing checks as a top-level group without a badge', async () => {
     await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_ROOT_FOLDER]);
 
     expect(await screen.findByText(FOLDER_ROOT.title)).toBeInTheDocument();
     expect(screen.getByText(CHECK_IN_ROOT_FOLDER.job)).toBeInTheDocument();
-    expect(await screen.findByText('Root')).toBeInTheDocument();
+    // Position in the hierarchy conveys the location; there is no Root badge.
+    expect(screen.queryByText('Root')).not.toBeInTheDocument();
   });
 
-  test('nests a subfolder of an outside folder under its parent, without a badge of its own', async () => {
+  test('nests a subfolder of an outside folder under its parent', async () => {
     await renderCheckList([CHECK_IN_ROOT_FOLDER, CHECK_IN_ROOT_CHILD_FOLDER]);
 
     expect(await screen.findByText(FOLDER_ROOT.title)).toBeInTheDocument();
     expect(await screen.findByText(FOLDER_ROOT_CHILD.title)).toBeInTheDocument();
     expect(screen.getByText(CHECK_IN_ROOT_CHILD_FOLDER.job)).toBeInTheDocument();
-    // Only the root-level parent carries the Root badge
-    expect(screen.getAllByText('Root')).toHaveLength(1);
+    expect(screen.queryByText('Root')).not.toBeInTheDocument();
   });
 
   test('does not show empty outside folders in the check list', async () => {

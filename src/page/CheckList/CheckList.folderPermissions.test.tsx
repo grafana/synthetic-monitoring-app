@@ -82,7 +82,10 @@ describe('CheckList - Folder Permissions', () => {
     describe('visibility', () => {
       it('shows checks in accessible folders', async () => {
         await renderCheckList();
-        expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+        // Wait for the default folder group: once it renders, the tree has
+        // settled and folder nodes will not remount into it anymore.
+        expect(await screen.findByText(/\(default\)/)).toBeInTheDocument();
+        await waitFor(() => expect(screen.getByText('Production HTTP check')).toBeInTheDocument());
         expect(screen.getByText('Staging DNS check')).toBeInTheDocument();
       });
 

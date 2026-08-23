@@ -129,13 +129,18 @@ describe('CheckList - Folder Deletion on Bulk Delete', () => {
     await clickFolderDeleteButton(user, '2 selected');
 
     expect(await screen.findByText(/Delete folder "Deletable" \+ 2 checks/)).toBeInTheDocument();
-    expect(screen.getByText(/This will delete the folder, including 2 checks\. This action cannot be undone\./)).toBeInTheDocument();
+    expect(
+      screen.getByText(/This will delete the folder, including 2 checks\. This action cannot be undone\./)
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete folder and checks' })).toBeInTheDocument();
   });
 
   it('shows standard delete confirmation when only some checks in a folder are selected', async () => {
     const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
 
+    // Wait for the default folder group: once it renders, the tree has
+    // settled and check rows will not remount into it anymore.
+    expect(await screen.findByText(/\(default\)/)).toBeInTheDocument();
     const checkCheckboxes = await screen.findAllByLabelText('Select check');
     await user.click(checkCheckboxes[0]!);
 
@@ -186,10 +191,7 @@ describe('CheckList - Folder Deletion on Bulk Delete', () => {
     const { record: recordDelete, requests: deleteRequests } = getServerRequests();
     const { record: recordFolderDelete, requests: folderDeleteRequests } = getServerRequests();
 
-    server.use(
-      apiRoute('deleteCheck', {}, recordDelete),
-      apiRoute('deleteFolder', {}, recordFolderDelete)
-    );
+    server.use(apiRoute('deleteCheck', {}, recordDelete), apiRoute('deleteFolder', {}, recordFolderDelete));
 
     const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER]);
 

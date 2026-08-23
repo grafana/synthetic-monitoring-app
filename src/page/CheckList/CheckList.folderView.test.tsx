@@ -59,34 +59,39 @@ const renderCheckList = async (checks: Check[] = FOLDER_CHECKS, searchParams = '
 };
 
 describe('buildChecksByFolder', () => {
-  test('default folder is unwrapped -- its children are promoted to root level', () => {
+  test('default folder is a pinned-first top-level node with its subfolders nested inside', () => {
     const { folderTree } = buildChecksByFolder(FOLDER_CHECKS, MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    const allUids = collectAllFolderUids(folderTree);
-    expect(allUids).not.toContain(DEFAULT_FOLDER.uid);
-    expect(allUids).toContain(FOLDER_PRODUCTION.uid);
-    expect(allUids).toContain(FOLDER_STAGING.uid);
+    expect(folderTree[0].folderUid).toBe(DEFAULT_FOLDER.uid);
+    expect(folderTree[0].isDefault).toBe(true);
+
+    const childUids = folderTree[0].children.map((c) => c.folderUid);
+    expect(childUids).toContain(FOLDER_PRODUCTION.uid);
+    expect(childUids).toContain(FOLDER_STAGING.uid);
   });
 
-  test('checks without folderUid become rootChecks (unassigned)', () => {
-    const { rootChecks } = buildChecksByFolder(FOLDER_CHECKS, MOCK_FOLDERS, DEFAULT_FOLDER.uid);
+  test('checks without folderUid land in the default folder node', () => {
+    const { folderTree, rootChecks } = buildChecksByFolder(FOLDER_CHECKS, MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    expect(rootChecks).toHaveLength(1);
-    expect(rootChecks[0].job).toBe(CHECK_WITHOUT_FOLDER.job);
+    expect(rootChecks).toHaveLength(0);
+    const defaultNode = folderTree.find((n) => n.isDefault);
+    expect(defaultNode!.checks.map((c) => c.job)).toContain(CHECK_WITHOUT_FOLDER.job);
   });
 
-  test('checks explicitly assigned to the default folder also become rootChecks', () => {
+  test('checks explicitly assigned to the default folder land in its node', () => {
     const checkInDefault: Check = { ...BASIC_HTTP_CHECK, id: 200, folderUid: DEFAULT_FOLDER.uid };
-    const { rootChecks } = buildChecksByFolder([checkInDefault], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
+    const { folderTree, rootChecks } = buildChecksByFolder([checkInDefault], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    expect(rootChecks).toHaveLength(1);
-    expect(rootChecks[0].id).toBe(200);
+    expect(rootChecks).toHaveLength(0);
+    const defaultNode = folderTree.find((n) => n.isDefault);
+    expect(defaultNode!.checks.map((c) => c.id)).toEqual([200]);
   });
 
-  test('child folders of the default folder appear at root level with their checks', () => {
+  test('child folders of the default folder nest under it with their checks', () => {
     const { folderTree } = buildChecksByFolder(FOLDER_CHECKS, MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    const productionNode = folderTree.find((n) => n.folderUid === FOLDER_PRODUCTION.uid);
+    const defaultNode = folderTree.find((n) => n.isDefault);
+    const productionNode = defaultNode!.children.find((n) => n.folderUid === FOLDER_PRODUCTION.uid);
     expect(productionNode).toBeDefined();
     expect(productionNode!.checks).toHaveLength(1);
   });
@@ -118,7 +123,8 @@ describe('buildChecksByFolder', () => {
   test('sorts empty folders after folders with checks', () => {
     const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    const titles = folderTree.map((n) => n.folder?.title);
+    const children = folderTree.find((n) => n.isDefault)!.children;
+    const titles = children.map((n) => n.folder?.title);
     const productionIndex = titles.indexOf(FOLDER_PRODUCTION.title);
     const emptyFolderTitles = [FOLDER_STAGING.title, FOLDER_READONLY.title, FOLDER_DELETABLE.title];
     const emptyIndices = emptyFolderTitles.map((t) => titles.indexOf(t));
@@ -131,7 +137,8 @@ describe('buildChecksByFolder', () => {
   test('sorts empty folders alphabetically among themselves', () => {
     const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    const emptyNodes = folderTree.filter((n) => n.checks.length === 0 && n.children.length === 0);
+    const children = folderTree.find((n) => n.isDefault)!.children;
+    const emptyNodes = children.filter((n) => n.checks.length === 0 && n.children.length === 0);
     const titles = emptyNodes.map((n) => n.folder?.title ?? n.folderUid);
     const sorted = [...titles].sort((a, b) => a.localeCompare(b));
     expect(titles).toEqual(sorted);
@@ -141,18 +148,16 @@ describe('buildChecksByFolder', () => {
     const { folderTree: aToZ } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false);
     const { folderTree: zToA } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, true);
 
-    const titlesAZ = aToZ.map((n) => n.folder?.title ?? n.folderUid);
-    const titlesZA = zToA.map((n) => n.folder?.title ?? n.folderUid);
+    const childrenAZ = aToZ.find((n) => n.isDefault)!.children;
+    const childrenZA = zToA.find((n) => n.isDefault)!.children;
 
-    const nonEmptyAZ = aToZ.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
-    const nonEmptyZA = zToA.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
+    const nonEmptyAZ = childrenAZ.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
+    const nonEmptyZA = childrenZA.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
     expect(nonEmptyZA).toEqual([...nonEmptyAZ].reverse());
 
-    const emptyAZ = aToZ.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
-    const emptyZA = zToA.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
+    const emptyAZ = childrenAZ.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
+    const emptyZA = childrenZA.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
     expect(emptyZA).toEqual([...emptyAZ].reverse());
-
-    expect(titlesZA).not.toEqual(titlesAZ);
   });
 
   test('returns orphaned nodes when folders list is empty', () => {
@@ -217,15 +222,16 @@ describe('CheckList - Folder View Integration', () => {
       expect(await screen.findByText(/Folders/)).toBeInTheDocument();
     });
 
-    test('renders checks in a readable folder outside the default subtree with a badge', async () => {
+    test('renders checks in a readable folder outside the default subtree as a top-level group', async () => {
       await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_EXTERNAL_FOLDER], 'view=folder');
 
       // The external fixture duplicates the default folder's title (the
-      // stranded-folder incident scenario); the default node is suffixed and
-      // the stranded root-level duplicate carries the Root badge.
+      // stranded-folder incident scenario); the default node is suffixed,
+      // the stranded duplicate renders as a plain top-level group — its
+      // position in the hierarchy says where it lives, no badge needed.
       expect(await screen.findByText(FOLDER_EXTERNAL.title)).toBeInTheDocument();
       expect(screen.getByText(`${FOLDER_EXTERNAL.title} (default)`)).toBeInTheDocument();
-      expect(await screen.findByText('Root')).toBeInTheDocument();
+      expect(screen.queryByText('Root')).not.toBeInTheDocument();
       expect(screen.getByText('External folder check')).toBeInTheDocument();
       expect(screen.queryByText('Folder not found')).not.toBeInTheDocument();
     });

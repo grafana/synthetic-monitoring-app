@@ -82,7 +82,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const {
     folders: allFolders,
-    foldersMap,
     defaultFolderUid,
     isLoading: isFoldersLoading,
     isError: isFoldersError,
@@ -340,7 +339,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           checks={visibleChecks}
           folders={allFolders}
           outsideFolders={outsideFolders}
-          foldersMap={foldersMap}
           foldersLoading={isFoldersLoading}
           foldersError={isFoldersError}
           onRetryFolders={refetchFolders}
