@@ -125,7 +125,9 @@ export function CheckListFolderView({
 
   // Same pattern as Alerting → Notification policies: one button that flips
   // between expand-all and collapse-all based on whether everything is open.
-  const allExpanded = collapsedFolders.size === 0;
+  // Only folders currently in the tree count: collapsedFolders can hold
+  // stale UIDs of folders that have since left it (filters, deletions).
+  const allExpanded = allUids.every((uid) => !collapsedFolders.has(uid));
 
   const toggleAllExpanded = () => {
     if (allExpanded) {
