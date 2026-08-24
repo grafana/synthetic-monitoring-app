@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import {
@@ -248,6 +248,37 @@ describe('CheckList - Folder View Integration', () => {
 
       await user.click(emptyCheckbox);
       expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
+    });
+
+    test('a single button toggles between collapsing and expanding all folders', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Collapse all folders' }));
+      expect(screen.queryByText('Production HTTP check')).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Expand all folders' }));
+      expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+    });
+
+    test('the toggle tracks only folders currently in the tree, ignoring stale collapsed ones', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_WITH_ORPHANED_FOLDER]);
+
+      // Collapse the orphaned folder; its node only exists while its check
+      // is in the list.
+      expect(await screen.findByText('Orphaned folder check')).toBeInTheDocument();
+      await user.click(screen.getByLabelText('Collapse folder deleted-folder-uid'));
+
+      // Filter its check out: the folder leaves the tree (the count drops)
+      // but its UID stays in the collapsed set. Every folder still shown is
+      // expanded, so the toggle must offer to collapse, not report a
+      // collapsed state.
+      const searchInput = screen.getByPlaceholderText('Search by job name, endpoint, or label');
+      await user.type(searchInput, CHECK_IN_PRODUCTION.job);
+      await waitFor(() => expect(screen.getByText(/Folders \(5\)/)).toBeInTheDocument());
+
+      expect(screen.getByRole('button', { name: 'Collapse all folders' })).toBeInTheDocument();
     });
 
     test('deselecting an empty folder hides the delete action', async () => {
