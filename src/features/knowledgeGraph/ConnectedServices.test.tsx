@@ -120,6 +120,15 @@ it('is expanded on load and shows the zero state for an unlinked check', async (
   );
 });
 
+it('renders the feature feedback widget in the section header', async () => {
+  setKgInstalled(true);
+  await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
+
+  expect(screen.getByText('New feature!')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'I love this feature' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: "I don't like this feature" })).toBeInTheDocument();
+});
+
 it('can be collapsed and expanded again', async () => {
   setKgInstalled(true);
   const { user } = await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));

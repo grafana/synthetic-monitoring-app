@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, IconButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Icon, IconButton, LinkButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -10,6 +10,7 @@ import { CenteredSpinner } from 'components/CenteredSpinner/CenteredSpinner';
 import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { FormSectionName } from 'components/Checkster/types';
 import { ErrorAlert } from 'components/ErrorAlert/ErrorAlert';
+import { Feedback } from 'components/Feedback';
 
 import {
   CONNECTED_SERVICES_SUBTITLE,
@@ -76,10 +77,17 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
             {CONNECTED_SERVICES_SUBTITLE}
           </Text>
         </div>
+        <Feedback feature="knowledge-graph-connected-services" about={{ text: `New feature!` }} />
         {serviceName && (
-          <TextLink href={getServiceEntityUrl(serviceName, namespace)} external icon="external-link-alt">
+          <LinkButton
+            variant="secondary"
+            size="sm"
+            icon="external-link-alt"
+            href={getServiceEntityUrl(serviceName, namespace)}
+            target="_blank"
+          >
             Open in Knowledge Graph
-          </TextLink>
+          </LinkButton>
         )}
       </div>
 
