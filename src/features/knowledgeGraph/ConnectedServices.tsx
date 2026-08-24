@@ -77,7 +77,7 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
             {CONNECTED_SERVICES_SUBTITLE}
           </Text>
         </div>
-        <Feedback feature="knowledge-graph" about={{ text: `New feature!` }} />
+        <Feedback feature="knowledge-graph-connected-services" about={{ text: `New feature!` }} />
         {serviceName && (
           <LinkButton
             variant="secondary"
