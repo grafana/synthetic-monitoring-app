@@ -65,8 +65,32 @@ func TestReliabilityInboxURL(t *testing.T) {
 			apiHost: "synthetic-monitoring-api-eu-west-2.example.grafana-ops.net",
 			want:    "https://k6-experiments-ops-eu-west-2.example.grafana-ops.net/api/v1alpha1/reliability-inbox/suggestions",
 		},
+		"prod region": {
+			apiHost: "synthetic-monitoring-api-us-east-0.grafana.net",
+			want:    "https://k6-experiments-prod-us-east-0.grafana.net/api/v1alpha1/reliability-inbox/suggestions",
+		},
+		"prod us central alias": {
+			apiHost: "synthetic-monitoring-api.grafana.net",
+			want:    "https://k6-experiments-prod-us-central-0.grafana.net/api/v1alpha1/reliability-inbox/suggestions",
+		},
+		"prod australia alias": {
+			apiHost: "synthetic-monitoring-api-au-southeast.grafana.net",
+			want:    "https://k6-experiments-prod-au-southeast-0.grafana.net/api/v1alpha1/reliability-inbox/suggestions",
+		},
+		"prod europe alias": {
+			apiHost: "synthetic-monitoring-api-eu-west.grafana.net",
+			want:    "https://k6-experiments-prod-eu-west-0.grafana.net/api/v1alpha1/reliability-inbox/suggestions",
+		},
+		"prod UK alias": {
+			apiHost: "synthetic-monitoring-api-gb-south.grafana.net",
+			want:    "https://k6-experiments-prod-gb-south-0.grafana.net/api/v1alpha1/reliability-inbox/suggestions",
+		},
 		"untrusted host": {
 			apiHost: "https://example.com",
+			want:    "",
+		},
+		"production suffix spoof": {
+			apiHost: "https://synthetic-monitoring-api-us-east-0.grafana.net.example.com",
 			want:    "",
 		},
 	}

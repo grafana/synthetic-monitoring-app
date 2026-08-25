@@ -29,6 +29,18 @@ describe('reliabilityInboxURL', () => {
     });
   });
 
+  describe('prod', () => {
+    it.each([
+      ['synthetic-monitoring-api-us-east-0.grafana.net', 'k6-experiments-prod-us-east-0.grafana.net'],
+      ['synthetic-monitoring-api.grafana.net', 'k6-experiments-prod-us-central-0.grafana.net'],
+      ['synthetic-monitoring-api-au-southeast.grafana.net', 'k6-experiments-prod-au-southeast-0.grafana.net'],
+      ['synthetic-monitoring-api-eu-west.grafana.net', 'k6-experiments-prod-eu-west-0.grafana.net'],
+      ['synthetic-monitoring-api-gb-south.grafana.net', 'k6-experiments-prod-gb-south-0.grafana.net'],
+    ])('%s', (apiHost, expected) => {
+      expect(reliabilityInboxURL(`https://${apiHost}`)).toBe(suggestions(expected));
+    });
+  });
+
   describe('formatting tolerance', () => {
     it.each([
       'synthetic-monitoring-api-dev.grafana-dev.net',
@@ -46,7 +58,7 @@ describe('reliabilityInboxURL', () => {
       ['', 'empty'],
       ['not a url', 'garbage'],
       ['https://example.com', 'unknown domain'],
-      ['https://synthetic-monitoring-api-us-east-0.grafana.net', 'production is not deployed'],
+      ['https://synthetic-monitoring-api-us-east-0.grafana.net.example.com', 'production suffix spoof'],
       ['https://grafana-dev.net', 'no host label'],
       ['https://prometheus-dev-01-dev-us-central-0.grafana-dev.net', 'not the SM API'],
       ['https://synthetic-monitoring-api.grafana-dev.net', 'bare prefix without an override'],
