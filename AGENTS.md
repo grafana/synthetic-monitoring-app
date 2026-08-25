@@ -25,8 +25,10 @@ Standard commands are in `package.json`:
 The plugin has a Go backend under `pkg/`. It backs the **nested
 `synthetic-monitoring-datasource` plugin** (`src/datasource/plugin.json`), not the
 app itself — Grafana routes panel and scene queries through datasources, so an app
-backend could not serve them. It reports its health and proxies Reliability Inbox
-suggestion requests so the browser never receives the stored access token.
+backend could not serve them.
+
+Its current responsibilities are reporting datasource health and proxying Reliability
+Inbox suggestion requests with the stored access token.
 
 `src/plugin.json` must **not** gain `backend`/`executable`. The SDK's build target
 only looks for the nested datasource when the app's `plugin.json` has no
