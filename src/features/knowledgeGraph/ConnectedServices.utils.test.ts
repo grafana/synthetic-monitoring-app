@@ -80,11 +80,11 @@ describe('buildServiceNeighbourhoodQuery', () => {
     expect(query).toContain(
       'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[:MONITORED_BY]-(s1:Service)'
     );
-    // outbound dependencies
-    expect(query).toContain('OPTIONAL MATCH (s1)-[:CALLS]->(downstream:Service)');
-    // inbound callers
-    expect(query).toContain('OPTIONAL MATCH (upstream:Service)-[:CALLS]->(s1)');
-    expect(query).toContain('RETURN sy, s1, downstream, upstream');
+    // Undirected, so it picks up both the services this one calls and the ones that call it. The
+    // directed inbound form is answered with a 500 by some KG versions.
+    expect(query).toContain('OPTIONAL MATCH (s1)-[:CALLS]-(neighbour:Service)');
+    expect(query).not.toContain('->(downstream:Service)');
+    expect(query).toContain('RETURN sy, s1, neighbour');
   });
 
   it('escapes the entity name it interpolates', () => {

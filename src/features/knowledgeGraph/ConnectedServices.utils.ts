@@ -19,21 +19,22 @@ export function escapeCypher(value: string): string {
  *
  * Starting from the SyntheticCheck entity, it walks the MONITORED_BY relationship (Service
  * MONITORED_BY check — the direction the KG's insight propagation expects) to the linked
- * Service, then one hop of CALLS in both directions:
- * - outbound `(s1)-[:CALLS]->(downstream)` — services the monitored service depends on
- * - inbound `(upstream)-[:CALLS]->(s1)` — services that depend on the monitored service
+ * Service, then one hop of CALLS in either direction. Both directions matter for RCA: a failing
+ * check could be caused by a broken downstream dependency, or be the cause of failures in an
+ * upstream caller. Returning both surfaces red-ringed neighbours either way. We deliberately
+ * keep it to a single hop so the graph stays a readable hint rather than the full topology
+ * (which lives in the Knowledge Graph app).
  *
- * Both directions matter for RCA: a failing check could be caused by a broken downstream
- * dependency, or be the cause of failures in an upstream caller. Returning both surfaces
- * red-ringed neighbours either way. We deliberately keep it to a single hop so the graph stays
- * a readable hint rather than the full topology (which lives in the Knowledge Graph app).
+ * The CALLS hop is matched undirected rather than as two directed OPTIONAL MATCHes: some KG
+ * versions answer `OPTIONAL MATCH (s1)<-[:CALLS]-(upstream:Service)` with a 500 (the whole
+ * section then fails), while the undirected form is answered everywhere. Direction is not lost —
+ * it comes from the edges frame's source/target, which parseGraphFrames reads.
  */
 export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
   return [
     `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
-    `OPTIONAL MATCH (s1)-[:CALLS]->(downstream:Service)`,
-    `OPTIONAL MATCH (upstream:Service)-[:CALLS]->(s1)`,
-    `RETURN sy, s1, downstream, upstream`,
+    `OPTIONAL MATCH (s1)-[:CALLS]-(neighbour:Service)`,
+    `RETURN sy, s1, neighbour`,
   ].join('\n');
 }
 
