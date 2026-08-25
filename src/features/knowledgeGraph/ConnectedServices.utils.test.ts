@@ -253,17 +253,50 @@ describe('getEntityDrawerUrl', () => {
     };
   }
 
+  function paramsOf(url: string): URLSearchParams {
+    return new URLSearchParams(url.split('?')[1]);
+  }
+
   it('builds the KG entity-drawer link with type, name and the non-empty scope values', () => {
     const url = getEntityDrawerUrl(buildNode());
+    const params = paramsOf(url);
 
-    expect(url).toBe(
-      '/a/grafana-asserts-app/entities?ed%5Btype%5D=Service&ed%5Bname%5D=frontend&ed%5Bscope%5D%5Benv%5D=prod&ed%5Bscope%5D%5Bnamespace%5D=otel-demo'
-    );
+    expect(url.startsWith('/a/grafana-asserts-app/entities?')).toBe(true);
+    expect(params.get('ed[type]')).toBe('Service');
+    expect(params.get('ed[name]')).toBe('frontend');
+    expect(params.get('ed[scope][env]')).toBe('prod');
+    expect(params.get('ed[scope][namespace]')).toBe('otel-demo');
+    expect(params.get('ed[scope][site]')).toBeNull();
   });
 
-  it('omits empty scope values', () => {
-    const url = getEntityDrawerUrl(buildNode({ scope: { env: '', site: '', namespace: '' } }));
+  it('includes a filterCriteria search so the KG graph page loads the entity underneath the drawer', () => {
+    const params = paramsOf(getEntityDrawerUrl(buildNode()));
 
-    expect(url).toBe('/a/grafana-asserts-app/entities?ed%5Btype%5D=Service&ed%5Bname%5D=frontend');
+    expect(params.get('filterCriteria[0][entityType]')).toBe('Service');
+    expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
+
+    // name matcher always present; env/namespace matchers mirror the scope
+    expect(params.get('filterCriteria[0][propertyMatchers][0][name]')).toBe('name');
+    expect(params.get('filterCriteria[0][propertyMatchers][0][value]')).toBe('frontend');
+    expect(params.get('filterCriteria[0][propertyMatchers][0][op]')).toBe('=');
+    expect(params.get('filterCriteria[0][propertyMatchers][0][type]')).toBe('String');
+    expect(params.get('filterCriteria[0][propertyMatchers][1][name]')).toBe('env');
+    expect(params.get('filterCriteria[0][propertyMatchers][1][value]')).toBe('prod');
+    expect(params.get('filterCriteria[0][propertyMatchers][2][name]')).toBe('namespace');
+    expect(params.get('filterCriteria[0][propertyMatchers][2][value]')).toBe('otel-demo');
+  });
+
+  it('omits empty scope values from both the drawer params and the search matchers', () => {
+    const params = paramsOf(getEntityDrawerUrl(buildNode({ scope: { env: '', site: '', namespace: '' } })));
+
+    expect(params.get('ed[type]')).toBe('Service');
+    expect(params.get('ed[name]')).toBe('frontend');
+    expect(params.get('ed[scope][env]')).toBeNull();
+    expect(params.get('ed[scope][site]')).toBeNull();
+    expect(params.get('ed[scope][namespace]')).toBeNull();
+
+    expect(params.get('filterCriteria[0][propertyMatchers][0][name]')).toBe('name');
+    expect(params.get('filterCriteria[0][propertyMatchers][0][value]')).toBe('frontend');
+    expect(params.get('filterCriteria[0][propertyMatchers][1][name]')).toBeNull();
   });
 });
