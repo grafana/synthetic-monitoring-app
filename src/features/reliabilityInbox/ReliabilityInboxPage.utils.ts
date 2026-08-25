@@ -32,20 +32,30 @@ export function getAssistantActionState({
 }
 
 export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
+  const { suggestion, proposedCheck, subject } = opportunity;
+  const { reqPerS, errorRatio, p99Ms } = suggestion.evidence;
+
   const context = createAssistantContextItem('structured', {
-    title: `Reliability Inbox setup: ${opportunity.subject}`,
-    bypassLimits: true,
+    title: `Reliability Inbox setup: ${subject}`,
     data: {
       name: 'Reliability Inbox guided setup',
-      suggestion: opportunity.suggestion,
-      suggestedDraft: opportunity.proposedCheck,
+      suggestion: {
+        id: suggestion.id,
+        target: suggestion.target,
+        checkType: suggestion.checkType,
+        reachability: suggestion.reachability,
+        confidence: suggestion.confidence,
+        rationale: suggestion.rationale,
+        evidence: { reqPerS, errorRatio, p99Ms },
+      },
+      suggestedDraft: proposedCheck,
     },
   });
 
   return {
     origin: ASSISTANT_ORIGIN,
     prompt: [
-      opportunity.suggestion.prompt,
+      suggestion.prompt,
       'Review this suggestion with me and inspect available probes and existing checks where possible.',
       'Do not invent credentials, private-network details, DNS resolvers, probe assignments, or business semantics.',
       'Show the final configuration and do not create or save the check until I explicitly confirm it.',

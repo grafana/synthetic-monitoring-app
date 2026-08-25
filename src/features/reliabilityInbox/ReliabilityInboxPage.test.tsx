@@ -622,9 +622,21 @@ describe('ReliabilityInboxPage', () => {
           expect.objectContaining({
             type: 'structured',
             title: 'Reliability Inbox setup: mcp.goagain.dev',
-            data: expect.objectContaining({
+            data: {
               name: 'Reliability Inbox guided setup',
-              suggestion: HTTP_RELIABILITY_SUGGESTION,
+              suggestion: {
+                id: HTTP_RELIABILITY_SUGGESTION.id,
+                target: HTTP_RELIABILITY_SUGGESTION.target,
+                checkType: HTTP_RELIABILITY_SUGGESTION.checkType,
+                reachability: HTTP_RELIABILITY_SUGGESTION.reachability,
+                confidence: HTTP_RELIABILITY_SUGGESTION.confidence,
+                rationale: HTTP_RELIABILITY_SUGGESTION.rationale,
+                evidence: {
+                  reqPerS: HTTP_RELIABILITY_SUGGESTION.evidence.reqPerS,
+                  errorRatio: HTTP_RELIABILITY_SUGGESTION.evidence.errorRatio,
+                  p99Ms: HTTP_RELIABILITY_SUGGESTION.evidence.p99Ms,
+                },
+              },
               suggestedDraft: expect.objectContaining({
                 target: 'https://mcp.goagain.dev/',
                 checkType: 'http',
@@ -633,11 +645,12 @@ describe('ReliabilityInboxPage', () => {
                 validStatusCodes: [200],
                 probeIds: [7],
               }),
-            }),
+            },
           }),
         ],
       })
     );
+    expect(openAssistant.mock.calls[0][0].context[0].bypassLimits).toBeUndefined();
   });
 
   it('defers probe location selection to the review flow', async () => {
