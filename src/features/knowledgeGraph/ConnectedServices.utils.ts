@@ -184,9 +184,14 @@ export function parseGraphFrames(frames: DataFrame[]): ServiceNeighbourhood {
 }
 
 /**
- * Deep link into the Knowledge Graph app's entity drawer — the same URL shape the KG datasource
- * attaches to its node data links, so clicking any node opens exactly that entity (scoped by
- * env/site/namespace, which disambiguates same-name entities across environments).
+ * Deep link into the Knowledge Graph app's entity drawer, scoped by env/site/namespace (which
+ * disambiguates same-name entities across environments).
+ *
+ * The `ed` params alone only open the drawer: the KG entities page derives its underlying graph
+ * search from `filterCriteria`, not from `ed`, so an ed-only link lands on an empty page with a
+ * floating drawer. The `filterCriteria` params mirror what the KG's own "Explore connected
+ * entities" → "View Graph" action dispatches (an EQUALS search on name/env/namespace, connected
+ * to Services), so the link also populates the graph underneath the drawer.
  */
 export function getEntityDrawerUrl(node: NeighbourhoodNode): string {
   const params = new URLSearchParams();
@@ -202,6 +207,24 @@ export function getEntityDrawerUrl(node: NeighbourhoodNode): string {
   if (node.scope.namespace) {
     params.set('ed[scope][namespace]', node.scope.namespace);
   }
+
+  params.set('filterCriteria[0][entityType]', node.entityType);
+  params.set('filterCriteria[0][connectToEntityTypes][0]', KG_SERVICE_ENTITY_TYPE);
+
+  const matchers: Array<[name: string, value: string]> = [['name', node.name]];
+  if (node.scope.env) {
+    matchers.push(['env', node.scope.env]);
+  }
+  if (node.scope.namespace) {
+    matchers.push(['namespace', node.scope.namespace]);
+  }
+  matchers.forEach(([name, value], index) => {
+    const prefix = `filterCriteria[0][propertyMatchers][${index}]`;
+    params.set(`${prefix}[name]`, name);
+    params.set(`${prefix}[type]`, 'String');
+    params.set(`${prefix}[op]`, '=');
+    params.set(`${prefix}[value]`, value);
+  });
 
   return `/a/${KG_PLUGIN_ID}/entities?${params.toString()}`;
 }
