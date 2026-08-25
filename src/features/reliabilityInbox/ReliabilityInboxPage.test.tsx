@@ -580,30 +580,24 @@ describe('ReliabilityInboxPage', () => {
     expect(locationService.getLocation()).toMatchObject({
       pathname: `${generateRoutePath(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}`,
       search: `?checkType=${CheckType.Http}`,
+      state: {
+        prefilledCheck: expect.objectContaining({
+          job: 'mcp.goagain.dev',
+          target: 'https://mcp.goagain.dev/',
+          frequency: 60_000,
+          timeout: 2_000,
+          probes: [7],
+          labels: [],
+          settings: {
+            http: expect.objectContaining({
+              method: HttpMethod.Get,
+              validStatusCodes: [200],
+              failIfNotSSL: true,
+            }),
+          },
+        }),
+      },
     });
-    expect(locationService.push).toHaveBeenLastCalledWith(
-      expect.objectContaining({
-        pathname: `${generateRoutePath(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}`,
-        search: `?checkType=${CheckType.Http}`,
-        state: {
-          prefilledCheck: expect.objectContaining({
-            job: 'mcp.goagain.dev',
-            target: 'https://mcp.goagain.dev/',
-            frequency: 60_000,
-            timeout: 2_000,
-            probes: [7],
-            labels: [],
-            settings: {
-              http: expect.objectContaining({
-                method: HttpMethod.Get,
-                validStatusCodes: [200],
-                failIfNotSSL: true,
-              }),
-            },
-          }),
-        },
-      })
-    );
     expect(openAssistant).not.toHaveBeenCalled();
   });
 

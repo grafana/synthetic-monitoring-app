@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { useAssistant } from '@grafana/assistant';
-import { locationService } from '@grafana/runtime';
 import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
 
 import { getUserPermissions } from 'data/permissions';
@@ -13,6 +13,7 @@ import {
 } from './ReliabilityInboxPage.utils';
 
 export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof useReliabilityInboxSuggestions>) {
+  const navigate = useNavigate();
   const { canWriteChecks } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
   const { data, error, isLoading, isFetching, isError, refetch } = suggestionsQuery;
@@ -73,7 +74,9 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
       return;
     }
 
-    locationService.push(getManualCreateLocation(selected));
+    // Use React Router navigate so location.state reaches NewCheckV2. locationService.push drops it.
+    const { pathname, search, state } = getManualCreateLocation(selected);
+    navigate({ pathname, search }, { state });
   };
 
   return {
