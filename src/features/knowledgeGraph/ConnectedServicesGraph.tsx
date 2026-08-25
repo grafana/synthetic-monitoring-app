@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Stack, Text, TextLink, Tooltip, useStyles2, useTheme2 } from '@grafana/ui';
+import { Dropdown, Icon, Stack, Text, TextLink, useStyles2, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CONNECTED_SERVICES_TEST_ID, KG_SEVERITY_COLORS } from './ConnectedServices.constants';
 import {
   getEntityDrawerUrl,
+  getNodeDisplayName,
   layoutNeighbourhood,
   NeighbourhoodNode,
   NODE_RADIUS,
@@ -13,6 +14,7 @@ import {
   PositionedNode,
   RingSegment,
   ServiceNeighbourhood,
+  wrapLabel,
 } from './ConnectedServices.utils';
 import { KG_SERVICE_ENTITY_TYPE, KG_SYNTHETIC_CHECK_ENTITY_TYPE } from './knowledgeGraph';
 import { logo as smLogo } from 'img';
@@ -26,6 +28,8 @@ const ICON_SIZE = 18;
 const BADGE_RADIUS = 9;
 const LABEL_OFFSET = NODE_RADIUS + 16;
 const LABEL_MAX_CHARS = 18;
+const LABEL_MAX_LINES = 2;
+const LABEL_LINE_HEIGHT = 13;
 const ARROW_ID = 'connected-services-arrow';
 const ARROW_HOVER_ID = 'connected-services-arrow-hover';
 /** Invisible stroke width around each edge so thin lines are easy to hover. */
@@ -141,19 +145,23 @@ interface NodeGlyphProps {
 
 function NodeGlyph({ positioned, theme }: NodeGlyphProps) {
   const { node, x, y } = positioned;
-  const label = truncate(node.name);
+  const displayName = getNodeDisplayName(node);
+  const labelLines = wrapLabel(displayName, LABEL_MAX_CHARS, LABEL_MAX_LINES);
 
-  // Interactive tooltip instead of direct navigation: hovering (or focusing — Tooltip makes the
-  // node keyboard-focusable, and clicking focuses it) opens a card with the entity's insights and
-  // the link into the Knowledge Graph. `interactive` keeps it open while moving the cursor into it.
+  // Click to open, rather than hover: the card carries a link, and a hover card that closes as
+  // soon as the cursor strays off the node is hard to reach. Dropdown keeps it open until the
+  // next click outside or Escape. The native <title> covers hover, naming a node whose label the
+  // layout had to truncate.
   return (
-    <Tooltip interactive placement="right" content={<NodeInsightsCard node={node} />}>
+    <Dropdown placement="right" overlay={<NodeInsightsCard node={node} />}>
       <g
         data-testid={CONNECTED_SERVICES_TEST_ID.node}
         role="button"
-        aria-label={`${node.name} (${node.entityType})`}
+        tabIndex={0}
+        aria-label={`${displayName} (${node.entityType})`}
         style={{ cursor: 'pointer', outline: 'none' }}
       >
+        <title>{displayName}</title>
         <circle cx={x} cy={y} r={getDiscRadius(node)} fill={getDiscFill(node, theme)} />
         <Ring x={x} y={y} segments={node.ringSegments} theme={theme} />
         <NodeIcon node={node} x={x} y={y} />
@@ -168,10 +176,14 @@ function NodeGlyph({ positioned, theme }: NodeGlyphProps) {
           // cross an edge.
           style={{ textShadow: `0 0 4px ${theme.colors.background.primary}` }}
         >
-          {label}
+          {labelLines.map((line, index) => (
+            <tspan key={`${index}-${line}`} x={x} dy={index === 0 ? 0 : LABEL_LINE_HEIGHT}>
+              {line}
+            </tspan>
+          ))}
         </text>
       </g>
-    </Tooltip>
+    </Dropdown>
   );
 }
 
@@ -180,40 +192,49 @@ interface NodeInsightsCardProps {
 }
 
 /**
- * Popup card shown on node hover/focus: entity identity, its active insights (the Cypher
+ * Popup card shown when a node is clicked: entity identity, its active insights (the Cypher
  * response carries insight names and the node's overall severity, not per-insight severities),
  * and the deep link into the Knowledge Graph that node clicks used to navigate to directly.
+ * It brings its own surface — Dropdown renders the overlay unstyled.
  */
 function NodeInsightsCard({ node }: NodeInsightsCardProps) {
   const styles = useStyles2(getStyles);
-  const scopeParts = [node.scope.env && node.scope.env !== 'unknown' ? node.scope.env : '', node.scope.namespace]
+  const displayName = getNodeDisplayName(node);
+  // The namespace is already in the display name for the entities that carry one; only repeat it
+  // in the scope line for the ones it isn't (a check keeps its bare composite name).
+  const scopeParts = [
+    node.scope.env && node.scope.env !== 'unknown' ? node.scope.env : '',
+    displayName === node.name ? node.scope.namespace : '',
+  ]
     .filter(Boolean)
     .join(' · ');
 
   return (
-    <Stack direction="column" gap={0.5}>
-      <Text weight="medium">{node.name}</Text>
-      <Text variant="bodySmall" color="secondary">
-        {scopeParts ? `${node.entityType} · ${scopeParts}` : node.entityType}
-      </Text>
-      {node.insightNames.length > 0 ? (
-        <ul className={styles.insightList}>
-          {node.insightNames.map((insightName) => (
-            <li key={insightName}>
-              <span className={styles.insightDot} style={{ background: severityBadgeFill(node.ringSegments[0]) }} />
-              {insightName}
-            </li>
-          ))}
-        </ul>
-      ) : (
+    <div className={styles.card} data-testid={CONNECTED_SERVICES_TEST_ID.nodeCard}>
+      <Stack direction="column" gap={0.5}>
+        <Text weight="medium">{displayName}</Text>
         <Text variant="bodySmall" color="secondary">
-          No active insights
+          {scopeParts ? `${node.entityType} · ${scopeParts}` : node.entityType}
         </Text>
-      )}
-      <TextLink href={getEntityDrawerUrl(node)} variant="bodySmall" icon="external-link-alt" inline>
-        Open in Knowledge Graph
-      </TextLink>
-    </Stack>
+        {node.insightNames.length > 0 ? (
+          <ul className={styles.insightList}>
+            {node.insightNames.map((insightName) => (
+              <li key={insightName}>
+                <span className={styles.insightDot} style={{ background: severityBadgeFill(node.ringSegments[0]) }} />
+                {insightName}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <Text variant="bodySmall" color="secondary">
+            No active insights
+          </Text>
+        )}
+        <TextLink href={getEntityDrawerUrl(node)} variant="bodySmall" icon="external-link-alt" inline>
+          Open in Knowledge Graph
+        </TextLink>
+      </Stack>
+    </div>
   );
 }
 
@@ -349,10 +370,6 @@ function getDiscFill(node: NeighbourhoodNode, theme: GrafanaTheme2): string {
   return theme.visualization.getColorByName('semi-dark-blue');
 }
 
-function truncate(name: string): string {
-  return name.length > LABEL_MAX_CHARS ? `${name.slice(0, LABEL_MAX_CHARS - 1)}…` : name;
-}
-
 const getStyles = (theme: GrafanaTheme2) => ({
   wrapper: css({
     display: 'flex',
@@ -361,6 +378,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
     // No surface of its own: the graph sits directly on the section's background so the
     // section reads as one panel. Horizontal padding comes from the section body.
     padding: theme.spacing(1, 0),
+  }),
+  card: css({
+    background: theme.colors.background.elevated ?? theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.weak}`,
+    borderRadius: theme.shape.radius.default,
+    boxShadow: theme.shadows.z3,
+    padding: theme.spacing(1, 1.5),
+    maxWidth: 320,
+    // Entity names run long (`namespace/service`, `job__target`) and have no spaces to break on.
+    overflowWrap: 'anywhere',
   }),
   insightList: css({
     listStyle: 'none',

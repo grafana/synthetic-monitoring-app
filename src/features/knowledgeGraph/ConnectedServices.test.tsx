@@ -92,6 +92,22 @@ async function renderSection(check: Check) {
   return result;
 }
 
+/**
+ * Renders the section for a linked check with the KG serving the fixture neighbourhood, waited on
+ * until the graph is up. Returns the datasource `query` spy alongside the render result.
+ */
+async function renderGraph(check: Check = LINKED_CHECK) {
+  setKgInstalled(true);
+  const { nodes, edges } = buildNeighbourhoodFrames();
+  const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
+  setKgDatasource(query);
+
+  const result = await renderSection(check);
+  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
+
+  return { ...result, query };
+}
+
 it('renders nothing when the Knowledge Graph app is not installed', async () => {
   setKgInstalled(false);
   render(<ConnectedServices check={LINKED_CHECK} />);
@@ -146,20 +162,25 @@ it('can be collapsed and expanded again', async () => {
 });
 
 it('renders the neighbourhood graph from the Cypher query result (linked check)', async () => {
-  setKgInstalled(true);
-  const { nodes, edges } = buildNeighbourhoodFrames();
-  const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
-  setKgDatasource(query);
+  const { query } = await renderGraph();
 
-  await renderSection(LINKED_CHECK);
+  // Every node names itself in full on hover, namespaced the way the KG labels its own nodes.
+  const nodeGlyphs = screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.node);
+  expect(nodeGlyphs).toHaveLength(4);
+  const nodeNames = nodeGlyphs.map((node) => node.querySelector('title')?.textContent);
+  expect(nodeNames).toEqual(
+    expect.arrayContaining([
+      'my check__https://grafana.com',
+      'otel-demo/frontend',
+      'otel-demo/cart',
+      'otel-demo/gateway',
+    ])
+  );
 
-  expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph)).toBeInTheDocument();
-  expect(screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.node)).toHaveLength(4);
-
-  // Node labels from the frames.
-  expect(screen.getByText('frontend')).toBeInTheDocument();
-  expect(screen.getByText('cart')).toBeInTheDocument();
-  expect(screen.getByText('gateway')).toBeInTheDocument();
+  // A check has no namespace to prefix, and its long composite name wraps rather than being cut off.
+  const checkNode = nodeGlyphs.find((node) => node.querySelector('title')?.textContent?.startsWith('my check'))!;
+  const checkLabelLines = Array.from(checkNode.querySelectorAll('tspan')).map((line) => line.textContent);
+  expect(checkLabelLines).toEqual(['my check__https://', 'grafana.com']);
 
   // The Cypher query was sent to the KG datasource, scoped to this check's entity name and
   // the dashboard's time range.
@@ -170,38 +191,66 @@ it('renders the neighbourhood graph from the Cypher query result (linked check)'
   expect(request.range.to.valueOf()).toBe(Date.parse(MOCK_TIME_RANGE_TO));
 });
 
-it('shows the insights popup on node hover, with the deep link into the KG app', async () => {
-  setKgInstalled(true);
-  const { nodes, edges } = buildNeighbourhoodFrames();
-  const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
-  setKgDatasource(query);
+it('opens the insights card on node click, with the deep link into the KG app', async () => {
+  const { user } = await renderGraph();
 
-  const { user } = await renderSection(LINKED_CHECK);
-  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
-
-  await user.hover(screen.getByRole('button', { name: 'frontend (Service)' }));
+  await user.click(screen.getByRole('button', { name: 'otel-demo/frontend (Service)' }));
 
   // The service's insights from the frames (insightNames field).
   expect(await screen.findByText('ErrorRatioBreach')).toBeInTheDocument();
   expect(screen.getByText('LatencyAverageBreach')).toBeInTheDocument();
 
-  // The popup carries the entity deep link (clicking a node no longer navigates directly).
+  // The card carries the entity deep link (clicking a node no longer navigates directly).
   // The section header has an "Open in Knowledge Graph" link too, so match on the drawer URL.
   const links = screen.getAllByRole('link', { name: /Open in Knowledge Graph/ });
-  const popupLink = links.find((link) => link.getAttribute('href')?.includes('/entities?'));
-  expect(popupLink).toBeDefined();
-  expect(popupLink).toHaveAttribute('href', expect.stringContaining('ed%5Bname%5D=frontend'));
-  expect(popupLink).toHaveAttribute('href', expect.stringContaining('ed%5Bscope%5D%5Benv%5D=prod'));
+  const cardLink = links.find((link) => link.getAttribute('href')?.includes('ed%5Bname%5D'));
+  expect(cardLink).toBeDefined();
+  expect(cardLink).toHaveAttribute('href', expect.stringContaining('ed%5Bname%5D=frontend'));
+  expect(cardLink).toHaveAttribute('href', expect.stringContaining('ed%5Bscope%5D%5Benv%5D=prod'));
+});
+
+it('keeps the insights card open until it is dismissed', async () => {
+  const { user } = await renderGraph();
+
+  const node = screen.getByRole('button', { name: 'otel-demo/frontend (Service)' });
+  await user.click(node);
+  expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.nodeCard)).toBeInTheDocument();
+
+  // Moving the cursor away no longer closes it — that was the fragile part of the hover popup.
+  await user.unhover(node);
+  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.nodeCard)).toBeInTheDocument();
+
+  await user.keyboard('{Escape}');
+  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.nodeCard)).not.toBeInTheDocument();
+});
+
+it('opens the insights card from the keyboard', async () => {
+  const { user } = await renderGraph();
+
+  const node = screen.getByRole('button', { name: 'otel-demo/frontend (Service)' });
+  node.focus();
+  await user.keyboard('{Enter}');
+
+  expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.nodeCard)).toBeInTheDocument();
+});
+
+it('links the section header to this check and its services in the KG entity graph', async () => {
+  setKgInstalled(true);
+  await renderSection(LINKED_CHECK);
+
+  const headerLink = screen.getByRole('link', { name: /Open in Knowledge Graph/ });
+  const params = new URLSearchParams(headerLink.getAttribute('href')!.split('?')[1]);
+
+  expect(params.get('filterCriteria[0][entityType]')).toBe('SyntheticCheck');
+  expect(params.get('filterCriteria[0][propertyMatchers][0][value]')).toBe(
+    `${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`
+  );
+  expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
+  expect(params.get('view')).toBe('graph');
 });
 
 it('highlights an edge on hover and names the connection', async () => {
-  setKgInstalled(true);
-  const { nodes, edges } = buildNeighbourhoodFrames();
-  const query = jest.fn().mockReturnValue(of({ data: [nodes, edges], state: LoadingState.Done }));
-  setKgDatasource(query);
-
-  const { user } = await renderSection(LINKED_CHECK);
-  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
+  const { user } = await renderGraph();
 
   const edgeGroups = screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge);
   expect(edgeGroups).toHaveLength(3);
