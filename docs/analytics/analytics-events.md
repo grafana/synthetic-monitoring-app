@@ -362,6 +362,49 @@ Tracks when a private probe is deleted.
 
 Tracks when a private probe's token is reset.
 
+### reliability_inbox
+
+#### synthetic-monitoring_reliability_inbox_exposed
+
+Tracks when the compact Reliability Inbox entry point is shown.
+
+##### Properties
+
+| name             | type     | description                                                           |
+| ---------------- | -------- | --------------------------------------------------------------------- |
+| opportunityCount | `number` | Number of reviewable recommendations shown by the inbox entry point.  |
+| topOpportunityId | `string` | Identifier for the highest-priority recommendation shown on exposure. |
+
+#### synthetic-monitoring_reliability_inbox_review_entry_clicked
+
+Tracks when a user enters the dedicated review surface.
+
+##### Properties
+
+| name          | type     | description                                                    |
+| ------------- | -------- | -------------------------------------------------------------- |
+| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+
+#### synthetic-monitoring_reliability_inbox_recommendation_reviewed
+
+Tracks when a recommendation becomes selected for review.
+
+##### Properties
+
+| name          | type     | description                                                    |
+| ------------- | -------- | -------------------------------------------------------------- |
+| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+
+#### synthetic-monitoring_reliability_inbox_setup_with_assistant_clicked
+
+Tracks when a user explicitly hands a recommendation to Assistant for guided setup.
+
+##### Properties
+
+| name          | type     | description                                                    |
+| ------------- | -------- | -------------------------------------------------------------- |
+| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+
 ### screenshots
 
 #### synthetic-monitoring_screenshots_expanded
