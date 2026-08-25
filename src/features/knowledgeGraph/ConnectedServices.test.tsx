@@ -255,9 +255,9 @@ it('highlights an edge on hover and names the connection', async () => {
   const edgeGroups = screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge);
   expect(edgeGroups).toHaveLength(3);
 
-  // Every edge names its endpoints for the hover tooltip.
+  // Every edge names its endpoints for the hover tooltip, by the same name its nodes carry.
   const edgeTitles = edgeGroups.map((group) => group.querySelector('title')?.textContent);
-  expect(edgeTitles).toContain('frontend → cart');
+  expect(edgeTitles).toContain('otel-demo/frontend → otel-demo/cart');
 
   await user.hover(edgeGroups[0]);
 

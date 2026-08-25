@@ -439,8 +439,8 @@ export function layoutNeighbourhood(graph: ServiceNeighbourhood): NeighbourhoodL
     positionedEdges.push({
       id: edge.id,
       path: buildElbowPath(source, target),
-      sourceName: source.node.name,
-      targetName: target.node.name,
+      sourceName: getNodeDisplayName(source.node),
+      targetName: getNodeDisplayName(target.node),
     });
   }
 
