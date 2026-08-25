@@ -161,7 +161,7 @@ func reliabilityInboxURL(apiHost string) string {
 
 	hostname := strings.ToLower(parsed.Hostname())
 
-	const apiLabel = "synthetic-monitoring-api"
+	const apiPrefix = "synthetic-monitoring-api-"
 
 	hostParts := strings.Split(hostname, ".")
 	if len(hostParts) < 2 {
@@ -178,31 +178,15 @@ func reliabilityInboxURL(apiHost string) string {
 		environment = "dev"
 	case strings.HasSuffix(hostname, ".grafana-ops.net"):
 		environment = "ops"
-	case strings.HasSuffix(hostname, ".grafana.net"):
-		environment = "prod"
 	}
 
-	regionalPrefix := apiLabel + "-"
-	if environment == "" || (label != apiLabel && !strings.HasPrefix(label, regionalPrefix)) {
+	if environment == "" || !strings.HasPrefix(label, apiPrefix) {
 		return ""
 	}
 
-	region := strings.TrimPrefix(label, regionalPrefix)
-	if label == apiLabel {
-		region = ""
-	}
-
+	region := strings.TrimPrefix(label, apiPrefix)
 	if environment == "dev" && region == "dev" {
 		region = "us-central-0"
-	}
-
-	if environment == "prod" {
-		switch region {
-		case "":
-			region = "us-central-0"
-		case "au-southeast", "eu-west", "gb-south":
-			region += "-0"
-		}
 	}
 
 	if region == "" {
