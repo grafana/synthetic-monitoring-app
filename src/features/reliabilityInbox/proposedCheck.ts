@@ -1,8 +1,7 @@
 import { durationToMilliseconds, isValidDuration, parseDuration } from '@grafana/data';
 
 import { ReliabilitySuggestion } from './types';
-
-const ONE_MINUTE_IN_MS = 60 * 1000;
+import { ONE_MINUTE_IN_MS, THREE_SECONDS_IN_MS } from 'utils.constants';
 
 export function parseSuggestedHttpCheckConfig(prompt: string) {
   const job = prompt.match(/job "([^"]+)"/)?.[1];
@@ -24,7 +23,7 @@ export function parseSuggestedHttpCheckConfig(prompt: string) {
 export function getProposedHttpCheckDraft(suggestion: ReliabilitySuggestion) {
   const parsed = parseSuggestedHttpCheckConfig(suggestion.prompt);
   const frequencyMs = parsed.frequencyMs ?? ONE_MINUTE_IN_MS;
-  const timeoutMs = parsed.timeoutMs ?? 3000;
+  const timeoutMs = parsed.timeoutMs ?? THREE_SECONDS_IN_MS;
   const validStatusCodes = parsed.validStatusCodes.length > 0 ? parsed.validStatusCodes : [200];
   const probeIds = parsed.probeIds;
 

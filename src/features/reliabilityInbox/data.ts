@@ -5,13 +5,14 @@ import { useLocalStorage } from 'usehooks-ts';
 import { z } from 'zod';
 
 import { ReliabilityEvidence, ReliabilitySuggestion, reliabilitySuggestionsSchema } from './types';
+import { ONE_HOUR_IN_MS, ONE_MINUTE_IN_MS } from 'utils.constants';
 import { reliabilityInboxURL } from 'datasource/reliabilityInboxRegion';
 import { useSMDS } from 'hooks/useSMDS';
 
 import { getRecommendationTelemetryProvenance } from './evidence';
 import { compareReliabilityOpportunities, isInitialReviewCandidate, toReliabilityOpportunity } from './model';
 
-const STALE_TIME = 6 * 60 * 60 * 1000;
+const STALE_TIME = 6 * ONE_HOUR_IN_MS;
 
 const dismissedSuggestionIdsSchema = z.array(z.string());
 const dismissedSuggestionIdsStorageOptions = {
@@ -78,7 +79,7 @@ export async function queryRecommendationTelemetry(
       ...query,
       datasource: { uid: metricsDatasource.uid, type: metricsDatasource.type },
       interval: '1m',
-      intervalMs: 60_000,
+      intervalMs: ONE_MINUTE_IN_MS,
       maxDataPoints: 120,
     })),
   });
