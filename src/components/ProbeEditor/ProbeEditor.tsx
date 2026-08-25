@@ -112,7 +112,7 @@ export const ProbeEditor = ({
                       })}
                       aria-label="Latitude"
                       placeholder="0.0"
-                      step={0.00001}
+                      step="any"
                       type="number"
                     />
                   </Field>
@@ -129,7 +129,7 @@ export const ProbeEditor = ({
                         valueAsNumber: true,
                       })}
                       aria-label="Longitude"
-                      step={0.00001}
+                      step="any"
                       type="number"
                       placeholder="0.0"
                     />
