@@ -4,13 +4,63 @@ import { buildNeighbourhoodFrames } from 'test/fixtures/knowledgeGraph';
 import {
   buildServiceNeighbourhoodQuery,
   escapeCypher,
+  getCheckGraphUrl,
   getEntityDrawerUrl,
+  getNodeDisplayName,
   getRingSegments,
-  getServiceEntityUrl,
   layoutNeighbourhood,
   NeighbourhoodNode,
   parseGraphFrames,
+  wrapLabel,
 } from './ConnectedServices.utils';
+
+function buildNode(overrides: Partial<NeighbourhoodNode> = {}): NeighbourhoodNode {
+  return {
+    id: 'Service:frontend:prod::otel-demo',
+    name: 'frontend',
+    entityType: 'Service',
+    icon: undefined,
+    insightCount: 0,
+    insightNames: [],
+    ringSegments: [{ severity: 'healthy', fraction: 1 }],
+    scope: { env: 'prod', site: '', namespace: 'otel-demo' },
+    ...overrides,
+  };
+}
+
+function paramsOf(url: string): URLSearchParams {
+  return new URLSearchParams(url.split('?')[1]);
+}
+
+/**
+ * Both KG links carry the same graph search — the searched entity, the entity types it connects
+ * out to, and one EQUALS matcher per scope value — so its shape is asserted in one place.
+ */
+function expectGraphSearch(
+  params: URLSearchParams,
+  entityType: string,
+  matchers: Array<[string, string]>,
+  connectToEntityTypes: string[]
+) {
+  expect(params.get('filterCriteria[0][entityType]')).toBe(entityType);
+  expect(params.get('view')).toBe('graph');
+
+  connectToEntityTypes.forEach((connectTo, index) => {
+    expect(params.get(`filterCriteria[0][connectToEntityTypes][${index}]`)).toBe(connectTo);
+  });
+  expect(params.get(`filterCriteria[0][connectToEntityTypes][${connectToEntityTypes.length}]`)).toBeNull();
+
+  matchers.forEach(([name, value], index) => {
+    const prefix = `filterCriteria[0][propertyMatchers][${index}]`;
+    expect(params.get(`${prefix}[name]`)).toBe(name);
+    expect(params.get(`${prefix}[value]`)).toBe(value);
+    expect(params.get(`${prefix}[op]`)).toBe('=');
+    expect(params.get(`${prefix}[type]`)).toBe('String');
+  });
+
+  // Nothing beyond the expected matchers: empty scope values are left out entirely.
+  expect(params.get(`filterCriteria[0][propertyMatchers][${matchers.length}][name]`)).toBeNull();
+}
 
 describe('escapeCypher', () => {
   it('escapes double quotes and backslashes so interpolated values cannot break out of the string', () => {
@@ -30,11 +80,11 @@ describe('buildServiceNeighbourhoodQuery', () => {
     expect(query).toContain(
       'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[:MONITORED_BY]-(s1:Service)'
     );
-    // outbound dependencies
-    expect(query).toContain('OPTIONAL MATCH (s1)-[:CALLS]->(downstream:Service)');
-    // inbound callers
-    expect(query).toContain('OPTIONAL MATCH (upstream:Service)-[:CALLS]->(s1)');
-    expect(query).toContain('RETURN sy, s1, downstream, upstream');
+    // Undirected, so it picks up both the services this one calls and the ones that call it. The
+    // directed inbound form is answered with a 500 by some KG versions.
+    expect(query).toContain('OPTIONAL MATCH (s1)-[:CALLS]-(neighbour:Service)');
+    expect(query).not.toContain('->(downstream:Service)');
+    expect(query).toContain('RETURN sy, s1, neighbour');
   });
 
   it('escapes the entity name it interpolates', () => {
@@ -44,14 +94,21 @@ describe('buildServiceNeighbourhoodQuery', () => {
   });
 });
 
-describe('getServiceEntityUrl', () => {
-  it('builds a deep link to the Service entity page in the Knowledge Graph app', () => {
-    expect(getServiceEntityUrl('frontend')).toBe('/a/grafana-asserts-app/catalog/Service/frontend');
-  });
+describe('getCheckGraphUrl', () => {
+  it('anchors the KG entity graph on the check, connected to the services it monitors', () => {
+    const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/');
 
-  it('scopes the link by namespace when provided and encodes both parts', () => {
-    expect(getServiceEntityUrl('front end', 'otel demo')).toBe(
-      '/a/grafana-asserts-app/catalog/Service/front%20end?namespace=otel%20demo'
+    expect(url.startsWith('/a/grafana-asserts-app/entities?')).toBe(true);
+    // A space in the check name encodes as %20, not the form-encoded +.
+    expect(url).toContain('grafana.com%20homepage');
+
+    // Anchoring on the monitored service instead would open that service's own neighbourhood,
+    // which is a wider set than the services this check monitors.
+    expectGraphSearch(
+      paramsOf(url),
+      'SyntheticCheck',
+      [['name', 'grafana.com homepage__https://grafana.com/']],
+      ['Service']
     );
   });
 });
@@ -177,23 +234,15 @@ describe('layoutNeighbourhood', () => {
   });
 
   it('curves edges between nodes in the same row so they arc over the row instead of cutting through it', () => {
-    const buildNode = (id: string, entityType = 'Service'): NeighbourhoodNode => ({
-      id,
-      name: id,
-      entityType,
-      icon: undefined,
-      insightCount: 0,
-      insightNames: [],
-      ringSegments: [{ severity: 'healthy', fraction: 1 }],
-      scope: { env: 'prod', site: '', namespace: '' },
-    });
+    const buildRowNode = (id: string, entityType = 'Service') =>
+      buildNode({ id, name: id, entityType, scope: { env: 'prod', site: '', namespace: '' } });
 
     const layout = layoutNeighbourhood({
       nodes: [
-        buildNode('check', 'SyntheticCheck'),
-        buildNode('service'),
-        buildNode('downstream-a'),
-        buildNode('downstream-b'),
+        buildRowNode('check', 'SyntheticCheck'),
+        buildRowNode('service'),
+        buildRowNode('downstream-a'),
+        buildRowNode('downstream-b'),
       ],
       edges: [
         { id: 'e1', source: 'check', target: 'service' },
@@ -219,16 +268,12 @@ describe('layoutNeighbourhood', () => {
   it('handles a check-only response (service not discovered yet) without edges', () => {
     const layout = layoutNeighbourhood({
       nodes: [
-        {
+        buildNode({
           id: 'SyntheticCheck:a',
           name: 'a',
           entityType: 'SyntheticCheck',
-          icon: undefined,
-          insightCount: 0,
-          insightNames: [],
-          ringSegments: [{ severity: 'healthy', fraction: 1 }],
           scope: { env: 'unknown', site: '', namespace: '' },
-        },
+        }),
       ],
       edges: [],
     });
@@ -239,24 +284,6 @@ describe('layoutNeighbourhood', () => {
 });
 
 describe('getEntityDrawerUrl', () => {
-  function buildNode(overrides: Partial<NeighbourhoodNode> = {}): NeighbourhoodNode {
-    return {
-      id: 'Service:frontend:prod::otel-demo',
-      name: 'frontend',
-      entityType: 'Service',
-      icon: undefined,
-      insightCount: 0,
-      insightNames: [],
-      ringSegments: [{ severity: 'healthy', fraction: 1 }],
-      scope: { env: 'prod', site: '', namespace: 'otel-demo' },
-      ...overrides,
-    };
-  }
-
-  function paramsOf(url: string): URLSearchParams {
-    return new URLSearchParams(url.split('?')[1]);
-  }
-
   it('builds the KG entity-drawer link with type, name and the non-empty scope values', () => {
     const url = getEntityDrawerUrl(buildNode());
     const params = paramsOf(url);
@@ -269,21 +296,36 @@ describe('getEntityDrawerUrl', () => {
     expect(params.get('ed[scope][site]')).toBeNull();
   });
 
-  it('includes a filterCriteria search so the KG graph page loads the entity underneath the drawer', () => {
-    const params = paramsOf(getEntityDrawerUrl(buildNode()));
+  it('searches the graph for the node, scoped by its env and namespace', () => {
+    // A service also connects out to the check monitoring it, so its graph opens with the check.
+    expectGraphSearch(
+      paramsOf(getEntityDrawerUrl(buildNode())),
+      'Service',
+      [
+        ['name', 'frontend'],
+        ['env', 'prod'],
+        ['namespace', 'otel-demo'],
+      ],
+      ['Service', 'SyntheticCheck']
+    );
+  });
 
-    expect(params.get('filterCriteria[0][entityType]')).toBe('Service');
-    expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
+  it('connects a check out to services only, matching the section header link', () => {
+    const check = buildNode({
+      name: 'my check__https://grafana.com',
+      entityType: 'SyntheticCheck',
+      scope: { env: 'unknown', site: '', namespace: '' },
+    });
 
-    // name matcher always present; env/namespace matchers mirror the scope
-    expect(params.get('filterCriteria[0][propertyMatchers][0][name]')).toBe('name');
-    expect(params.get('filterCriteria[0][propertyMatchers][0][value]')).toBe('frontend');
-    expect(params.get('filterCriteria[0][propertyMatchers][0][op]')).toBe('=');
-    expect(params.get('filterCriteria[0][propertyMatchers][0][type]')).toBe('String');
-    expect(params.get('filterCriteria[0][propertyMatchers][1][name]')).toBe('env');
-    expect(params.get('filterCriteria[0][propertyMatchers][1][value]')).toBe('prod');
-    expect(params.get('filterCriteria[0][propertyMatchers][2][name]')).toBe('namespace');
-    expect(params.get('filterCriteria[0][propertyMatchers][2][value]')).toBe('otel-demo');
+    expectGraphSearch(
+      paramsOf(getEntityDrawerUrl(check)),
+      'SyntheticCheck',
+      [
+        ['name', 'my check__https://grafana.com'],
+        ['env', 'unknown'],
+      ],
+      ['Service']
+    );
   });
 
   it('omits empty scope values from both the drawer params and the search matchers', () => {
@@ -295,8 +337,48 @@ describe('getEntityDrawerUrl', () => {
     expect(params.get('ed[scope][site]')).toBeNull();
     expect(params.get('ed[scope][namespace]')).toBeNull();
 
-    expect(params.get('filterCriteria[0][propertyMatchers][0][name]')).toBe('name');
-    expect(params.get('filterCriteria[0][propertyMatchers][0][value]')).toBe('frontend');
-    expect(params.get('filterCriteria[0][propertyMatchers][1][name]')).toBeNull();
+    expectGraphSearch(params, 'Service', [['name', 'frontend']], ['Service', 'SyntheticCheck']);
+  });
+});
+
+describe('getNodeDisplayName', () => {
+  it('prefixes a namespaced entity with its namespace, the way the Knowledge Graph does', () => {
+    expect(getNodeDisplayName(buildNode())).toBe('otel-demo/frontend');
+  });
+
+  it('leaves an entity without a namespace as its bare name', () => {
+    expect(getNodeDisplayName(buildNode({ scope: { env: 'prod', site: '', namespace: '' } }))).toBe('frontend');
+  });
+
+  it('never prefixes a check: its composite name is the identity, and it carries no otel namespace', () => {
+    const check = buildNode({
+      name: 'my check__https://grafana.com',
+      entityType: 'SyntheticCheck',
+      scope: { env: 'unknown', site: '', namespace: 'otel-demo' },
+    });
+
+    expect(getNodeDisplayName(check)).toBe('my check__https://grafana.com');
+  });
+});
+
+describe('wrapLabel', () => {
+  it('leaves a label that fits on one line', () => {
+    expect(wrapLabel('frontend', 18, 2)).toEqual(['frontend']);
+  });
+
+  it('breaks after the last separator that fits, so the split lands on a name boundary', () => {
+    expect(wrapLabel('local-lab/local-kg-lab-web', 18, 2)).toEqual(['local-lab/local-', 'kg-lab-web']);
+    expect(wrapLabel('my check__https://grafana.com', 18, 2)).toEqual(['my check__https://', 'grafana.com']);
+  });
+
+  it('hard-breaks a single unbroken token', () => {
+    expect(wrapLabel('abcdefghijklmnopqrstuvwxyz', 10, 2)).toEqual(['abcdefghij', 'klmnopqrs…']);
+  });
+
+  it('ellipsizes whatever does not fit in the allowed lines', () => {
+    expect(wrapLabel('local-lab/local-kg-lab-web-frontend-checkout', 18, 2)).toEqual([
+      'local-lab/local-',
+      'kg-lab-web-fronte…',
+    ]);
   });
 });

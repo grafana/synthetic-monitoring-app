@@ -18,9 +18,14 @@ import {
   CONNECTED_SERVICES_TITLE,
 } from './ConnectedServices.constants';
 import { useServiceNeighbourhood } from './ConnectedServices.hooks';
-import { getServiceEntityUrl } from './ConnectedServices.utils';
+import { getCheckGraphUrl } from './ConnectedServices.utils';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
-import { findLabelValue, KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import {
+  findLabelValue,
+  getSyntheticCheckEntityName,
+  KG_PLUGIN_ID,
+  KG_SERVICE_NAME_LABEL,
+} from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
 // Reserve room for the loading state so the section doesn't jump when the graph arrives.
@@ -58,7 +63,6 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
-  const namespace = findLabelValue(check.labels ?? [], KG_NAMESPACE_LABEL);
 
   return (
     <section className={styles.container} data-testid={CONNECTED_SERVICES_TEST_ID.section}>
@@ -83,7 +87,7 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
             variant="secondary"
             size="sm"
             icon="external-link-alt"
-            href={getServiceEntityUrl(serviceName, namespace)}
+            href={getCheckGraphUrl(getSyntheticCheckEntityName(check))}
             target="_blank"
           >
             Open in Knowledge Graph

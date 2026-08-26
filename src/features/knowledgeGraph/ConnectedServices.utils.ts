@@ -19,31 +19,96 @@ export function escapeCypher(value: string): string {
  *
  * Starting from the SyntheticCheck entity, it walks the MONITORED_BY relationship (Service
  * MONITORED_BY check — the direction the KG's insight propagation expects) to the linked
- * Service, then one hop of CALLS in both directions:
- * - outbound `(s1)-[:CALLS]->(downstream)` — services the monitored service depends on
- * - inbound `(upstream)-[:CALLS]->(s1)` — services that depend on the monitored service
+ * Service, then one hop of CALLS in either direction. Both directions matter for RCA: a failing
+ * check could be caused by a broken downstream dependency, or be the cause of failures in an
+ * upstream caller. Returning both surfaces red-ringed neighbours either way. We deliberately
+ * keep it to a single hop so the graph stays a readable hint rather than the full topology
+ * (which lives in the Knowledge Graph app).
  *
- * Both directions matter for RCA: a failing check could be caused by a broken downstream
- * dependency, or be the cause of failures in an upstream caller. Returning both surfaces
- * red-ringed neighbours either way. We deliberately keep it to a single hop so the graph stays
- * a readable hint rather than the full topology (which lives in the Knowledge Graph app).
+ * The CALLS hop is matched undirected rather than as two directed OPTIONAL MATCHes: some KG
+ * versions answer `OPTIONAL MATCH (s1)<-[:CALLS]-(upstream:Service)` with a 500 (the whole
+ * section then fails), while the undirected form is answered everywhere. Direction is not lost —
+ * it comes from the edges frame's source/target, which parseGraphFrames reads.
  */
 export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
   return [
     `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
-    `OPTIONAL MATCH (s1)-[:CALLS]->(downstream:Service)`,
-    `OPTIONAL MATCH (upstream:Service)-[:CALLS]->(s1)`,
-    `RETURN sy, s1, downstream, upstream`,
+    `OPTIONAL MATCH (s1)-[:CALLS]-(neighbour:Service)`,
+    `RETURN sy, s1, neighbour`,
   ].join('\n');
 }
 
+interface GraphSearchTarget {
+  entityType: string;
+  name: string;
+  scope: { env?: string; namespace?: string };
+  /** Entity types to pull in around the searched entity. */
+  connectToEntityTypes: string[];
+}
+
 /**
- * Deep link to the monitored Service's entity page in the Knowledge Graph app, so users can jump
- * from the RCA hint to the full graph. `namespace` is optional; when present it scopes the entity.
+ * The KG entities page derives its graph from `filterCriteria`, so these params are what actually
+ * populate the graph. Shape and semantics mirror the KG's own "Explore connected entities" →
+ * "See in entity graph" action (`ConnectedEntitiesModal`): an EQUALS search on name, plus env and
+ * namespace matchers when the entity is scoped, expanded to the connected entity types. `view`
+ * makes the graph explicit rather than relying on the entities page's default.
  */
-export function getServiceEntityUrl(serviceName: string, namespace?: string): string {
-  const path = `/a/${KG_PLUGIN_ID}/catalog/${KG_SERVICE_ENTITY_TYPE}/${encodeURIComponent(serviceName)}`;
-  return namespace ? `${path}?namespace=${encodeURIComponent(namespace)}` : path;
+function appendGraphSearchParams(params: URLSearchParams, target: GraphSearchTarget): void {
+  params.set('filterCriteria[0][entityType]', target.entityType);
+
+  target.connectToEntityTypes.forEach((entityType, index) => {
+    params.set(`filterCriteria[0][connectToEntityTypes][${index}]`, entityType);
+  });
+
+  const matchers: Array<[name: string, value: string]> = [['name', target.name]];
+  if (target.scope.env) {
+    matchers.push(['env', target.scope.env]);
+  }
+  if (target.scope.namespace) {
+    matchers.push(['namespace', target.scope.namespace]);
+  }
+  matchers.forEach(([name, value], index) => {
+    const prefix = `filterCriteria[0][propertyMatchers][${index}]`;
+    params.set(`${prefix}[name]`, name);
+    params.set(`${prefix}[type]`, 'String');
+    params.set(`${prefix}[op]`, '=');
+    params.set(`${prefix}[value]`, value);
+  });
+
+  params.set('view', 'graph');
+}
+
+/**
+ * `URLSearchParams` serializes a space as `+` (form encoding). That decodes correctly in the KG's
+ * query-string parser, but `%20` is unambiguous everywhere — and check entity names, which are
+ * `job__target`, routinely contain spaces.
+ */
+function toQueryString(params: URLSearchParams): string {
+  return params.toString().replace(/\+/g, '%20');
+}
+
+/**
+ * Deep link to this check's neighbourhood in the Knowledge Graph's entity graph — the same
+ * entities this section renders, in the app that owns them.
+ *
+ * The search is anchored on the check, connected to Services, so the graph opens on exactly the
+ * services this check monitors. Anchoring on the monitored service instead would open that
+ * service's own neighbourhood, which is a different (and wider) set.
+ *
+ * It deliberately doesn't link to the Service's entity page (`/catalog/Service/<name>`): that page
+ * is behind the KG's own feature gating, so on stacks without it the link lands on an empty
+ * "entity not found" page. The entity graph is available everywhere.
+ */
+export function getCheckGraphUrl(checkEntityName: string): string {
+  const params = new URLSearchParams();
+  appendGraphSearchParams(params, {
+    entityType: KG_SYNTHETIC_CHECK_ENTITY_TYPE,
+    name: checkEntityName,
+    scope: {},
+    connectToEntityTypes: [KG_SERVICE_ENTITY_TYPE],
+  });
+
+  return `/a/${KG_PLUGIN_ID}/entities?${toQueryString(params)}`;
 }
 
 /**
@@ -189,9 +254,7 @@ export function parseGraphFrames(frames: DataFrame[]): ServiceNeighbourhood {
  *
  * The `ed` params alone only open the drawer: the KG entities page derives its underlying graph
  * search from `filterCriteria`, not from `ed`, so an ed-only link lands on an empty page with a
- * floating drawer. The `filterCriteria` params mirror what the KG's own "Explore connected
- * entities" → "View Graph" action dispatches (an EQUALS search on name/env/namespace, connected
- * to Services), so the link also populates the graph underneath the drawer.
+ * floating drawer. The graph search params populate the graph underneath the drawer.
  */
 export function getEntityDrawerUrl(node: NeighbourhoodNode): string {
   const params = new URLSearchParams();
@@ -208,25 +271,73 @@ export function getEntityDrawerUrl(node: NeighbourhoodNode): string {
     params.set('ed[scope][namespace]', node.scope.namespace);
   }
 
-  params.set('filterCriteria[0][entityType]', node.entityType);
-  params.set('filterCriteria[0][connectToEntityTypes][0]', KG_SERVICE_ENTITY_TYPE);
+  // A check connects to the services it monitors; a service also connects to the check monitoring
+  // it, so its graph opens with the check alongside its neighbours.
+  const connectToEntityTypes =
+    node.entityType === KG_SYNTHETIC_CHECK_ENTITY_TYPE
+      ? [KG_SERVICE_ENTITY_TYPE]
+      : [KG_SERVICE_ENTITY_TYPE, KG_SYNTHETIC_CHECK_ENTITY_TYPE];
 
-  const matchers: Array<[name: string, value: string]> = [['name', node.name]];
-  if (node.scope.env) {
-    matchers.push(['env', node.scope.env]);
-  }
-  if (node.scope.namespace) {
-    matchers.push(['namespace', node.scope.namespace]);
-  }
-  matchers.forEach(([name, value], index) => {
-    const prefix = `filterCriteria[0][propertyMatchers][${index}]`;
-    params.set(`${prefix}[name]`, name);
-    params.set(`${prefix}[type]`, 'String');
-    params.set(`${prefix}[op]`, '=');
-    params.set(`${prefix}[value]`, value);
+  appendGraphSearchParams(params, {
+    entityType: node.entityType,
+    name: node.name,
+    scope: node.scope,
+    connectToEntityTypes,
   });
 
-  return `/a/${KG_PLUGIN_ID}/entities?${params.toString()}`;
+  return `/a/${KG_PLUGIN_ID}/entities?${toQueryString(params)}`;
+}
+
+/**
+ * Display name for an entity, matching the KG's `getEntityDisplayName`: a namespaced entity reads
+ * as `namespace/name` so services with the same name in different namespaces stay distinguishable.
+ * A check keeps its bare composite name — the KG prefixes from the `otel_namespace` property,
+ * which SyntheticCheck entities don't carry.
+ */
+export function getNodeDisplayName(node: NeighbourhoodNode): string {
+  if (node.entityType === KG_SYNTHETIC_CHECK_ENTITY_TYPE || !node.scope.namespace) {
+    return node.name;
+  }
+  return `${node.scope.namespace}/${node.name}`;
+}
+
+/** Characters a graph label prefers to break after, so wrapped lines split on name boundaries. */
+const LABEL_BREAK_CHARS = new Set([' ', '/', '-', '_', '.', ':']);
+
+/**
+ * Wraps a graph label into at most `maxLines` lines of `maxChars`, breaking after the last
+ * separator that fits (falling back to a hard break for a single unbroken token) and ellipsizing
+ * whatever doesn't fit. Entity names here are long and structured — `namespace/name` for services,
+ * `job__target` for checks — so breaking on their separators keeps both halves readable.
+ */
+export function wrapLabel(text: string, maxChars: number, maxLines: number): string[] {
+  const lines: string[] = [];
+  let rest = text;
+
+  while (rest.length > 0 && lines.length < maxLines) {
+    if (rest.length <= maxChars) {
+      lines.push(rest);
+      return lines;
+    }
+
+    if (lines.length === maxLines - 1) {
+      lines.push(`${rest.slice(0, maxChars - 1)}…`);
+      return lines;
+    }
+
+    let breakAt = maxChars;
+    for (let i = maxChars - 1; i > 0; i--) {
+      if (LABEL_BREAK_CHARS.has(rest[i])) {
+        breakAt = i + 1;
+        break;
+      }
+    }
+
+    lines.push(rest.slice(0, breakAt).trimEnd());
+    rest = rest.slice(breakAt).trimStart();
+  }
+
+  return lines;
 }
 
 // Layout geometry, sized to match the KG's node anatomy (44px nodes, labels beneath).
@@ -329,8 +440,8 @@ export function layoutNeighbourhood(graph: ServiceNeighbourhood): NeighbourhoodL
     positionedEdges.push({
       id: edge.id,
       path: buildElbowPath(source, target),
-      sourceName: source.node.name,
-      targetName: target.node.name,
+      sourceName: getNodeDisplayName(source.node),
+      targetName: getNodeDisplayName(target.node),
     });
   }
 
