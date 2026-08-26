@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TENANT_LABEL_MODE } from 'test/fixtures/tenants';
+import { TENANT, TENANT_LABEL_MODE } from 'test/fixtures/tenants';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -366,5 +366,120 @@ describe('LabelMigrationTab', () => {
     await renderTab();
     // Reserved labels section is now shown in UNPREFIXED mode for auditing
     await waitFor(() => expect(screen.getByText(/Show reserved label names/i)).toBeInTheDocument());
+  });
+
+  describe('transition cooldown', () => {
+    const NOW = TENANT.modified * 1000 + 6 * 60 * 60 * 1000; // arbitrary fixed "now", well after the fixture's modified time
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    function mockTenantModifiedAgo(msAgo: number) {
+      server.use(
+        apiRoute('getTenant', {
+          result: () => ({ json: { ...TENANT, modified: (NOW - msAgo) / 1000 } }),
+        })
+      );
+    }
+
+    // The button keeps a tooltip prop while cooling down, so @grafana/ui renders
+    // it as aria-disabled (to stay hoverable) rather than natively disabled —
+    // onClick is still nulled out either way, so clicking it is a no-op.
+    async function expectCoolingDown(button: HTMLElement) {
+      await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
+      await userEvent.click(button);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    }
+
+    it('disables Finalize migration and shows the cooldown message when the tenant changed less than 70 minutes ago', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000); // 30 minutes ago
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Finalize migration/i });
+      await expectCoolingDown(button);
+      // The message appears twice: once as the persistent notice, once as the button's tooltip content.
+      expect(screen.getAllByText('You can change your label mode in 40 minutes').length).toBeGreaterThan(0);
+    });
+
+    it('leaves Finalize migration clickable when the tenant changed more than 70 minutes ago', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(80 * 60 * 1000); // 80 minutes ago
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Finalize migration/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves Enable dual-write clickable during the cooldown (only finalizing is gated)', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000);
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Enable dual-write/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves Revert to dual-write clickable during the cooldown (only finalizing is gated)', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000);
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 2, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Revert to dual-write/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('disables Finalize migration immediately after a successful transition refreshes tenant.modified', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      // Starts outside the cooldown window...
+      mockTenantModifiedAgo(3 * 60 * 60 * 1000);
+      let getTenantCalls = 0;
+      server.use(
+        apiRoute('getTenant', {
+          result: () => {
+            getTenantCalls++;
+            // ...and the transition itself bumps modified to "now", refetched via invalidation.
+            const modified = getTenantCalls === 1 ? (NOW - 3 * 60 * 60 * 1000) / 1000 : NOW / 1000;
+            return { json: { ...TENANT, modified } };
+          },
+        })
+      );
+      await renderTab();
+      const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+      await waitFor(() => expect(trigger).not.toBeDisabled());
+      await userEvent.click(trigger);
+      await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+      await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+      await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
+      const finalizeButton = screen.getByRole('button', { name: /Finalize migration/i });
+      // The mutation awaits the tenant invalidation, so the instant the
+      // DualWrite UI appears the button must already be inert — first via the
+      // still-pending mutation (busy), then via the cooldown once the refetch
+      // lands. Clicking must never open the confirm dialog in between.
+      await userEvent.click(finalizeButton);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      await waitFor(() => expect(finalizeButton).toHaveAttribute('aria-disabled', 'true'));
+      expect(screen.getAllByText('You can change your label mode in 1 hour 10 minutes').length).toBeGreaterThan(0);
+    });
   });
 });
