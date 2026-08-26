@@ -250,24 +250,6 @@ export function useCreateFolder() {
   });
 }
 
-export function deleteFolder(uid: string) {
-  return firstValueFrom(
-    getBackendSrv().fetch<void>({
-      method: 'DELETE',
-      url: `${FOLDERS_API}/${uid}`,
-      params: { forceDeleteRules: true },
-      showErrorAlert: false,
-    })
-  );
-}
-
-export function useDeleteFolder() {
-  return useMutation({
-    mutationFn: deleteFolder,
-    onSuccess: invalidateAllFolders,
-  });
-}
-
 /**
  * Move a folder to a new parent via POST /api/folders/:uid/move.
  * Passing an empty parentUid moves the folder to the Grafana root level,

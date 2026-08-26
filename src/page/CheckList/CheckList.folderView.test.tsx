@@ -110,54 +110,43 @@ describe('buildChecksByFolder', () => {
     expect(rootChecks).toHaveLength(0);
   });
 
-  test('includes empty folders in the tree', () => {
+  test('does not include empty folders in the tree', () => {
     const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
     const allUids = collectAllFolderUids(folderTree);
     expect(allUids).toContain(FOLDER_PRODUCTION.uid);
-    expect(allUids).toContain(FOLDER_STAGING.uid);
-    expect(allUids).toContain(FOLDER_READONLY.uid);
-    expect(allUids).toContain(FOLDER_DELETABLE.uid);
+    expect(allUids).not.toContain(FOLDER_STAGING.uid);
+    expect(allUids).not.toContain(FOLDER_READONLY.uid);
+    expect(allUids).not.toContain(FOLDER_DELETABLE.uid);
   });
 
-  test('sorts empty folders after folders with checks', () => {
+  test('keeps empty ancestors of check-bearing folders so nesting stays intact', () => {
     const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
 
-    const children = folderTree.find((n) => n.isDefault)!.children;
-    const titles = children.map((n) => n.folder?.title);
-    const productionIndex = titles.indexOf(FOLDER_PRODUCTION.title);
-    const emptyFolderTitles = [FOLDER_STAGING.title, FOLDER_READONLY.title, FOLDER_DELETABLE.title];
-    const emptyIndices = emptyFolderTitles.map((t) => titles.indexOf(t));
-
-    emptyIndices.forEach((emptyIdx) => {
-      expect(emptyIdx).toBeGreaterThan(productionIndex);
-    });
+    const defaultNode = folderTree.find((n) => n.isDefault);
+    expect(defaultNode).toBeDefined();
+    expect(defaultNode!.checks).toHaveLength(0);
+    expect(defaultNode!.children.map((n) => n.folderUid)).toEqual([FOLDER_PRODUCTION.uid]);
   });
 
-  test('sorts empty folders alphabetically among themselves', () => {
-    const { folderTree } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid);
+  test('omits the default folder when nothing lives in its subtree', () => {
+    const { folderTree } = buildChecksByFolder([CHECK_IN_EXTERNAL_FOLDER], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false, [
+      FOLDER_EXTERNAL,
+    ]);
 
-    const children = folderTree.find((n) => n.isDefault)!.children;
-    const emptyNodes = children.filter((n) => n.checks.length === 0 && n.children.length === 0);
-    const titles = emptyNodes.map((n) => n.folder?.title ?? n.folderUid);
-    const sorted = [...titles].sort((a, b) => a.localeCompare(b));
-    expect(titles).toEqual(sorted);
+    expect(folderTree.map((n) => n.folderUid)).toEqual([FOLDER_EXTERNAL.uid]);
   });
 
   test('reverses folder sort order when reverseFolderSort is true', () => {
-    const { folderTree: aToZ } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, false);
-    const { folderTree: zToA } = buildChecksByFolder([CHECK_IN_PRODUCTION], MOCK_FOLDERS, DEFAULT_FOLDER.uid, true);
+    const checks = [CHECK_IN_PRODUCTION, CHECK_IN_STAGING];
+    const { folderTree: aToZ } = buildChecksByFolder(checks, MOCK_FOLDERS, DEFAULT_FOLDER.uid, false);
+    const { folderTree: zToA } = buildChecksByFolder(checks, MOCK_FOLDERS, DEFAULT_FOLDER.uid, true);
 
-    const childrenAZ = aToZ.find((n) => n.isDefault)!.children;
-    const childrenZA = zToA.find((n) => n.isDefault)!.children;
+    const titlesAZ = aToZ.find((n) => n.isDefault)!.children.map((n) => n.folder?.title);
+    const titlesZA = zToA.find((n) => n.isDefault)!.children.map((n) => n.folder?.title);
 
-    const nonEmptyAZ = childrenAZ.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
-    const nonEmptyZA = childrenZA.filter((n) => n.checks.length > 0).map((n) => n.folder?.title);
-    expect(nonEmptyZA).toEqual([...nonEmptyAZ].reverse());
-
-    const emptyAZ = childrenAZ.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
-    const emptyZA = childrenZA.filter((n) => n.checks.length === 0).map((n) => n.folder?.title);
-    expect(emptyZA).toEqual([...emptyAZ].reverse());
+    expect(titlesAZ).toEqual([FOLDER_PRODUCTION.title, FOLDER_STAGING.title]);
+    expect(titlesZA).toEqual([...titlesAZ].reverse());
   });
 
   test('returns orphaned nodes when folders list is empty', () => {
@@ -236,38 +225,19 @@ describe('CheckList - Folder View Integration', () => {
       expect(screen.queryByText('Folder not found')).not.toBeInTheDocument();
     });
 
-    test('shows empty folders with 0 checks', async () => {
+    test('does not render empty folders', async () => {
       await renderCheckList([CHECK_IN_PRODUCTION]);
 
       expect(await screen.findByText('Production')).toBeInTheDocument();
-      expect(screen.getByText('Staging')).toBeInTheDocument();
-      expect(screen.getAllByText('0 checks').length).toBeGreaterThan(0);
+      expect(screen.queryByText('Staging')).not.toBeInTheDocument();
+      expect(screen.queryByText('0 checks')).not.toBeInTheDocument();
     });
 
-    test('selecting an empty folder reveals the delete action', async () => {
-      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+    test('does not render the default folder when its subtree has no checks', async () => {
+      await renderCheckList([CHECK_IN_EXTERNAL_FOLDER], 'view=folder');
 
-      expect(await screen.findByText('Staging')).toBeInTheDocument();
-
-      const emptyCheckbox = screen.getByLabelText('Select folder Staging');
-      expect(emptyCheckbox).toBeEnabled();
-      expect(screen.queryByRole('button', { name: 'Delete folder' })).not.toBeInTheDocument();
-
-      await user.click(emptyCheckbox);
-      expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
-    });
-
-    test('deselecting an empty folder hides the delete action', async () => {
-      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
-
-      expect(await screen.findByText('Staging')).toBeInTheDocument();
-
-      const emptyCheckbox = screen.getByLabelText('Select folder Staging');
-      await user.click(emptyCheckbox);
-      expect(screen.getByRole('button', { name: 'Delete folder' })).toBeInTheDocument();
-
-      await user.click(emptyCheckbox);
-      expect(screen.queryByRole('button', { name: 'Delete folder' })).not.toBeInTheDocument();
+      expect(await screen.findByText('External folder check')).toBeInTheDocument();
+      expect(screen.queryByText(`${FOLDER_EXTERNAL.title} (default)`)).not.toBeInTheDocument();
     });
   });
 

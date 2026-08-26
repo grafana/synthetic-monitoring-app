@@ -65,13 +65,17 @@ export function collectAllChecks(node: FolderNode): Check[] {
  * in its node; they only fall back to `rootChecks` when no default folder is
  * known.
  *
+ * One rule, no exceptions: a folder only appears when it (or a descendant)
+ * contains a check. Empty folders — including the default folder and empty
+ * SM subfolders — are never shown; folder management for them lives in
+ * Dashboards > Folders. Ancestors of check-bearing folders are kept so
+ * nesting stays intact.
+ *
  * `outsideFolders` are readable folders outside the default folder's subtree
  * (at the Grafana root level, inside a team folder, etc.) — first-class
- * locations under open folder assignment. They only get a node when a check
- * references them, so the list is not flooded with the org's unrelated
- * dashboard folders. They nest under their parent when it is known (i.e. it
- * also has a node); unknown ancestors do not create bogus nodes, the folder
- * simply renders at top level.
+ * locations under open folder assignment. They nest under their parent when
+ * it is known (i.e. it also has a node); unknown ancestors do not create
+ * bogus nodes, the folder simply renders at top level.
  */
 export function buildChecksByFolder(
   checks: Check[],
@@ -104,12 +108,9 @@ export function buildChecksByFolder(
 
   const rootChecks: Check[] = [];
 
-  // The default folder always has a node, even with zero checks: it is the
-  // home of SM checks and anchors the hierarchy.
-  if (defaultFolderUid) {
-    getOrCreateNode(defaultFolderUid);
-  }
-
+  // Nodes are only created for folders that hold checks; ancestors are
+  // materialized below so nesting stays intact. Every node therefore has at
+  // least one check somewhere beneath it — empty folders never render.
   checks.forEach((check) => {
     // `||` (not `??`): an empty-string folderUid also means the default folder.
     const folderUid = check.folderUid || defaultFolderUid;
@@ -118,10 +119,6 @@ export function buildChecksByFolder(
       return;
     }
     getOrCreateNode(folderUid).checks.push(check);
-  });
-
-  folders.forEach((folder) => {
-    getOrCreateNode(folder.uid);
   });
 
   nodeMap.forEach((node) => {
@@ -158,12 +155,7 @@ export function buildChecksByFolder(
   };
 
   const sortNodes = (nodes: FolderNode[]) => {
-    const withChecks = nodes.filter((n) => getTotalCheckCount(n) > 0).sort(sortByTitle);
-    const empty = nodes.filter((n) => getTotalCheckCount(n) === 0).sort(sortByTitle);
-
-    nodes.length = 0;
-    nodes.push(...withChecks, ...empty);
-
+    nodes.sort(sortByTitle);
     nodes.forEach((n) => sortNodes(n.children));
   };
   sortNodes(rootNodes);

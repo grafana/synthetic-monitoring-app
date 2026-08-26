@@ -7,15 +7,14 @@ import { Check } from 'types';
 import { useIsFoldersAvailable } from 'contexts/CheckFolderAccessContext';
 import { BulkMoveToFolderModal } from 'page/CheckList/components/BulkMoveToFolderModal';
 
-import { DeleteFolderTarget, useBulkActions } from './BulkActions.hooks';
+import { useBulkActions } from './BulkActions.hooks';
 
 interface FolderBulkActionsProps {
   checks: Check[];
   onResolved: () => void;
-  deleteFolder?: DeleteFolderTarget;
 }
 
-export function FolderBulkActions({ checks, onResolved, deleteFolder }: FolderBulkActionsProps) {
+export function FolderBulkActions({ checks, onResolved }: FolderBulkActionsProps) {
   const styles = useStyles2(getStyles);
   const isFoldersAvailable = useIsFoldersAvailable();
   const {
@@ -30,7 +29,7 @@ export function FolderBulkActions({ checks, onResolved, deleteFolder }: FolderBu
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks, onResolved, deleteFolder, isFoldersAvailable });
+  } = useBulkActions({ checks, onResolved, isFoldersAvailable });
 
   return (
     <div className={styles.container}>

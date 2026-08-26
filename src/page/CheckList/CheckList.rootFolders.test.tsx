@@ -11,7 +11,6 @@ import {
   FOLDER_PRODUCTION,
   FOLDER_ROOT,
   FOLDER_ROOT_CHILD,
-  FOLDER_STAGING,
   MOCK_FOLDERS,
 } from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
@@ -158,20 +157,21 @@ describe('CheckList - Outside folders', () => {
 describe('CheckList - Move folder', () => {
   beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
 
+  // The move action lives in the folder's always-visible Actions menu.
+  const openMoveFolderModal = async (user: ReturnType<typeof render>['user'], folderName: string | RegExp) => {
+    const name = typeof folderName === 'string' ? `Actions for folder ${folderName}` : folderName;
+    await user.click(await screen.findByRole('button', { name }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Move folder' }));
+  };
+
   test('moves a subtree folder to the root level', async () => {
     const { read, record } = getServerRequests();
     server.use(apiRoute(`moveFolder`, {}, record));
 
     const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
 
-    // The move action only appears once the folder is selected
     expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: `Move folder ${FOLDER_PRODUCTION.title}` })).not.toBeInTheDocument();
-
-    await user.click(screen.getByLabelText(`Select all checks in ${FOLDER_PRODUCTION.title}`));
-
-    const moveButton = await screen.findByRole('button', { name: `Move folder ${FOLDER_PRODUCTION.title}` });
-    await user.click(moveButton);
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
 
     const modal = await screen.findByRole('dialog');
     expect(within(modal).getByText(`Move folder "${FOLDER_PRODUCTION.title}"`)).toBeInTheDocument();
@@ -191,8 +191,7 @@ describe('CheckList - Move folder', () => {
     const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
 
     expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
-    await user.click(screen.getByLabelText(`Select all checks in ${FOLDER_PRODUCTION.title}`));
-    await user.click(await screen.findByRole('button', { name: `Move folder ${FOLDER_PRODUCTION.title}` }));
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
 
     const modal = await screen.findByRole('dialog');
     const picker = within(modal).getByLabelText('Folder picker');
@@ -214,10 +213,7 @@ describe('CheckList - Move folder', () => {
     const { user } = await renderCheckList([CHECK_IN_ROOT_FOLDER]);
 
     expect(await screen.findByText(FOLDER_ROOT.title)).toBeInTheDocument();
-    await user.click(screen.getByLabelText(`Select all checks in ${FOLDER_ROOT.title}`));
-
-    const moveButton = await screen.findByRole('button', { name: `Move folder ${FOLDER_ROOT.title}` });
-    await user.click(moveButton);
+    await openMoveFolderModal(user, FOLDER_ROOT.title);
 
     const modal = await screen.findByRole('dialog');
     expect(within(modal).getByRole('button', { name: 'Move' })).toBeDisabled();
@@ -238,8 +234,7 @@ describe('CheckList - Move folder', () => {
     const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
 
     expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
-    await user.click(screen.getByLabelText(`Select all checks in ${FOLDER_PRODUCTION.title}`));
-    await user.click(await screen.findByRole('button', { name: `Move folder ${FOLDER_PRODUCTION.title}` }));
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
 
     const modal = await screen.findByRole('dialog');
     const picker = within(modal).getByLabelText('Folder picker');
@@ -251,24 +246,16 @@ describe('CheckList - Move folder', () => {
     expect(body).toEqual({ parentUid: FOLDER_ROOT.uid });
   });
 
-  test('selecting an empty subtree folder reveals the move action', async () => {
-    const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
-
-    expect(await screen.findByText(FOLDER_STAGING.title)).toBeInTheDocument();
-    await user.click(screen.getByLabelText(`Select folder ${FOLDER_STAGING.title}`));
-
-    expect(await screen.findByRole('button', { name: `Move folder ${FOLDER_STAGING.title}` })).toBeInTheDocument();
-  });
-
   test('does not offer moving the default folder', async () => {
     const { user } = await renderCheckList([CHECK_WITHOUT_FOLDER]);
 
-    // Unassigned checks live in the default folder node; selecting them
-    // reveals bulk actions but never a move action for the default folder.
-    const selectAll = await screen.findByLabelText(/Select all checks in Grafana Synthetic Monitoring/);
-    await user.click(selectAll);
+    // The default folder's Actions menu offers check-level actions but
+    // never a move action for the folder itself.
+    await user.click(
+      await screen.findByRole('button', { name: /Actions for folder Grafana Synthetic Monitoring \(default\)/ })
+    );
 
-    expect(await screen.findByText('1 selected')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Move folder Grafana Synthetic Monitoring/ })).not.toBeInTheDocument();
+    expect(await screen.findByRole('menuitem', { name: 'Delete all checks' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Move folder' })).not.toBeInTheDocument();
   });
 });
