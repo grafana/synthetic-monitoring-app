@@ -4,10 +4,12 @@ import { Alert, Button, Collapse, Space, Stack, Text } from '@grafana/ui';
 import { LabelMode } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useLabelMode, useSetLabelMode } from 'data/useLabelMode';
+import { useTenant } from 'data/useTenant';
 import { ConfirmModal } from 'components/ConfirmModal';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../../ConfigContent';
+import { getMigrationCooldown } from './migrationCooldown';
 import { SeriesPreview } from './SeriesPreview';
 import { useCheckInfoLabels } from './useCheckInfoLabels';
 
@@ -42,6 +44,8 @@ export function LabelMigrationTab() {
 
   const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
   const setLabelModeMutation = useSetLabelMode();
+  const { data: tenant } = useTenant();
+  const cooldown = getMigrationCooldown(tenant?.modified, Date.now());
 
   const [updateError, setUpdateError] = useState<string | undefined>(undefined);
   const [collisionError, setCollisionError] = useState<CollisionError | undefined>(undefined);
@@ -125,7 +129,8 @@ export function LabelMigrationTab() {
                         'Enable dual-write'
                       )
                     }
-                    disabled={busy}
+                    disabled={busy || cooldown.isCoolingDown}
+                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
                   >
                     Enable dual-write
                   </Button>
@@ -156,7 +161,8 @@ export function LabelMigrationTab() {
                         'Finalize'
                       )
                     }
-                    disabled={busy}
+                    disabled={busy || cooldown.isCoolingDown}
+                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
                   >
                     Finalize migration
                   </Button>
@@ -190,11 +196,21 @@ export function LabelMigrationTab() {
                         'Revert to dual-write'
                       )
                     }
-                    disabled={busy}
+                    disabled={busy || cooldown.isCoolingDown}
+                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
                   >
                     Revert to dual-write
                   </Button>
                 )}
+              </>
+            )}
+
+            {isAdmin && cooldown.isCoolingDown && (
+              <>
+                <Space v={1} />
+                <Text color="secondary" variant="bodySmall">
+                  {cooldown.message}
+                </Text>
               </>
             )}
 
