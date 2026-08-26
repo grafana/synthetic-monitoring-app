@@ -7,6 +7,8 @@ import { useKGReservedLabels } from 'features/knowledgeGraph/KnowledgeGraphServi
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues, FeatureName } from 'types';
+import { LabelMode } from 'datasource/responses.types';
+import { useLabelMode } from 'data/useLabelMode';
 import { FeatureFlag } from 'components/FeatureFlag';
 
 import { SectionContent } from '../../ui/SectionContent';
@@ -31,6 +33,9 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
   // service_name / namespace belong to the KG service-link section when the KG app is
   // installed: their rows are hidden here and typing them shows a redirect message.
   const kgReservedLabels = useKGReservedLabels();
+  const { data: labelModeState } = useLabelMode();
+  // Unknown (still loading) defaults to showing the hint, matching pre-migration behavior.
+  const isPrefixedMode = labelModeState === undefined || labelModeState.mode === LabelMode.Prefixed;
 
   useEffect(() => {
     const prevCalNames = prevCalNamesRef.current;
@@ -89,19 +94,21 @@ export function GenericLabelContent({ description, isLoading, calNames = [], lab
           limit={labelLimit !== undefined ? labelLimit - calNames.length : undefined}
           reservedNames={kgReservedLabels}
           namePrefix={
-            <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
-              <span
-                className={css`
-                  padding-right: 2px;
-                  &:after {
-                    position: absolute;
-                    content: '_';
-                  }
-                `}
-              >
-                label
-              </span>
-            </Tooltip>
+            isPrefixedMode ? (
+              <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
+                <span
+                  className={css`
+                    padding-right: 2px;
+                    &:after {
+                      position: absolute;
+                      content: '_';
+                    }
+                  `}
+                >
+                  label
+                </span>
+              </Tooltip>
+            ) : undefined
           }
         />
         {errors.labels?.root?.message && (
