@@ -19,7 +19,6 @@ import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 import { FolderActionsMenu } from 'page/CheckList/components/FolderActionsMenu';
-import { FolderBulkActions } from 'page/CheckList/components/FolderBulkActions';
 
 interface CheckListFolderViewProps {
   checks: Check[];
@@ -204,11 +203,11 @@ function FolderTreeBranch({
   const selectedCount = selectedChecksInFolder.length;
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
-  // The inline action row belongs to the folder whose own checks are
-  // selected. Ancestors reflect descendant selections through their
-  // (indeterminate) checkbox only — repeating the action row at every
-  // level would just duplicate it.
-  const hasDirectSelection = node.checks.some((c) => checkItemProps.selectedCheckIds.has(c.id!));
+  // The selected count belongs to the folder whose own checks are selected.
+  // Ancestors reflect descendant selections through their (indeterminate)
+  // checkbox only — repeating the count at every level would just
+  // duplicate it.
+  const showSelectedCount = node.checks.some((c) => checkItemProps.selectedCheckIds.has(c.id!));
 
   const displayTitle = node.isDefault ? `${node.folder?.title ?? node.folderUid} (default)` : node.folder?.title;
 
@@ -228,8 +227,6 @@ function FolderTreeBranch({
   const handleFolderBulkResolved = () => {
     checkItemProps.onDeselectChecks(allFolderCheckIds);
   };
-
-  const showActions = hasDirectSelection;
 
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
@@ -286,15 +283,11 @@ function FolderTreeBranch({
             </span>
           </Stack>
         </button>
-        {showActions && (
-          <div className={styles.folderActions}>
-            <FolderBulkActions checks={selectedChecksInFolder} onResolved={handleFolderBulkResolved} />
-            <span className={styles.selectedCount}>{selectedCount} selected</span>
-          </div>
-        )}
+        {showSelectedCount && <span className={styles.selectedCount}>{selectedCount} selected</span>}
         <FolderActionsMenu
           folderTitle={displayTitle ?? node.folderUid}
           checks={allChecksInFolder}
+          selectedChecks={selectedChecksInFolder}
           onResolved={handleFolderBulkResolved}
           moveFolder={canMoveFolder ? node.folder : undefined}
         />
@@ -442,12 +435,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
       outlineOffset: 2,
       borderRadius: theme.shape.radius.default,
     },
-  }),
-  folderActions: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    flexShrink: 0,
   }),
   selectedCount: css({
     fontSize: theme.typography.bodySmall.fontSize,

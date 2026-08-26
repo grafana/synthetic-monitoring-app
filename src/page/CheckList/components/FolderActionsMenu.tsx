@@ -12,6 +12,8 @@ interface FolderActionsMenuProps {
   folderTitle: string;
   /** Every check in the folder, nested descendants included. */
   checks: Check[];
+  /** The currently selected checks within this folder, if any. */
+  selectedChecks: Check[];
   onResolved: () => void;
   /** When set, the menu offers moving this folder elsewhere in Grafana. */
   moveFolder?: GrafanaFolder;
@@ -19,13 +21,19 @@ interface FolderActionsMenuProps {
 
 /**
  * Always-visible per-folder "Actions" menu, modeled on the folder actions in
- * Alerting's rule list. Every item operates on the whole folder (nested
- * checks included); acting on a subset of checks stays with checkbox
- * selection. Folder-level operations other than moving (rename, delete,
- * permissions) live in Dashboards > Folders, not here.
+ * Alerting's rule list. Check-level items follow the selection: they operate
+ * on the selected checks when there is a selection within the folder, and on
+ * every check in the folder (nested descendants included) otherwise. Items
+ * the user lacks permission for stay visible but disabled, with the reason
+ * shown as the item description.
+ * Folder-level operations other than moving (rename, delete, permissions)
+ * live in Dashboards > Folders, not here.
  */
-export function FolderActionsMenu({ folderTitle, checks, onResolved, moveFolder }: FolderActionsMenuProps) {
+export function FolderActionsMenu({ folderTitle, checks, selectedChecks, onResolved, moveFolder }: FolderActionsMenuProps) {
   const isFoldersAvailable = useIsFoldersAvailable();
+  const hasSelection = selectedChecks.length > 0;
+  const targetChecks = hasSelection ? selectedChecks : checks;
+  const targetLabel = hasSelection ? 'selected checks' : 'all checks';
   const {
     canWriteAll,
     canDeleteAll,
@@ -38,30 +46,44 @@ export function FolderActionsMenu({ folderTitle, checks, onResolved, moveFolder 
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks, onResolved, isFoldersAvailable });
+  } = useBulkActions({ checks: targetChecks, onResolved, isFoldersAvailable });
   const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
 
-  if (!canWriteAll && !canDeleteAll && !moveFolder) {
-    return null;
-  }
+  const targetDescription = hasSelection ? 'all selected checks' : 'every check in this folder';
+  const writeDisabledReason = canWriteAll ? undefined : `You need edit access to ${targetDescription}`;
+  const deleteDisabledReason = canDeleteAll ? undefined : `You need delete access to ${targetDescription}`;
 
   const menu = (
     <Menu>
-      <Menu.Item label="Enable all checks" icon="check-circle" disabled={!canWriteAll} onClick={enableChecks} />
-      <Menu.Item label="Disable all checks" icon="pause-circle" disabled={!canWriteAll} onClick={disableChecks} />
+      <Menu.Item
+        label={`Enable ${targetLabel}`}
+        icon="check-circle"
+        disabled={!canWriteAll}
+        description={writeDisabledReason}
+        onClick={enableChecks}
+      />
+      <Menu.Item
+        label={`Disable ${targetLabel}`}
+        icon="pause-circle"
+        disabled={!canWriteAll}
+        description={writeDisabledReason}
+        onClick={disableChecks}
+      />
       {isFoldersAvailable && (
         <Menu.Item
-          label="Move checks to folder"
+          label={`Move ${targetLabel} to folder`}
           icon="folder"
           disabled={!canWriteAll}
+          description={writeDisabledReason}
           onClick={() => setShowMoveToFolderModal(true)}
         />
       )}
       <Menu.Item
-        label="Delete all checks"
+        label={`Delete ${targetLabel}`}
         icon="trash-alt"
         destructive
         disabled={!canDeleteAll}
+        description={deleteDisabledReason}
         onClick={() => setShowDeleteModal(true)}
       />
       {moveFolder && (
@@ -91,7 +113,7 @@ export function FolderActionsMenu({ folderTitle, checks, onResolved, moveFolder 
         />
       )}
       <BulkMoveToFolderModal
-        checks={checks}
+        checks={targetChecks}
         isOpen={showMoveToFolderModal}
         onDismiss={() => setShowMoveToFolderModal(false)}
         onMoved={handleMoveResolved}
