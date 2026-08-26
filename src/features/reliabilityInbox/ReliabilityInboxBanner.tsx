@@ -38,13 +38,13 @@ export function ReliabilityInboxBanner() {
         <div className={styles.layout}>
           <div className={styles.message}>
             <span className={styles.icon} aria-hidden="true">
-              <Icon name="ai-sparkle" size="xl" />
+              <Icon name="ai-sparkle" size="lg" />
             </span>
-            <Stack direction="column" alignItems="flex-start" gap={2}>
-              <Text element="h2" weight="medium">
+            <Stack direction="column" alignItems="flex-start" gap={0.5}>
+              <Text element="h4" weight="medium">
                 Check Suggestions
               </Text>
-              <Text element="p" variant="h5" color="secondary">
+              <Text element="p" variant="bodySmall" color="secondary">
                 {topOpportunity
                   ? suggestionSummary
                   : 'Generate actionable recommendations when you are ready to review them.'}
@@ -54,7 +54,8 @@ export function ReliabilityInboxBanner() {
           <LinkButton
             className={styles.action}
             icon="ai-sparkle"
-            variant="secondary"
+            variant="primary"
+            fill="outline"
             href={generateRoutePath(AppRoutes.ReliabilityInbox)}
             onClick={() => {
               if (topOpportunity) {
@@ -80,9 +81,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: 'relative',
     display: 'flex',
     alignItems: 'center',
-    minHeight: theme.spacing(16.5),
     overflow: 'hidden',
-    padding: theme.spacing(3),
+    padding: theme.spacing(1.5, 3),
     border: `1px solid ${theme.colors.border.medium}`,
     borderRadius: theme.shape.radius.default,
     background: `linear-gradient(110deg, rgba(168, 85, 247, 0.08), transparent 44%), ${theme.colors.background.secondary}`,
@@ -95,8 +95,7 @@ const getStyles = (theme: GrafanaTheme2) => ({
       background: 'linear-gradient(180deg, rgb(168, 85, 247), rgb(249, 115, 22))',
     },
     [`@container ${CONTAINER_NAME} (max-width: ${theme.breakpoints.values.sm}px)`]: {
-      minHeight: 'auto',
-      padding: theme.spacing(2.5),
+      padding: theme.spacing(1.5, 2),
     },
   }),
   layout: css({
@@ -121,8 +120,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: theme.spacing(6.5),
-    height: theme.spacing(6.5),
+    width: theme.spacing(5),
+    height: theme.spacing(5),
     flexShrink: 0,
     color: theme.colors.text.primary,
     background: 'rgba(168, 85, 247, 0.12)',
