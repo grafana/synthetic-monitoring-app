@@ -472,6 +472,12 @@ describe('LabelMigrationTab', () => {
       await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
       await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
       const finalizeButton = screen.getByRole('button', { name: /Finalize migration/i });
+      // The mutation awaits the tenant invalidation, so the instant the
+      // DualWrite UI appears the button must already be inert — first via the
+      // still-pending mutation (busy), then via the cooldown once the refetch
+      // lands. Clicking must never open the confirm dialog in between.
+      await userEvent.click(finalizeButton);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       await waitFor(() => expect(finalizeButton).toHaveAttribute('aria-disabled', 'true'));
       expect(screen.getAllByText('You can change your label mode in 1 hour 10 minutes').length).toBeGreaterThan(0);
     });

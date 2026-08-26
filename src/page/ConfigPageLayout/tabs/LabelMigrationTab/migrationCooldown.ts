@@ -1,8 +1,7 @@
 import { formatDuration } from 'utils';
+import { ONE_MINUTE_IN_MS } from 'utils.constants';
 
-export const MIGRATION_COOLDOWN_MS = 70 * 60 * 1000;
-
-const MINUTE_MS = 60 * 1000;
+export const MIGRATION_COOLDOWN_MS = 70 * ONE_MINUTE_IN_MS;
 
 type MigrationCooldown = { isCoolingDown: false } | { isCoolingDown: true; message: string };
 
@@ -21,7 +20,7 @@ export function getMigrationCooldown(tenantModifiedSeconds: number | undefined, 
     return { isCoolingDown: false };
   }
 
-  const wholeMinutesMs = Math.ceil(remainingMs / MINUTE_MS) * MINUTE_MS;
+  const wholeMinutesMs = Math.ceil(remainingMs / ONE_MINUTE_IN_MS) * ONE_MINUTE_IN_MS;
 
   return { isCoolingDown: true, message: `You can change your label mode in ${formatDuration(wholeMinutesMs)}` };
 }

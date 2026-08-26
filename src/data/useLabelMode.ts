@@ -24,13 +24,16 @@ export function useSetLabelMode() {
 
   return useMutation({
     mutationFn: (mode: LabelMode) => smDS.setLabelMode(mode),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       // The PUT response carries the new state, so the cache can be updated
       // without a refetch.
       queryClient.setQueryData(QUERY_KEYS.labelMode, data);
       // A transition bumps tenant.modified server-side (used for the migration
-      // cooldown), so the cached tenant must be refreshed rather than left stale.
-      queryClient.invalidateQueries({ queryKey: TENANT_QUERY_KEYS.tenant });
+      // cooldown), so the cached tenant must be refreshed rather than left
+      // stale. Awaited so the mutation stays pending (busy) until the refetch
+      // lands — otherwise Finalize is briefly clickable before the cooldown
+      // engages.
+      await queryClient.invalidateQueries({ queryKey: TENANT_QUERY_KEYS.tenant });
     },
   });
 }
