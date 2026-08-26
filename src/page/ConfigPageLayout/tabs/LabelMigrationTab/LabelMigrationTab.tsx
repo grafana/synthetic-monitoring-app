@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, Button, Collapse, Space, Stack, Text } from '@grafana/ui';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { LabelMode } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
@@ -16,7 +17,8 @@ import { useCheckInfoLabels } from './useCheckInfoLabels';
 
 interface CollisionError {
   msg: string;
-  collidingLabels: string[];
+  collidingLabels?: string[];
+  invalidLabels?: string[];
 }
 
 function modeLabel(mode: LabelMode): string {
@@ -68,7 +70,10 @@ export function LabelMigrationTab() {
       await setLabelModeMutation.mutateAsync(targetMode);
     } catch (err: unknown) {
       const e = err as { status?: number; data?: CollisionError };
-      if (e?.status === 409 && e?.data?.collidingLabels) {
+      // A 409 can carry reserved-name collisions, invalid-once-unprefixed names,
+      // or both — any non-empty list means "rename these labels first".
+      const labelIssues = (e?.data?.collidingLabels?.length ?? 0) > 0 || (e?.data?.invalidLabels?.length ?? 0) > 0;
+      if (e?.status === 409 && e.data && labelIssues) {
         setCollisionError(e.data);
       } else {
         setUpdateError(getErrorMessage(err, 'Failed to update label migration mode'));
@@ -236,13 +241,37 @@ export function LabelMigrationTab() {
                   title="Label name conflicts — cannot enable dual-write"
                   onRemove={() => setCollisionError(undefined)}
                 >
-                  <Text>
-                    The following labels conflict with reserved system names. Rename them across your checks below, then
-                    retry. Labels set on probes are not covered by the rename and must be edited on the probe itself.
-                  </Text>
-                  <Space v={1} />
+                  {!!collisionError.invalidLabels?.length && (
+                    <>
+                      <Text>
+                        The following labels would not be valid label names once the <code>label_</code> prefix is
+                        removed. Rename them on the checks and probes that carry them before enabling dual-write:
+                      </Text>
+                      <Space v={1} />
+                      <ul data-testid={CONFIG_TEST_ID.labelMigration.invalidList}>
+                        {collisionError.invalidLabels.map((name) => (
+                          <li key={name}>
+                            <code>{name}</code>
+                          </li>
+                        ))}
+                      </ul>
+                      <Space v={1} />
+                    </>
+                  )}
+                  {!!collisionError.collidingLabels?.length && (
+                    <>
+                      <Text>
+                        The following labels conflict with reserved system names. Rename them across your checks below,
+                        then retry. Labels set on probes are not covered by the rename and must be edited on the probe
+                        itself.
+                      </Text>
+                      <Space v={1} />
+                    </>
+                  )}
+                  {/* Rendered even with no colliding labels so the in-alert retry
+                      stays available once invalid labels are fixed externally. */}
                   <CollidingLabelRename
-                    labels={collisionError.collidingLabels}
+                    labels={collisionError.collidingLabels ?? []}
                     systemLabels={state.systemLabels}
                     disabled={!isAdmin}
                     retrying={busy}
