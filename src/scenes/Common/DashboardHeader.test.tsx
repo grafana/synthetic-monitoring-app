@@ -11,6 +11,10 @@ jest.mock('@grafana/scenes-react', () => ({
   TimeRangePicker: () => <div data-testid="time-range-picker" />,
 }));
 
+jest.mock('features/knowledgeGraph/KnowledgeGraphInsights', () => ({
+  CheckKnowledgeGraphInsights: () => null,
+}));
+
 jest.mock('./DashboardAnnotationControls', () => ({
   DashboardAnnotationControls: () => <div data-testid="annotation-controls" />,
 }));
@@ -29,8 +33,6 @@ describe('DashboardHeader', () => {
   it('renders SLOIntegration for the check', async () => {
     render(<DashboardHeader annotations={[]} check={BASIC_HTTP_CHECK} />);
 
-    expect(await screen.findByTestId('slo-integration')).toHaveTextContent(
-      `SLOIntegration for ${BASIC_HTTP_CHECK.id}`
-    );
+    expect(await screen.findByTestId('slo-integration')).toHaveTextContent(`SLOIntegration for ${BASIC_HTTP_CHECK.id}`);
   });
 });
