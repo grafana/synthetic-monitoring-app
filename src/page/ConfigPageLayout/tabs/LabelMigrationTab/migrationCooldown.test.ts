@@ -7,20 +7,20 @@ describe('getMigrationCooldown', () => {
     expect(getMigrationCooldown(undefined, now)).toEqual({ isCoolingDown: false });
   });
 
-  it('is cooling down when the tenant was modified less than 2 hours ago', () => {
+  it('is cooling down when the tenant was modified less than 70 minutes ago', () => {
     const modifiedSeconds = now / 1000 - 30 * 60; // 30 minutes ago
     expect(getMigrationCooldown(modifiedSeconds, now)).toEqual({
       isCoolingDown: true,
-      message: 'You can change your label mode in 1 hour 30 minutes',
+      message: 'You can change your label mode in 40 minutes',
     });
   });
 
-  it('is not cooling down once exactly 2 hours have elapsed', () => {
+  it('is not cooling down once exactly 70 minutes have elapsed', () => {
     const modifiedSeconds = now / 1000 - MIGRATION_COOLDOWN_MS / 1000;
     expect(getMigrationCooldown(modifiedSeconds, now)).toEqual({ isCoolingDown: false });
   });
 
-  it('is not cooling down when the tenant was modified more than 2 hours ago', () => {
+  it('is not cooling down when the tenant was modified more than 70 minutes ago', () => {
     const modifiedSeconds = now / 1000 - 3 * 60 * 60; // 3 hours ago
     expect(getMigrationCooldown(modifiedSeconds, now)).toEqual({ isCoolingDown: false });
   });
@@ -28,7 +28,16 @@ describe('getMigrationCooldown', () => {
   it('is cooling down right after modification, with the full window remaining', () => {
     expect(getMigrationCooldown(now / 1000, now)).toEqual({
       isCoolingDown: true,
-      message: 'You can change your label mode in 2 hours',
+      message: 'You can change your label mode in 1 hour 10 minutes',
+    });
+  });
+
+  it('rounds the remaining time up to whole minutes for fractional timestamps', () => {
+    // 30 minutes and 0.3 seconds ago -> 39 minutes 59.7 seconds remaining -> "40 minutes"
+    const modifiedSeconds = now / 1000 - 30 * 60 - 0.3;
+    expect(getMigrationCooldown(modifiedSeconds, now)).toEqual({
+      isCoolingDown: true,
+      message: 'You can change your label mode in 40 minutes',
     });
   });
 });

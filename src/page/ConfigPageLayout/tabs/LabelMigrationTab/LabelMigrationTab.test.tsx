@@ -392,31 +392,10 @@ describe('LabelMigrationTab', () => {
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     }
 
-    it('disables Enable dual-write and shows a cooldown message when the tenant changed less than 2 hours ago', async () => {
+    it('disables Finalize migration and shows the cooldown message when the tenant changed less than 70 minutes ago', async () => {
       jest.spyOn(Date, 'now').mockReturnValue(NOW);
       runTestAsSMAdmin();
       mockTenantModifiedAgo(30 * 60 * 1000); // 30 minutes ago
-      await renderTab();
-      const button = await screen.findByRole('button', { name: /Enable dual-write/i });
-      await expectCoolingDown(button);
-      // The message appears twice: once as the persistent notice, once as the button's tooltip content.
-      expect(screen.getAllByText('You can change your label mode in 1 hour 30 minutes').length).toBeGreaterThan(0);
-    });
-
-    it('leaves Enable dual-write clickable when the tenant changed more than 2 hours ago', async () => {
-      jest.spyOn(Date, 'now').mockReturnValue(NOW);
-      runTestAsSMAdmin();
-      mockTenantModifiedAgo(3 * 60 * 60 * 1000); // 3 hours ago
-      await renderTab();
-      const button = await screen.findByRole('button', { name: /Enable dual-write/i });
-      await waitFor(() => expect(button).not.toBeDisabled());
-      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
-    });
-
-    it('disables Finalize migration in DUAL_WRITE mode during the cooldown', async () => {
-      jest.spyOn(Date, 'now').mockReturnValue(NOW);
-      runTestAsSMAdmin();
-      mockTenantModifiedAgo(30 * 60 * 1000);
       server.use(
         apiRoute('getLabelMode', {
           result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
@@ -425,10 +404,36 @@ describe('LabelMigrationTab', () => {
       await renderTab();
       const button = await screen.findByRole('button', { name: /Finalize migration/i });
       await expectCoolingDown(button);
-      expect(screen.getAllByText(/You can change your label mode in/i).length).toBeGreaterThan(0);
+      // The message appears twice: once as the persistent notice, once as the button's tooltip content.
+      expect(screen.getAllByText('You can change your label mode in 40 minutes').length).toBeGreaterThan(0);
     });
 
-    it('disables Revert to dual-write in UNPREFIXED mode during the cooldown', async () => {
+    it('leaves Finalize migration clickable when the tenant changed more than 70 minutes ago', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(80 * 60 * 1000); // 80 minutes ago
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Finalize migration/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves Enable dual-write clickable during the cooldown (only finalizing is gated)', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000);
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Enable dual-write/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves Revert to dual-write clickable during the cooldown (only finalizing is gated)', async () => {
       jest.spyOn(Date, 'now').mockReturnValue(NOW);
       runTestAsSMAdmin();
       mockTenantModifiedAgo(30 * 60 * 1000);
@@ -439,11 +444,11 @@ describe('LabelMigrationTab', () => {
       );
       await renderTab();
       const button = await screen.findByRole('button', { name: /Revert to dual-write/i });
-      await expectCoolingDown(button);
-      expect(screen.getAllByText(/You can change your label mode in/i).length).toBeGreaterThan(0);
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
     });
 
-    it('disables the next transition button immediately after a successful transition refreshes tenant.modified', async () => {
+    it('disables Finalize migration immediately after a successful transition refreshes tenant.modified', async () => {
       jest.spyOn(Date, 'now').mockReturnValue(NOW);
       runTestAsSMAdmin();
       // Starts outside the cooldown window...
@@ -468,7 +473,7 @@ describe('LabelMigrationTab', () => {
       await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
       const finalizeButton = screen.getByRole('button', { name: /Finalize migration/i });
       await waitFor(() => expect(finalizeButton).toHaveAttribute('aria-disabled', 'true'));
-      expect(screen.getAllByText('You can change your label mode in 2 hours').length).toBeGreaterThan(0);
+      expect(screen.getAllByText('You can change your label mode in 1 hour 10 minutes').length).toBeGreaterThan(0);
     });
   });
 });

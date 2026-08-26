@@ -129,8 +129,7 @@ export function LabelMigrationTab() {
                         'Enable dual-write'
                       )
                     }
-                    disabled={busy || cooldown.isCoolingDown}
-                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
+                    disabled={busy}
                   >
                     Enable dual-write
                   </Button>
@@ -196,8 +195,7 @@ export function LabelMigrationTab() {
                         'Revert to dual-write'
                       )
                     }
-                    disabled={busy || cooldown.isCoolingDown}
-                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
+                    disabled={busy}
                   >
                     Revert to dual-write
                   </Button>
@@ -205,7 +203,7 @@ export function LabelMigrationTab() {
               </>
             )}
 
-            {isAdmin && cooldown.isCoolingDown && (
+            {isAdmin && state.mode === LabelMode.DualWrite && cooldown.isCoolingDown && (
               <>
                 <Space v={1} />
                 <Text color="secondary" variant="bodySmall">
