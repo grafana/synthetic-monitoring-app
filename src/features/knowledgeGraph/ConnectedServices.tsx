@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, IconButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Icon, IconButton, LinkButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -10,6 +10,7 @@ import { CenteredSpinner } from 'components/CenteredSpinner/CenteredSpinner';
 import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { FormSectionName } from 'components/Checkster/types';
 import { ErrorAlert } from 'components/ErrorAlert/ErrorAlert';
+import { Feedback } from 'components/Feedback';
 
 import {
   CONNECTED_SERVICES_SUBTITLE,
@@ -17,9 +18,14 @@ import {
   CONNECTED_SERVICES_TITLE,
 } from './ConnectedServices.constants';
 import { useServiceNeighbourhood } from './ConnectedServices.hooks';
-import { getServiceEntityUrl } from './ConnectedServices.utils';
+import { getCheckGraphUrl } from './ConnectedServices.utils';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
-import { findLabelValue, KG_NAMESPACE_LABEL, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import {
+  findLabelValue,
+  getSyntheticCheckEntityName,
+  KG_PLUGIN_ID,
+  KG_SERVICE_NAME_LABEL,
+} from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
 // Reserve room for the loading state so the section doesn't jump when the graph arrives.
@@ -57,7 +63,6 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
   const [isOpen, setIsOpen] = useState(true);
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
-  const namespace = findLabelValue(check.labels ?? [], KG_NAMESPACE_LABEL);
 
   return (
     <section className={styles.container} data-testid={CONNECTED_SERVICES_TEST_ID.section}>
@@ -76,10 +81,17 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
             {CONNECTED_SERVICES_SUBTITLE}
           </Text>
         </div>
+        <Feedback feature="knowledge-graph-connected-services" about={{ text: `New feature!` }} />
         {serviceName && (
-          <TextLink href={getServiceEntityUrl(serviceName, namespace)} external icon="external-link-alt">
+          <LinkButton
+            variant="secondary"
+            size="sm"
+            icon="external-link-alt"
+            href={getCheckGraphUrl(getSyntheticCheckEntityName(check))}
+            target="_blank"
+          >
             Open in Knowledge Graph
-          </TextLink>
+          </LinkButton>
         )}
       </div>
 

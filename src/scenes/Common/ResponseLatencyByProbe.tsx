@@ -27,7 +27,7 @@ export const ResponseLatencyByProbe = () => {
     maxDataPoints: 100,
     queries: [
       {
-        expr: 'avg(probe_duration_seconds{probe=~"$probe", instance="$instance", job="$job"} * on (instance, job,probe,config_version) group_left probe_success{probe=~"$probe",instance="$instance", job="$job"} > 0) by (probe)',
+        expr: 'avg(probe_duration_seconds{probe=~"$probe", instance="$instance", job="$job"} * on (instance, job,probe,config_version) group_left max by (instance, job, probe, config_version) (probe_success{probe=~"$probe",instance="$instance", job="$job"}) > 0) by (probe)',
         instant: false,
         interval: '',
         intervalFactor: 1,
