@@ -65,8 +65,8 @@ describe('validation', () => {
     await user.type(latitudeInput, '34.697135');
     await user.type(longitudeInput, '-84.383184');
 
-    expect(latitudeInput).toHaveAttribute('step', 'any');
-    expect(longitudeInput).toHaveAttribute('step', 'any');
+    expect(latitudeInput).toHaveAttribute('step', '0.000001');
+    expect(longitudeInput).toHaveAttribute('step', '0.000001');
     expect(latitudeInput).toBeValid();
     expect(longitudeInput).toBeValid();
   });
