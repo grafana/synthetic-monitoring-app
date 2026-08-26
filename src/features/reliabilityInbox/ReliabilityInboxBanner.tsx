@@ -41,7 +41,7 @@ export function ReliabilityInboxBanner() {
               <Icon name="ai-sparkle" size="lg" />
             </span>
             <Stack direction="column" alignItems="flex-start" gap={0.5}>
-              <Text element="h4" weight="medium">
+              <Text element="h2" variant="h4" weight="medium">
                 Check Suggestions
               </Text>
               <Text element="p" variant="bodySmall" color="secondary">
