@@ -1,8 +1,8 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
-import { CURRENT_TOKEN_ID, LIST_ACCESS_TOKENS, OTHER_TOKEN_ID } from 'test/fixtures/tokens';
+import { CREATE_ACCESS_TOKEN, CURRENT_TOKEN_ID, LIST_ACCESS_TOKENS, OTHER_TOKEN_ID } from 'test/fixtures/tokens';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -75,6 +75,36 @@ describe('AccessTokensTab', () => {
         const { queryByText } = await renderAccessTokensTab();
         expect(queryByText(contactAdminMessage)).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('Token creation', () => {
+    it('disables Generate while a create is in flight so rapid clicks issue a single token', async () => {
+      const user = userEvent.setup();
+      let createCallCount = 0;
+
+      server.use(
+        apiRoute('createAccessToken', {
+          result: async () => {
+            createCallCount++;
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            return { json: { msg: 'token created', token: CREATE_ACCESS_TOKEN } };
+          },
+        })
+      );
+
+      await renderAccessTokensTab();
+
+      const generateButton = screen.getByRole('button', { name: /generate access token/i });
+      await user.click(generateButton);
+
+      await waitFor(() => expect(generateButton).toBeDisabled());
+      // Attempted double-click while the first create is still in flight.
+      fireEvent.click(generateButton);
+
+      expect(await screen.findByText(/copy your access token now/i)).toBeInTheDocument();
+      expect(createCallCount).toBe(1);
+      await waitFor(() => expect(generateButton).toBeEnabled());
     });
   });
 

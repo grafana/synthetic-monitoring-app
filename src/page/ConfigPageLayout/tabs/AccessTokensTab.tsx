@@ -74,7 +74,7 @@ export function AccessTokensTab() {
         <Space v={2} />
         <Button
           tooltip={!canWriteTokens ? 'You do not have permission to generate access tokens.' : undefined}
-          disabled={!canWriteTokens}
+          disabled={!canWriteTokens || createToken.isPending}
           onClick={() => createToken.mutate()}
         >
           Generate access token
