@@ -151,9 +151,20 @@ jest.mock('@grafana/runtime', () => {
     }),
     getLocationSrv: () => ({ update: (args: any) => args }),
     getAppEvents: () => appEvents,
-    PluginPage: ({ actions, children, pageNav }: { actions: any; children: ReactNode; pageNav: NavModelItem }) => (
+    PluginPage: ({
+      actions,
+      children,
+      pageNav,
+      subTitle,
+    }: {
+      actions: any;
+      children: ReactNode;
+      pageNav: NavModelItem;
+      subTitle?: ReactNode;
+    }) => (
       <div>
         <h2>{pageNav?.text}</h2>
+        {subTitle && <div>{subTitle}</div>}
         <div>{actions}</div>
         {children}
         <div data-testid={CONFIG_TEST_ID.layout.activeTab}>

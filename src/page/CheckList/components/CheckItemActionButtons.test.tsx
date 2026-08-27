@@ -18,10 +18,10 @@ const renderWithProvider = (check = BASIC_HTTP_CHECK) => {
 };
 
 describe('CheckItemActionButtons', () => {
-  describe(`View dashboard`, () => {
+  describe(`View check dashboard`, () => {
     it(`should render the view dashboard button`, async () => {
       renderWithProvider();
-      expect(await screen.findByText('View dashboard')).toBeInTheDocument();
+      expect(await screen.findByText('View check dashboard')).toBeInTheDocument();
     });
 
     it(`should render both a text link and icon link when responsiveDashboardLink is true`, async () => {
@@ -30,7 +30,7 @@ describe('CheckItemActionButtons', () => {
           <CheckItemActionButtons check={BASIC_HTTP_CHECK} responsiveDashboardLink />
         </CheckFolderAccessProvider>
       );
-      expect(await screen.findByText('View dashboard')).toBeInTheDocument();
+      expect(await screen.findByText('View check dashboard')).toBeInTheDocument();
       expect(screen.getByLabelText('Go to dashboard')).toBeInTheDocument();
     });
 
@@ -41,7 +41,7 @@ describe('CheckItemActionButtons', () => {
         </CheckFolderAccessProvider>
       );
       expect(await screen.findByLabelText('Go to dashboard')).toBeInTheDocument();
-      expect(screen.queryByText('View dashboard')).not.toBeInTheDocument();
+      expect(screen.queryByText('View check dashboard')).not.toBeInTheDocument();
     });
   });
 
