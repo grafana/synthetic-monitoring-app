@@ -8,6 +8,7 @@ import { useUserPermissions } from 'data/permissions';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useFolderPermissions } from 'data/useFolderPermissions';
 import { useCreateFolder } from 'data/useFolders';
+import { getFetchErrorMessage } from 'data/utils';
 
 interface FolderSelectorProps {
   value?: string;
@@ -24,9 +25,15 @@ interface FolderSelectorProps {
  * Preselection is not handled here: the check form seeds the default folder
  * through its form defaults (only when the user can edit it, see
  * useFolderSelection), so a pristine form stays clean.
+ *
+ * The default folder is incidental: it only supplies the create-folder
+ * modal's preselected parent and the isDefault tracking flag. Assignment
+ * must keep working when it is missing or forbidden, otherwise a user with
+ * a grant on a team folder could not place a check anywhere.
  */
 export function FolderSelector({ value, onChange, disabled }: FolderSelectorProps) {
-  const { defaultFolder, defaultFolderUid, isLoading, isError, refetch } = useDefaultFolder();
+  const { defaultFolderUid, isLoading } = useDefaultFolder();
+  const { canCreateFolders } = useUserPermissions();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   // In the disabled state we render a plain read-only input (the runtime
@@ -51,10 +58,6 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
     return <LoadingPlaceholder text="Loading folders..." />;
   }
 
-  if (isError) {
-    return <Alert title="Unable to load folders" severity="warning" buttonContent="Retry" onRemove={() => refetch()} />;
-  }
-
   if (disabled) {
     const valueState = value ? folderDetailsByUid.get(value) : undefined;
     const title = valueState?.type === 'accessible' ? valueState.folder?.title : value;
@@ -64,7 +67,7 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
   return (
     <Stack gap={1.5} alignItems="center">
       <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
-      {defaultFolder?.canSave && (
+      {canCreateFolders && (
         <>
           <span>or</span>
           <Button variant="secondary" size="md" icon="plus" onClick={() => setShowCreateModal(true)} type="button">
@@ -72,7 +75,7 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
           </Button>
         </>
       )}
-      {showCreateModal && defaultFolderUid && (
+      {showCreateModal && (
         <CreateFolderModal
           defaultParentUid={defaultFolderUid}
           onCreated={handleFolderCreated}
@@ -84,21 +87,25 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
 }
 
 interface CreateFolderModalProps {
-  defaultParentUid: string;
+  /** Preselected parent. Undefined when the default folder is unreachable, in which case the user must pick one. */
+  defaultParentUid?: string;
   onCreated: (folder: GrafanaFolder) => void;
   onDismiss: () => void;
 }
 
 function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFolderModalProps) {
   const [title, setTitle] = useState('');
-  // '' selects the Grafana root level (the picker's "Dashboards" item).
-  const [parentUid, setParentUid] = useState<string>(defaultParentUid);
+  // '' selects the Grafana root level (the picker's "Dashboards" item);
+  // undefined means nothing is selected yet.
+  const [parentUid, setParentUid] = useState<string | undefined>(defaultParentUid);
   const [error, setError] = useState<string | null>(null);
   const { mutateAsync: createFolder, isPending } = useCreateFolder();
   const { canCreateFolders } = useUserPermissions();
 
+  const canSubmit = Boolean(title.trim()) && parentUid !== undefined && !isPending;
+
   const handleSubmit = async () => {
-    if (!title.trim()) {
+    if (!canSubmit) {
       return;
     }
 
@@ -108,7 +115,7 @@ function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFol
       const folder = await createFolder({ title: title.trim(), parentUid: parentUid === '' ? undefined : parentUid });
       onCreated(folder);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create folder');
+      setError(getFetchErrorMessage(e, 'Failed to create folder'));
     }
   };
 
@@ -140,7 +147,7 @@ function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFol
         <Button variant="secondary" onClick={onDismiss} type="button">
           Cancel
         </Button>
-        <Button type="button" onClick={handleSubmit} disabled={!title.trim() || isPending}>
+        <Button type="button" onClick={handleSubmit} disabled={!canSubmit}>
           {isPending ? 'Creating...' : 'Create'}
         </Button>
       </Modal.ButtonRow>

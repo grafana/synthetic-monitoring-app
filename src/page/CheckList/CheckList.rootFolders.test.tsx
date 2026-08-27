@@ -255,6 +255,34 @@ describe('CheckList - Move folder', () => {
     expect(body).toEqual({ parentUid: FOLDER_ROOT.uid });
   });
 
+  // Circular moves are rejected server-side by design, so the API's reason is
+  // the only explanation available. getBackendSrv rejects with a FetchError,
+  // which is a plain object rather than an Error, so a naive instanceof check
+  // silently swallows it.
+  test('surfaces the API reason when the server rejects a move', async () => {
+    server.use(
+      apiRoute(`moveFolder`, {
+        result: () => ({
+          status: 400,
+          json: { message: 'folder cannot be moved to one of its descendants' },
+        }),
+      })
+    );
+
+    const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+    expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
+
+    const modal = await screen.findByRole('dialog');
+    const picker = within(modal).getByLabelText('Folder picker');
+    expect(await within(modal).findByRole('option', { name: FOLDER_ROOT.title })).toBeInTheDocument();
+    await user.selectOptions(picker, FOLDER_ROOT.uid);
+    await user.click(within(modal).getByRole('button', { name: 'Move' }));
+
+    expect(await within(modal).findByText('folder cannot be moved to one of its descendants')).toBeInTheDocument();
+  });
+
   test('does not offer moving the default folder', async () => {
     const { user } = await renderCheckList([CHECK_WITHOUT_FOLDER]);
 

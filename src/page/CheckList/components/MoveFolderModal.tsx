@@ -5,6 +5,7 @@ import { Alert, Button, Field, Modal, Text } from '@grafana/ui';
 import { GrafanaFolder } from 'types';
 import { useUserPermissions } from 'data/permissions';
 import { useAllFolders, useMoveFolder } from 'data/useFolders';
+import { getFetchErrorMessage } from 'data/utils';
 
 interface MoveFolderModalProps {
   folder: GrafanaFolder;
@@ -72,7 +73,7 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
       await moveFolder({ uid: folder.uid, parentUid: destination });
       onDismiss();
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to move folder');
+      setError(getFetchErrorMessage(e, 'Failed to move folder'));
     }
   };
 

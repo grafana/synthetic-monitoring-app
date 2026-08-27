@@ -4,7 +4,7 @@ import { DEFAULT_FOLDER, FOLDER_READONLY, FOLDER_ROOT, FOLDER_ROOT_CHILD } from 
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { createWrapper, render } from 'test/render';
 import { server } from 'test/server';
-import { runTestWithReadOnlyDefaultFolder } from 'test/utils';
+import { runTestAsSMEditor, runTestWithForbiddenDefaultFolder, runTestWithReadOnlyDefaultFolder } from 'test/utils';
 
 import { FolderSelector } from './FolderSelector';
 import { useFolderSelection } from './FolderSelector.hooks';
@@ -84,6 +84,55 @@ describe('FolderSelector', () => {
 
     const { body } = await read();
     expect(body).toEqual({ title: 'My Root Folder' });
+  });
+
+  // The default folder only supplies the create-folder modal's preselected
+  // parent, so failing to read it must not block assignment: a user with a
+  // grant on a team folder still needs somewhere to put their checks.
+  it('still offers folder assignment when the default folder is forbidden', async () => {
+    runTestWithForbiddenDefaultFolder();
+
+    const onChange = jest.fn();
+    const { user } = render(<FolderSelector onChange={onChange} />);
+
+    const picker = await screen.findByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_ROOT.title });
+    await user.selectOptions(picker, FOLDER_ROOT.uid);
+
+    expect(onChange).toHaveBeenCalledWith(FOLDER_ROOT.uid);
+    expect(screen.queryByText('Unable to load folders')).not.toBeInTheDocument();
+  });
+
+  it('requires an explicit parent for a new folder when the default folder is forbidden', async () => {
+    runTestWithForbiddenDefaultFolder();
+
+    const { user } = render(<FolderSelector onChange={jest.fn()} />);
+
+    await user.click(await screen.findByRole('button', { name: /Create folder/ }));
+
+    const modal = await screen.findByRole('dialog');
+    await user.type(within(modal).getByPlaceholderText('Enter folder name'), 'Team folder');
+
+    // Nothing is preselected, so a name alone is not enough to create
+    expect(within(modal).getByRole('button', { name: 'Create' })).toBeDisabled();
+
+    const parentPicker = within(modal).getByLabelText('Folder picker');
+    await within(parentPicker).findByRole('option', { name: FOLDER_ROOT.title });
+    await user.selectOptions(parentPicker, FOLDER_ROOT.uid);
+
+    expect(within(modal).getByRole('button', { name: 'Create' })).toBeEnabled();
+  });
+
+  it('hides the create folder button without org-level folder creation rights', async () => {
+    runTestAsSMEditor();
+
+    const { user } = render(<FolderSelector onChange={jest.fn()} />);
+
+    const picker = await screen.findByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_ROOT.title });
+    await user.selectOptions(picker, FOLDER_ROOT.uid);
+
+    expect(screen.queryByRole('button', { name: /Create folder/ })).not.toBeInTheDocument();
   });
 
   it('creates a folder inside another folder picked as the parent', async () => {

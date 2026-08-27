@@ -233,6 +233,29 @@ export function runTestWithNoEditableFolders() {
 }
 
 /**
+ * The default Synthetic Monitoring folder cannot be read at all (403), e.g.
+ * a user whose folder grants cover their own team's folders but not the SM
+ * subtree. Every other folder resolves normally, so folder assignment must
+ * keep working without it.
+ */
+export function runTestWithForbiddenDefaultFolder() {
+  server.use(
+    apiRoute(`getFolder`, {
+      result: async (req: Request) => {
+        const uid = new URL(req.url).pathname.split('/').pop();
+
+        if (uid === DEFAULT_FOLDER.uid) {
+          return { status: 403, json: { message: 'Access denied' } };
+        }
+
+        const folder = ALL_MOCK_FOLDERS.find((f) => f.uid === uid);
+        return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
+      },
+    })
+  );
+}
+
+/**
  * Folder permissions are unchanged, but every folder lookup responds slowly.
  * Used to prove the check form waits for the folder pre-fill decision
  * instead of racing it.

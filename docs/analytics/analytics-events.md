@@ -230,6 +230,10 @@ Tracks when a folder is selected in the folder selector.
 
 Tracks when a new folder is created via the folder selector.
 
+#### synthetic-monitoring_folders_move_folder_clicked
+
+Tracks when "Move folder" is picked from a folder's Actions menu. Kept to measure whether the option is used at all: if this tends to zero we can remove the option and leave folder reorganisation to Dashboards > Folders.
+
 ### link
 
 #### synthetic-monitoring_link_clicked
