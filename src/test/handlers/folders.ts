@@ -1,4 +1,10 @@
-import { FOLDER_EXTERNAL, FOLDER_FORBIDDEN_UID, FOLDER_ROOT, FOLDER_ROOT_CHILD, MOCK_FOLDERS } from 'test/fixtures/folders';
+import {
+  FOLDER_EXTERNAL,
+  FOLDER_FORBIDDEN_UID,
+  FOLDER_ROOT,
+  FOLDER_ROOT_CHILD,
+  MOCK_FOLDERS,
+} from 'test/fixtures/folders';
 
 import { ApiEntry } from './types';
 import { GrafanaFolder } from 'types';

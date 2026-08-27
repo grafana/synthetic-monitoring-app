@@ -5,7 +5,13 @@ import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2
 import { css, cx } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
-import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter, FilterType, ProbeFilter } from 'page/CheckList/CheckList.types';
+import {
+  CheckAlertsFilter,
+  CheckFiltersType,
+  CheckTypeFilter,
+  FilterType,
+  ProbeFilter,
+} from 'page/CheckList/CheckList.types';
 import { Check, GrafanaFolder } from 'types';
 import { flattenFolderTree, indentFolderLabel } from 'data/useFolders';
 import { useExtendedProbes } from 'data/useProbes';
@@ -102,10 +108,7 @@ export function CheckFilters({
 
     const subtreeOptions: Array<ComboboxOption<string>> = defaultFolderUid
       ? flattenFolderTree(subtreeFolders, defaultFolderUid).map(({ folder, depth }) => ({
-          label:
-            folder.uid === defaultFolderUid
-              ? `${folder.title} (default)`
-              : indentFolderLabel(folder.title, depth),
+          label: folder.uid === defaultFolderUid ? `${folder.title} (default)` : indentFolderLabel(folder.title, depth),
           value: folder.uid,
         }))
       : subtreeFolders.map((folder) => ({ label: folder.title, value: folder.uid }));

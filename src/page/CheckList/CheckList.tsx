@@ -36,6 +36,7 @@ import {
 } from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { BulkActions } from 'page/CheckList/components/BulkActions';
 import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
@@ -297,12 +298,22 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const foldersUnavailable = isFoldersEnabled && !isFoldersLoading && !isFoldersAvailable;
 
+  // Rendered here so the folder view can place it on its folders row while
+  // the flat views keep it in the list header.
+  const isFolderView = effectiveViewType === CheckListViewType.Folder;
+  const bulkActions =
+    selectedCheckIds.size > 0 ? (
+      <BulkActions
+        checks={visibleChecks.filter((check) => selectedCheckIds.has(check.id!))}
+        onResolved={handleUnselectAll}
+      />
+    ) : undefined;
+
   return (
     <CheckFolderAccessValueProvider value={folderAccess}>
       <CheckListHeader
         checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
-        currentPageChecks={currentPageChecks}
         folders={filterFolders}
         defaultFolderUid={defaultFolderUid}
         outsideFolderUids={outsideFolderUids}
@@ -312,7 +323,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         onSelectAll={handleSelectAll}
         onSort={updateSortMethod}
         onResetFilters={handleResetFilters}
-        onDelete={handleUnselectAll}
+        bulkActions={isFolderView ? undefined : bulkActions}
         selectedCheckIds={selectedCheckIds}
         sortType={sortType}
         viewType={effectiveViewType}
@@ -334,8 +345,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
             <FolderPermissionBanner onDismiss={() => setFolderBannerDismissed(true)} />
           ))
         ))}
-      {effectiveViewType === CheckListViewType.Folder ? (
+      {isFolderView ? (
         <CheckListFolderView
+          bulkActions={bulkActions}
           checks={visibleChecks}
           folders={allFolders}
           outsideFolders={outsideFolders}

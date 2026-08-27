@@ -6,13 +6,7 @@ import {
   CHECK_IN_ROOT_FOLDER,
   CHECK_WITHOUT_FOLDER,
 } from 'test/fixtures/folderChecks';
-import {
-  DEFAULT_FOLDER,
-  FOLDER_PRODUCTION,
-  FOLDER_ROOT,
-  FOLDER_ROOT_CHILD,
-  MOCK_FOLDERS,
-} from 'test/fixtures/folders';
+import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_ROOT, FOLDER_ROOT_CHILD, MOCK_FOLDERS } from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -185,6 +179,21 @@ describe('CheckList - Move folder', () => {
 
     const { body } = await read();
     expect(body).toEqual({ parentUid: '' });
+  });
+
+  test('tracks picking "Move folder" so its usage can be measured', async () => {
+    const reportInteraction = jest.fn();
+    jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+    const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+    expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
+
+    expect(reportInteraction).toHaveBeenCalledWith(
+      'synthetic-monitoring_folders_move_folder_clicked',
+      expect.any(Object)
+    );
   });
 
   test('picking the current parent is a no-op: Move stays disabled with an explanation', async () => {

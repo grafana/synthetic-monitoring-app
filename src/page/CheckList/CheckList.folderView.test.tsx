@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import {
@@ -253,6 +253,29 @@ describe('CheckList - Folder View Integration', () => {
 
       await user.click(screen.getByRole('button', { name: 'Expand all folders' }));
       expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+    });
+
+    test('selecting checks swaps the folders row toggle for the bulk actions, and the sort control disappears', async () => {
+      const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+      const row = await screen.findByTestId(CHECKS_TEST_ID.folderView.sectionHeader);
+      expect(within(row).getByText(/Folders \(\d+\)/)).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: 'Collapse all folders' })).toBeInTheDocument();
+      expect(screen.getByTestId(CHECKS_TEST_ID.header.sortBy)).toBeInTheDocument();
+
+      await user.click(screen.getByTestId(CHECKS_TEST_ID.header.selectAll));
+
+      expect(await within(row).findByRole('button', { name: 'Delete' })).toBeInTheDocument();
+      expect(within(row).getByRole('button', { name: /Move to folder/ })).toBeInTheDocument();
+      expect(within(row).queryByRole('button', { name: 'Collapse all folders' })).not.toBeInTheDocument();
+      expect(screen.queryByTestId(CHECKS_TEST_ID.header.sortBy)).not.toBeInTheDocument();
+    });
+
+    test('the toggle only shows in folder view', async () => {
+      await renderCheckList([CHECK_IN_PRODUCTION], 'view=card');
+
+      expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /all folders/ })).not.toBeInTheDocument();
     });
 
     test('the toggle tracks only folders currently in the tree, ignoring stale collapsed ones', async () => {

@@ -7,10 +7,9 @@ import { useBulkDeleteChecks, useBulkUpdateChecks } from 'data/useChecks';
 interface UseBulkActionsOptions {
   checks: Check[];
   onResolved: () => void;
-  isFoldersAvailable: boolean;
 }
 
-export function useBulkActions({ checks, onResolved, isFoldersAvailable }: UseBulkActionsOptions) {
+export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
   const { canWriteAll, canDeleteAll } = useBulkCheckPermissions(checks);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showMoveToFolderModal, setShowMoveToFolderModal] = useState(false);
@@ -58,7 +57,6 @@ export function useBulkActions({ checks, onResolved, isFoldersAvailable }: UseBu
   );
 
   return {
-    isFoldersAvailable,
     canWriteAll,
     canDeleteAll,
     showDeleteModal,

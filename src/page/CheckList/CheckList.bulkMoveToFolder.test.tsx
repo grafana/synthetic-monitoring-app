@@ -112,9 +112,7 @@ describe('BulkMoveToFolderModal', () => {
     const onDismiss = jest.fn();
     const checks = [CHECK_IN_PRODUCTION, CHECK_IN_STAGING];
 
-    const { user } = render(
-      <BulkMoveToFolderModal checks={checks} isOpen onDismiss={jest.fn()} onMoved={onDismiss} />
-    );
+    const { user } = render(<BulkMoveToFolderModal checks={checks} isOpen onDismiss={jest.fn()} onMoved={onDismiss} />);
 
     const picker = await screen.findByLabelText('Folder picker');
     await within(picker).findByRole('option', { name: FOLDER_STAGING.title });
@@ -135,9 +133,7 @@ describe('BulkMoveToFolderModal', () => {
   });
 
   it('does not offer read-only folders as options', async () => {
-    render(
-      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
-    );
+    render(<BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />);
 
     const picker = await screen.findByLabelText('Folder picker');
     await within(picker).findByRole('option', { name: FOLDER_STAGING.title });
@@ -146,18 +142,14 @@ describe('BulkMoveToFolderModal', () => {
   });
 
   it('disables the Move button when no folder is selected', async () => {
-    render(
-      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
-    );
+    render(<BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />);
 
     await screen.findByLabelText('Folder picker');
     expect(screen.getByRole('button', { name: 'Move' })).toBeDisabled();
   });
 
   it('shows singular title for a single check', async () => {
-    render(
-      <BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />
-    );
+    render(<BulkMoveToFolderModal checks={[CHECK_IN_PRODUCTION]} isOpen onDismiss={jest.fn()} onMoved={jest.fn()} />);
 
     expect(await screen.findByText('Move 1 check to folder')).toBeInTheDocument();
   });

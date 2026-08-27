@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Button, ConfirmModal, Dropdown, Icon, Menu } from '@grafana/ui';
+import { Button, ConfirmModal, Dropdown, Icon, Menu, Stack } from '@grafana/ui';
+import { trackMoveFolderClicked } from 'features/tracking/folderEvents';
 
 import { Check, GrafanaFolder } from 'types';
 import { useIsFoldersAvailable } from 'contexts/CheckFolderAccessContext';
@@ -29,7 +30,13 @@ interface FolderActionsMenuProps {
  * Folder-level operations other than moving (rename, delete, permissions)
  * live in Dashboards > Folders, not here.
  */
-export function FolderActionsMenu({ folderTitle, checks, selectedChecks, onResolved, moveFolder }: FolderActionsMenuProps) {
+export function FolderActionsMenu({
+  folderTitle,
+  checks,
+  selectedChecks,
+  onResolved,
+  moveFolder,
+}: FolderActionsMenuProps) {
   const isFoldersAvailable = useIsFoldersAvailable();
   const hasSelection = selectedChecks.length > 0;
   const targetChecks = hasSelection ? selectedChecks : checks;
@@ -46,7 +53,7 @@ export function FolderActionsMenu({ folderTitle, checks, selectedChecks, onResol
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks: targetChecks, onResolved, isFoldersAvailable });
+  } = useBulkActions({ checks: targetChecks, onResolved });
   const [showMoveFolderModal, setShowMoveFolderModal] = useState(false);
 
   const targetDescription = hasSelection ? 'all selected checks' : 'every check in this folder';
@@ -89,7 +96,14 @@ export function FolderActionsMenu({ folderTitle, checks, selectedChecks, onResol
       {moveFolder && (
         <>
           <Menu.Divider />
-          <Menu.Item label="Move folder" icon="folder-upload" onClick={() => setShowMoveFolderModal(true)} />
+          <Menu.Item
+            label="Move folder"
+            icon="folder-upload"
+            onClick={() => {
+              trackMoveFolderClicked();
+              setShowMoveFolderModal(true);
+            }}
+          />
         </>
       )}
     </Menu>
@@ -98,10 +112,17 @@ export function FolderActionsMenu({ folderTitle, checks, selectedChecks, onResol
   return (
     <>
       <Dropdown overlay={menu} placement="bottom-end">
-        {/* The aria-label includes the folder title to keep accessible names
-            unique across folder rows. */}
-        <Button variant="secondary" size="sm" fill="outline" aria-label={`Actions for folder ${folderTitle}`}>
-          Actions <Icon name="angle-down" />
+        <Button
+          variant="secondary"
+          size="sm"
+          fill="text"
+          type="button"
+          aria-label={`Actions for folder ${folderTitle}`}
+        >
+          <Stack direction="row" alignItems="center" gap={0}>
+            Actions
+            <Icon name="angle-down" />
+          </Stack>
         </Button>
       </Dropdown>
       {showDeleteModal && (

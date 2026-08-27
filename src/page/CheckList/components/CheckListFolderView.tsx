@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Checkbox, Icon, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
@@ -38,6 +39,13 @@ interface CheckListFolderViewProps {
   onDeselectChecks: (checkIds: number[]) => void;
   selectedCheckIds: Set<number>;
   sortType: CheckSort;
+  /**
+   * Bulk actions for the current selection, rendered on the folders row in
+   * place of the expand toggle. Owned by CheckList — the folder view only
+   * provides the position, since a selection is list-wide rather than
+   * per-folder.
+   */
+  bulkActions?: React.ReactNode;
 }
 
 export function CheckListFolderView({
@@ -58,6 +66,7 @@ export function CheckListFolderView({
   onDeselectChecks,
   selectedCheckIds,
   sortType,
+  bulkActions,
 }: CheckListFolderViewProps) {
   const styles = useStyles2(getStyles);
   const reverseFolderSort = sortType === CheckSort.ZToA;
@@ -113,25 +122,29 @@ export function CheckListFolderView({
     selectedCheckIds,
   };
 
-  const hasAnyContent = folderTree.length > 0;
-
   return (
     <div className={styles.container}>
-      {hasAnyContent && (
+      {folderTree.length === 0 ? (
+        <div className={styles.emptyState}>No checks to display</div>
+      ) : (
         <div className={styles.foldersSection}>
-          <div className={styles.foldersSectionHeader}>
+          <div className={styles.foldersSectionHeader} data-testid={CHECKS_TEST_ID.folderView.sectionHeader}>
             <h3 className={styles.sectionTitle}>
               Folders ({allUids.length})
               <Feedback feature="folder-view" about={{ text: 'New feature!' }} />
             </h3>
-            <Button
-              variant="secondary"
-              icon={allExpanded ? 'table-collapse-all' : 'table-expand-all'}
-              onClick={toggleAllExpanded}
-              aria-label={allExpanded ? 'Collapse all folders' : 'Expand all folders'}
-            >
-              {allExpanded ? 'Collapse all' : 'Expand all'}
-            </Button>
+            {/* The bulk actions take this row over while checks are selected,
+                so the expand toggle steps aside. */}
+            {bulkActions ?? (
+              <Button
+                variant="secondary"
+                icon={allExpanded ? 'table-collapse-all' : 'table-expand-all'}
+                onClick={toggleAllExpanded}
+                aria-label={allExpanded ? 'Collapse all folders' : 'Expand all folders'}
+              >
+                {allExpanded ? 'Collapse all' : 'Expand all'}
+              </Button>
+            )}
           </div>
 
           {folderTree.map((node) => (
@@ -147,8 +160,6 @@ export function CheckListFolderView({
           ))}
         </div>
       )}
-
-      {!hasAnyContent && <div className={styles.emptyState}>No checks to display</div>}
     </div>
   );
 }
