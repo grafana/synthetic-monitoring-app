@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
-import { TextLink } from '@grafana/ui';
+import { Spinner, TextLink } from '@grafana/ui';
 import { ReliabilityInboxPage } from 'features/reliabilityInbox';
 
 import { FeatureName } from 'types';
@@ -8,6 +8,7 @@ import { LegacyEditRedirect } from 'routing/LegacyEditRedirect';
 import { AppRoutes } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
@@ -39,6 +40,9 @@ export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
   const { isFeatureEnabled } = useFeatureFlagContext();
+  const { isEnabled: isCheckSuggestionsEnabled, isReady: isCheckSuggestionsReady } = useFeatureFlag(
+    FeatureName.CheckSuggestions
+  );
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -133,18 +137,23 @@ export const InitialisedRouter = () => {
 
       <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
 
-      {isFeatureEnabled(FeatureName.ReliabilityInbox) && (
-        <Route
-          path={AppRoutes.ReliabilityInbox}
-          element={
-            canReadChecks ? (
-              <ReliabilityInboxPage />
-            ) : (
-              <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
-            )
-          }
-        />
-      )}
+      <Route
+        path={AppRoutes.ReliabilityInbox}
+        element={
+          !isCheckSuggestionsReady ? (
+            <Spinner />
+          ) : !isCheckSuggestionsEnabled ? (
+            <PluginPageNotFound>
+              The page you are looking for does not exist. Here is a working link to{' '}
+              <TextLink href={getRoute(AppRoutes.Home)}>home</TextLink>.
+            </PluginPageNotFound>
+          ) : canReadChecks ? (
+            <ReliabilityInboxPage />
+          ) : (
+            <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+          )
+        }
+      />
 
       <Route path={`${AppRoutes.Config}`} element={<ConfigPageLayout />}>
         <Route index element={<GeneralTab />} />

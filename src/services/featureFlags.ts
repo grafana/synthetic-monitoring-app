@@ -9,7 +9,9 @@ export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 
 // Adding an entry routes all consumers of that FeatureName through OpenFeature instead
 // of legacy config.featureToggles. See docs/development/openfeature-migration.md
-export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {};
+export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
+  [FeatureName.CheckSuggestions]: 'synthetic-monitoring.check-suggestions',
+};
 
 let initPromise: Promise<void> | undefined;
 let client: Client | undefined;
