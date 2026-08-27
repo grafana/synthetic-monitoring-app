@@ -170,7 +170,7 @@ describe('CheckList - Folder Actions menu', () => {
 
     expect(await screen.findByRole('menuitem', { name: 'Enable all checks' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Disable all checks' })).toBeInTheDocument();
-    expect(screen.getByRole('menuitem', { name: 'Move all checks to folder' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Move all checks' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Delete all checks' })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: 'Move folder' })).toBeInTheDocument();
   });

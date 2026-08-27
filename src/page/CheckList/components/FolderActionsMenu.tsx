@@ -78,7 +78,7 @@ export function FolderActionsMenu({
       />
       {isFoldersAvailable && (
         <Menu.Item
-          label={`Move ${targetLabel} to folder`}
+          label={`Move ${targetLabel}`}
           icon="folder"
           disabled={!canWriteAll}
           description={writeDisabledReason}
