@@ -10,6 +10,12 @@ import { PLUGIN_URL_PATH } from 'routing/constants';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import * as useFeatureFlagModule from 'hooks/useFeatureFlag';
+
+jest.mock('hooks/useFeatureFlag', () => {
+  const actual = jest.requireActual('hooks/useFeatureFlag');
+  return { ...actual, useFeatureFlag: jest.fn(actual.useFeatureFlag) };
+});
 
 function renderInitialisedRouting(options?: CustomRenderOptions) {
   return render(<InitialisedRouter />, options);
@@ -94,5 +100,16 @@ describe('Routes to pages correctly', () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
     const notFoundText = await screen.findByText('Not found', { selector: 'span' });
     expect(notFoundText).toBeInTheDocument();
+  });
+
+  test('Check suggestions route shows a spinner while the flag is not ready', async () => {
+    const actualUseFeatureFlag = jest.requireActual('hooks/useFeatureFlag').useFeatureFlag;
+    jest.mocked(useFeatureFlagModule.useFeatureFlag).mockReturnValue({ isEnabled: false, isReady: false });
+
+    renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
+    const spinner = await screen.findByTestId('Spinner');
+    expect(spinner).toBeInTheDocument();
+
+    jest.mocked(useFeatureFlagModule.useFeatureFlag).mockImplementation(actualUseFeatureFlag);
   });
 });
