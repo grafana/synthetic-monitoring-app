@@ -123,6 +123,28 @@ describe('FolderSelector', () => {
     expect(within(modal).getByRole('button', { name: 'Create' })).toBeEnabled();
   });
 
+  // A readable default folder is not enough to preselect it as the parent:
+  // the user must be able to save into it, otherwise Create would enable
+  // with a parent the API is going to reject.
+  it('preselects no parent for a new folder when the default folder is read-only', async () => {
+    runTestWithReadOnlyDefaultFolder();
+
+    const { user } = render(<FolderSelector onChange={jest.fn()} />);
+
+    await user.click(await screen.findByRole('button', { name: /Create folder/ }));
+
+    const modal = await screen.findByRole('dialog');
+    await user.type(within(modal).getByPlaceholderText('Enter folder name'), 'Team folder');
+
+    expect(within(modal).getByRole('button', { name: 'Create' })).toBeDisabled();
+
+    const parentPicker = within(modal).getByLabelText('Folder picker');
+    await within(parentPicker).findByRole('option', { name: FOLDER_ROOT.title });
+    await user.selectOptions(parentPicker, FOLDER_ROOT.uid);
+
+    expect(within(modal).getByRole('button', { name: 'Create' })).toBeEnabled();
+  });
+
   it('hides the create folder button without org-level folder creation rights', async () => {
     runTestAsSMEditor();
 

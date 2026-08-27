@@ -32,9 +32,15 @@ interface FolderSelectorProps {
  * a grant on a team folder could not place a check anywhere.
  */
 export function FolderSelector({ value, onChange, disabled }: FolderSelectorProps) {
-  const { defaultFolderUid, isLoading } = useDefaultFolder();
+  const { defaultFolder, defaultFolderUid, isLoading } = useDefaultFolder();
   const { canCreateFolders } = useUserPermissions();
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Same rule as check assignment (useFolderSelection): the default folder is
+  // only preselected as the new folder's parent when the user can actually
+  // save into it. A merely readable default folder must not be offered, or
+  // Create would submit a parent the API is going to reject.
+  const createParentUid = defaultFolder?.canSave ? defaultFolder.uid : undefined;
 
   // In the disabled state we render a plain read-only input (the runtime
   // FolderPicker has no disabled prop), which needs the folder's title.
@@ -77,7 +83,7 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
       )}
       {showCreateModal && (
         <CreateFolderModal
-          defaultParentUid={defaultFolderUid}
+          defaultParentUid={createParentUid}
           onCreated={handleFolderCreated}
           onDismiss={() => setShowCreateModal(false)}
         />
@@ -87,7 +93,10 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
 }
 
 interface CreateFolderModalProps {
-  /** Preselected parent. Undefined when the default folder is unreachable, in which case the user must pick one. */
+  /**
+   * Preselected parent. Undefined when the default folder is unreachable or
+   * not writable by the user, in which case an explicit pick is required.
+   */
   defaultParentUid?: string;
   onCreated: (folder: GrafanaFolder) => void;
   onDismiss: () => void;
