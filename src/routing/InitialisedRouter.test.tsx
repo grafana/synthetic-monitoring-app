@@ -1,5 +1,6 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
@@ -107,6 +108,12 @@ describe('Routes to pages correctly', () => {
     jest.mocked(useFeatureFlagModule.useFeatureFlag).mockReturnValue({ isEnabled: false, isReady: false });
 
     renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
+
+    // The datasource/permissions providers show their own loading spinner first, and Grafana's
+    // generic spinner looks the same everywhere it's used, so wait for that one to clear first,
+    // otherwise we might catch it instead of the one for the expected routing below.
+    await waitForElementToBeRemoved(() => screen.queryByTestId(UI_TEST_ID.centeredSpinner));
+
     const spinner = await screen.findByTestId('Spinner');
     expect(spinner).toBeInTheDocument();
 
