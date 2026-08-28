@@ -7,6 +7,8 @@ import { server } from 'test/server';
 import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
 
 import { FeatureName } from 'types';
+import { LabelMode } from 'datasource/responses.types';
+import { useLabelMode } from 'data/useLabelMode';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericLabelContent } from './GenericLabelContent';
@@ -18,6 +20,12 @@ jest.mock('../../ui/SectionContent', () => ({
 jest.mock('../../../hooks/useRelevantErrors', () => ({
   useRelevantErrors: jest.fn(() => []),
 }));
+
+jest.mock('data/useLabelMode', () => ({
+  useLabelMode: jest.fn(),
+}));
+
+const useLabelModeMock = useLabelMode as jest.Mock;
 
 const calNames = TENANT_COST_ATTRIBUTION_LABELS.names;
 
@@ -33,6 +41,36 @@ function renderGenericLabelContent(
 }
 
 describe('GenericLabelContent', () => {
+  beforeEach(() => {
+    useLabelModeMock.mockReturnValue({ data: { mode: LabelMode.Prefixed, systemLabels: [] } });
+  });
+
+  describe('label_ prefix hint', () => {
+    it('shows the label_ prefix hint while the tenant is in PREFIXED mode', () => {
+      useLabelModeMock.mockReturnValue({ data: { mode: LabelMode.Prefixed, systemLabels: [] } });
+      renderGenericLabelContent();
+      expect(screen.getByText('label')).toBeInTheDocument();
+    });
+
+    it('hides the label_ prefix hint once the tenant has moved to DUAL_WRITE', () => {
+      useLabelModeMock.mockReturnValue({ data: { mode: LabelMode.DualWrite, systemLabels: [] } });
+      renderGenericLabelContent();
+      expect(screen.queryByText('label')).not.toBeInTheDocument();
+    });
+
+    it('hides the label_ prefix hint once the tenant has moved to UNPREFIXED', () => {
+      useLabelModeMock.mockReturnValue({ data: { mode: LabelMode.Unprefixed, systemLabels: [] } });
+      renderGenericLabelContent();
+      expect(screen.queryByText('label')).not.toBeInTheDocument();
+    });
+
+    it('shows the hint while the label mode is still loading, matching the legacy always-on behavior', () => {
+      useLabelModeMock.mockReturnValue({ data: undefined });
+      renderGenericLabelContent();
+      expect(screen.getByText('label')).toBeInTheDocument();
+    });
+  });
+
   describe('when CALs feature flag is enabled', () => {
     beforeEach(() => {
       mockFeatureToggles({ [FeatureName.CALs]: true });
