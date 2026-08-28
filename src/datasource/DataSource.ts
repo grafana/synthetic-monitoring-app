@@ -29,6 +29,7 @@ import {
   ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
+  ListTokensResponse,
   LogsQueryResponse,
   RenameCheckLabelsResponse,
   type ResetProbeTokenResult,
@@ -428,6 +429,22 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       method: 'POST',
       data: {},
     }).then((data) => data.token);
+  }
+
+  async listTokens(pageSize = 50, cursor?: string): Promise<ListTokensResponse> {
+    const params = new URLSearchParams({ page_size: String(pageSize) });
+
+    if (cursor) {
+      params.set('cursor', cursor);
+    }
+
+    return this.fetchAPI<ListTokensResponse>(`${this.instanceSettings.url}/sm/token/list?${params.toString()}`);
+  }
+
+  async deleteToken(tokenId: string): Promise<void> {
+    await this.fetchAPI(`${this.instanceSettings.url}/sm/token/${encodeURIComponent(tokenId)}`, {
+      method: 'DELETE',
+    });
   }
 
   //--------------------------------------------------------------------------------
