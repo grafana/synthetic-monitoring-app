@@ -68,6 +68,8 @@ describe('AccessTokensTab', () => {
         runTestAsSMViewer();
         const { queryByText } = await renderAccessTokensTab();
         expect(queryByText(contactAdminMessage)).toBeInTheDocument();
+        // The Existing tokens section is gated entirely, not shown empty.
+        expect(queryByText('Existing tokens')).not.toBeInTheDocument();
       });
 
       it(`Displays a contact admin message for editors because token actions are admin-only`, async () => {
@@ -152,8 +154,26 @@ describe('AccessTokensTab', () => {
 
       // Current button is wrapped in a <span> inside a Tooltip.
       expect(currentButton.closest('span')).toBeTruthy();
-      // Non-current button's immediate parent is a <td>.
-      expect(nonCurrentButton.parentElement?.tagName).toBe('TD');
+      // Non-current button is not wrapped in a Tooltip span.
+      expect(nonCurrentButton.parentElement?.tagName).not.toBe('SPAN');
+    });
+
+    it('disables every revoke button when the current token cannot be identified', async () => {
+      // current_token_id is omitted for requests not bound to a token; the
+      // revoke guard must fail closed rather than allow revoking the token
+      // the plugin itself uses.
+      server.use(
+        apiRoute('listAccessTokens', {
+          result: () => ({ json: { ...LIST_ACCESS_TOKENS, current_token_id: undefined } }),
+        })
+      );
+
+      await renderAccessTokensTab();
+
+      await screen.findByText(OTHER_TOKEN_ID);
+      const revokeButtons = screen.getAllByRole('button', { name: /revoke/i });
+      expect(revokeButtons).toHaveLength(2);
+      revokeButtons.forEach((button) => expect(button).toBeDisabled());
     });
 
     it('shows an error alert instead of the empty state when the list fails to load', async () => {
@@ -223,9 +243,10 @@ describe('AccessTokensTab', () => {
       expect(screen.getByText(/This action cannot be undone/i)).toBeInTheDocument();
     });
 
-    it('calls deleteToken on confirm and invalidates the list query', async () => {
+    it('calls deleteToken on confirm and refetches the list', async () => {
       const user = userEvent.setup();
       let listCallCount = 0;
+      let revokeRequestUrl = '';
 
       server.use(
         apiRoute('listAccessTokens', {
@@ -233,6 +254,9 @@ describe('AccessTokensTab', () => {
             listCallCount++;
             return { json: LIST_ACCESS_TOKENS };
           },
+        }),
+        apiRoute('revokeAccessToken', undefined, (req) => {
+          revokeRequestUrl = req.url;
         })
       );
 
@@ -250,6 +274,9 @@ describe('AccessTokensTab', () => {
       await waitFor(() => {
         expect(listCallCount).toBeGreaterThanOrEqual(2);
       });
+
+      // The DELETE hit the endpoint for the clicked row's token id.
+      expect(revokeRequestUrl).toContain(`/sm/token/${OTHER_TOKEN_ID}`);
     });
 
     it('mutation remains idle after a delete failure (list is not re-fetched)', async () => {

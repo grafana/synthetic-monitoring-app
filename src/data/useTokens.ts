@@ -32,7 +32,10 @@ export function useCreateToken({ onError, onSuccess }: MutationProps<string> = {
       onError?.(error);
     },
     onSuccess: (token) => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      // Refetching already-loaded pages would reuse their original cursors,
+      // which duplicates or skips rows once a mutation shifts the page
+      // boundaries, so restart from the first page instead.
+      qc.resetQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.(token);
     },
     meta: {
@@ -64,13 +67,15 @@ export function useDeleteToken({ onError, onSuccess }: MutationProps<void> = {})
       onError?.(error);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      // See useCreateToken: reset instead of refetching stale cursor pages.
+      qc.resetQueries({ queryKey: QUERY_KEYS.list });
       onSuccess?.();
     },
     meta: {
       event: {
         type: FaroEvent.DeleteAccessToken,
       },
+      successAlert: () => `Access token revoked`,
       errorAlert: (error: Error) => error.message,
     },
   });

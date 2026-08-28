@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { dateTimeFormat, dateTimeFormatTimeAgo } from '@grafana/data';
+import { Alert, Button, ConfirmModal, Modal, Space, Spinner, TextLink, Tooltip, useTheme2 } from '@grafana/ui';
 
 import { TokenInfo } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useCreateToken, useDeleteToken, useTokens } from 'data/useTokens';
 import { Clipboard } from 'components/Clipboard';
+import { Table, type TableColumn } from 'components/Table';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
@@ -15,11 +15,9 @@ const PAGE_SIZE = 50;
 
 export function AccessTokensTab() {
   const { canReadTokens, canWriteTokens, canDeleteTokens } = getUserPermissions();
-  const styles = useStyles2(getStyles);
+  const theme = useTheme2();
 
-  // write permission implies read for users who have not had the explicit :read
-  // permission assigned yet (e.g. before a plugin.json update is rolled out).
-  const canViewList = canReadTokens || canWriteTokens;
+  const canViewList = canReadTokens;
 
   // New token modal state
   const [showModal, setShowModal] = useState(false);
@@ -43,8 +41,70 @@ export function AccessTokensTab() {
   const deleteToken = useDeleteToken();
 
   const tokens = data?.pages.flatMap((page) => page.items) ?? [];
+  // total_count is recomputed on every page, so read it from the latest one.
   const totalCount = data?.pages[data.pages.length - 1]?.total_count ?? 0;
   const currentTokenId = data?.pages[0]?.current_token_id ?? '';
+  // current_token_id is only omitted for requests not bound to a token, which
+  // should be impossible through the plugin. Fail closed rather than allow
+  // revoking the token the plugin itself depends on.
+  const currentTokenUnknown = currentTokenId === '';
+
+  const columns: Array<TableColumn<TokenInfo>> = [
+    {
+      name: 'ID',
+      selector: (row) => row.id,
+      style: { fontFamily: theme.typography.fontFamilyMonospace },
+    },
+    {
+      name: 'Created',
+      selector: (row) => formatUnixSeconds(row.created),
+    },
+    {
+      name: 'Last used',
+      cell: (row) =>
+        row.lastUsed === 0 ? (
+          'Never'
+        ) : (
+          <Tooltip content={formatUnixSeconds(row.lastUsed)}>
+            <span>{dateTimeFormatTimeAgo(row.lastUsed * 1000)}</span>
+          </Tooltip>
+        ),
+    },
+  ];
+
+  if (canDeleteTokens) {
+    columns.push({
+      name: '',
+      right: true,
+      cell: (row) => {
+        const isCurrent = !currentTokenUnknown && row.id === currentTokenId;
+        const disabledReason = isCurrent
+          ? 'You cannot revoke the token currently in use.'
+          : currentTokenUnknown
+            ? 'Revoking is unavailable because the current token could not be identified.'
+            : undefined;
+
+        const revokeButton = (
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={Boolean(disabledReason) || deleteToken.isPending}
+            onClick={() => !disabledReason && setTokenToDelete(row)}
+          >
+            Revoke
+          </Button>
+        );
+
+        return disabledReason ? (
+          <Tooltip content={disabledReason}>
+            <span>{revokeButton}</span>
+          </Tooltip>
+        ) : (
+          revokeButton
+        );
+      },
+    });
+  }
 
   return (
     <ConfigContent title="Access tokens">
@@ -81,82 +141,42 @@ export function AccessTokensTab() {
         </Button>
       </ConfigContent.Section>
 
-      <ConfigContent.Section title="Existing tokens">
-        {isLoading && canViewList && <Spinner />}
-        {isError && canViewList && (
-          <Alert severity="error" title="Failed to load access tokens">
-            Refresh the page to try again.
-          </Alert>
-        )}
-        {!isLoading && !isError && canViewList && tokens.length === 0 && <span>No tokens found.</span>}
-        {canViewList && tokens.length > 0 && (
-          <>
-            <table className={styles.table}>
-              <colgroup>
-                <col className={styles.colId} />
-                <col className={styles.colDate} />
-                <col className={styles.colDate} />
-                {canDeleteTokens && <col className={styles.colAction} />}
-              </colgroup>
-              <thead>
-                <tr>
-                  <th className={styles.th}>ID</th>
-                  <th className={styles.th}>Created</th>
-                  <th className={styles.th}>Last used</th>
-                  {canDeleteTokens && <th className={styles.th} />}
-                </tr>
-              </thead>
-              <tbody>
-                {tokens.map((t) => {
-                  const isCurrent = currentTokenId !== '' && t.id === currentTokenId;
-                  const revokeButton = (
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={isCurrent || deleteToken.isPending}
-                      onClick={() => !isCurrent && setTokenToDelete(t)}
-                    >
-                      Revoke
-                    </Button>
-                  );
+      {canViewList && (
+        <ConfigContent.Section title="Existing tokens">
+          {isLoading && <Spinner />}
+          {isError && (
+            <Alert severity="error" title="Failed to load access tokens">
+              Refresh the page to try again.
+            </Alert>
+          )}
+          {!isLoading && !isError && (
+            <>
+              <Table<TokenInfo>
+                id="access-tokens-list"
+                name="access-tokens-list"
+                data={tokens}
+                columns={columns}
+                noDataText="No tokens found."
+                pagination={false}
+                pointerOnHover={false}
+              />
 
-                  return (
-                    <tr key={t.id} className={styles.tr}>
-                      <td className={cx(styles.td, styles.tdId)}>{t.id}</td>
-                      <td className={styles.td}>{formatUnixSeconds(t.created)}</td>
-                      <td className={styles.td}>{formatUnixSeconds(t.lastUsed)}</td>
-                      {canDeleteTokens && (
-                        <td className={cx(styles.td, styles.tdAction)}>
-                          {isCurrent ? (
-                            <Tooltip content="You cannot revoke the token currently in use.">
-                              <span>{revokeButton}</span>
-                            </Tooltip>
-                          ) : (
-                            revokeButton
-                          )}
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-
-            {hasNextPage && (
-              <>
-                <Space v={2} />
-                <Button variant="secondary" size="sm" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
-                  {isFetchingNextPage ? (
-                    <Spinner />
-                  ) : (
-                    `Load more (${Math.max(totalCount - tokens.length, 0)} remaining)`
-                  )}
-                </Button>
-              </>
-            )}
-          </>
-        )}
-      </ConfigContent.Section>
+              {hasNextPage && (
+                <>
+                  <Space v={2} />
+                  <Button variant="secondary" size="sm" onClick={() => fetchNextPage()} disabled={isFetchingNextPage}>
+                    {isFetchingNextPage ? (
+                      <Spinner />
+                    ) : (
+                      `Load more (${Math.max(totalCount - tokens.length, 0)} remaining)`
+                    )}
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+        </ConfigContent.Section>
+      )}
 
       <ConfigContent.Section title="Private probes">
         Each private probe has its own access token. You will only ever see the access token when you first create the
@@ -196,49 +216,4 @@ function formatUnixSeconds(seconds: number): string {
   }
 
   return dateTimeFormat(seconds * 1000);
-}
-
-function getStyles(theme: GrafanaTheme2) {
-  return {
-    table: css({
-      width: '100%',
-      borderCollapse: 'collapse',
-    }),
-    colId: css({
-      width: '300px',
-    }),
-    colDate: css({
-      width: '180px',
-    }),
-    colAction: css({
-      width: '90px',
-    }),
-    th: css({
-      textAlign: 'left',
-      padding: theme.spacing(1, 2, 1, 0),
-      borderBottom: `1px solid ${theme.colors.border.weak}`,
-      color: theme.colors.text.secondary,
-      fontSize: theme.typography.bodySmall.fontSize,
-      fontWeight: theme.typography.fontWeightMedium,
-      whiteSpace: 'nowrap',
-    }),
-    tr: css({
-      '&:not(:last-child) td': {
-        borderBottom: `1px solid ${theme.colors.border.weak}`,
-      },
-    }),
-    td: css({
-      padding: theme.spacing(1, 2, 1, 0),
-      verticalAlign: 'middle',
-    }),
-    tdId: css({
-      fontFamily: theme.typography.fontFamilyMonospace,
-      fontSize: theme.typography.bodySmall.fontSize,
-      wordBreak: 'break-all',
-    }),
-    tdAction: css({
-      textAlign: 'right',
-      paddingRight: 0,
-    }),
-  };
 }
