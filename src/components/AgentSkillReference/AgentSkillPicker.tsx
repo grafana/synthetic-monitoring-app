@@ -1,26 +1,26 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { Card, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import {
   trackAgentSkillInstallCommandCopied,
   trackAgentSkillLinkClicked,
-  trackAgentSkillSectionViewed,
   trackAgentSkillToolSelected,
 } from 'features/tracking/agentSkillEvents';
-import { useLocalStorage } from 'usehooks-ts';
 
 import { Clipboard } from 'components/Clipboard';
 import { Feedback } from 'components/Feedback';
 
 import { AgentSkillPrompts } from './AgentSkillPrompts';
 import {
+  AGENT_SKILL_DEFAULT_COPY,
   AGENT_SKILL_FEEDBACK_FEATURE,
-  AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
   AGENT_SKILL_REPO_URL,
   AGENT_SKILL_TOOLS,
   AgentSkillReferenceSource,
+  AgentSkillToolId,
 } from './AgentSkillReference.constants';
+import { useAgentSkillFeedback, useTrackAgentSkillSectionViewed } from './AgentSkillReference.hooks';
 
 type AgentSkillTool = (typeof AGENT_SKILL_TOOLS)[number];
 
@@ -30,16 +30,9 @@ interface AgentSkillPickerProps {
 
 export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
   const styles = useStyles2(getStyles);
-  const [selectedId, setSelectedId] = useState<AgentSkillTool['id'] | null>(null);
-  const [hasCopiedInstall, setHasCopiedInstall] = useLocalStorage<boolean>(
-    AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
-    false
-  );
-  // Ask for feedback only on return visits: snapshot the flag at mount so a
-  // copy in the current session doesn't trigger the ask before the skill has
-  // actually been tried.
-  const [askForFeedback] = useState(hasCopiedInstall);
-  const hasTrackedView = useRef(false);
+  const [selectedId, setSelectedId] = useState<AgentSkillToolId | null>(null);
+  const { askForFeedback, markInstallCopied, markFeedbackGiven } = useAgentSkillFeedback();
+  const trackView = useTrackAgentSkillSectionViewed(source);
 
   const selectedTool = AGENT_SKILL_TOOLS.find(({ id }) => id === selectedId);
 
@@ -47,49 +40,44 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
     (tool: AgentSkillTool) => {
       setSelectedId(tool.id);
       trackAgentSkillToolSelected({ source, tool: tool.id });
-      if (!hasTrackedView.current) {
-        hasTrackedView.current = true;
-        trackAgentSkillSectionViewed({ source });
-      }
+      trackView();
     },
-    [source]
+    [source, trackView]
   );
 
   return (
     <Stack direction="column" gap={1}>
       <Stack direction="row" alignItems="center" gap={1}>
-        <Text variant="h5" element="h3">
+        <Text variant="body" weight="medium" element="h3">
           Or author checks with your coding agent
         </Text>
         {askForFeedback && (
-          <Feedback feature={AGENT_SKILL_FEEDBACK_FEATURE} about={{ text: 'Did the skill help?' }} />
+          <Feedback
+            feature={AGENT_SKILL_FEEDBACK_FEATURE}
+            about={{ text: 'Did the skill help?' }}
+            onReaction={markFeedbackGiven}
+          />
         )}
       </Stack>
       <div className={styles.cardRow}>
         {AGENT_SKILL_TOOLS.map((tool) => (
-          <button
-            key={tool.id}
-            type="button"
-            className={cx(styles.toolCard, { [styles.toolCardSelected]: selectedId === tool.id })}
-            onClick={() => handleSelect(tool)}
-            aria-pressed={selectedId === tool.id}
-            data-fs-element={`Agent skill tool card ${tool.id} (${source})`}
-          >
-            <Text variant="h6" element="h4">
-              {tool.name}
-            </Text>
-            <Text color="secondary" variant="bodySmall">
-              {tool.cardDescription}
-            </Text>
-          </button>
+          <div key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
+            <Card
+              noMargin
+              isSelected={selectedId === tool.id}
+              onClick={() => handleSelect(tool)}
+              className={styles.toolCard}
+            >
+              <Card.Heading>{tool.name}</Card.Heading>
+              <Card.Description>{tool.cardDescription}</Card.Description>
+            </Card>
+          </div>
         ))}
       </div>
       {selectedTool && (
         <Stack direction="column" gap={2}>
           <Text element="p" color="secondary">
-            The Synthetic Monitoring skill teaches your agent to pick the simplest sufficient check type, author
-            scripted and browser checks that assert correctly, and validate them locally with <code>k6 run</code>.
-            Paste the resulting script into the check editor, or let your agent deploy it via Terraform or the API.
+            {AGENT_SKILL_DEFAULT_COPY.description}
           </Text>
           <Stack direction="column" gap={0.5}>
             <Text variant="h6" element="h4">
@@ -102,7 +90,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
                 isCode
                 inlineCopy
                 onCopy={() => {
-                  setHasCopiedInstall(true);
+                  markInstallCopied();
                   trackAgentSkillInstallCommandCopied({ source, command: selectedTool.trackingId });
                 }}
               />
@@ -133,26 +121,10 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
 const getStyles = (theme: GrafanaTheme2) => ({
   cardRow: css({
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
     gap: theme.spacing(2),
   }),
   toolCard: css({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(0.5),
-    padding: theme.spacing(2),
-    textAlign: 'left',
-    background: theme.colors.background.secondary,
-    border: `1px solid transparent`,
-    borderRadius: theme.shape.radius.default,
-    cursor: 'pointer',
-
-    '&:hover': {
-      background: theme.colors.emphasize(theme.colors.background.secondary, 0.03),
-    },
-  }),
-  toolCardSelected: css({
-    borderColor: theme.colors.primary.border,
+    height: '100%',
   }),
 });

@@ -4,10 +4,12 @@ import { render } from 'test/render';
 
 import { AgentSkillPicker } from './AgentSkillPicker';
 import {
+  AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY,
   AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
   AGENT_SKILL_PROMPTS,
   AGENT_SKILL_TOOLS,
 } from './AgentSkillReference.constants';
+import { resetAgentSkillViewedSources } from './AgentSkillReference.hooks';
 
 jest.mock('features/tracking/agentSkillEvents', () => ({
   trackAgentSkillSectionViewed: jest.fn(),
@@ -31,6 +33,7 @@ describe('AgentSkillPicker', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    resetAgentSkillViewedSources();
     Object.defineProperty(navigator, 'clipboard', {
       value: {
         writeText: jest.fn().mockResolvedValue(undefined),
@@ -130,5 +133,25 @@ describe('AgentSkillPicker', () => {
     render(<AgentSkillPicker source={SOURCE} />);
 
     expect(await screen.findByText('Did the skill help?')).toBeInTheDocument();
+  });
+
+  it('stops asking for feedback once the user has reacted', async () => {
+    localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
+    const { user } = render(<AgentSkillPicker source={SOURCE} />);
+
+    await screen.findByText('Did the skill help?');
+    await user.click(screen.getByRole('button', { name: 'I love this feature' }));
+
+    // the reaction is persisted so future visits skip the ask
+    expect(JSON.parse(localStorage.getItem(AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY) ?? 'false')).toBe(true);
+  });
+
+  it('does not ask for feedback on visits after the user has already reacted', async () => {
+    localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
+    localStorage.setItem(AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY, 'true');
+    render(<AgentSkillPicker source={SOURCE} />);
+
+    expect(await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) })).toBeInTheDocument();
+    expect(screen.queryByText('Did the skill help?')).not.toBeInTheDocument();
   });
 });

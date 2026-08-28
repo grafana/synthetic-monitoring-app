@@ -4,22 +4,26 @@ import { trackAgentSkillPromptCopied } from 'features/tracking/agentSkillEvents'
 
 import { Clipboard } from 'components/Clipboard';
 
-import { AGENT_SKILL_PROMPTS, AgentSkillReferenceSource } from './AgentSkillReference.constants';
+import { AGENT_SKILL_PROMPTS, AgentSkillReferenceSource, AgentSkillToolId } from './AgentSkillReference.constants';
 
 type AgentSkillPromptId = (typeof AGENT_SKILL_PROMPTS)[number]['id'];
 
 interface AgentSkillPromptsProps {
   source: AgentSkillReferenceSource;
-  tool?: 'claude-code' | 'agent-skills';
+  tool?: AgentSkillToolId;
   /** Render the introductory line above the prompt block. */
   showIntro?: boolean;
 }
 
 export const AgentSkillPrompts = ({ source, tool, showIntro = false }: AgentSkillPromptsProps) => {
   const prompts = AGENT_SKILL_PROMPTS.filter(({ sources }) => sources.includes(source));
-  const [promptId, setPromptId] = useState<AgentSkillPromptId>(prompts[0].id);
+  const [promptId, setPromptId] = useState<AgentSkillPromptId | undefined>(prompts[0]?.id);
 
   const selectedPrompt = prompts.find(({ id }) => id === promptId) ?? prompts[0];
+
+  if (!selectedPrompt) {
+    return null;
+  }
 
   return (
     <Stack direction="column" gap={0.5}>
