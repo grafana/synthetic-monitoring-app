@@ -14,9 +14,18 @@ interface ClipboardProps {
   highlight?: string | string[];
   isCode?: boolean;
   inlineCopy?: boolean;
+  onCopy?: () => void;
 }
 
-export function Clipboard({ content, className, truncate, highlight, isCode, inlineCopy = false }: ClipboardProps) {
+export function Clipboard({
+  content,
+  className,
+  truncate,
+  highlight,
+  isCode,
+  inlineCopy = false,
+  onCopy,
+}: ClipboardProps) {
   const styles = useStyles2(getStyles);
 
   return (
@@ -37,6 +46,7 @@ export function Clipboard({ content, className, truncate, highlight, isCode, inl
         buttonText="Copy to clipboard"
         buttonTextCopied="Copied to clipboard"
         content={content}
+        onClipboardCopy={onCopy}
         onClipboardError={(err) => {
           appEvents.emit(AppEvents.alertError, [`Failed to copy to clipboard: ${err}`]);
         }}
