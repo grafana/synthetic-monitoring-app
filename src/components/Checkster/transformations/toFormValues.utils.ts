@@ -54,6 +54,55 @@ export function partitionCalLabels(labels: Label[] = [], calNames: string[] = []
   };
 }
 
+interface RehydrateCalLabelsArgs {
+  calNames: string[];
+  /** calLabels currently in the form. Empty right after a defaults reset has wiped them. */
+  calLabels: Label[];
+  /** Custom labels currently in the form. */
+  labels: Label[];
+  /** calLabels as written by the previous hydration, the state before any reset wiped them. */
+  previousCalLabels: Label[];
+  /** The check's original labels from the form defaults. */
+  defaultLabels: Label[];
+}
+
+// Reconciles the CAL rows against the current form state. Hydrated rows are written with
+// shouldDirty: false so the form stays pristine, which means a defaults reset (probes resolving,
+// folder status arriving) wipes them back to the unpartitioned defaults — while user-edited rows
+// are dirty and survive. Hence the value sources, in priority order: rows currently in the form
+// (so a deliberately cleared value stays cleared), the previous hydration (edits a reset wiped),
+// and finally the check's original labels.
+export function rehydrateCalLabels({
+  calNames,
+  calLabels,
+  labels,
+  previousCalLabels,
+  defaultLabels,
+}: RehydrateCalLabelsArgs) {
+  const calNameSet = new Set(calNames);
+  const valueSources = [...calLabels, ...labels, ...previousCalLabels, ...defaultLabels];
+
+  const hydratedCalLabels = calNames.map((name) => ({
+    name,
+    value: valueSources.find((label) => label.name === name)?.value ?? '',
+  }));
+
+  // When the tenant deconfigures a CAL (the names refetch periodically), its value moves back to
+  // the custom labels rather than being silently dropped from the check on the next save.
+  const previouslyManaged = [...calLabels, ...previousCalLabels];
+  const deconfiguredRows = previouslyManaged.filter(
+    (row, index) =>
+      !calNameSet.has(row.name) &&
+      row.value !== '' &&
+      previouslyManaged.findIndex((candidate) => candidate.name === row.name) === index &&
+      !labels.some((label) => label.name === row.name)
+  );
+
+  return {
+    calLabels: hydratedCalLabels,
+    labels: [...labels.filter((label) => !calNameSet.has(label.name)), ...deconfiguredRows],
+  };
+}
 export function getBaseFormValuesFromCheck(check: Check): Omit<CheckFormValues, 'checkType' | 'settings'> {
   return {
     alertSensitivity: check.alertSensitivity,

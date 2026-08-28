@@ -31,14 +31,14 @@ function simulateDefaultsReset(formMethods: UseFormReturn<CheckFormValues>, defa
   });
 }
 
-function setup(defaults: CheckFormValues) {
+function setup(defaults: CheckFormValues, calNames: string[] = CAL_NAMES) {
   return renderHook(
-    ({ defaultFormValues }: { defaultFormValues: CheckFormValues }) => {
+    ({ calNames, defaultFormValues }: { calNames: string[]; defaultFormValues: CheckFormValues }) => {
       const formMethods = useForm<CheckFormValues>({ defaultValues: defaultFormValues });
-      useHydrateCalLabels(formMethods, CAL_NAMES, defaultFormValues);
+      useHydrateCalLabels(formMethods, calNames, defaultFormValues);
       return formMethods;
     },
-    { initialProps: { defaultFormValues: defaults } }
+    { initialProps: { calNames, defaultFormValues: defaults } }
   );
 }
 
@@ -66,13 +66,50 @@ describe('useHydrateCalLabels', () => {
     });
 
     // Defaults recompute (new reference), re-running the hydration effect.
-    rerender({ defaultFormValues: buildDefaults() });
+    rerender({ calNames: CAL_NAMES, defaultFormValues: buildDefaults() });
 
     expect(result.current.getValues('calLabels')).toEqual([
       { name: 'Team', value: 'team-a' },
       { name: 'Service', value: '' },
     ]);
     expect(result.current.getValues('labels')).toEqual([{ name: 'custom', value: 'edited' }]);
+  });
+
+  it('preserves a CAL value edited before hydration across a defaults reset', () => {
+    const defaults = buildDefaults();
+    // CAL names have not resolved yet, so the Team row is still an ordinary label.
+    const { result, rerender } = setup(defaults, []);
+
+    // The user edits the CAL-named row while it is still in the custom labels.
+    act(() => {
+      result.current.setValue(
+        'labels',
+        [
+          { name: 'Team', value: 'team-b' },
+          { name: 'custom', value: 'my-value' },
+        ],
+        { shouldDirty: true }
+      );
+    });
+
+    // CAL names resolve: hydration moves the edited value into calLabels (non-dirty).
+    rerender({ calNames: CAL_NAMES, defaultFormValues: defaults });
+    expect(result.current.getValues('calLabels')).toEqual([
+      { name: 'Team', value: 'team-b' },
+      { name: 'Service', value: '' },
+    ]);
+
+    // A defaults reset wipes the non-dirty calLabels; the original check labels only
+    // know the pre-edit value, so the previous hydration must supply the edit.
+    act(() => {
+      simulateDefaultsReset(result.current, defaults);
+    });
+    rerender({ calNames: CAL_NAMES, defaultFormValues: buildDefaults() });
+
+    expect(result.current.getValues('calLabels')).toEqual([
+      { name: 'Team', value: 'team-b' },
+      { name: 'Service', value: '' },
+    ]);
   });
 
   it('does not resurrect a CAL value the user deliberately cleared', () => {
@@ -92,11 +129,30 @@ describe('useHydrateCalLabels', () => {
       simulateDefaultsReset(result.current, defaults);
     });
 
-    rerender({ defaultFormValues: buildDefaults() });
+    rerender({ calNames: CAL_NAMES, defaultFormValues: buildDefaults() });
 
     expect(result.current.getValues('calLabels')).toEqual([
       { name: 'Team', value: '' },
       { name: 'Service', value: '' },
+    ]);
+  });
+
+  it('moves a deconfigured CAL value back to the custom labels', () => {
+    const defaults = buildDefaults();
+    const { result, rerender } = setup(defaults);
+
+    expect(result.current.getValues('calLabels')).toEqual([
+      { name: 'Team', value: 'team-a' },
+      { name: 'Service', value: '' },
+    ]);
+
+    // The tenant removes Team from the CAL names (the query refetches periodically).
+    rerender({ calNames: ['Service'], defaultFormValues: defaults });
+
+    expect(result.current.getValues('calLabels')).toEqual([{ name: 'Service', value: '' }]);
+    expect(result.current.getValues('labels')).toEqual([
+      { name: 'custom', value: 'my-value' },
+      { name: 'Team', value: 'team-a' },
     ]);
   });
 });
