@@ -1,111 +1,19 @@
-import { useMemo } from 'react';
-
 import { useDefaultFolder } from 'data/useDefaultFolder';
-import { useFolderPermissions } from 'data/useFolderPermissions';
-import { useFolderChildren } from 'data/useFolders';
-
-interface UseFolderSelectionOptions {
-  /**
-   * The currently selected folder UID, if any. It is looked up alongside the
-   * default subtree because it can reference a folder outside of it (assigned
-   * via the API/Terraform) that still needs a proper label.
-   */
-  value?: string;
-  enabled?: boolean;
-}
 
 /**
- * Folder data behind the check folder picker: the default SM folder and its
- * children, their permissions, and the selection decisions derived from them.
- * Shared by FolderSelector (rendering) and FormFolderField (form seeding and
- * validation display), which stay in sync through the query cache.
+ * Decides which folder the check form pre-fills through its form defaults:
+ * the default SM folder, and only when the user can edit it. Users granted
+ * Edit on other folders only would otherwise save checks into a folder they
+ * cannot manage afterwards; they pick a folder themselves in the picker,
+ * which lists every folder they can edit org-wide.
  */
-export function useFolderSelection({ value, enabled = true }: UseFolderSelectionOptions = {}) {
-  const {
-    defaultFolder,
-    defaultFolderUid,
-    isLoading: isDefaultLoading,
-    isError: isDefaultError,
-    refetch: refetchDefault,
-  } = useDefaultFolder(enabled);
-  const {
-    data: childFolders = [],
-    isLoading: isChildrenLoading,
-    isError: isChildrenError,
-    refetch: refetchChildren,
-  } = useFolderChildren(defaultFolderUid);
+export function useFolderSelection({ enabled = true }: { enabled?: boolean } = {}) {
+  const { defaultFolder, defaultFolderUid, isLoading, isError } = useDefaultFolder(enabled);
 
-  const allFolders = useMemo(() => (defaultFolder ? [defaultFolder, ...childFolders] : []), [defaultFolder, childFolders]);
-  const allFolderUids = useMemo(() => {
-    const uids = allFolders.map((f) => f.uid);
-    if (value && !uids.includes(value)) {
-      uids.push(value);
-    }
-    return uids;
-  }, [allFolders, value]);
-  const { folderDetailsByUid } = useFolderPermissions(allFolderUids);
+  const preselectUid = defaultFolder?.canEdit ? defaultFolderUid : undefined;
+  // The form mounts only once the pre-fill decision is known, so the seeded
+  // folder is part of the form's initial values.
+  const isPreselectReady = !enabled || isError || !isLoading;
 
-  // Only editable folders are offered: a check must be manageable by its creator.
-  const editableFolders = useMemo(
-    () =>
-      allFolders.filter((folder) => {
-        const state = folderDetailsByUid.get(folder.uid);
-        return state?.type === 'accessible' && state.permissions.canEdit;
-      }),
-    [allFolders, folderDetailsByUid]
-  );
-
-  const isLoading = isDefaultLoading || isChildrenLoading;
-
-  // Decisions that depend on the full editable set must wait for the folder
-  // list and every permission lookup to settle, so they don't fire on
-  // partial data.
-  const permissionsSettled =
-    !isLoading &&
-    allFolders.length > 0 &&
-    allFolders.every((folder) => {
-      const state = folderDetailsByUid.get(folder.uid);
-      return state !== undefined && state.type !== 'loading';
-    });
-
-  // Preselect the default folder if editable, else the user's only editable
-  // folder; with several candidates the choice is theirs.
-  const preselectUid = useMemo(() => {
-    if (defaultFolder?.canEdit) {
-      return defaultFolder.uid;
-    }
-    if (permissionsSettled && editableFolders.length === 1) {
-      return editableFolders[0].uid;
-    }
-    return undefined;
-  }, [defaultFolder, permissionsSettled, editableFolders]);
-
-  // No folder to store checks in and no rights to create one: the picker
-  // renders an explanatory alert instead of an empty dropdown.
-  const noStorableFolders = permissionsSettled && editableFolders.length === 0 && !defaultFolder?.canSave;
-
-  // True once we know which folder to preselect, or that there is none.
-  // An editable default folder decides it right away; a read-only one means
-  // waiting for the other folders' permissions.
-  const isPreselectReady =
-    !enabled ||
-    isDefaultError ||
-    (!isDefaultLoading && (!defaultFolder || defaultFolder.canEdit || permissionsSettled));
-
-  return {
-    defaultFolder,
-    defaultFolderUid,
-    allFolders,
-    folderDetailsByUid,
-    editableFolders,
-    permissionsSettled,
-    preselectUid,
-    noStorableFolders,
-    isPreselectReady,
-    isLoading,
-    isDefaultError,
-    isChildrenError,
-    refetchDefault,
-    refetchChildren,
-  };
+  return { preselectUid, isPreselectReady };
 }

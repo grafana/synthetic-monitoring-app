@@ -31,7 +31,6 @@
   },
   "checkList": {
     "header": {
-      "currentlyShowing": "Mostrando {{currentPageChecksLength}} de {{checksLength}} pruebas",
       "deselectAll": "Deseleccionar todos",
       "selectAll": "Seleccionar todos",
       "selectAllAriaLabel": "Seleccionar todos",

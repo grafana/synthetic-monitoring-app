@@ -19,6 +19,8 @@ export const FULL_ADMIN_ACCESS = {
   'secret.securevalues:read': true,
   'secret.securevalues:write': true,
   'secret.securevalues:delete': true,
+  'folders:read': true,
+  'folders:create': true,
 };
 
 export const FULL_WRITER_ACCESS = {

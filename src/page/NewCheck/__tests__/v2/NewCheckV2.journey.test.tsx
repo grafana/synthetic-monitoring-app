@@ -14,14 +14,13 @@ import {
   runTestWithNoEditableFolders,
   runTestWithoutLogsAccess,
   runTestWithReadOnlyDefaultFolder,
-  runTestWithSingleEditableFolder,
 } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
 import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { gotoSection, selectComboboxOption, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
@@ -52,10 +51,10 @@ describe(`<NewCheckV2 /> journey`, () => {
 
   it(`should require picking an editable folder when the user cannot edit the default folder`, async () => {
     mockFeatureToggles({ [FeatureName.Folders]: true });
-    // A user with folder Edit on several subfolders, holding View on the
-    // default SM folder. Nothing is preselected (the choice is theirs), and
-    // saving without a pick is blocked instead of silently stranding the
-    // check in the read-only default folder.
+    // A user holding View on the default SM folder and folder Edit
+    // elsewhere (the support escalation setup). Nothing is preselected (the
+    // choice is theirs), and saving without a pick is blocked instead of
+    // silently stranding the check in the read-only default folder.
     runTestWithReadOnlyDefaultFolder();
     const { user, read } = await renderNewForm(CheckType.Http);
 
@@ -64,42 +63,28 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     expect(await screen.findByText(/Select a folder to store this check in/)).toBeInTheDocument();
 
-    await selectComboboxOption(user, screen.getByPlaceholderText(/Select a folder/), FOLDER_PRODUCTION.title);
+    const picker = screen.getByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_PRODUCTION.title });
+    await user.selectOptions(picker, FOLDER_PRODUCTION.uid);
     await submitForm(user);
 
     const { body } = await read();
     expect(body.folderUid).toBe(FOLDER_PRODUCTION.uid);
   });
 
-  it(`should preselect the user's only editable folder when the default folder is read-only`, async () => {
+  it(`should block saving with a folder error when the user cannot edit any folder`, async () => {
     mockFeatureToggles({ [FeatureName.Folders]: true });
-    // A user with folder Edit on a single subfolder, holding View on the
-    // default SM folder (the support escalation setup). Their folder is
-    // preselected, so saving just works and the check lands somewhere they
-    // can manage.
-    runTestWithSingleEditableFolder();
-    const { user, read } = await renderNewForm(CheckType.Http);
-
-    await fillMandatoryFields({ user, checkType: CheckType.Http });
-    await submitForm(user);
-
-    const { body } = await read();
-    expect(body.folderUid).toBe(FOLDER_PRODUCTION.uid);
-  });
-
-  it(`should not show a folder field error when the user cannot store checks in any folder`, async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: true });
-    // With no editable folder the picker is replaced by a permissions alert,
-    // so the "select a folder" error would point at a picker that isn't
-    // there. Submission stays blocked, only the alert explains why.
+    // With no editable folder anywhere the picker lists nothing (server-side
+    // permission filtering) and submission stays blocked on the folder
+    // requirement, so a check can never land where its creator cannot
+    // manage it.
     runTestWithNoEditableFolders();
     const { user } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http });
     await submitForm(user);
 
-    expect(await screen.findByText(/You don't have permission to store checks in any folder/)).toBeInTheDocument();
-    expect(screen.queryByText(/Select a folder to store this check in/)).not.toBeInTheDocument();
+    expect(await screen.findByText(/Select a folder to store this check in/)).toBeInTheDocument();
   });
 
   it(`should show an error message when it fails to save a check`, async () => {

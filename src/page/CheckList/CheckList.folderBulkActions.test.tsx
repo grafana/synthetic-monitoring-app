@@ -2,10 +2,9 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import {
   CHECK_IN_DELETABLE_FOLDER,
-  CHECK_IN_EXTERNAL_FOLDER,
   CHECK_IN_PRODUCTION,
+  CHECK_IN_READONLY_FOLDER,
   CHECK_IN_STAGING,
-  CHECK_WITH_ORPHANED_FOLDER,
   CHECK_WITHOUT_FOLDER,
   SECOND_CHECK_IN_DELETABLE_FOLDER,
 } from 'test/fixtures/folderChecks';
@@ -50,19 +49,22 @@ describe('CheckList - Per-folder Bulk Actions', () => {
     expect(screen.getByLabelText('Select all checks in Staging')).toBeInTheDocument();
   });
 
-  it('shows selected count and inline bulk actions when folder checkbox is clicked', async () => {
+  it('shows the selected count without inline action buttons when folder checkbox is clicked', async () => {
     const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
 
     const folderCheckbox = await screen.findByLabelText('Select all checks in Production');
     await user.click(folderCheckbox);
 
     const selectedLabel = await screen.findByText('1 selected');
-    const folderActions = selectedLabel.closest('div')!;
 
-    expect(within(folderActions).getByRole('button', { name: 'Move to folder' })).toBeInTheDocument();
-    expect(within(folderActions).getByRole('button', { name: 'Enable' })).toBeInTheDocument();
-    expect(within(folderActions).getByRole('button', { name: 'Disable' })).toBeInTheDocument();
-    expect(within(folderActions).getByRole('button', { name: 'Delete' })).toBeInTheDocument();
+    // Selection-scoped actions live in the folder's Actions menu now — the
+    // folder header offers no inline icon buttons alongside the count.
+    const folderHeader = selectedLabel.closest('div')!;
+    const headerButtons = within(folderHeader as HTMLElement).getAllByRole('button');
+    expect(headerButtons.map((button) => button.getAttribute('aria-label'))).toEqual([
+      'Collapse folder Production',
+      'Actions for folder Production',
+    ]);
   });
 
   it('deselects all checks when the folder checkbox is clicked again', async () => {
@@ -110,103 +112,177 @@ describe('CheckList - Per-folder Bulk Actions', () => {
   });
 });
 
-describe('CheckList - Folder Deletion on Bulk Delete', () => {
+describe('CheckList - Bulk Delete leaves folders intact', () => {
   beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
 
-  const clickFolderDeleteButton = async (user: ReturnType<typeof render>['user'], expectedSelectedText: string) => {
-    const selectedLabel = await screen.findByText(expectedSelectedText);
-    const folderActions = selectedLabel.closest('div')!;
-    const deleteButton = within(folderActions as HTMLElement).getByRole('button', { name: 'Delete' });
-    await user.click(deleteButton);
-  };
-
-  it('shows folder-aware delete confirmation when all checks in a deletable folder are selected', async () => {
+  it('shows a checks-only delete confirmation even when all checks in a deletable folder are selected', async () => {
     const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
 
     const folderCheckbox = await screen.findByLabelText('Select all checks in Deletable');
     await user.click(folderCheckbox);
+    expect(await screen.findByText('2 selected')).toBeInTheDocument();
 
-    await clickFolderDeleteButton(user, '2 selected');
+    await user.click(screen.getByRole('button', { name: 'Actions for folder Deletable' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete selected checks' }));
 
-    expect(await screen.findByText(/Delete folder "Deletable" \+ 2 checks/)).toBeInTheDocument();
-    expect(screen.getByText(/This will delete the folder, including 2 checks\. This action cannot be undone\./)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Delete folder and checks' })).toBeInTheDocument();
-  });
-
-  it('shows standard delete confirmation when only some checks in a folder are selected', async () => {
-    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
-
-    const checkCheckboxes = await screen.findAllByLabelText('Select check');
-    await user.click(checkCheckboxes[0]!);
-
-    await clickFolderDeleteButton(user, '1 selected');
-
-    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
+    expect(await screen.findByText('Delete 2 checks')).toBeInTheDocument();
     expect(screen.getByText('Are you sure you want to delete these checks?')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete checks' })).toBeInTheDocument();
-  });
-
-  it('does not offer folder deletion for the default folder even when all checks are selected', async () => {
-    const { user } = await renderCheckList([CHECK_WITHOUT_FOLDER]);
-
-    const folderCheckbox = await screen.findByLabelText(/Select all checks in.*\(default\)/);
-    await user.click(folderCheckbox);
-
-    await clickFolderDeleteButton(user, '1 selected');
-
-    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
     expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
   });
 
-  it('does not offer folder deletion for orphaned folders', async () => {
-    const { user } = await renderCheckList([CHECK_WITH_ORPHANED_FOLDER]);
-
-    const folderCheckbox = await screen.findByLabelText(/Select all checks in/);
-    await user.click(folderCheckbox);
-
-    await clickFolderDeleteButton(user, '1 selected');
-
-    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
-    expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
-  });
-
-  it('does not offer folder deletion for folders outside the default folder', async () => {
-    const { user } = await renderCheckList([CHECK_IN_EXTERNAL_FOLDER]);
-
-    const folderCheckbox = await screen.findByLabelText(/Select all checks in/);
-    await user.click(folderCheckbox);
-
-    await clickFolderDeleteButton(user, '1 selected');
-
-    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
-    expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
-  });
-
-  it('calls both check delete and folder delete APIs when confirming folder deletion', async () => {
+  it('deletes only the checks and never the folder when confirming', async () => {
     const { record: recordDelete, requests: deleteRequests } = getServerRequests();
     const { record: recordFolderDelete, requests: folderDeleteRequests } = getServerRequests();
 
-    server.use(
-      apiRoute('deleteCheck', {}, recordDelete),
-      apiRoute('deleteFolder', {}, recordFolderDelete)
-    );
+    server.use(apiRoute('deleteCheck', {}, recordDelete), apiRoute('deleteFolder', {}, recordFolderDelete));
 
-    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER]);
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
 
     const folderCheckbox = await screen.findByLabelText('Select all checks in Deletable');
     await user.click(folderCheckbox);
+    expect(await screen.findByText('2 selected')).toBeInTheDocument();
 
-    await clickFolderDeleteButton(user, '1 selected');
+    await user.click(screen.getByRole('button', { name: 'Actions for folder Deletable' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete selected checks' }));
 
-    const confirmButton = await screen.findByRole('button', { name: 'Delete folder and checks' });
+    const confirmButton = await screen.findByRole('button', { name: 'Delete checks' });
     await user.click(confirmButton);
 
     await waitFor(() => {
+      expect(deleteRequests.length).toBe(2);
+    });
+    expect(folderDeleteRequests.length).toBe(0);
+  });
+});
+
+describe('CheckList - Folder Actions menu', () => {
+  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+
+  it('offers folder-wide actions in an always-visible Actions menu', async () => {
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
+
+    // Visible without selecting anything, unlike the inline bulk actions.
+    const actionsButton = await screen.findByRole('button', { name: 'Actions for folder Deletable' });
+    expect(screen.queryByText(/selected/)).not.toBeInTheDocument();
+
+    await user.click(actionsButton);
+
+    expect(await screen.findByRole('menuitem', { name: 'Enable all checks' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Disable all checks' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Move all checks' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Delete all checks' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Move folder' })).toBeInTheDocument();
+  });
+
+  it('targets only the selected checks when a selection exists in the folder', async () => {
+    const { record: recordDelete, requests: deleteRequests } = getServerRequests();
+    const { record: recordFolderDelete, requests: folderDeleteRequests } = getServerRequests();
+
+    server.use(apiRoute('deleteCheck', {}, recordDelete), apiRoute('deleteFolder', {}, recordFolderDelete));
+
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
+
+    // Wait for the default folder group: once it renders, the tree has
+    // settled and check rows will not remount into it anymore.
+    expect(await screen.findByText(/\(default\)/)).toBeInTheDocument();
+    const checkCheckboxes = await screen.findAllByLabelText('Select check');
+    await user.click(checkCheckboxes[0]!);
+
+    await user.click(screen.getByRole('button', { name: 'Actions for folder Deletable' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete selected checks' }));
+
+    expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Delete checks' }));
+
+    await waitFor(() => {
       expect(deleteRequests.length).toBe(1);
-      expect(folderDeleteRequests.length).toBe(1);
+    });
+    expect(folderDeleteRequests.length).toBe(0);
+  });
+
+  it('deletes every check in the folder via the menu without deleting the folder', async () => {
+    const { record: recordDelete, requests: deleteRequests } = getServerRequests();
+    const { record: recordFolderDelete, requests: folderDeleteRequests } = getServerRequests();
+
+    server.use(apiRoute('deleteCheck', {}, recordDelete), apiRoute('deleteFolder', {}, recordFolderDelete));
+
+    const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
+
+    await user.click(await screen.findByRole('button', { name: 'Actions for folder Deletable' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete all checks' }));
+
+    expect(await screen.findByText('Delete 2 checks')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Delete checks' }));
+
+    await waitFor(() => {
+      expect(deleteRequests.length).toBe(2);
+    });
+    expect(folderDeleteRequests.length).toBe(0);
+  });
+
+  it('acts on the whole folder including checks nested in subfolders', async () => {
+    const { read, record } = getServerRequests();
+    server.use(apiRoute('bulkUpdateChecks', {}, record));
+
+    // CHECK_WITHOUT_FOLDER lives in the default folder directly;
+    // CHECK_IN_PRODUCTION is nested inside its Production subfolder.
+    const { user } = await renderCheckList([CHECK_WITHOUT_FOLDER, CHECK_IN_PRODUCTION]);
+
+    await user.click(
+      await screen.findByRole('button', { name: /Actions for folder Grafana Synthetic Monitoring \(default\)/ })
+    );
+    await user.click(await screen.findByRole('menuitem', { name: 'Disable all checks' }));
+
+    const { body } = await read();
+    const updated = body as Check[];
+    expect(updated.map((check) => check.id).sort()).toEqual([CHECK_IN_PRODUCTION.id, CHECK_WITHOUT_FOLDER.id].sort());
+    updated.forEach((check) => expect(check.enabled).toBe(false));
+  });
+
+  it('disables the menu items with an explanation when the user cannot modify anything in the folder', async () => {
+    const { user } = await renderCheckList([CHECK_IN_READONLY_FOLDER]);
+
+    expect(await screen.findByText('Read Only')).toBeInTheDocument();
+
+    await user.click(await screen.findByRole('button', { name: 'Actions for folder Read Only' }));
+
+    expect(await screen.findByRole('menuitem', { name: /Enable all checks/ })).toBeDisabled();
+    expect(screen.getByRole('menuitem', { name: /Delete all checks/ })).toBeDisabled();
+    expect(screen.getAllByText('You need edit access to every check in this folder').length).toBeGreaterThan(0);
+    expect(screen.getByText('You need delete access to every check in this folder')).toBeInTheDocument();
+
+    // Read-only folders cannot be moved either, so no folder-level item.
+    expect(screen.queryByRole('menuitem', { name: 'Move folder' })).not.toBeInTheDocument();
+  });
+
+  it('enables items scoped to the selection when writable checks are selected in a mixed-permission subtree', async () => {
+    // The default folder's subtree holds a writable check (in Production) and
+    // a read-only one (in Read Only). With no selection, the default folder's
+    // menu targets both, so its items are disabled with an explanation.
+    // Selecting the writable checks scopes the menu to the selection, making
+    // it useful again.
+    const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_READONLY_FOLDER]);
+
+    // Wait for the default folder group: once it renders, the tree has
+    // settled and check rows will not remount into it anymore.
+    expect(await screen.findByText(/\(default\)/)).toBeInTheDocument();
+    expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+
+    const defaultFolderActions = screen.getByRole('button', {
+      name: /Actions for folder Grafana Synthetic Monitoring \(default\)/,
     });
 
-    const folderDeleteUrl = new URL(folderDeleteRequests[0]!.url);
-    expect(folderDeleteUrl.pathname).toContain('folder-deletable');
+    await user.click(defaultFolderActions);
+    expect(await screen.findByRole('menuitem', { name: /Enable all checks/ })).toBeDisabled();
+    expect(screen.getAllByText('You need edit access to every check in this folder').length).toBeGreaterThan(0);
+
+    // Close the menu, select the writable checks and reopen.
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByLabelText('Select all checks in Production'));
+    await user.click(defaultFolderActions);
+
+    expect(await screen.findByRole('menuitem', { name: /Enable selected checks/ })).toBeEnabled();
+    expect(screen.getByRole('menuitem', { name: /Delete selected checks/ })).toBeEnabled();
   });
 });
