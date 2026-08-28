@@ -8,7 +8,7 @@ import {
   ScopedVars,
   TimeRange,
 } from '@grafana/data';
-import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runtime';
+import { BackendSrvRequest, getBackendSrv, getTemplateSrv, isFetchError } from '@grafana/runtime';
 import { isArray } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
@@ -292,8 +292,13 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
    * Reports whether the reliability inbox experiment is deployed in this
    * region at all. Callers use this to decide whether to show any
    * check-suggestion UI, instead of guessing availability from the SM API
-   * host — a 200 means available, anything else (including a network
-   * failure) means it isn't.
+   * host.
+   *
+   * Only a confirmed 404 (the backend resolving no co-located deployment for
+   * this region) resolves to `false` — a real, stable negative safe to cache.
+   * Anything else (network error, timeout, 5xx) is inconclusive, so it
+   * rethrows instead of masking a transient failure as "not available";
+   * callers should treat that as a query error, not an empty inbox.
    */
   async getReliabilityInboxHealth(): Promise<boolean> {
     try {
@@ -306,8 +311,12 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
       );
 
       return true;
-    } catch {
-      return false;
+    } catch (error) {
+      if (isFetchError(error) && error.status === 404) {
+        return false;
+      }
+
+      throw error;
     }
   }
 

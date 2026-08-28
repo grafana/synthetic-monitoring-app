@@ -373,6 +373,37 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.queryByText('Why this recommendation')).not.toBeInTheDocument();
   });
 
+  it('shows the loading state, not an empty inbox, while the health probe is still resolving', async () => {
+    server.use(
+      apiRoute('reliabilityInboxHealth', {
+        result: async () => {
+          await delay(10_000);
+          return { json: { ok: true } };
+        },
+      })
+    );
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Finding gaps in your monitoring' })).toBeInTheDocument();
+    expect(screen.queryByText('No reviewable opportunities')).not.toBeInTheDocument();
+  });
+
+  it('explains when the health probe fails, instead of showing an empty inbox', async () => {
+    server.use(apiRoute('reliabilityInboxHealth', { result: () => ({ status: 500 }) }));
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('The Reliability Inbox service is unavailable. Try again later.')).toBeVisible();
+    expect(screen.queryByText('No reviewable opportunities')).not.toBeInTheDocument();
+  });
+
   it('explains when the user cannot access suggestions', async () => {
     server.use(
       apiRoute('reliabilityInboxSuggestions', {
