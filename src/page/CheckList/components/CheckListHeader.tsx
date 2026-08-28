@@ -10,7 +10,6 @@ import { Check, CheckSort, GrafanaFolder } from 'types';
 import { getUserPermissions } from 'data/permissions';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { PlainButton } from 'components/PlainButton';
-import { BulkActions } from 'page/CheckList/components/BulkActions';
 import { CheckFilters } from 'page/CheckList/components/CheckFilters';
 import { CheckListViewSwitcher } from 'page/CheckList/components/CheckListViewSwitcher';
 import { ThresholdGlobalSettings } from 'page/CheckList/components/ThresholdGlobalSettings';
@@ -18,12 +17,11 @@ import { ThresholdGlobalSettings } from 'page/CheckList/components/ThresholdGlob
 type CheckListHeaderProps = {
   checks: Check[];
   checkFilters: CheckFiltersType;
-  currentPageChecks: Check[];
   folders?: GrafanaFolder[];
   defaultFolderUid?: string;
+  outsideFolderUids?: Set<string>;
   isFoldersAvailable: boolean;
   onChangeView: (viewType: CheckListViewType) => void;
-  onDelete: () => void;
   onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
   onSort: (sort: SelectableValue<CheckSort>) => void;
   onResetFilters: () => void;
@@ -35,6 +33,12 @@ type CheckListHeaderProps = {
   alertStatesError: boolean;
   onRetryAlertStates: () => void;
   calNames?: string[];
+  /**
+   * Bulk actions for the current selection, shown in place of the sort
+   * control. Passed in rather than rendered here because the folder view
+   * shows them on its own folders row instead.
+   */
+  bulkActions?: React.ReactNode;
 };
 
 const CHECK_LIST_SORT_OPTIONS = [
@@ -67,12 +71,11 @@ const CHECK_LIST_SORT_OPTIONS = [
 export const CheckListHeader = ({
   checkFilters,
   checks,
-  currentPageChecks,
   folders,
   defaultFolderUid,
+  outsideFolderUids,
   isFoldersAvailable,
   onChangeView,
-  onDelete,
   onFilterChange,
   onSort,
   onResetFilters,
@@ -84,6 +87,7 @@ export const CheckListHeader = ({
   alertStatesError,
   onRetryAlertStates,
   calNames,
+  bulkActions,
 }: CheckListHeaderProps) => {
   const { canWriteChecks, canWriteThresholds } = getUserPermissions();
 
@@ -92,7 +96,7 @@ export const CheckListHeader = ({
   const hasChecks = checks.length > 0;
   const isAllSelected = !hasChecks ? false : selectedCheckIds.size === checks.length;
   const isSomeSelected = hasChecks && !isAllSelected && selectedCheckIds.size > 0;
-  const selectedChecks = checks.filter((check) => selectedCheckIds.has(check.id!));
+  const hasSelection = selectedCheckIds.size > 0;
 
   const tooltip = isAllSelected
     ? t('checkList.header.deselectAll', 'Deselect all')
@@ -102,12 +106,6 @@ export const CheckListHeader = ({
     <>
       <div className={styles.header}>
         <div className={styles.row}>
-          <div className={styles.summary}>
-            <Trans i18nKey="checkList.header.currentlyShowing">
-              Currently showing {{ currentPageChecksLength: currentPageChecks.length }} of{' '}
-              {{ checksLength: checks.length }} total checks
-            </Trans>
-          </div>
           <div className={styles.primaryActions}>
             <CheckFilters
               onReset={onResetFilters}
@@ -115,6 +113,7 @@ export const CheckListHeader = ({
               checkFilters={checkFilters}
               folders={folders}
               defaultFolderUid={defaultFolderUid}
+              outsideFolderUids={outsideFolderUids}
               isFoldersAvailable={isFoldersAvailable}
               onChange={onFilterChange}
               calNames={calNames}
@@ -144,48 +143,58 @@ export const CheckListHeader = ({
                 data-testid={CHECKS_TEST_ID.header.selectAll}
               />
             </Tooltip>
-            {selectedCheckIds.size > 0 ? (
-              <BulkActions checks={selectedChecks} onResolved={onDelete} />
-            ) : (
-              <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} isFoldersAvailable={isFoldersAvailable} />
+            {hasSelection && (
+              <div>
+                {selectedCheckIds.size} check{selectedCheckIds.size !== 1 ? `s are` : ` is`} selected.
+              </div>
             )}
+            <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} isFoldersAvailable={isFoldersAvailable} />
           </div>
 
           <div className={styles.supportingContent}>
-            {alertStatesFetching && (
-              <Stack alignItems="center" gap={1}>
-                <Icon name="fa fa-spinner" />
-                <span>Fetching alert states</span>
-              </Stack>
-            )}
-            {alertStatesError && !alertStatesFetching && (
-              <PlainButton onClick={onRetryAlertStates} className={styles.errorButton}>
-                <Stack alignItems="center" gap={1}>
-                  <Icon name="exclamation-triangle" />
-                  <span>Failed to fetch alert states. Retry?</span>
+            {/* A selection replaces the sort control with the bulk actions.
+                In folder view those are rendered on the folders row instead,
+                so this side is simply empty while checks are selected. */}
+            {hasSelection ? (
+              bulkActions
+            ) : (
+              <>
+                {alertStatesFetching && (
+                  <Stack alignItems="center" gap={1}>
+                    <Icon name="fa fa-spinner" />
+                    <span>Fetching alert states</span>
+                  </Stack>
+                )}
+                {alertStatesError && !alertStatesFetching && (
+                  <PlainButton onClick={onRetryAlertStates} className={styles.errorButton}>
+                    <Stack alignItems="center" gap={1}>
+                      <Icon name="exclamation-triangle" />
+                      <span>Failed to fetch alert states. Retry?</span>
+                    </Stack>
+                  </PlainButton>
+                )}
+                <Stack direction="row" alignItems="center" gap={0.5}>
+                  <Icon name="sort-amount-down" />
+                  <Field
+                    label="Sort"
+                    htmlFor="sort-by-select"
+                    horizontal
+                    data-fs-element="Sort by select"
+                    className={styles.field}
+                    noMargin
+                  >
+                    <Combobox
+                      id="sort-by-select"
+                      data-testid={CHECKS_TEST_ID.header.sortBy}
+                      options={CHECK_LIST_SORT_OPTIONS}
+                      width={25}
+                      onChange={onSort}
+                      value={sortType}
+                    />
+                  </Field>
                 </Stack>
-              </PlainButton>
+              </>
             )}
-            <Stack direction="row" alignItems="center" gap={0.5}>
-              <Icon name="sort-amount-down" />
-              <Field
-                label="Sort"
-                htmlFor="sort-by-select"
-                horizontal
-                data-fs-element="Sort by select"
-                className={styles.field}
-                noMargin
-              >
-                <Combobox
-                  id="sort-by-select"
-                  data-testid={CHECKS_TEST_ID.header.sortBy}
-                  options={CHECK_LIST_SORT_OPTIONS}
-                  width={25}
-                  onChange={onSort}
-                  value={sortType}
-                />
-              </Field>
-            </Stack>
           </div>
         </div>
       </div>
@@ -210,10 +219,6 @@ const getStyles = (theme: GrafanaTheme2) => {
       flexWrap: 'wrap',
       gap: theme.spacing(2),
       marginBottom: theme.spacing(2),
-    }),
-    summary: css({
-      flex: '1 1 240px',
-      minWidth: 0,
     }),
     primaryActions: css({
       display: 'flex',
@@ -255,11 +260,6 @@ const getStyles = (theme: GrafanaTheme2) => {
         marginLeft: 0,
         width: '100%',
       },
-    }),
-    sortGroup: css({
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(0.5),
     }),
     field: css({
       alignItems: 'center',

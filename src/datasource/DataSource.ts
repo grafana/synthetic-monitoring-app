@@ -22,12 +22,15 @@ import {
   CheckInfoResult,
   DeleteCheckResult,
   DeleteProbeResult,
+  LabelMode,
+  LabelModeResponse,
   ListCheckResult,
   ListProbeResult,
   ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
   LogsQueryResponse,
+  RenameCheckLabelsResponse,
   type ResetProbeTokenResult,
   TenantResponse,
   UpdateCheckResult,
@@ -375,6 +378,30 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
         ...settings,
       },
     });
+  }
+
+  //--------------------------------------------------------------------------------
+  // LABEL MODE
+
+  async getLabelMode() {
+    return this.fetchAPI<LabelModeResponse>(`${this.instanceSettings.url}/sm/tenant/label-mode`);
+  }
+
+  async setLabelMode(mode: LabelMode) {
+    return this.fetchAPI<LabelModeResponse>(`${this.instanceSettings.url}/sm/tenant/label-mode`, {
+      method: 'PUT',
+      data: { mode },
+    });
+  }
+
+  async renameCheckLabels(key: string, name: string) {
+    return this.fetchAPI<RenameCheckLabelsResponse>(
+      `${this.instanceSettings.url}/sm/check/labels/${encodeURIComponent(key)}`,
+      {
+        method: 'POST',
+        data: { name },
+      }
+    );
   }
 
   //--------------------------------------------------------------------------------

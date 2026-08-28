@@ -14,7 +14,6 @@ export enum FaroEvent {
   UpdateProbe = 'update_probe',
   DeleteProbe = 'delete_probe',
   ResetProbeToken = 'reset_probe_token',
-  DisablePlugin = 'disable_plugin',
   CreateAccessToken = 'create_access_token',
   SaveThresholds = 'save_thresholds',
   ShowTerraformConfig = 'show_terraform_config',
@@ -22,6 +21,36 @@ export enum FaroEvent {
   InitializeAccessToken = 'initialize_access_token',
   UpdateCheckAlerts = 'update_check_alerts',
   NoProbeMappingFound = 'no_probe_mapping_found',
+}
+
+export enum FaroUserAction {
+  CreateNewCheckClicked = 'create-new-check-clicked',
+  CheckWizardNextClicked = 'check-wizard-next-clicked',
+  CheckWizardPrevClicked = 'check-wizard-prev-clicked',
+  CheckWizardTabClicked = 'check-wizard-tab-clicked',
+  CheckCreateSubmitClicked = 'check-create-submit-clicked',
+  CheckUpdateSubmitClicked = 'check-update-submit-clicked',
+  CheckEditClicked = 'check-edit-clicked',
+  CheckDuplicateClicked = 'check-duplicate-clicked',
+  CheckDisableClicked = 'check-disable-clicked',
+  CheckEnableClicked = 'check-enable-clicked',
+  CheckDeleteClicked = 'check-delete-clicked',
+  CheckDeleteConfirmationClicked = 'check-delete-confirmation-clicked',
+  CheckDeleteCancellationClicked = 'check-delete-cancelation-clicked',
+  AdhocCheckTestClicked = 'adhoc-check-test-clicked',
+  ProbeEditorSubmitClicked = 'probe-editor-submit-clicked',
+  ProbeSetupModalCopyValueClicked = 'probe-setup-modal-copy-value-clicked',
+  SelectCheckTypeClicked = 'select-check-type-clicked',
+  EditProbeSetupModalDismissClicked = 'edit-probe-setup-modal-dismiss-clicked',
+  NewProbeCreateModalDismissClicked = 'new-probe-create-probe-modal-dismiss-clicked',
+  EditPrivateProbeClicked = 'edit-private-probe-clicked',
+  AddPrivateProbeClicked = 'add-private-probe-clicked',
+  DeletePrivateProbeClicked = 'delete-private-probe-clicked',
+  DeletePrivateProbeConfirmationClicked = 'delete-private-probe-confirmation-clicked',
+  DeletePrivateProbeCancellationClicked = 'delete-private-probe-cancelation-clicked',
+  ResetAccessTokenClicked = 'reset-access-token-clicked',
+  ResetAccessTokenConfirmationClicked = 'reset-access-token-confirmation-clicked',
+  ResetAccessTokenCancellationClicked = 'reset-access-token-cancelation-clicked',
 }
 
 export enum FaroEnv {
@@ -95,20 +124,20 @@ export function getFaroConfig() {
   switch (env) {
     case FaroEnv.Dev:
       return {
-        url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/769f675a8e1e8b05f05b478b7002259b',
+        url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/914df333264c1827e53d6a613704b6e6',
         name: 'synthetic-monitoring-app-dev',
         env: FaroEnv.Dev,
       };
     case FaroEnv.Staging:
       return {
-        url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/73212b0adc2a3d002ee3befa3b48c4d9',
+        url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/40defe4600ad1deb0d47487f46841da3',
         name: 'synthetic-monitoring-app-staging',
         env: FaroEnv.Staging,
       };
     case FaroEnv.Prod:
     default:
       return {
-        url: 'https://faro-collector-ops-us-east-0.grafana-ops.net/collect/837791054a26c6aba5d32ece9030be32',
+        url: 'https://faro-collector-ops-eu-south-0.grafana-ops.net/collect/eedd4e9616af3ea1847d89f0284979a9',
         name: 'synthetic-monitoring-app-prod',
         env: FaroEnv.Prod,
       };

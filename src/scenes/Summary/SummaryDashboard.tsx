@@ -13,6 +13,7 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 
 import { Check } from 'types';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
@@ -134,6 +135,7 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
 
   return (
     <SceneContextProvider timeRange={{ from: `now-${DEFAULT_QUERY_FROM_TIME}`, to: 'now' }} withQueryController>
+      <TrackingTimeRangeScope />
       <QueryVariable
         name="probe"
         isMulti={true}

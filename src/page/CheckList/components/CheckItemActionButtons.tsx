@@ -14,6 +14,9 @@ import { useDeleteCheck, useUpdateCheck } from 'data/useChecks';
 import { useDuplicateCheckUrl } from 'hooks/useDuplicateCheck';
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 
+import { FaroUserAction } from '../../../faro';
+import { trackFaroUserAction } from '../../../features/tracking/userAction';
+
 interface CheckItemActionButtonsProps {
   check: Check;
   viewDashboardAsIcon?: boolean;
@@ -37,6 +40,7 @@ export const CheckItemActionButtons = ({
   const { duplicateCheckUrl } = useDuplicateCheckUrl();
 
   const handleToggleEnabled = useCallback(async () => {
+    trackFaroUserAction(check.enabled ? FaroUserAction.CheckDisableClicked : FaroUserAction.CheckEnableClicked);
     setIsPending(true);
     await updateCheck(
       { ...check, enabled: !check.enabled },
@@ -100,6 +104,8 @@ export const CheckItemActionButtons = ({
         disabled={!canWriteChecks}
         variant="secondary"
         fill={`text`}
+        className={cx({ [styles.disabledLinkButton]: !canWriteChecks })}
+        onClick={() => trackFaroUserAction(FaroUserAction.CheckEditClicked)}
       />
       <LinkButton
         href={duplicateCheckUrl(check)}
@@ -107,15 +113,20 @@ export const CheckItemActionButtons = ({
         tooltip="Duplicate check"
         disabled={!canWriteChecks}
         onClick={() => {
+          trackFaroUserAction(FaroUserAction.CheckDuplicateClicked);
           trackDuplicateCheckButtonClicked({ checkType: getCheckType(check.settings) });
         }}
         variant="secondary"
         fill="text"
+        className={cx({ [styles.disabledLinkButton]: !canWriteChecks })}
       />
       <IconButton
         tooltip="Delete check"
         name="trash-alt"
-        onClick={() => setShowDeleteModal(true)}
+        onClick={() => {
+          trackFaroUserAction(FaroUserAction.CheckDeleteClicked);
+          setShowDeleteModal(true);
+        }}
         disabled={!canDeleteChecks}
       />
       <ConfirmModal
@@ -124,10 +135,14 @@ export const CheckItemActionButtons = ({
         body="Are you sure you want to delete this check?"
         confirmText="Delete check"
         onConfirm={() => {
+          trackFaroUserAction(FaroUserAction.CheckDeleteConfirmationClicked);
           deleteCheck(check);
           setShowDeleteModal(false);
         }}
-        onDismiss={() => setShowDeleteModal(false)}
+        onDismiss={() => {
+          trackFaroUserAction(FaroUserAction.CheckDeleteCancellationClicked);
+          setShowDeleteModal(false);
+        }}
       />
     </div>
   );
@@ -156,6 +171,13 @@ const getStyles = (theme: GrafanaTheme2) => {
       [containerQuery]: {
         display: 'inline-flex',
       },
+    }),
+    // Disabled text-fill LinkButtons use text.disabled, which is nearly
+    // indistinguishable from the enabled text.secondary in the dark theme.
+    // Match IconButton's disabled treatment (which adds opacity) so all
+    // disabled row actions read the same.
+    disabledLinkButton: css({
+      opacity: 0.65,
     }),
   };
 };

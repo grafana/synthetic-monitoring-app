@@ -257,6 +257,10 @@ Tracks when a folder is selected in the folder selector.
 
 Tracks when a new folder is created via the folder selector.
 
+#### synthetic-monitoring_folders_move_folder_clicked
+
+Tracks when "Move folder" is picked from a folder's Actions menu. Kept to measure whether the option is used at all: if this tends to zero we can remove the option and leave folder reorganisation to Dashboards > Folders.
+
 ### link
 
 #### synthetic-monitoring_link_clicked
@@ -371,6 +375,24 @@ Tracks when an alert is deleted successfully
 | ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | name | `"ProbeFailedExecutionsTooHigh" \| "TLSTargetCertificateCloseToExpiring" \| "HTTPRequestDurationTooHighAvg" \| "PingRequestDurationTooHighAvg" \| "DNSRequestDurationTooHighAvg"` | The name of the alert |
 
+### probes
+
+#### synthetic-monitoring_probes_probe_created
+
+Tracks when a private probe is created.
+
+#### synthetic-monitoring_probes_probe_updated
+
+Tracks when a private probe is updated.
+
+#### synthetic-monitoring_probes_probe_deleted
+
+Tracks when a private probe is deleted.
+
+#### synthetic-monitoring_probes_probe_token_reset
+
+Tracks when a private probe's token is reset.
+
 ### screenshots
 
 #### synthetic-monitoring_screenshots_expanded
@@ -460,6 +482,12 @@ Tracks when a secret is successfully deleted.
 | name   | type                                                                 | description                                                       |
 | ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+
+### terraform
+
+#### synthetic-monitoring_terraform_config_viewed
+
+Tracks when the terraform config tab is viewed.
 
 ### testing_synthetics_landing
 

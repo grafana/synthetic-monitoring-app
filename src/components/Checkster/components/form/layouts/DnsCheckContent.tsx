@@ -22,7 +22,7 @@ const DNS_CHECK_REQUEST_OPTIONS_FIELDS = DNS_REQUEST_OPTIONS_TAB_FIELDS.filter((
   return field !== undefined;
 }).flat();
 
-export const DNS_CHECK_FIELDS = ['job', 'target', ...DNS_CHECK_REQUEST_OPTIONS_FIELDS];
+export const DNS_CHECK_FIELDS = ['job', 'target', 'folderUid', ...DNS_CHECK_REQUEST_OPTIONS_FIELDS];
 
 export function DnsCheckContent() {
   const hasRequestOptionError = useHasFieldsError(DNS_CHECK_REQUEST_OPTIONS_FIELDS);

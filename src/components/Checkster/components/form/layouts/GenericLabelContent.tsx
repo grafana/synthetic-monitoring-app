@@ -2,6 +2,7 @@ import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { FieldValidationMessage, LoadingPlaceholder, Tooltip } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useKGReservedLabels } from 'features/knowledgeGraph/KnowledgeGraphServiceLink.hooks';
 
 import { CheckFormValues } from 'types';
 
@@ -17,6 +18,9 @@ export function GenericLabelContent({ description, isLoading, labelLimit }: Gene
   const {
     formState: { errors },
   } = useFormContext<CheckFormValues>();
+  // service_name / namespace belong to the KG service-link section when the KG app is
+  // installed: their rows are hidden here and typing them shows a redirect message.
+  const kgReservedLabels = useKGReservedLabels();
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading label limits" />;
@@ -34,6 +38,7 @@ export function GenericLabelContent({ description, isLoading, labelLimit }: Gene
         namePlaceholder="name"
         valuePlaceholder="value"
         limit={labelLimit}
+        reservedNames={kgReservedLabels}
         namePrefix={
           <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
             <span

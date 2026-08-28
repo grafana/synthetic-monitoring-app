@@ -22,7 +22,7 @@ const REQUEST_OPTIONS_FIELDS = REQUEST_OPTIONS_TAB_FIELDS.filter((field) => {
   return field !== undefined;
 }).flat();
 
-export const TCP_REQUEST_OPTIONS_FIELDS = ['job', 'target', ...REQUEST_OPTIONS_FIELDS];
+export const TCP_REQUEST_OPTIONS_FIELDS = ['job', 'target', 'folderUid', ...REQUEST_OPTIONS_FIELDS];
 
 export function TcpCheckContent() {
   const hasRequestOptionError = useHasFieldsError(REQUEST_OPTIONS_FIELDS);

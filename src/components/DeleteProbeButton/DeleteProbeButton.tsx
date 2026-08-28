@@ -9,6 +9,8 @@ import { useCanEditProbe } from 'hooks/useCanEditProbe';
 import { ConfirmModal } from 'components/ConfirmModal';
 import { ProbeUsageLink } from 'components/ProbeUsageLink';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
 import { getPrettyError } from './DeleteProbeButton.utils';
 
 export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: DeleteProbeButtonProps) {
@@ -35,6 +37,7 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
   };
 
   const handleOnClick = () => {
+    trackFaroUserAction(FaroUserAction.DeletePrivateProbeClicked);
     setShowDeleteModal(true);
   };
 
@@ -86,8 +89,14 @@ export function DeleteProbeButton({ probe, onDeleteSuccess: _onDeleteSuccess }: 
           }
           description="This action cannot be undone."
           confirmText="Delete probe"
-          onConfirm={() => deleteProbe(probe)}
-          onDismiss={() => setShowDeleteModal(false)}
+          onConfirm={() => {
+            trackFaroUserAction(FaroUserAction.DeletePrivateProbeConfirmationClicked);
+            return deleteProbe(probe);
+          }}
+          onDismiss={() => {
+            trackFaroUserAction(FaroUserAction.DeletePrivateProbeCancellationClicked);
+            setShowDeleteModal(false);
+          }}
           error={error}
           onError={handleError}
         />,

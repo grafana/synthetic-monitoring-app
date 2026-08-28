@@ -6,6 +6,7 @@ import {
   checkInfo,
   deleteCheck,
   listChecks,
+  renameCheckLabels,
   testCheck,
   updateCheck,
 } from 'test/handlers/checks';
@@ -16,10 +17,12 @@ import { createDatasource, installPlugin } from 'test/handlers/install';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
 import {
+  getLabelMode,
   getTenant,
   getTenantCostAttributionLabels,
   getTenantLimits,
   getTenantSettings,
+  setLabelMode,
   updateTenantSettings,
 } from 'test/handlers/tenants';
 import { createAccessToken } from 'test/handlers/tokens';
@@ -27,7 +30,7 @@ import { createAccessToken } from 'test/handlers/tokens';
 import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
-import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
+import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
 import { listK6Channels } from './k6Channels';
 import { evaluateFeatureFlags } from './openfeature';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
@@ -52,6 +55,7 @@ const API_ROUTES = {
   getGrafanaAlertRules,
   getHttpDashboard,
   getInstantMetrics,
+  getLabelMode,
   getLogsDS,
   getMetricsDS,
   getPromAlertRules,
@@ -68,6 +72,9 @@ const API_ROUTES = {
   listFolders,
   listProbes,
   listSecrets,
+  moveFolder,
+  renameCheckLabels,
+  setLabelMode,
   testCheck,
   updateAlertsForCheck,
   updateCheck,

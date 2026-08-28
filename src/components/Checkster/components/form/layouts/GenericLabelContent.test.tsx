@@ -1,5 +1,9 @@
 import React from 'react';
+import { useAppPluginInstalled } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
+import { mockFeatureToggles } from 'test/utils';
+
+import { FeatureName } from 'types';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
 import { GenericLabelContent } from './GenericLabelContent';
@@ -73,6 +77,87 @@ describe('GenericLabelContent', () => {
       });
 
       expect(screen.getByRole('button', { name: /label/i })).toBeDisabled();
+    });
+  });
+
+  describe('Knowledge Graph reserved labels (service_name / namespace)', () => {
+    beforeEach(() => {
+      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+    });
+
+    it('hides service_name / namespace rows from the custom labels when the KG app is installed', async () => {
+      (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
+
+      renderGenericLabelContent(
+        {},
+        {
+          labels: [
+            { name: 'service_name', value: 'frontend' },
+            { name: 'namespace', value: 'otel-demo' },
+            { name: 'env', value: 'production' },
+          ],
+        }
+      );
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('env')).toBeInTheDocument();
+      });
+      expect(screen.queryByDisplayValue('service_name')).not.toBeInTheDocument();
+      expect(screen.queryByDisplayValue('namespace')).not.toBeInTheDocument();
+    });
+
+    it('shows a redirect message when the user types a reserved name into a custom label', async () => {
+      (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
+
+      const user = renderGenericLabelContent({}, { labels: [] });
+
+      const nameInput = screen.getByPlaceholderText('name');
+      await user.type(nameInput, 'service_name');
+
+      expect(
+        await screen.findByText(
+          'service_name is used for service connections. Select a service above to connect this check, or use a different name for your custom label.'
+        )
+      ).toBeInTheDocument();
+    });
+
+    it('renders service_name / namespace as ordinary custom labels when the KG app is not installed', async () => {
+      (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: false });
+
+      renderGenericLabelContent(
+        {},
+        {
+          labels: [
+            { name: 'service_name', value: 'frontend' },
+            { name: 'namespace', value: 'otel-demo' },
+          ],
+        }
+      );
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('service_name')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('namespace')).toBeInTheDocument();
+      });
+    });
+
+    it('renders service_name / namespace as ordinary custom labels when the feature flag is disabled, even with the app installed', async () => {
+      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+      (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
+
+      renderGenericLabelContent(
+        {},
+        {
+          labels: [
+            { name: 'service_name', value: 'frontend' },
+            { name: 'namespace', value: 'otel-demo' },
+          ],
+        }
+      );
+
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('service_name')).toBeInTheDocument();
+        expect(screen.getByDisplayValue('namespace')).toBeInTheDocument();
+      });
     });
   });
 });

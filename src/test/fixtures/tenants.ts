@@ -1,4 +1,6 @@
 import {
+  LabelMode,
+  LabelModeResponse,
   ListTenantCostAttributionLabelsResponse,
   ListTenantLimitsResponse,
   ListTenantSettingsResult,
@@ -61,4 +63,41 @@ export const TENANT_LIMITS: ListTenantLimitsResponse = {
   MaxLogLabels: 15,
   maxAllowedMetricLabels: 10,
   maxAllowedLogLabels: 5,
+};
+
+// Full canonical list of reserved system label names, sourced from
+// pkg/pb/synthetic_monitoring/checks_extra.go systemLabels in the agent repo
+// (27 names as of agent v0.60.0; region/from_cache/from_prefetch_cache/
+// from_service_worker/resource_type are intentionally not reserved).
+export const TENANT_LABEL_MODE: LabelModeResponse = {
+  mode: LabelMode.Prefixed,
+  systemLabels: [
+    'check',
+    'check_name',
+    'cipher',
+    'config_version',
+    'fingerprint_sha256',
+    'frequency',
+    'geohash',
+    'instance',
+    'issuer',
+    'job',
+    'le',
+    'method',
+    'name',
+    'phase',
+    'probe',
+    'proto',
+    'rating',
+    'result',
+    'scenario',
+    'serialnumber',
+    'sm_region',
+    'status',
+    'subject',
+    'subjectalternative',
+    'tls_version',
+    'url',
+    'version',
+  ],
 };
