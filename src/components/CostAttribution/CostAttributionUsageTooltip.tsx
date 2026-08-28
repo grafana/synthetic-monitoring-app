@@ -10,7 +10,7 @@ import { useShowCostAttributionSetupNudge } from './CostAttribution.hooks';
 export type UsageMetric = 'active_series' | 'executions_per_month';
 
 interface CostAttributionUsageTooltipProps {
-  source: 'check_list' | 'check_form';
+  source: 'check_list';
   metric: UsageMetric;
   children: ReactNode;
 }

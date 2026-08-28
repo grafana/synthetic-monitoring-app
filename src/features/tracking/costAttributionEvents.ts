@@ -10,12 +10,17 @@ interface SetupBannerShown extends TrackingEventProps {
 /** Tracks when the cost attribution setup banner is shown on the check list. */
 export const trackSetupBannerShown = costAttributionEvents<SetupBannerShown>('setup_banner_shown');
 
+interface SetupBannerDismissed extends TrackingEventProps {
+  /** True for "Understood, don't show again", false for the session-only close button. */
+  permanent: boolean;
+}
+
 /** Tracks when the cost attribution setup banner is dismissed. */
-export const trackSetupBannerDismissed = costAttributionEvents('setup_banner_dismissed');
+export const trackSetupBannerDismissed = costAttributionEvents<SetupBannerDismissed>('setup_banner_dismissed');
 
 interface CmabLinkClicked extends TrackingEventProps {
   /** Which nudge the link was clicked from. */
-  source: 'check_list_banner' | 'check_form_labels' | 'check_list_usage_tooltip' | 'check_form_usage_tooltip';
+  source: 'check_list_banner' | 'check_form_labels' | 'check_list_usage_tooltip' | 'check_form_usage_footer';
   /** The usage metric the nudge was attached to, when clicked from a usage tooltip. */
   metric?: 'active_series' | 'executions_per_month';
 }

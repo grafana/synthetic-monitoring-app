@@ -205,16 +205,22 @@ Tracks when the cost attribution setup banner is shown on the check list.
 
 Tracks when the cost attribution setup banner is dismissed.
 
+##### Properties
+
+| name      | type            | description                                                                       |
+| --------- | --------------- | --------------------------------------------------------------------------------- |
+| permanent | `false \| true` | True for "Understood, don't show again", false for the session-only close button. |
+
 #### synthetic-monitoring_cost_attribution_cmab_link_clicked
 
 Tracks when a link to the Cost Management and Billing app is clicked from a cost attribution nudge.
 
 ##### Properties
 
-| name   | type                                                                                                     | description                                                                    |
-| ------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| source | `"check_list_banner" \| "check_form_labels" \| "check_list_usage_tooltip" \| "check_form_usage_tooltip"` | Which nudge the link was clicked from.                                         |
-| metric | `undefined \| "active_series" \| "executions_per_month"`                                                 | The usage metric the nudge was attached to, when clicked from a usage tooltip. |
+| name   | type                                                                                                    | description                                                                    |
+| ------ | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| source | `"check_list_banner" \| "check_form_labels" \| "check_list_usage_tooltip" \| "check_form_usage_footer"` | Which nudge the link was clicked from.                                         |
+| metric | `undefined \| "active_series" \| "executions_per_month"`                                                | The usage metric the nudge was attached to, when clicked from a usage tooltip. |
 
 ### feature_feedback
 

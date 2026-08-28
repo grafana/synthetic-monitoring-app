@@ -85,7 +85,7 @@ export const CheckUsage = ({ checkType }: { checkType: CheckType }) => {
                 variant="bodySmall"
                 onClick={() =>
                   trackCmabLinkClicked({
-                    source: 'check_form_usage_tooltip',
+                    source: 'check_form_usage_footer',
                     metric: hideTelemetry ? 'executions_per_month' : 'active_series',
                   })
                 }

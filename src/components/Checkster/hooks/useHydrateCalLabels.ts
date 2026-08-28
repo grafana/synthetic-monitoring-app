@@ -10,8 +10,6 @@ export function useHydrateCalLabels(
   calNames: string[],
   defaultFormValues: CheckFormValues
 ) {
-  const calNamesKey = calNames.join('\u0000');
-
   useEffect(() => {
     if (calNames.length === 0) {
       return;
@@ -22,5 +20,5 @@ export function useHydrateCalLabels(
 
     formMethods.setValue('calLabels', partitioned.calLabels, { shouldDirty: false });
     formMethods.setValue('labels', partitioned.labels, { shouldDirty: false });
-  }, [calNames, calNamesKey, defaultFormValues, formMethods]);
+  }, [calNames, defaultFormValues, formMethods]);
 }

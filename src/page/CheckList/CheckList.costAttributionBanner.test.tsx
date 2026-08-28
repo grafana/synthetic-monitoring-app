@@ -24,13 +24,23 @@ function buildChecks(count: number): HTTPCheck[] {
 }
 
 function mockCalNames(names: string[]) {
+  // Returned so tests can wait for the CALs request to resolve before asserting
+  // on the banner's absence — otherwise the assertion runs before the banner
+  // would have appeared and passes no matter what.
+  const onRequest = jest.fn();
+
   server.use(
     apiRoute(`getTenantCostAttributionLabels`, {
-      result: () => ({
-        json: { names },
-      }),
+      result: () => {
+        onRequest();
+        return {
+          json: { names },
+        };
+      },
     })
   );
+
+  return onRequest;
 }
 
 async function renderCheckList(checks: Check[]) {
@@ -111,7 +121,7 @@ describe('CheckList - cost attribution setup banner', () => {
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
 
-    it('hides the banner permanently when dismissed', async () => {
+    it('hides the banner for the session when closed, and shows it again on remount', async () => {
       mockCalNames([]);
       const { user, unmount } = await renderCheckList(buildChecks(5));
 
@@ -121,19 +131,24 @@ describe('CheckList - cost attribution setup banner', () => {
 
       unmount();
       await renderCheckList(buildChecks(5));
-      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
+      expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
     });
 
-    it('hides the banner immediately when permanently dismissed', async () => {
-      mockCalNames([]);
+    it('hides the banner permanently when dismissed with "don\'t show again"', async () => {
+      const onCalsRequest = mockCalNames([]);
       const { user, unmount } = await renderCheckList(buildChecks(5));
 
       expect(await screen.findByText(BANNER_TITLE)).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: "Understood, don't show again" }));
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
 
+      const requestsBeforeRemount = onCalsRequest.mock.calls.length;
       unmount();
       await renderCheckList(buildChecks(5));
+
+      // Only assert once the CALs query has resolved on the remount, since the
+      // banner never shows while the query is in flight.
+      await waitFor(() => expect(onCalsRequest.mock.calls.length).toBeGreaterThan(requestsBeforeRemount));
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
   });

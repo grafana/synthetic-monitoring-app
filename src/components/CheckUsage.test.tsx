@@ -112,7 +112,7 @@ describe('CheckUsage', () => {
       await user.click(await screen.findByRole('link', { name: FOOTER_LINK_TEXT }));
 
       expect(mockTrackCmabLinkClicked).toHaveBeenCalledWith({
-        source: 'check_form_usage_tooltip',
+        source: 'check_form_usage_footer',
         metric: 'executions_per_month',
       });
     });
@@ -123,7 +123,7 @@ describe('CheckUsage', () => {
       await user.click(await screen.findByRole('link', { name: FOOTER_LINK_TEXT }));
 
       expect(mockTrackCmabLinkClicked).toHaveBeenCalledWith({
-        source: 'check_form_usage_tooltip',
+        source: 'check_form_usage_footer',
         metric: 'active_series',
       });
     });

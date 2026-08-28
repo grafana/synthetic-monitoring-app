@@ -42,7 +42,7 @@ export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps
       severity="info"
       onRemove={() => {
         setLocalDismissed(true);
-        trackSetupBannerDismissed();
+        trackSetupBannerDismissed({ permanent: false });
       }}
     >
       <Stack gap={1} direction="column" alignItems="flex-start">
@@ -68,6 +68,7 @@ export const CostAttributionBanner = ({ checkCount }: CostAttributionBannerProps
             onClick={() => {
               setDismissed(true);
               setLocalDismissed(true);
+              trackSetupBannerDismissed({ permanent: true });
             }}
           >
             Understood, don&apos;t show again
