@@ -29,7 +29,7 @@ export const ChooseCheckGroup = () => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
-          <Box maxWidth={100} marginTop={2}>
+          <Box marginTop={2}>
             <AgentSkillPicker source="choose-check-type" />
           </Box>
         </Stack>
