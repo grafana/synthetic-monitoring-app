@@ -15,40 +15,40 @@ import { StyledField } from '../../ui/StyledField';
 const CAL_DESCRIPTION =
   'Cost attribution labels help track costs across teams and services. Enter a value for each label or leave blank for unattributed.';
 
-interface CostAttributionLabelsFieldProps {
-  calNames: string[];
-}
-
-export function CostAttributionLabelsField({ calNames }: CostAttributionLabelsFieldProps) {
+export function CostAttributionLabelsField() {
   const {
+    watch,
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
   const kgEnabled = useKnowledgeGraphEnabled();
   const styles = useStyles2(getStyles);
   const labelIdPrefix = useDOMId();
+  // `calLabels` is built from the tenant's CAL names in `toFormValues`, so it always holds one row
+  // per configured label and the rendered rows can't drift from the values they write to.
+  const calLabels = watch('calLabels');
 
-  if (calNames.length === 0) {
+  if (!calLabels?.length) {
     return null;
   }
 
   return (
     <StyledField label="Cost attribution labels" description={CAL_DESCRIPTION} emulate>
       <Stack direction="column" gap={0.5}>
-        {calNames.map((calName, index) => {
+        {calLabels.map((calLabel, index) => {
           // service_name / namespace double as the Knowledge Graph service link, so their
           // values get the same KG-suggestions combobox as the service link section.
           const kgProperty =
-            kgEnabled && calName === KG_SERVICE_NAME_LABEL
+            kgEnabled && calLabel.name === KG_SERVICE_NAME_LABEL
               ? ('name' as const)
-              : kgEnabled && calName === KG_NAMESPACE_LABEL
+              : kgEnabled && calLabel.name === KG_NAMESPACE_LABEL
                 ? ('namespace' as const)
                 : undefined;
           const valueLabelId = `${labelIdPrefix}-cal-value-${index}`;
 
           return (
-            <Stack key={calName} alignItems="start">
+            <Stack key={calLabel.name} alignItems="start">
               <StyledField className={styles.nameField}>
-                <Input value={calName} readOnly aria-label={`Cost attribution label ${index + 1} name`} />
+                <Input value={calLabel.name} readOnly aria-label={`Cost attribution label ${index + 1} name`} />
               </StyledField>
               <StyledField className={styles.valueField}>
                 <Controller

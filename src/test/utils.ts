@@ -11,6 +11,7 @@ import {
 
 import { ExtendedProbe, FeatureName, GrafanaFolder, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
 import { pascalCaseToSentence } from 'utils';
+import { CMAB_COST_ATTRIBUTION_WRITE } from 'components/CostAttribution/CostAttribution.constants';
 
 import { DEFAULT_FOLDER, FOLDER_ROOT, FOLDER_ROOT_CHILD, MOCK_FOLDERS } from './fixtures/folders';
 import {
@@ -367,6 +368,25 @@ export function runTestAsSecretsEditor() {
 
 export function runTestAsSecretsNoAccess() {
   runTestAsSecretsWithPermissions(SECRETS_NO_ACCESS);
+}
+
+export function mockCmabCostAttributionWrite(canWrite: boolean) {
+  const { contextSrv } = require('grafana/app/core/core');
+
+  const mockImplementation = (action: unknown) => {
+    if (action === CMAB_COST_ATTRIBUTION_WRITE) {
+      return canWrite;
+    }
+
+    return true;
+  };
+
+  if (jest.isMockFunction(contextSrv.hasPermission)) {
+    contextSrv.hasPermission.mockImplementation(mockImplementation);
+    return;
+  }
+
+  jest.spyOn(contextSrv, 'hasPermission').mockImplementation(mockImplementation);
 }
 
 export function runTestAsHGFreeUserOverLimit() {

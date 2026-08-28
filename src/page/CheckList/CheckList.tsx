@@ -28,6 +28,7 @@ import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
+import { CostAttributionBanner } from 'components/CostAttribution/CostAttributionBanner';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import {
   CHECK_LIST_STATUS_OPTIONS,
@@ -345,6 +346,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
             <FolderPermissionBanner onDismiss={() => setFolderBannerDismissed(true)} />
           ))
         ))}
+      <CostAttributionBanner checkCount={checks.length} />
       {isFolderView ? (
         <CheckListFolderView
           bulkActions={bulkActions}
