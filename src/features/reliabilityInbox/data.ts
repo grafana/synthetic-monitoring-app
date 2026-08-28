@@ -6,7 +6,6 @@ import { z } from 'zod';
 
 import { ReliabilityEvidence, ReliabilitySuggestion, reliabilitySuggestionsSchema } from './types';
 import { ONE_HOUR_IN_MS, ONE_MINUTE_IN_MS } from 'utils.constants';
-import { reliabilityInboxURL } from 'datasource/reliabilityInboxRegion';
 import { useSMDS } from 'hooks/useSMDS';
 
 import { getRecommendationTelemetryProvenance } from './evidence';
@@ -24,6 +23,28 @@ export const reliabilityInboxQueryKey = (apiHost: string, stackId: number) =>
 
 export const reliabilityInboxDismissalsKey = (apiHost: string, stackId: number) =>
   `synthetic-monitoring:reliability-inbox-dismissals:v1:${apiHost}:${stackId}`;
+
+export const reliabilityInboxHealthQueryKey = (apiHost: string) => ['reliability-inbox', 'health', apiHost] as const;
+
+/**
+ * Whether the reliability inbox experiment is reachable in this region at
+ * all. `enabled` lets callers skip the request entirely when they don't need
+ * suggestions generated (e.g. the cached-only banner query).
+ */
+function useReliabilityInboxAvailable(enabled: boolean) {
+  const smDS = useSMDS();
+  const apiHost = smDS.instanceSettings.jsonData.apiHost;
+
+  const { data: available } = useQuery({
+    queryKey: reliabilityInboxHealthQueryKey(apiHost),
+    queryFn: () => smDS.getReliabilityInboxHealth(),
+    enabled,
+    retry: false,
+    staleTime: STALE_TIME,
+  });
+
+  return available ?? false;
+}
 
 /**
  * Fetches suggestions from the reliability-inbox experiment.
@@ -92,12 +113,13 @@ function useReliabilityInboxQuery(generateSuggestions: boolean, includeDismissed
   const apiHost = smDS.instanceSettings.jsonData.apiHost;
   const stackId = smDS.instanceSettings.jsonData.metrics.hostedId;
   const { dismissedSuggestionIds } = useScopedReliabilityInboxDismissals(apiHost, stackId);
+  const available = useReliabilityInboxAvailable(generateSuggestions);
 
   return useQuery({
     // apiHost is in the key because it selects the region, and therefore which
     // instance answered.
     queryKey: reliabilityInboxQueryKey(apiHost, stackId),
-    enabled: generateSuggestions && reliabilityInboxURL(apiHost) !== undefined,
+    enabled: generateSuggestions && available,
     queryFn: async () => {
       const suggestions = await smDS.getReliabilityInboxSuggestions();
       const result = reliabilitySuggestionsSchema.parse(suggestions);

@@ -288,6 +288,29 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     );
   }
 
+  /**
+   * Reports whether the reliability inbox experiment is deployed in this
+   * region at all. Callers use this to decide whether to show any
+   * check-suggestion UI, instead of guessing availability from the SM API
+   * host — a 200 means available, anything else (including a network
+   * failure) means it isn't.
+   */
+  async getReliabilityInboxHealth(): Promise<boolean> {
+    try {
+      await this.fetchAPI<unknown>(
+        `/api/datasources/uid/${this.instanceSettings.uid}/resources/reliability-inbox/health`,
+        {
+          method: 'GET',
+          showErrorAlert: false,
+        }
+      );
+
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   //--------------------------------------------------------------------------------
   // PROBES
   //--------------------------------------------------------------------------------
