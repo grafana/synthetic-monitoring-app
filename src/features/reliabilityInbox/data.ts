@@ -6,7 +6,6 @@ import { z } from 'zod';
 
 import { ReliabilityEvidence, ReliabilitySuggestion, reliabilitySuggestionsSchema } from './types';
 import { ONE_HOUR_IN_MS, ONE_MINUTE_IN_MS } from 'utils.constants';
-import { reliabilityInboxURL } from 'datasource/reliabilityInboxRegion';
 import { useSMDS } from 'hooks/useSMDS';
 
 import { getRecommendationTelemetryProvenance } from './evidence';
@@ -24,6 +23,38 @@ export const reliabilityInboxQueryKey = (apiHost: string, stackId: number) =>
 
 export const reliabilityInboxDismissalsKey = (apiHost: string, stackId: number) =>
   `synthetic-monitoring:reliability-inbox-dismissals:v1:${apiHost}:${stackId}`;
+
+export const reliabilityInboxHealthQueryKey = (apiHost: string) => ['reliability-inbox', 'health', apiHost] as const;
+
+/**
+ * Whether the reliability inbox experiment is reachable in this region at
+ * all. `enabled` lets callers skip the request entirely when they don't need
+ * suggestions generated (e.g. the cached-only banner query).
+ *
+ * Returns the full query result — not just a boolean — so the caller can fold
+ * its loading and error state into the combined suggestions query below:
+ * otherwise a still-pending health check looks identical to "confirmed
+ * unavailable", and a probe failure (network error, timeout) looks identical
+ * to "no suggestions" instead of a retryable error.
+ */
+function useReliabilityInboxAvailable(enabled: boolean) {
+  const smDS = useSMDS();
+  const apiHost = smDS.instanceSettings.jsonData.apiHost;
+
+  return useQuery({
+    queryKey: reliabilityInboxHealthQueryKey(apiHost),
+    queryFn: () => smDS.getReliabilityInboxHealth(),
+    enabled,
+    retry: false,
+    staleTime: STALE_TIME,
+    // Without this, the default 5-minute gcTime evicts the resolved
+    // availability once the page is left idle, so returning to Check
+    // Suggestions later re-probes from a blank isPending/isLoading state and
+    // blocks the already-cached suggestions (see the suggestions query's own
+    // gcTime below) behind a full loading screen for no reason.
+    gcTime: Infinity,
+  });
+}
 
 /**
  * Fetches suggestions from the reliability-inbox experiment.
@@ -92,12 +123,14 @@ function useReliabilityInboxQuery(generateSuggestions: boolean, includeDismissed
   const apiHost = smDS.instanceSettings.jsonData.apiHost;
   const stackId = smDS.instanceSettings.jsonData.metrics.hostedId;
   const { dismissedSuggestionIds } = useScopedReliabilityInboxDismissals(apiHost, stackId);
+  const health = useReliabilityInboxAvailable(generateSuggestions);
+  const available = health.data ?? false;
 
-  return useQuery({
+  const suggestionsQuery = useQuery({
     // apiHost is in the key because it selects the region, and therefore which
     // instance answered.
     queryKey: reliabilityInboxQueryKey(apiHost, stackId),
-    enabled: generateSuggestions && reliabilityInboxURL(apiHost) !== undefined,
+    enabled: generateSuggestions && available,
     queryFn: async () => {
       const suggestions = await smDS.getReliabilityInboxSuggestions();
       const result = reliabilitySuggestionsSchema.parse(suggestions);
@@ -120,6 +153,26 @@ function useReliabilityInboxQuery(generateSuggestions: boolean, includeDismissed
       return includeDismissed ? opportunities : opportunities.filter(({ id }) => !dismissedSuggestionIds.includes(id));
     },
   });
+
+  // Fold the health probe's own state in: while it's still pending, the
+  // suggestions query is disabled and would otherwise report `isLoading:
+  // false` (a disabled query is never "fetching"), which reads as a
+  // confirmed-empty inbox rather than "still finding out". A probe failure is
+  // surfaced the same way, through isError/error, so the review page's
+  // existing retry UI covers it instead of silently showing no suggestions.
+  //
+  // Fields are listed explicitly, not spread, so this only re-renders on the
+  // fields callers actually read (dataUpdatedAt, isFetching, refetch — see
+  // ReliabilityInboxPage.tsx — plus the ones overridden below).
+  return {
+    data: suggestionsQuery.data,
+    dataUpdatedAt: suggestionsQuery.dataUpdatedAt,
+    isFetching: suggestionsQuery.isFetching,
+    isLoading: suggestionsQuery.isLoading || health.isLoading,
+    isError: suggestionsQuery.isError || health.isError,
+    error: suggestionsQuery.error ?? health.error,
+    refetch: () => (health.isError ? health.refetch() : suggestionsQuery.refetch()),
+  };
 }
 
 function useScopedReliabilityInboxDismissals(apiHost: string, stackId: number) {

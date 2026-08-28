@@ -373,6 +373,53 @@ describe('ReliabilityInboxPage', () => {
     expect(screen.queryByText('Why this recommendation')).not.toBeInTheDocument();
   });
 
+  it('shows the loading state, not an empty inbox, while the health probe is still resolving', async () => {
+    server.use(
+      apiRoute('reliabilityInboxHealth', {
+        result: async () => {
+          await delay(10_000);
+          return { json: { ok: true } };
+        },
+      })
+    );
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByRole('heading', { name: 'Finding gaps in your monitoring' })).toBeInTheDocument();
+    expect(screen.queryByText('No reviewable opportunities')).not.toBeInTheDocument();
+  });
+
+  it('explains when the health probe fails, instead of showing an empty inbox', async () => {
+    server.use(apiRoute('reliabilityInboxHealth', { result: () => ({ status: 500 }) }));
+
+    render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('The Reliability Inbox service is unavailable. Try again later.')).toBeVisible();
+    expect(screen.queryByText('No reviewable opportunities')).not.toBeInTheDocument();
+  });
+
+  it('retains the resolved health check for the session, so an idle tab cannot re-block cached suggestions on it', async () => {
+    // The health query has no explicit lifetime beyond the default 5-minute
+    // gcTime; without gcTime: Infinity here, a health check that resolved
+    // once gets silently evicted after 5 minutes idle, and revisiting the
+    // page later re-blocks already-cached suggestions (gcTime: Infinity,
+    // just below) behind a fresh, unnecessary health probe. Asserted on the
+    // query's config directly: reproducing the actual multi-minute eviction
+    // through fake timers plus MSW's own async delays is too fragile to be
+    // worth it here — this pins the fix without that flakiness risk.
+    const { queryClient } = renderPage();
+    await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+    const healthQuery = queryClient.getQueryCache().find({ queryKey: ['reliability-inbox', 'health'], exact: false });
+    expect(healthQuery?.options.gcTime).toBe(Infinity);
+  });
+
   it('explains when the user cannot access suggestions', async () => {
     server.use(
       apiRoute('reliabilityInboxSuggestions', {

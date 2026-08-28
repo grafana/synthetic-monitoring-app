@@ -32,7 +32,7 @@ import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
 import { listK6Channels } from './k6Channels';
 import { evaluateFeatureFlags } from './openfeature';
-import { reliabilityInboxSuggestions } from './reliabilityInbox';
+import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const API_ROUTES = {
@@ -80,6 +80,7 @@ const API_ROUTES = {
   updateSecret,
   updateTenantSettings,
   listK6Channels,
+  reliabilityInboxHealth,
   reliabilityInboxSuggestions,
 };
 

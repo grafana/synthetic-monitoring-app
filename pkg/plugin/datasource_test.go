@@ -33,6 +33,10 @@ func TestNewDatasource(t *testing.T) {
 	if ds.suggestionsURL != "https://k6-experiments-dev-us-central-0.grafana-dev.net/api/v1alpha1/reliability-inbox/suggestions" {
 		t.Errorf("got suggestions URL %q", ds.suggestionsURL)
 	}
+
+	if ds.healthURL != "https://k6-experiments-dev-us-central-0.grafana-dev.net/api/v1alpha1/reliability-inbox/health" {
+		t.Errorf("got health URL %q", ds.healthURL)
+	}
 }
 
 func TestCheckHealth(t *testing.T) {
@@ -48,22 +52,22 @@ func TestCheckHealth(t *testing.T) {
 	}
 }
 
-func TestReliabilityInboxURL(t *testing.T) {
+func TestReliabilityInboxBaseURL(t *testing.T) {
 	tests := map[string]struct {
 		apiHost string
 		want    string
 	}{
 		"dev alias": {
 			apiHost: "https://synthetic-monitoring-api-dev.grafana-dev.net",
-			want:    "https://k6-experiments-dev-us-central-0.grafana-dev.net/api/v1alpha1/reliability-inbox/suggestions",
+			want:    "https://k6-experiments-dev-us-central-0.grafana-dev.net",
 		},
 		"ops region": {
 			apiHost: "synthetic-monitoring-api-eu-west-2.grafana-ops.net",
-			want:    "https://k6-experiments-ops-eu-west-2.grafana-ops.net/api/v1alpha1/reliability-inbox/suggestions",
+			want:    "https://k6-experiments-ops-eu-west-2.grafana-ops.net",
 		},
 		"preserves deployment domain": {
 			apiHost: "synthetic-monitoring-api-eu-west-2.example.grafana-ops.net",
-			want:    "https://k6-experiments-ops-eu-west-2.example.grafana-ops.net/api/v1alpha1/reliability-inbox/suggestions",
+			want:    "https://k6-experiments-ops-eu-west-2.example.grafana-ops.net",
 		},
 		"untrusted host": {
 			apiHost: "https://example.com",
@@ -73,7 +77,7 @@ func TestReliabilityInboxURL(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			if got := reliabilityInboxURL(test.apiHost); got != test.want {
+			if got := reliabilityInboxBaseURL(test.apiHost); got != test.want {
 				t.Errorf("got %q, want %q", got, test.want)
 			}
 		})
@@ -129,6 +133,73 @@ func TestCallResourceProxiesSuggestionsWithStoredToken(t *testing.T) {
 
 	if string(sender.response.Body) != `{"suggestions":[]}` {
 		t.Errorf("got body %q", sender.response.Body)
+	}
+}
+
+func TestCallResourceProxiesHealth(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.Method != http.MethodGet {
+			t.Errorf("got method %q, want GET", req.Method)
+		}
+
+		if got := req.Header.Get("Authorization"); got != "" {
+			t.Errorf("got authorization %q, want none: health does not need the stored token", got)
+		}
+
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(server.Close)
+
+	ds := &Datasource{
+		httpClient: server.Client(),
+		healthURL:  server.URL,
+	}
+	sender := &recordingSender{}
+
+	err := ds.CallResource(t.Context(), &backend.CallResourceRequest{
+		Path:   "reliability-inbox/health",
+		Method: http.MethodGet,
+	}, sender)
+	if err != nil {
+		t.Fatalf("calling resource: %v", err)
+	}
+
+	if sender.response.Status != http.StatusOK {
+		t.Errorf("got status %d, want %d", sender.response.Status, http.StatusOK)
+	}
+}
+
+func TestCallResourceHealthNotAvailableInRegion(t *testing.T) {
+	ds := &Datasource{}
+	sender := &recordingSender{}
+
+	err := ds.CallResource(t.Context(), &backend.CallResourceRequest{
+		Path:   "reliability-inbox/health",
+		Method: http.MethodGet,
+	}, sender)
+	if err != nil {
+		t.Fatalf("calling resource: %v", err)
+	}
+
+	if sender.response.Status != http.StatusNotFound {
+		t.Errorf("got status %d, want %d", sender.response.Status, http.StatusNotFound)
+	}
+}
+
+func TestCallResourceHealthRejectsNonGet(t *testing.T) {
+	ds := &Datasource{healthURL: "http://unused.example.com"}
+	sender := &recordingSender{}
+
+	err := ds.CallResource(t.Context(), &backend.CallResourceRequest{
+		Path:   "reliability-inbox/health",
+		Method: http.MethodPost,
+	}, sender)
+	if err != nil {
+		t.Fatalf("calling resource: %v", err)
+	}
+
+	if sender.response.Status != http.StatusMethodNotAllowed {
+		t.Errorf("got status %d, want %d", sender.response.Status, http.StatusMethodNotAllowed)
 	}
 }
 

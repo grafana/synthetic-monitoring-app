@@ -6,8 +6,10 @@
 // queries through datasources, so a datasource is what future query-serving work
 // needs; an app backend could not serve them.
 //
-// It reports its health and proxies Reliability Inbox requests so the browser
-// never receives the datasource's stored access token.
+// It reports its health, proxies Reliability Inbox suggestion requests so the
+// browser never receives the datasource's stored access token, and proxies a
+// Reliability Inbox health probe so the frontend can tell whether that
+// experimental service is deployed in this region at all.
 package plugin
 
 import (
@@ -46,6 +48,7 @@ type Datasource struct {
 	accessToken    string
 	httpClient     *http.Client
 	suggestionsURL string
+	healthURL      string
 }
 
 // NewDatasource creates a new Datasource instance. It is called by the SDK once
@@ -63,6 +66,14 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 		}
 	}
 
+	base := reliabilityInboxBaseURL(jsonData.APIHost)
+
+	var suggestionsURL, healthURL string
+	if base != "" {
+		suggestionsURL = base + "/api/v1alpha1/reliability-inbox/suggestions"
+		healthURL = base + "/api/v1alpha1/reliability-inbox/health"
+	}
+
 	return &Datasource{
 		accessToken: settings.DecryptedSecureJSONData["accessToken"],
 		httpClient: &http.Client{
@@ -71,7 +82,8 @@ func NewDatasource(_ context.Context, settings backend.DataSourceInstanceSetting
 				return http.ErrUseLastResponse
 			},
 		},
-		suggestionsURL: reliabilityInboxURL(jsonData.APIHost),
+		suggestionsURL: suggestionsURL,
+		healthURL:      healthURL,
 	}, nil
 }
 
@@ -88,16 +100,30 @@ func (d *Datasource) CheckHealth(_ context.Context, _ *backend.CheckHealthReques
 	}, nil
 }
 
-// CallResource handles the backend-only Reliability Inbox proxy endpoint.
+// CallResource handles the backend-only Reliability Inbox proxy endpoints.
 func (d *Datasource) CallResource(
 	ctx context.Context,
 	req *backend.CallResourceRequest,
 	sender backend.CallResourceResponseSender,
 ) error {
-	if req.Path != "reliability-inbox/suggestions" {
+	switch req.Path {
+	case "reliability-inbox/suggestions":
+		return d.handleSuggestions(ctx, req, sender)
+	case "reliability-inbox/health":
+		return d.handleHealth(ctx, req, sender)
+	default:
 		return sendResourceResponse(sender, http.StatusNotFound, "resource not found")
 	}
+}
 
+// handleSuggestions proxies to the co-located reliability-inbox deployment's
+// suggestions endpoint, so the browser never receives the datasource's stored
+// access token.
+func (d *Datasource) handleSuggestions(
+	ctx context.Context,
+	req *backend.CallResourceRequest,
+	sender backend.CallResourceResponseSender,
+) error {
 	if req.Method != http.MethodPost {
 		return sendResourceResponse(sender, http.StatusMethodNotAllowed, "method not allowed")
 	}
@@ -144,7 +170,42 @@ func (d *Datasource) CallResource(
 	})
 }
 
-func reliabilityInboxURL(apiHost string) string {
+// handleHealth proxies to the co-located reliability-inbox deployment's own
+// health probe. The frontend uses a 200 here to decide whether to show any
+// check-suggestion UI at all — a real availability check instead of guessing
+// from the datasource's apiHost, and it needs no access token because the
+// probe answers before any tenant identity is involved.
+func (d *Datasource) handleHealth(
+	ctx context.Context,
+	req *backend.CallResourceRequest,
+	sender backend.CallResourceResponseSender,
+) error {
+	if req.Method != http.MethodGet {
+		return sendResourceResponse(sender, http.StatusMethodNotAllowed, "method not allowed")
+	}
+
+	if d.healthURL == "" {
+		return sendResourceResponse(sender, http.StatusNotFound, "reliability inbox is not available in this region")
+	}
+
+	outbound, err := http.NewRequestWithContext(ctx, http.MethodGet, d.healthURL, nil)
+	if err != nil {
+		return fmt.Errorf("creating reliability inbox health request: %w", err)
+	}
+
+	response, err := d.httpClient.Do(outbound)
+	if err != nil {
+		// Unreachable is a legitimate "not available" answer here, not a
+		// failure worth erroring the resource call over — the caller only
+		// distinguishes 200 from everything else.
+		return sendResourceResponse(sender, http.StatusBadGateway, "reliability inbox is not reachable in this region")
+	}
+	defer response.Body.Close()
+
+	return sendResourceResponse(sender, response.StatusCode, "reliability inbox health check")
+}
+
+func reliabilityInboxBaseURL(apiHost string) string {
 	trimmed := strings.TrimSpace(apiHost)
 	if trimmed == "" {
 		return ""
@@ -193,12 +254,7 @@ func reliabilityInboxURL(apiHost string) string {
 		return ""
 	}
 
-	return fmt.Sprintf(
-		"https://k6-experiments-%s-%s.%s/api/v1alpha1/reliability-inbox/suggestions",
-		environment,
-		region,
-		domain,
-	)
+	return fmt.Sprintf("https://k6-experiments-%s-%s.%s", environment, region, domain)
 }
 
 func sendResourceResponse(sender backend.CallResourceResponseSender, status int, message string) error {
