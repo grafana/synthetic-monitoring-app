@@ -18,9 +18,11 @@ interface FeedbackProps {
   about?: FeedbackAboutProps;
   feature: string;
   placement?: ComponentProps<typeof Toggletip>['placement'];
+  /** Called when the user clicks a reaction, in addition to the built-in tracking. */
+  onReaction?: (reaction: 'good' | 'bad') => void;
 }
 
-export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
+export const Feedback = ({ about, feature, placement, onReaction }: FeedbackProps) => {
   const [active, setActive] = useState<'good' | 'bad' | null>(null);
 
   return (
@@ -32,6 +34,7 @@ export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
         onClick={() => {
           setActive('good');
           trackFeatureFeedback({ feature, reaction: 'good' });
+          onReaction?.('good');
         }}
         onClose={() => setActive(null)}
         reaction="good"
@@ -44,6 +47,7 @@ export const Feedback = ({ about, feature, placement }: FeedbackProps) => {
         onClick={() => {
           setActive('bad');
           trackFeatureFeedback({ feature, reaction: 'bad' });
+          onReaction?.('bad');
         }}
         onClose={() => setActive(null)}
         reaction="bad"

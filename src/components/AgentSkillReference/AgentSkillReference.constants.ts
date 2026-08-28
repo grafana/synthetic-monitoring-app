@@ -1,5 +1,6 @@
-// Kept in sync with the inline source unions in features/tracking/agentSkillEvents.ts
-// (the tracking lint rule disallows shared type aliases in event files).
+// Kept in sync with the inline source unions in features/tracking/agentSkillEvents.ts.
+// The unions are duplicated there on purpose: features/tracking is a leaf layer and
+// should not import from components/, so the event file cannot share this alias.
 export type AgentSkillReferenceSource =
   | 'docs-panel-scripted'
   | 'docs-panel-browser'
@@ -27,6 +28,8 @@ export const AGENT_SKILL_TOOLS = [
     installLabel: 'Any Agent Skills compatible tool (Claude Code, Cursor, Codex, ...)',
   },
 ];
+
+export type AgentSkillToolId = (typeof AGENT_SKILL_TOOLS)[number]['id'];
 
 export const AGENT_SKILL_INSTALL_COMMANDS = AGENT_SKILL_TOOLS.map(({ installCommand, trackingId, installLabel }) => ({
   command: installCommand,
@@ -65,7 +68,7 @@ export const AGENT_SKILL_PROMPTS: Array<{
 export const AGENT_SKILL_DEFAULT_COPY = {
   title: 'Author checks with your coding agent',
   description:
-    'The Synthetic Monitoring skill teaches coding agents to pick the simplest sufficient check type, author scripted and browser checks that assert correctly, and validate them locally with k6 run. Paste the resulting script into the editor here, or let your agent deploy it via Terraform or the API.',
+    'The Synthetic Monitoring skill teaches coding agents to pick the simplest sufficient check type, author scripted and browser checks that assert correctly, and validate them locally with k6 run. Paste the resulting script into the check editor, or let your agent deploy it via Terraform or the API.',
 };
 
 export const AGENT_SKILL_TERRAFORM_COPY = {
@@ -76,5 +79,8 @@ export const AGENT_SKILL_TERRAFORM_COPY = {
 
 // Set when the user copies an install command so return visits can ask for feedback.
 export const AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY = 'synthetic-monitoring-agentSkillInstallCopied';
+
+// Set once the user reacts to the "Did the skill help?" ask so we stop asking.
+export const AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY = 'synthetic-monitoring-agentSkillFeedbackGiven';
 
 export const AGENT_SKILL_FEEDBACK_FEATURE = 'agent-skill';

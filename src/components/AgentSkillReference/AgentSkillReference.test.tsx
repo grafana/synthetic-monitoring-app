@@ -5,11 +5,13 @@ import { render } from 'test/render';
 import { AgentSkillReference } from './AgentSkillReference';
 import {
   AGENT_SKILL_DEFAULT_COPY,
+  AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY,
   AGENT_SKILL_INSTALL_COMMANDS,
   AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY,
   AGENT_SKILL_PROMPTS,
   AGENT_SKILL_TERRAFORM_COPY,
 } from './AgentSkillReference.constants';
+import { resetAgentSkillViewedSources } from './AgentSkillReference.hooks';
 
 jest.mock('features/tracking/agentSkillEvents', () => ({
   trackAgentSkillSectionViewed: jest.fn(),
@@ -32,6 +34,7 @@ describe('AgentSkillReference', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
+    resetAgentSkillViewedSources();
     Object.defineProperty(navigator, 'clipboard', {
       value: {
         writeText: jest.fn().mockResolvedValue(undefined),
@@ -118,6 +121,36 @@ describe('AgentSkillReference', () => {
     render(<AgentSkillReference source={SOURCE} />);
 
     expect(await screen.findByText('Did the skill help?')).toBeInTheDocument();
+  });
+
+  it('persists the reaction and stops asking on visits after the user has reacted', async () => {
+    localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
+    localStorage.setItem(AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY, 'true');
+    render(<AgentSkillReference source={SOURCE} />);
+
+    await screen.findByText(AGENT_SKILL_DEFAULT_COPY.title);
+    expect(screen.queryByText('Did the skill help?')).not.toBeInTheDocument();
+  });
+
+  it('records the reaction so future visits skip the ask', async () => {
+    localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
+    const { user } = render(<AgentSkillReference source={SOURCE} />);
+
+    await screen.findByText('Did the skill help?');
+    await user.click(screen.getByRole('button', { name: "I don't like this feature" }));
+
+    expect(JSON.parse(localStorage.getItem(AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY) ?? 'false')).toBe(true);
+  });
+
+  it('only fires section_viewed once per page load across remounts', async () => {
+    const { unmount } = render(<AgentSkillReference source={SOURCE} />);
+    await screen.findByText(AGENT_SKILL_DEFAULT_COPY.title);
+    expect(trackAgentSkillSectionViewed).toHaveBeenCalledTimes(1);
+
+    unmount();
+    render(<AgentSkillReference source={SOURCE} />);
+    await screen.findByText(AGENT_SKILL_DEFAULT_COPY.title);
+    expect(trackAgentSkillSectionViewed).toHaveBeenCalledTimes(1);
   });
 
   describe('collapsible mode', () => {

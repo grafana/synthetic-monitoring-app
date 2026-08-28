@@ -10,7 +10,7 @@ This document contains all the analytics events that are defined in the project.
 
 #### synthetic-monitoring_agent_skill_section_viewed
 
-Tracks when the agent skill reference content is shown: on render in the docs panels, on first reveal (expand or tool selection) elsewhere.
+Tracks when the agent skill reference content is shown, at most once per source per page load: on render in the docs panels, on first reveal (expand or tool selection) elsewhere.
 
 ##### Properties
 

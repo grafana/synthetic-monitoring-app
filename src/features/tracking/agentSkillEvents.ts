@@ -30,7 +30,7 @@ interface AgentSkillPromptEvent extends TrackingEventProps {
   prompt: 'site' | 'api-spec' | 'terraform-import';
 }
 
-/** Tracks when the agent skill reference content is shown: on render in the docs panels, on first reveal (expand or tool selection) elsewhere. */
+/** Tracks when the agent skill reference content is shown, at most once per source per page load: on render in the docs panels, on first reveal (expand or tool selection) elsewhere. */
 export const trackAgentSkillSectionViewed = agentSkillEvents<AgentSkillEvent>('section_viewed');
 
 /** Tracks when the agent skill repository link is clicked. */
