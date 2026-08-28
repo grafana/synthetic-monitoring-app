@@ -274,7 +274,7 @@ describe('LabelMigrationTab', () => {
     expect(putCount).toBe(0);
   });
 
-  it('keeps the collision list through reopen and cancel, clearing it on the next attempt', async () => {
+  it('clears the collision state when a fresh attempt after dismissal succeeds', async () => {
     runTestAsSMAdmin();
     let calls = 0;
     server.use(
@@ -296,15 +296,11 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
     await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
-    // Reopening and cancelling must not discard the rename guidance.
-    await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
-    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Cancel/i }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
-    // A new attempt replaces the outcome: this one succeeds and the alert clears.
-    await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
+    // The original Enable button is hidden while the alert is up; dismissing
+    // the alert restores it, and a fresh successful attempt replaces the
+    // collision outcome.
+    await userEvent.click(screen.getByLabelText('Close alert'));
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
     await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
@@ -635,6 +631,49 @@ describe('LabelMigrationTab', () => {
 
     expect(screen.getByTestId('rename-input-probe')).toBeDisabled();
     expect(screen.getByRole('button', { name: /^Rename$/i })).toBeDisabled();
+  });
+
+  it('hides the original Enable dual-write button while the conflicts alert is shown', async () => {
+    runTestAsSMAdmin();
+    await triggerCollision(['probe']);
+
+    // The alert's "Retry enabling dual-write" is the only path into dual-write
+    // while conflicts are unresolved.
+    expect(screen.queryByRole('button', { name: /^Enable dual-write$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeInTheDocument();
+
+    // Dismissing the alert restores the original button.
+    await userEvent.click(screen.getByLabelText('Close alert'));
+    expect(await screen.findByRole('button', { name: /Enable dual-write/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Retry enabling dual-write/i })).not.toBeInTheDocument();
+  });
+
+  it('freezes a row while its rename request is in flight', async () => {
+    runTestAsSMAdmin();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    server.use(
+      apiRoute('renameCheckLabels', {
+        result: async () => {
+          await gate;
+          return { json: { updated_ids: [1, 2] } };
+        },
+      })
+    );
+
+    await triggerCollision(['probe']);
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+
+    // The input locks for the duration of the request, so the value shown on
+    // the locked row is exactly the name that was sent.
+    await waitFor(() => expect(screen.getByTestId('rename-input-probe')).toBeDisabled());
+    expect(screen.getByRole('button', { name: /^Rename$/i })).toBeDisabled();
+
+    release();
+    await waitFor(() => expect(screen.getByText(/renamed on 2 checks/i)).toBeInTheDocument());
+    expect(screen.getByTestId('rename-input-probe')).toHaveValue('probe_alias');
   });
 
   it('falls back to a generic error when a rename failure carries no message', async () => {

@@ -117,7 +117,9 @@ export function LabelMigrationTab() {
                   labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
-                {isAdmin && (
+                {/* While the conflicts alert is up, its "Retry enabling dual-write"
+                    button is the only sanctioned path into dual-write. */}
+                {isAdmin && !collisionError && (
                   <Button
                     onClick={() =>
                       openConfirm(

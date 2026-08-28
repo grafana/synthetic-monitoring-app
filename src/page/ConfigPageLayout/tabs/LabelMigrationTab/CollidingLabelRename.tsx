@@ -6,6 +6,7 @@ import { useRenameCheckLabels } from 'data/useRenameCheckLabels';
 
 interface RowState {
   value: string;
+  pending?: boolean;
   renamed?: boolean;
   updatedCount?: number;
   error?: string;
@@ -65,7 +66,9 @@ export function CollidingLabelRename({ labels, systemLabels, disabled, retrying,
       return;
     }
 
-    patchRow(label, { error: undefined });
+    // pending freezes the row's input for the duration of the request, so the
+    // locked row always displays the name that was actually sent.
+    patchRow(label, { error: undefined, pending: true });
     inflight.current.add(label);
 
     try {
@@ -75,6 +78,7 @@ export function CollidingLabelRename({ labels, systemLabels, disabled, retrying,
       const e = err as { data?: { msg?: string } };
       patchRow(label, { error: e?.data?.msg ?? 'Failed to rename label' });
     } finally {
+      patchRow(label, { pending: false });
       inflight.current.delete(label);
     }
   };
@@ -101,7 +105,7 @@ export function CollidingLabelRename({ labels, systemLabels, disabled, retrying,
               <Input
                 width={30}
                 placeholder="New label name"
-                disabled={disabled || row.renamed}
+                disabled={disabled || row.pending || row.renamed}
                 invalid={!!row.error}
                 value={row.value}
                 onChange={(e) => patchRow(label, { value: e.currentTarget.value, error: undefined })}
@@ -111,7 +115,7 @@ export function CollidingLabelRename({ labels, systemLabels, disabled, retrying,
                 size="sm"
                 variant="secondary"
                 onClick={() => rename(label)}
-                disabled={disabled || row.renamed || renameMutation.isPending}
+                disabled={disabled || row.pending || row.renamed || renameMutation.isPending}
               >
                 Rename
               </Button>
