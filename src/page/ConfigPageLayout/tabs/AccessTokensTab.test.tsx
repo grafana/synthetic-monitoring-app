@@ -158,6 +158,22 @@ describe('AccessTokensTab', () => {
       expect(nonCurrentButton.parentElement?.tagName).not.toBe('SPAN');
     });
 
+    it('sorts on the underlying timestamp when the Created header is clicked', async () => {
+      const user = userEvent.setup();
+      await renderAccessTokensTab();
+
+      await screen.findByText(OTHER_TOKEN_ID);
+      const firstRowText = () => screen.getAllByRole('row')[1].textContent ?? '';
+
+      // The API returns newest first.
+      expect(firstRowText()).toContain(OTHER_TOKEN_ID);
+
+      await user.click(screen.getByRole('columnheader', { name: /created/i }));
+
+      // Sorting ascending puts the older token first.
+      await waitFor(() => expect(firstRowText()).toContain(CURRENT_TOKEN_ID));
+    });
+
     it('disables every revoke button when the current token cannot be identified', async () => {
       // current_token_id is omitted for requests not bound to a token; the
       // revoke guard must fail closed rather than allow revoking the token

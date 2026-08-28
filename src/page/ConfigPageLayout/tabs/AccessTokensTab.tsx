@@ -57,10 +57,14 @@ export function AccessTokensTab() {
     },
     {
       name: 'Created',
-      selector: (row) => formatUnixSeconds(row.created),
+      selector: (row) => row.created,
+      format: (row) => formatUnixSeconds(row.created),
+      sortable: true,
     },
     {
       name: 'Last used',
+      selector: (row) => row.lastUsed,
+      sortable: true,
       cell: (row) =>
         row.lastUsed === 0 ? (
           'Never'
