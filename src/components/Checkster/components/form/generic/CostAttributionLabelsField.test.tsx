@@ -24,6 +24,12 @@ jest.mock('data/useTenantCostAttributionLabels', () => ({
   })),
 }));
 
+// GenericLabelContent reads the tenant label mode through the SM datasource, which
+// formTestRenderer doesn't provide.
+jest.mock('data/useLabelMode', () => ({
+  useLabelMode: jest.fn(() => ({ data: undefined })),
+}));
+
 function renderCostAttributionLabelsField(formValues: Record<string, unknown> = {}) {
   return formTestRenderer(CostAttributionLabelsField, {} as any, formValues);
 }

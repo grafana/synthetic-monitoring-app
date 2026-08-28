@@ -5,6 +5,8 @@ import { css } from '@emotion/css';
 import { useKGReservedLabels } from 'features/knowledgeGraph/KnowledgeGraphServiceLink.hooks';
 
 import { CheckFormValues } from 'types';
+import { LabelMode } from 'datasource/responses.types';
+import { useLabelMode } from 'data/useLabelMode';
 
 import { GenericNameValueField } from '../generic/GenericNameValueField';
 
@@ -21,6 +23,9 @@ export function GenericLabelContent({ description, isLoading, labelLimit }: Gene
   // service_name / namespace belong to the KG service-link section when the KG app is
   // installed: their rows are hidden here and typing them shows a redirect message.
   const kgReservedLabels = useKGReservedLabels();
+  const { data: labelModeState } = useLabelMode();
+  // Unknown (still loading) defaults to showing the hint, matching pre-migration behavior.
+  const isPrefixedMode = labelModeState === undefined || labelModeState.mode === LabelMode.Prefixed;
 
   if (isLoading) {
     return <LoadingPlaceholder text="Loading label limits" />;
@@ -40,19 +45,21 @@ export function GenericLabelContent({ description, isLoading, labelLimit }: Gene
         limit={labelLimit}
         reservedNames={kgReservedLabels}
         namePrefix={
-          <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
-            <span
-              className={css`
-                padding-right: 2px;
-                &:after {
-                  position: absolute;
-                  content: '_';
-                }
-              `}
-            >
-              label
-            </span>
-          </Tooltip>
+          isPrefixedMode ? (
+            <Tooltip content="All custom labels have a 'label_' prefix to ensure they don't conflict with system-defined labels.">
+              <span
+                className={css`
+                  padding-right: 2px;
+                  &:after {
+                    position: absolute;
+                    content: '_';
+                  }
+                `}
+              >
+                label
+              </span>
+            </Tooltip>
+          ) : undefined
         }
       />
       {errors.labels?.root?.message && <FieldValidationMessage>{errors.labels.root.message}</FieldValidationMessage>}
