@@ -47,6 +47,12 @@ function useReliabilityInboxAvailable(enabled: boolean) {
     enabled,
     retry: false,
     staleTime: STALE_TIME,
+    // Without this, the default 5-minute gcTime evicts the resolved
+    // availability once the page is left idle, so returning to Check
+    // Suggestions later re-probes from a blank isPending/isLoading state and
+    // blocks the already-cached suggestions (see the suggestions query's own
+    // gcTime below) behind a full loading screen for no reason.
+    gcTime: Infinity,
   });
 }
 
