@@ -1,6 +1,7 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 import { TENANT, TENANT_LABEL_MODE } from 'test/fixtures/tenants';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -144,6 +145,95 @@ describe('LabelMigrationTab', () => {
       expect(screen.getByText('probe', { selector: 'code' })).toBeInTheDocument();
       expect(screen.getByText('instance', { selector: 'code' })).toBeInTheDocument();
     });
+    // A colliding-only 409 must not render the invalid-names explanation.
+    expect(screen.queryByText(/would not be valid label names/i)).not.toBeInTheDocument();
+  });
+
+  it('shows invalid label names when API returns 409 with only invalidLabels', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: { msg: 'labels would be invalid without the label_ prefix', invalidLabels: ['9foo', '__bar'] },
+        }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
+    await userEvent.click(confirmButton);
+    // The invalid-only 409 must land in the collision alert, not the generic error path.
+    await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
+    expect(screen.getByText(/would not be valid label names/i)).toBeInTheDocument();
+    expect(screen.getByText('9foo', { selector: 'code' })).toBeInTheDocument();
+    expect(screen.getByText('__bar', { selector: 'code' })).toBeInTheDocument();
+    expect(screen.queryByText(/Failed to update label migration mode/i)).not.toBeInTheDocument();
+    // No reserved-name collisions were reported, so that explanation stays hidden
+    // and there are no rename rows — but the in-alert retry stays available for
+    // after the labels are fixed in the check editor.
+    expect(screen.queryByText(/conflict with reserved system names/i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('rename-input-9foo')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeEnabled();
+  });
+
+  it('renders colliding and invalid label lists distinctly on a mixed 409', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: {
+            msg: 'labels conflict or would be invalid',
+            collidingLabels: ['probe'],
+            invalidLabels: ['9foo'],
+          },
+        }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
+    await userEvent.click(confirmButton);
+    await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
+    // Both explanations render; colliding names get rename rows, invalid names
+    // sit in their own list without a rename affordance.
+    expect(screen.getByText(/conflict with reserved system names/i)).toBeInTheDocument();
+    expect(screen.getByText(/would not be valid label names/i)).toBeInTheDocument();
+    const invalidList = screen.getByTestId(CONFIG_TEST_ID.labelMigration.invalidList);
+    expect(within(invalidList).getByText('9foo', { selector: 'code' })).toBeInTheDocument();
+    expect(within(invalidList).queryByText('probe', { selector: 'code' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('rename-input-probe')).toBeInTheDocument();
+    expect(screen.queryByTestId('rename-input-9foo')).not.toBeInTheDocument();
+    // The retry stays gated until the colliding label is renamed.
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
+  });
+
+  it('routes a 409 with empty label arrays to the generic error path', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: { msg: 'conflicting concurrent update', collidingLabels: [], invalidLabels: [] },
+        }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
+    await userEvent.click(confirmButton);
+    // With no label names to act on, the collision alert would be an empty
+    // shell — the generic update error carrying the API's msg is shown instead.
+    await waitFor(() => expect(screen.getByText(/Failed to update label migration mode/i)).toBeInTheDocument());
+    expect(screen.getByText(/conflicting concurrent update/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Label name conflicts/i)).not.toBeInTheDocument();
   });
 
   it('shows an update error without Retry when setLabelMode fails without collisions', async () => {
