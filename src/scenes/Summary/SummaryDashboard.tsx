@@ -13,10 +13,12 @@ import {
 import { VariableRefresh } from '@grafana/schema';
 import { Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { ReliabilityInboxBanner } from 'features/reliabilityInbox';
 import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 
-import { Check } from 'types';
+import { Check, FeatureName } from 'types';
 import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
@@ -38,6 +40,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
   const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
   const annotations = useSummaryDashboardAnnotations();
+  const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
   const scene = useSceneContext();
   const [filtersAdded, setFiltersAdded] = useState(false);
 
@@ -89,6 +92,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
     <>
       <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => <h1>Home</h1>}>
         <Stack direction="column" gap={1}>
+          {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
           <DashboardContainerAnnotations annotations={annotations}>
             <div className={styles.header}>
               <VariableControl name="region" />
@@ -128,9 +132,15 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
 export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
   const metricsDS = useMetricsDS();
   const styles = useStyles2(getStyles);
+  const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
 
   if (checks.length === 0) {
-    return <ChecksEmptyState className={styles.emptyState} />;
+    return (
+      <Stack direction="column" gap={1}>
+        {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
+        <ChecksEmptyState className={styles.emptyState} />
+      </Stack>
+    );
   }
 
   return (
@@ -224,4 +234,3 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
   };
 };
-

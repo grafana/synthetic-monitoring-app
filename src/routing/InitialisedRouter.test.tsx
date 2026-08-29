@@ -1,13 +1,22 @@
 import React from 'react';
-import { screen } from '@testing-library/react';
+import { screen, waitForElementToBeRemoved } from '@testing-library/react';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
+import { mockFeatureToggles } from 'test/utils';
 
+import { FeatureName } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import * as useFeatureFlagModule from 'hooks/useFeatureFlag';
+
+jest.mock('hooks/useFeatureFlag', () => {
+  const actual = jest.requireActual('hooks/useFeatureFlag');
+  return { ...actual, useFeatureFlag: jest.fn(actual.useFeatureFlag) };
+});
 
 function renderInitialisedRouting(options?: CustomRenderOptions) {
   return render(<InitialisedRouter />, options);
@@ -20,6 +29,10 @@ jest.mock('page/DashboardPage', () => ({
 
 jest.mock('page/SceneHomepage', () => ({
   SceneHomepage: () => <h1>Home page</h1>,
+}));
+
+jest.mock('features/reliabilityInbox', () => ({
+  ReliabilityInboxPage: () => <h1>Check suggestions page</h1>,
 }));
 
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
@@ -75,5 +88,35 @@ describe('Routes to pages correctly', () => {
     });
     const sceneText = await screen.findByText('Dashboard page');
     expect(sceneText).toBeInTheDocument();
+  });
+
+  test('Check suggestions route renders when the flag is enabled', async () => {
+    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
+    const pageText = await screen.findByText('Check suggestions page', { selector: 'h1' });
+    expect(pageText).toBeInTheDocument();
+  });
+
+  test('Check suggestions route shows a 404 page when the flag is disabled', async () => {
+    renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
+    const notFoundText = await screen.findByText('Not found', { selector: 'span' });
+    expect(notFoundText).toBeInTheDocument();
+  });
+
+  test('Check suggestions route shows a spinner while the flag is not ready', async () => {
+    const actualUseFeatureFlag = jest.requireActual('hooks/useFeatureFlag').useFeatureFlag;
+    jest.mocked(useFeatureFlagModule.useFeatureFlag).mockReturnValue({ isEnabled: false, isReady: false });
+
+    renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
+
+    // The datasource/permissions providers show their own loading spinner first, and Grafana's
+    // generic spinner looks the same everywhere it's used, so wait for that one to clear first,
+    // otherwise we might catch it instead of the one for the expected routing below.
+    await waitForElementToBeRemoved(() => screen.queryByTestId(UI_TEST_ID.centeredSpinner));
+
+    const spinner = await screen.findByTestId('Spinner');
+    expect(spinner).toBeInTheDocument();
+
+    jest.mocked(useFeatureFlagModule.useFeatureFlag).mockImplementation(actualUseFeatureFlag);
   });
 });

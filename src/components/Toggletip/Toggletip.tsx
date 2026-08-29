@@ -33,11 +33,28 @@ interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, '
  * `cloneElement` attaches the ref + interaction props directly to the child
  * element, avoiding a wrapper node that would affect flex/grid layouts.
  */
-export const Toggletip = ({ children, content, contentClassName, strategy = 'absolute' }: ToggletipProps) => {
+export const Toggletip = ({
+  children,
+  content,
+  contentClassName,
+  onClose,
+  show,
+  strategy = 'absolute',
+}: ToggletipProps) => {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const arrowRef = useRef(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [uncontrolledIsOpen, setUncontrolledIsOpen] = useState(false);
+  const isControlled = show !== undefined;
+  const isOpen = show ?? uncontrolledIsOpen;
+  const setIsOpen = (nextIsOpen: boolean) => {
+    if (!isControlled) {
+      setUncontrolledIsOpen(nextIsOpen);
+    }
+    if (!nextIsOpen) {
+      onClose?.();
+    }
+  };
 
   const { context, refs, floatingStyles } = useFloating({
     open: isOpen,
@@ -56,7 +73,7 @@ export const Toggletip = ({ children, content, contentClassName, strategy = 'abs
         ref: refs.setReference,
         tabIndex: 0,
         'aria-expanded': isOpen,
-        ...getReferenceProps(),
+        ...getReferenceProps(children.props),
       })}
       {isOpen && (
         <Portal>
