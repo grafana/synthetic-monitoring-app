@@ -66,6 +66,36 @@ var registry = map[string]namedQuery{
 			}, nil
 		},
 	},
+
+	// Ported from src/queries/uptime.ts.
+	"checks_uptime": {
+		target: targetMetrics,
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckFrequencyQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
+			job, instance, probe, err := p.check()
+			if err != nil {
+				return built{}, err
+			}
+
+			interval, err := p.intervalFromFrequency()
+			if err != nil {
+				return built{}, err
+			}
+
+			return built{
+				expr: fmt.Sprintf(
+					`max by () (max_over_time(probe_success{job="%s", instance="%s", probe=~"%s"}[%s]))`,
+					job, instance, probe, interval,
+				),
+				interval:      interval,
+				maxDataPoints: 8000,
+			}, nil
+		},
+	},
 }
 
 // resolve looks up a named query and builds it from the raw query JSON the
