@@ -10,24 +10,43 @@ import (
 // asking for something different than it used to.
 func TestRegistryExpressions(t *testing.T) {
 	tests := []struct {
-		name   string
-		query  string
-		params string
-		expr   string
-		target target
+		name    string
+		query   string
+		params  string
+		expr    string
+		target  target
+		instant bool
 	}{
 		{
-			name:   "probe_execution_rate",
-			query:  "probe_execution_rate",
-			params: `{}`,
-			expr:   `sum(rate(probe_all_success_count[3h])) by (probe)`,
+			name:    "probe_execution_rate",
+			query:   "probe_execution_rate",
+			params:  `{}`,
+			expr:    `sum(rate(probe_all_success_count[3h])) by (probe)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			name:    "probe_execution_rate ignores unknown params",
+			query:   "probe_execution_rate",
+			params:  `{"job":"ignored"}`,
+			expr:    `sum(rate(probe_all_success_count[3h])) by (probe)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			// Ported from src/queries/uptime.ts -- deliberately a range query, not
+			// instant: the panel it backs plots uptime over time.
+			name:   "checks_uptime",
+			query:  "checks_uptime",
+			params: `{"job":"test","instance":"https://grafana.com","frequency":60000}`,
+			expr:   `max by () (max_over_time(probe_success{job="test", instance="https://grafana.com", probe=~".*"}[60s]))`,
 			target: targetMetrics,
 		},
 		{
-			name:   "probe_execution_rate ignores unknown params",
-			query:  "probe_execution_rate",
-			params: `{"job":"ignored"}`,
-			expr:   `sum(rate(probe_all_success_count[3h])) by (probe)`,
+			name:   "checks_uptime escapes label values",
+			query:  "checks_uptime",
+			params: `{"job":"has \"quotes\"","instance":"x","frequency":60000}`,
+			expr:   `max by () (max_over_time(probe_success{job="has \"quotes\"", instance="x", probe=~".*"}[60s]))`,
 			target: targetMetrics,
 		},
 	}
@@ -45,8 +64,31 @@ func TestRegistryExpressions(t *testing.T) {
 			if nq.target != tt.target {
 				t.Errorf("target = %q, want %q", nq.target, tt.target)
 			}
-			if !b.instant {
-				t.Error("expected an instant query")
+			if b.instant != tt.instant {
+				t.Errorf("instant = %v, want %v", b.instant, tt.instant)
+			}
+		})
+	}
+}
+
+// TestChecksUptimeRejectsMissingParams pins the required-parameter validation
+// checks_uptime inherits from CheckQuery.check() and
+// CheckFrequencyQuery.intervalFromFrequency().
+func TestChecksUptimeRejectsMissingParams(t *testing.T) {
+	tests := []struct {
+		name   string
+		params string
+	}{
+		{name: "missing job", params: `{"instance":"x","frequency":60000}`},
+		{name: "missing instance", params: `{"job":"x","frequency":60000}`},
+		{name: "zero frequency", params: `{"job":"x","instance":"x","frequency":0}`},
+		{name: "negative frequency", params: `{"job":"x","instance":"x","frequency":-1}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, _, err := resolve("checks_uptime", json.RawMessage(tt.params)); err == nil {
+				t.Fatal("expected an error")
 			}
 		})
 	}
