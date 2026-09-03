@@ -3,6 +3,7 @@ package plugin
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -60,7 +61,7 @@ type permissionsSearchResponse map[string]map[string][]string
 // plugin's own identity is what we are trying to avoid.
 func (a *authorizer) authorize(ctx context.Context, appURL, token string, user *backend.User, ds linkedDatasource) error {
 	if token == "" {
-		return fmt.Errorf("this plugin has no service account credential, so it cannot verify permissions; " +
+		return errors.New("this plugin has no service account credential, so it cannot verify permissions; " +
 			"check that managed service accounts and the externalServiceAccounts feature are enabled")
 	}
 
@@ -97,6 +98,7 @@ func (a *authorizer) lookupIdentity(ctx context.Context, appURL, token, login st
 	if err != nil {
 		return "", err
 	}
+
 	if userID != 0 {
 		return fmt.Sprintf("user:%d", userID), nil
 	}
@@ -105,6 +107,7 @@ func (a *authorizer) lookupIdentity(ctx context.Context, appURL, token, login st
 	if err != nil {
 		return "", err
 	}
+
 	if serviceAccountID != 0 {
 		return fmt.Sprintf("service-account:%d", serviceAccountID), nil
 	}
@@ -194,6 +197,7 @@ func (a *authorizer) get(ctx context.Context, endpoint, token string, into any) 
 	if err != nil {
 		return fmt.Errorf("building request: %w", err)
 	}
+
 	req.Header.Set("Authorization", "Bearer "+token)
 
 	resp, err := a.http.Do(req)

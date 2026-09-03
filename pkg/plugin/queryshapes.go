@@ -1,6 +1,7 @@
 package plugin
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
@@ -40,7 +41,7 @@ func (q CheckQuery) probeOrAny() string {
 // escaped for use in label matchers.
 func (q CheckQuery) check() (job, instance, probe string, err error) {
 	if q.Job == "" || q.Instance == "" {
-		return "", "", "", fmt.Errorf("job and instance are required")
+		return "", "", "", errors.New("job and instance are required")
 	}
 
 	return escapeValue(q.Job), escapeValue(q.Instance), escapeValue(q.probeOrAny()), nil
@@ -57,7 +58,7 @@ type CheckFrequencyQuery struct {
 // intervalFromFrequency renders the check frequency as a PromQL duration.
 func (q CheckFrequencyQuery) intervalFromFrequency() (string, error) {
 	if q.Frequency <= 0 {
-		return "", fmt.Errorf("a positive frequency is required")
+		return "", errors.New("a positive frequency is required")
 	}
 
 	return fmt.Sprintf("%ds", q.Frequency/int(time.Second/time.Millisecond)), nil

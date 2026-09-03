@@ -75,6 +75,7 @@ func (c *grafanaClient) query(ctx context.Context, appURL, token string, from, t
 	if err != nil {
 		return nil, fmt.Errorf("building request: %w", err)
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+token)
 

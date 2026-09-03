@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -53,12 +52,14 @@ func TestGrafanaClientQuery(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var gotBody dsQueryRequest
+
 			var gotAuth string
 
 			srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path != "/api/ds/query" {
 					t.Errorf("request path = %q, want /api/ds/query", r.URL.Path)
 				}
+
 				gotAuth = r.Header.Get("Authorization")
 				if err := json.NewDecoder(r.Body).Decode(&gotBody); err != nil {
 					t.Errorf("decoding request body: %v", err)
@@ -76,24 +77,28 @@ func TestGrafanaClientQuery(t *testing.T) {
 
 			queries := []dsQuery{{RefID: "A", Expr: "up", Datasource: linkedDatasource{UID: "prom-uid"}, Instant: true}}
 
-			resp, err := c.query(context.Background(), srv.URL, "plugin-token", from, to, queries)
+			resp, err := c.query(t.Context(), srv.URL, "plugin-token", from, to, queries)
 
 			if tt.wantErr != "" {
 				if err == nil {
 					t.Fatalf("expected an error containing %q, got nil", tt.wantErr)
 				}
+
 				return
 			}
 
 			if err != nil {
 				t.Fatalf("query: %v", err)
 			}
+
 			if resp == nil {
 				t.Fatal("expected a non-nil response")
 			}
+
 			if gotAuth != "Bearer plugin-token" {
 				t.Errorf("Authorization header = %q, want %q", gotAuth, "Bearer plugin-token")
 			}
+
 			if len(gotBody.Queries) != 1 || gotBody.Queries[0].RefID != "A" {
 				t.Errorf("request body queries = %+v, want one query with RefID A", gotBody.Queries)
 			}
@@ -103,7 +108,7 @@ func TestGrafanaClientQuery(t *testing.T) {
 
 func TestAppURL(t *testing.T) {
 	t.Run("prefers the configured app URL", func(t *testing.T) {
-		ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+		ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 			config.AppURL: "http://grafana.example.com/",
 		}))
 
@@ -113,7 +118,7 @@ func TestAppURL(t *testing.T) {
 	})
 
 	t.Run("falls back to the dev default when absent", func(t *testing.T) {
-		if got := appURL(context.Background()); got != devAppURL {
+		if got := appURL(t.Context()); got != devAppURL {
 			t.Errorf("appURL() = %q, want %q", got, devAppURL)
 		}
 	})
@@ -121,7 +126,7 @@ func TestAppURL(t *testing.T) {
 
 func TestPluginToken(t *testing.T) {
 	t.Run("reads the configured secret", func(t *testing.T) {
-		ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+		ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 			config.AppClientSecret: "the-secret",
 		}))
 
@@ -131,7 +136,7 @@ func TestPluginToken(t *testing.T) {
 	})
 
 	t.Run("falls back to empty when absent", func(t *testing.T) {
-		if got := pluginToken(context.Background()); got != "" {
+		if got := pluginToken(t.Context()); got != "" {
 			t.Errorf("pluginToken() = %q, want empty", got)
 		}
 	})

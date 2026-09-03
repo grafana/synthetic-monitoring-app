@@ -16,6 +16,13 @@ const (
 // defaultQueryFromTime mirrors DEFAULT_QUERY_FROM_TIME in components/constants.ts.
 const defaultQueryFromTime = "3h"
 
+// Named query names, shared with test files so the registry and its tests
+// cannot drift apart via a typo in a repeated string literal.
+const (
+	queryProbeExecutionRate = "probe_execution_rate"
+	queryChecksUptime       = "checks_uptime"
+)
+
 // built is what a named query resolves to: an expression plus the execution
 // options the backing datasource needs.
 type built struct {
@@ -53,7 +60,7 @@ func parseParams[T any](raw json.RawMessage) (T, error) {
 // frontend.
 var registry = map[string]namedQuery{
 	// Ported from src/queries/probeExecutionStats.ts.
-	"probe_execution_rate": {
+	queryProbeExecutionRate: {
 		target: targetMetrics,
 		build: func(raw json.RawMessage) (built, error) {
 			if _, err := parseParams[TenantWideQuery](raw); err != nil {
@@ -68,7 +75,7 @@ var registry = map[string]namedQuery{
 	},
 
 	// Ported from src/queries/uptime.ts.
-	"checks_uptime": {
+	queryChecksUptime: {
 		target: targetMetrics,
 		build: func(raw json.RawMessage) (built, error) {
 			p, err := parseParams[CheckFrequencyQuery](raw)

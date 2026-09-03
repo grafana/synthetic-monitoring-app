@@ -95,6 +95,7 @@ func (d *Datasource) runGroups(ctx context.Context, user *backend.User, groups m
 		if authErr != nil {
 			log.DefaultLogger.Warn("denying query", "datasource", group.ds.UID, "error", authErr)
 			recordGroupError(response, queries, backend.StatusForbidden, authErr)
+
 			continue
 		}
 

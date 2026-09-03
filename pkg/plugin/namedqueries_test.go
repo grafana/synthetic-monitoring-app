@@ -18,8 +18,8 @@ func TestRegistryExpressions(t *testing.T) {
 		instant bool
 	}{
 		{
-			name:    "probe_execution_rate",
-			query:   "probe_execution_rate",
+			name:    queryProbeExecutionRate,
+			query:   queryProbeExecutionRate,
 			params:  `{}`,
 			expr:    `sum(rate(probe_all_success_count[3h])) by (probe)`,
 			target:  targetMetrics,
@@ -27,7 +27,7 @@ func TestRegistryExpressions(t *testing.T) {
 		},
 		{
 			name:    "probe_execution_rate ignores unknown params",
-			query:   "probe_execution_rate",
+			query:   queryProbeExecutionRate,
 			params:  `{"job":"ignored"}`,
 			expr:    `sum(rate(probe_all_success_count[3h])) by (probe)`,
 			target:  targetMetrics,
@@ -36,15 +36,15 @@ func TestRegistryExpressions(t *testing.T) {
 		{
 			// Ported from src/queries/uptime.ts -- deliberately a range query, not
 			// instant: the panel it backs plots uptime over time.
-			name:   "checks_uptime",
-			query:  "checks_uptime",
+			name:   queryChecksUptime,
+			query:  queryChecksUptime,
 			params: `{"job":"test","instance":"https://grafana.com","frequency":60000}`,
 			expr:   `max by () (max_over_time(probe_success{job="test", instance="https://grafana.com", probe=~".*"}[60s]))`,
 			target: targetMetrics,
 		},
 		{
 			name:   "checks_uptime escapes label values",
-			query:  "checks_uptime",
+			query:  queryChecksUptime,
 			params: `{"job":"has \"quotes\"","instance":"x","frequency":60000}`,
 			expr:   `max by () (max_over_time(probe_success{job="has \"quotes\"", instance="x", probe=~".*"}[60s]))`,
 			target: targetMetrics,
@@ -61,9 +61,11 @@ func TestRegistryExpressions(t *testing.T) {
 			if b.expr != tt.expr {
 				t.Errorf("expr = %q, want %q", b.expr, tt.expr)
 			}
+
 			if nq.target != tt.target {
 				t.Errorf("target = %q, want %q", nq.target, tt.target)
 			}
+
 			if b.instant != tt.instant {
 				t.Errorf("instant = %v, want %v", b.instant, tt.instant)
 			}
@@ -87,7 +89,7 @@ func TestChecksUptimeRejectsMissingParams(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if _, _, err := resolve("checks_uptime", json.RawMessage(tt.params)); err == nil {
+			if _, _, err := resolve(queryChecksUptime, json.RawMessage(tt.params)); err == nil {
 				t.Fatal("expected an error")
 			}
 		})
@@ -101,7 +103,7 @@ func TestResolveUnknownQuery(t *testing.T) {
 }
 
 func TestResolveInvalidParams(t *testing.T) {
-	if _, _, err := resolve("probe_execution_rate", json.RawMessage(`not json`)); err == nil {
+	if _, _, err := resolve(queryProbeExecutionRate, json.RawMessage(`not json`)); err == nil {
 		t.Fatal("expected an error for invalid parameter JSON")
 	}
 }

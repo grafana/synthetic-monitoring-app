@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -42,7 +41,9 @@ func fakeGrafanaForQueryData(t *testing.T, calls *[]capturedDsQuery) *httptest.S
 			}
 
 			var refIDs []string
+
 			results := map[string]any{}
+
 			for _, q := range body.Queries {
 				refIDs = append(refIDs, q.RefID)
 				results[q.RefID] = map[string]any{"frames": []any{}}
@@ -66,10 +67,11 @@ func fakeGrafanaForQueryData(t *testing.T, calls *[]capturedDsQuery) *httptest.S
 // over the wrong window instead of an error.
 func TestQueryDataAppliesEachQueryOwnTimeRange(t *testing.T) {
 	var calls []capturedDsQuery
+
 	srv := fakeGrafanaForQueryData(t, &calls)
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -87,11 +89,11 @@ func TestQueryDataAppliesEachQueryOwnTimeRange(t *testing.T) {
 		PluginContext: backend.PluginContext{User: &backend.User{Login: "tester"}},
 		Queries: []backend.DataQuery{
 			{
-				RefID: "A", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "A", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: aFrom, To: aFrom.Add(time.Hour)},
 			},
 			{
-				RefID: "B", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "B", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: bFrom, To: bFrom.Add(time.Hour)},
 			},
 		},
@@ -101,9 +103,11 @@ func TestQueryDataAppliesEachQueryOwnTimeRange(t *testing.T) {
 	if err != nil {
 		t.Fatalf("QueryData: %v", err)
 	}
+
 	if resp.Responses["A"].Error != nil {
 		t.Fatalf("query A returned an error: %v", resp.Responses["A"].Error)
 	}
+
 	if resp.Responses["B"].Error != nil {
 		t.Fatalf("query B returned an error: %v", resp.Responses["B"].Error)
 	}
@@ -115,6 +119,7 @@ func TestQueryDataAppliesEachQueryOwnTimeRange(t *testing.T) {
 	// that carried it, regardless of how many calls were made or how queries
 	// were grouped across them.
 	gotFrom := map[string]string{}
+
 	for _, call := range calls {
 		for _, refID := range call.refIDs {
 			gotFrom[refID] = call.from
@@ -125,6 +130,7 @@ func TestQueryDataAppliesEachQueryOwnTimeRange(t *testing.T) {
 		t.Errorf("query A: /api/ds/query received from=%s, want %s (A's own time range) -- "+
 			"grouping by datasource alone let another query's range overwrite it", gotFrom["A"], wantAFrom)
 	}
+
 	if gotFrom["B"] != wantBFrom {
 		t.Errorf("query B: /api/ds/query received from=%s, want %s", gotFrom["B"], wantBFrom)
 	}
@@ -137,10 +143,11 @@ func TestQueryDataAppliesEachQueryOwnTimeRange(t *testing.T) {
 // the fix for the bug above -- must not regress this into a call per query.
 func TestQueryDataBatchesSameDatasourceAndTimeRange(t *testing.T) {
 	var calls []capturedDsQuery
+
 	srv := fakeGrafanaForQueryData(t, &calls)
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -159,8 +166,8 @@ func TestQueryDataBatchesSameDatasourceAndTimeRange(t *testing.T) {
 	req := &backend.QueryDataRequest{
 		PluginContext: backend.PluginContext{User: &backend.User{Login: "tester"}},
 		Queries: []backend.DataQuery{
-			{RefID: "A", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`), TimeRange: tr},
-			{RefID: "B", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`), TimeRange: tr},
+			{RefID: "A", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`), TimeRange: tr},
+			{RefID: "B", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`), TimeRange: tr},
 		},
 	}
 
@@ -168,9 +175,11 @@ func TestQueryDataBatchesSameDatasourceAndTimeRange(t *testing.T) {
 	if err != nil {
 		t.Fatalf("QueryData: %v", err)
 	}
+
 	if resp.Responses["A"].Error != nil {
 		t.Fatalf("query A returned an error: %v", resp.Responses["A"].Error)
 	}
+
 	if resp.Responses["B"].Error != nil {
 		t.Fatalf("query B returned an error: %v", resp.Responses["B"].Error)
 	}
@@ -179,6 +188,7 @@ func TestQueryDataBatchesSameDatasourceAndTimeRange(t *testing.T) {
 		t.Fatalf("made %d calls to /api/ds/query, want 1 -- A and B share a datasource and time range and should batch",
 			len(calls))
 	}
+
 	if got := calls[0].refIDs; len(got) != 2 {
 		t.Errorf("the single call carried refIDs %v, want both A and B", got)
 	}
@@ -211,6 +221,7 @@ func TestQueryDataCachesAuthorizationPerDatasource(t *testing.T) {
 			for _, q := range body.Queries {
 				results[q.RefID] = map[string]any{"frames": []any{}}
 			}
+
 			_ = json.NewEncoder(w).Encode(map[string]any{"results": results})
 		default:
 			t.Errorf("unexpected request to %s", r.URL.Path)
@@ -218,7 +229,7 @@ func TestQueryDataCachesAuthorizationPerDatasource(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -236,11 +247,11 @@ func TestQueryDataCachesAuthorizationPerDatasource(t *testing.T) {
 		PluginContext: backend.PluginContext{User: &backend.User{Login: "tester"}},
 		Queries: []backend.DataQuery{
 			{
-				RefID: "A", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "A", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: aFrom, To: aFrom.Add(time.Hour)},
 			},
 			{
-				RefID: "B", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "B", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: bFrom, To: bFrom.Add(time.Hour)},
 			},
 		},
@@ -250,9 +261,11 @@ func TestQueryDataCachesAuthorizationPerDatasource(t *testing.T) {
 	if err != nil {
 		t.Fatalf("QueryData: %v", err)
 	}
+
 	if resp.Responses["A"].Error != nil {
 		t.Fatalf("query A returned an error: %v", resp.Responses["A"].Error)
 	}
+
 	if resp.Responses["B"].Error != nil {
 		t.Fatalf("query B returned an error: %v", resp.Responses["B"].Error)
 	}
@@ -272,13 +285,15 @@ func TestQueryDataCachesAuthorizationPerDatasource(t *testing.T) {
 // privilege-escalation scenario authz.go exists to prevent.
 func TestQueryDataDeniesWithoutQueryingWhenNoUser(t *testing.T) {
 	var requests int
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests++
+
 		t.Errorf("unexpected request to %s -- no user on the request should deny before any network call", r.URL.Path)
 	}))
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -293,7 +308,7 @@ func TestQueryDataDeniesWithoutQueryingWhenNoUser(t *testing.T) {
 		PluginContext: backend.PluginContext{User: nil},
 		Queries: []backend.DataQuery{
 			{
-				RefID: "A", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "A", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: time.Now().Add(-time.Hour), To: time.Now()},
 			},
 		},
@@ -307,6 +322,7 @@ func TestQueryDataDeniesWithoutQueryingWhenNoUser(t *testing.T) {
 	if resp.Responses["A"].Status != backend.StatusForbidden {
 		t.Errorf("status = %v, want %v", resp.Responses["A"].Status, backend.StatusForbidden)
 	}
+
 	if requests != 0 {
 		t.Errorf("made %d requests to Grafana, want 0 -- denial must happen before any network call", requests)
 	}
@@ -317,10 +333,11 @@ func TestQueryDataDeniesWithoutQueryingWhenNoUser(t *testing.T) {
 // RefID never reaches the network.
 func TestQueryDataIsolatesResolveFailures(t *testing.T) {
 	var calls []capturedDsQuery
+
 	srv := fakeGrafanaForQueryData(t, &calls)
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -337,7 +354,7 @@ func TestQueryDataIsolatesResolveFailures(t *testing.T) {
 		PluginContext: backend.PluginContext{User: &backend.User{Login: "tester"}},
 		Queries: []backend.DataQuery{
 			{RefID: "A", QueryType: "bogus", JSON: json.RawMessage(`{}`), TimeRange: tr},
-			{RefID: "B", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`), TimeRange: tr},
+			{RefID: "B", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`), TimeRange: tr},
 		},
 	}
 
@@ -349,6 +366,7 @@ func TestQueryDataIsolatesResolveFailures(t *testing.T) {
 	if resp.Responses["A"].Status != backend.StatusBadRequest {
 		t.Errorf("query A status = %v, want %v", resp.Responses["A"].Status, backend.StatusBadRequest)
 	}
+
 	if resp.Responses["B"].Error != nil {
 		t.Errorf("query B returned an error: %v", resp.Responses["B"].Error)
 	}
@@ -356,6 +374,7 @@ func TestQueryDataIsolatesResolveFailures(t *testing.T) {
 	if len(calls) != 1 {
 		t.Fatalf("made %d calls to /api/ds/query, want 1 (only for B)", len(calls))
 	}
+
 	if got := calls[0].refIDs; len(got) != 1 || got[0] != "B" {
 		t.Errorf("the call carried refIDs %v, want only [B] -- A should never reach the network", got)
 	}
@@ -391,6 +410,7 @@ func TestQueryDataIsolatesGrafanaQueryFailures(t *testing.T) {
 			for _, q := range body.Queries {
 				results[q.RefID] = map[string]any{"frames": []any{}}
 			}
+
 			_ = json.NewEncoder(w).Encode(map[string]any{"results": results})
 		default:
 			t.Errorf("unexpected request to %s", r.URL.Path)
@@ -398,7 +418,7 @@ func TestQueryDataIsolatesGrafanaQueryFailures(t *testing.T) {
 	}))
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -416,11 +436,11 @@ func TestQueryDataIsolatesGrafanaQueryFailures(t *testing.T) {
 		PluginContext: backend.PluginContext{User: &backend.User{Login: "tester"}},
 		Queries: []backend.DataQuery{
 			{
-				RefID: "A", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "A", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: failingTime, To: failingTime.Add(time.Hour)},
 			},
 			{
-				RefID: "B", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "B", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: okTime, To: okTime.Add(time.Hour)},
 			},
 		},
@@ -434,6 +454,7 @@ func TestQueryDataIsolatesGrafanaQueryFailures(t *testing.T) {
 	if resp.Responses["A"].Status != backend.StatusInternal {
 		t.Errorf("query A status = %v, want %v", resp.Responses["A"].Status, backend.StatusInternal)
 	}
+
 	if resp.Responses["B"].Error != nil {
 		t.Errorf("query B returned an error even though its group succeeded: %v", resp.Responses["B"].Error)
 	}
@@ -445,13 +466,15 @@ func TestQueryDataIsolatesGrafanaQueryFailures(t *testing.T) {
 // with an unresolved target should ever be reachable to send.
 func TestQueryDataTargetForFailureIsBadRequest(t *testing.T) {
 	var requests int
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests++
+
 		t.Errorf("unexpected request to %s -- an unconfigured target should fail before any network call", r.URL.Path)
 	}))
 	defer srv.Close()
 
-	ctx := config.WithGrafanaConfig(context.Background(), config.NewGrafanaCfg(map[string]string{
+	ctx := config.WithGrafanaConfig(t.Context(), config.NewGrafanaCfg(map[string]string{
 		config.AppURL:          srv.URL,
 		config.AppClientSecret: "plugin-token",
 	}))
@@ -468,7 +491,7 @@ func TestQueryDataTargetForFailureIsBadRequest(t *testing.T) {
 		PluginContext: backend.PluginContext{User: &backend.User{Login: "tester"}},
 		Queries: []backend.DataQuery{
 			{
-				RefID: "A", QueryType: "probe_execution_rate", JSON: json.RawMessage(`{}`),
+				RefID: "A", QueryType: queryProbeExecutionRate, JSON: json.RawMessage(`{}`),
 				TimeRange: backend.TimeRange{From: time.Now().Add(-time.Hour), To: time.Now()},
 			},
 		},
@@ -482,6 +505,7 @@ func TestQueryDataTargetForFailureIsBadRequest(t *testing.T) {
 	if resp.Responses["A"].Status != backend.StatusBadRequest {
 		t.Errorf("status = %v, want %v", resp.Responses["A"].Status, backend.StatusBadRequest)
 	}
+
 	if requests != 0 {
 		t.Errorf("made %d requests to Grafana, want 0", requests)
 	}
