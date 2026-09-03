@@ -1,0 +1,23 @@
+# Local compose scratchpad. Gitignored, and auto-loaded by a bare
+# `docker compose` -- which is what `yarn server` runs. Adding a -f flag to that
+# script would silently stop this file being loaded.
+#
+# Anything that layers cleanly belongs here rather than in
+# .config/docker-compose-base.yaml: scalar `environment` keys override, and
+# `extra_hosts` and `volumes` merge. Published ports do not -- those live in the
+# base file behind ${SM_GRAFANA_PORT}.
+
+services:
+  grafana:
+    # Reach the API and agent running on the host. Plain Docker Engine on Linux
+    # does not resolve host.docker.internal without this; Docker Desktop does.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+    environment:
+      # The datasource backend gets its service account from the `iam` block in
+      # src/datasource/plugin.json. Without both of these Grafana issues no
+      # credential and every named query is refused -- it fails closed rather
+      # than querying as itself. See pkg/plugin/authz.go.
+      GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins externalServiceAccounts
+      GF_AUTH_MANAGED_SERVICE_ACCOUNTS_ENABLED: 'true'
