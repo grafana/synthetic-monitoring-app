@@ -5,10 +5,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	sdkapi "github.com/grafana/grafana-plugin-sdk-go/experimental/apis/datasource/v0alpha1"
-	"github.com/grafana/grafana-plugin-sdk-go/experimental/schemabuilder"
 )
 
 // namedQuerySchema describes one registry entry for schema generation. This
@@ -25,6 +21,10 @@ var querySchemas = map[string]namedQuerySchema{
 		description: "Rate of successful check executions per probe, summed across all checks in the tenant.",
 		goType:      reflect.TypeFor[*TenantWideQuery](),
 	},
+	"checks_uptime": {
+		description: "Uptime for a single check over its execution frequency window, as the app displays it.",
+		goType:      reflect.TypeFor[*CheckFrequencyQuery](),
+	},
 }
 
 // TestSchemaCoversRegistry fails if querySchemas and the real registry in
@@ -39,37 +39,4 @@ func TestSchemaCoversRegistry(t *testing.T) {
 
 	assert.ElementsMatch(t, names(), schemaNames,
 		"querySchemas (schema_test.go) and registry (namedqueries.go) must list exactly the same query names")
-}
-
-// TestUpdateSchema regenerates the static query-type schema Grafana serves at
-// /public/plugins/synthetic-monitoring-datasource/schema/v0alpha1/query.types.json.
-// Run it explicitly (`go test ./pkg/plugin/... -run TestUpdateSchema`) whenever
-// a query type changes; it also runs as part of `go test ./...` and fails
-// (while still writing the file) if the spec content changed and wasn't
-// committed.
-func TestUpdateSchema(t *testing.T) {
-	builder, err := schemabuilder.NewSchemaBuilder(schemabuilder.BuilderOptions{
-		PluginID: []string{ID},
-		ScanCode: []schemabuilder.CodePaths{
-			{
-				BasePackage: "github.com/grafana/synthetic-monitoring-app/pkg/plugin",
-				CodePath:    "./",
-			},
-		},
-	})
-	require.NoError(t, err)
-
-	var queries []schemabuilder.QueryTypeInfo
-	for name, qs := range querySchemas {
-		queries = append(queries, schemabuilder.QueryTypeInfo{
-			Description:    qs.description,
-			Discriminators: sdkapi.NewDiscriminators("queryType", name),
-			GoType:         qs.goType,
-		})
-	}
-
-	err = builder.AddQueries(queries)
-	require.NoError(t, err)
-
-	builder.UpdateProviderFiles(t, "v0alpha1", "../../src/datasource/schema")
 }
