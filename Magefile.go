@@ -98,6 +98,19 @@ func (Go) VerifyVersion() error {
 	return nil
 }
 
+// DetectSchemaDrift regenerates the query-type schema files Grafana serves
+// under src/datasource/schema and fails if that left the working tree dirty.
+// Run this after adding or changing a named query and commit the result --
+// see pkg/plugin/schema_drift_test.go for what actually regenerates the
+// files, and why this doesn't just run as part of `go:test`.
+func (Go) DetectSchemaDrift() error {
+	if err := sh.RunV("go", "test", "-tags=schemadrift", "-run", "TestUpdateSchema", goPkgs); err != nil {
+		return err
+	}
+
+	return Go{}.EnforceClean()
+}
+
 // EnforceClean fails if files that updates can change (go.mod, go.sum) contain
 // uncommitted modifications. Typical usage is calling this after a CI step that
 // could produce such changes, e.g. `mage go:tidy`.
