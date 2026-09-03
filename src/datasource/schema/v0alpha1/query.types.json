@@ -1,0 +1,31 @@
+{
+  "kind": "QueryTypeDefinitionList",
+  "apiVersion": "datasource.grafana.app/v0alpha1",
+  "metadata": {
+    "resourceVersion": "1788205583968"
+  },
+  "items": [
+    {
+      "metadata": {
+        "name": "probe_execution_rate",
+        "resourceVersion": "1788205583968",
+        "creationTimestamp": "2026-08-31T19:46:23Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "probe_execution_rate"
+          }
+        ],
+        "description": "Rate of successful check executions per probe, summed across all checks in the tenant.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "TenantWideQuery has no parameters: the query is computed across the whole tenant.",
+          "type": "object"
+        }
+      }
+    }
+  ]
+}

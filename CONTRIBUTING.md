@@ -116,6 +116,64 @@ During the initialization process, the Synthetic Monitoring backend will:
 
 Users can then create checks to monitor their remote targets. Metrics and logs will flow into the selected Cloud stack.
 
+### Query the datasource backend directly
+
+The nested `synthetic-monitoring-datasource` plugin resolves *named queries* --
+the app asks for a query by name (e.g. `probe_execution_rate`) instead of
+sending PromQL or LogQL itself. See
+[`pkg/plugin/namedqueries.go`](./pkg/plugin/namedqueries.go) for the registry.
+
+Two things have to be true before a named query works:
+
+1. **The plugin needs its own service-account credential.** It queries the
+   configured metrics/logs datasources via Grafana's own `/api/ds/query`,
+   authenticating as itself with a token Grafana issues from the `iam` block
+   in [`src/datasource/plugin.json`](./src/datasource/plugin.json). That
+   requires two settings, already present in the gitignored
+   `docker-compose.override.yaml` this repo ships:
+
+   ```yaml
+   environment:
+     GF_FEATURE_TOGGLES_ENABLE: externalServiceAccounts
+     GF_AUTH_MANAGED_SERVICE_ACCOUNTS_ENABLED: 'true'
+   ```
+
+   Without both, the plugin receives no credential and every named query is
+   refused -- it fails closed rather than falling back to querying as itself.
+
+2. **The caller has to be a real identity, not anonymous.** Before running
+   anything, the backend checks whether the calling user (or service account)
+   is allowed to query the target datasource -- see
+   [`pkg/plugin/authz.go`](./pkg/plugin/authz.go). It resolves the caller from
+   `PluginContext.User`, which Grafana only populates for a real logged-in
+   session or a service-account bearer token. A plain `curl -u admin:admin`
+   request carries no such identity and is denied with `"no user on the
+   request"`, even though basic auth succeeds at the HTTP layer.
+
+To exercise a named query by hand, log in first to get a session cookie, then
+call `/api/ds/query` directly (substitute the SM datasource's UID):
+
+```bash
+curl -c /tmp/cookies.txt -X POST localhost:3000/login \
+  -H 'Content-Type: application/json' \
+  -d '{"user":"admin","password":"admin"}'
+
+curl -b /tmp/cookies.txt -X POST localhost:3000/api/ds/query \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "from": "now-1h",
+    "to": "now",
+    "queries": [{
+      "refId": "A",
+      "queryType": "probe_execution_rate",
+      "datasource": { "uid": "<sm-datasource-uid>", "type": "synthetic-monitoring-datasource" }
+    }]
+  }'
+```
+
+A service-account bearer token (`Authorization: Bearer <token>`) works the
+same way and is usually easier to script with than a cookie jar.
+
 ### Run the entire stack locally
 
 - See the instructions for [setting up the api](https://github.com/grafana/synthetic-monitoring-api/blob/main/DEVELOPMENT.md)
