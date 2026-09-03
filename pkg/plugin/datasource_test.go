@@ -29,12 +29,15 @@ func TestNewDatasource(t *testing.T) {
 	if ds.settings.Metrics.UID != "prom-uid" {
 		t.Errorf("Metrics.UID = %q, want %q", ds.settings.Metrics.UID, "prom-uid")
 	}
+
 	if ds.settings.Logs.UID != "loki-uid" {
 		t.Errorf("Logs.UID = %q, want %q", ds.settings.Logs.UID, "loki-uid")
 	}
+
 	if ds.grafana == nil {
 		t.Error("grafana client was not initialized")
 	}
+
 	if ds.authorizer == nil {
 		t.Error("authorizer was not initialized")
 	}
@@ -58,6 +61,7 @@ func TestTargetFor(t *testing.T) {
 	if err != nil {
 		t.Fatalf("targetFor(metrics): %v", err)
 	}
+
 	if got.UID != "prom-uid" {
 		t.Errorf("targetFor(metrics).UID = %q, want %q", got.UID, "prom-uid")
 	}

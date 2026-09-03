@@ -1,7 +1,6 @@
 package plugin
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -22,10 +21,10 @@ import (
 const (
 	lookupAdmin   = `[{"userId":1,"uid":"bftoov3dms4jkf","login":"admin","avatarUrl":"/avatar/46d2"}]`
 	lookupNoUsers = `[]`
-	// GET /api/serviceaccounts/search?query=sa-1-test
+	// GET /api/serviceaccounts/search?query=sa-1-test.
 	searchServiceAccount = `{"totalCount":1,"serviceAccounts":[{"id":7,"login":"sa-1-test","role":"None"}],"page":1,"perPage":50}`
 	searchNoServiceAccts = `{"totalCount":0,"serviceAccounts":[],"page":1,"perPage":50}`
-	// keyed by the resolved identity, which for a service account is its numeric id
+	// keyed by the resolved identity, which for a service account is its numeric id.
 	permissionsForSA     = `{"7":{"datasources:query":["datasources:uid:PDAA01AED1D8AE0F9"]}}`
 	permissionsWildcard  = `{"1":{"datasources:query":["datasources:*"]}}`
 	permissionsNone      = `{"5":{}}`
@@ -142,18 +141,20 @@ func TestAuthorize(t *testing.T) {
 			defer srv.Close()
 
 			a := newAuthorizer(srv.Client())
-			err := a.authorize(context.Background(), srv.URL, tt.token, tt.user, prom)
+			err := a.authorize(t.Context(), srv.URL, tt.token, tt.user, prom)
 
 			if tt.wantErr == "" {
 				if err != nil {
 					t.Fatalf("expected the query to be allowed, got: %v", err)
 				}
+
 				return
 			}
 
 			if err == nil {
 				t.Fatalf("expected denial containing %q, got nil", tt.wantErr)
 			}
+
 			if !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("error = %q, want it to contain %q", err, tt.wantErr)
 			}
@@ -193,10 +194,11 @@ func TestLookupRequiresExactLogin(t *testing.T) {
 
 	a := newAuthorizer(srv.Client())
 
-	id, err := a.lookupUserID(context.Background(), srv.URL, "plugin-token", "admin")
+	id, err := a.lookupUserID(t.Context(), srv.URL, "plugin-token", "admin")
 	if err != nil {
 		t.Fatalf("lookupUserID: %v", err)
 	}
+
 	if id != 1 {
 		t.Errorf("resolved user id = %d, want 1 (admin), not the substring match", id)
 	}
@@ -210,6 +212,7 @@ func TestAuthorizeServiceAccountCaller(t *testing.T) {
 	prom := linkedDatasource{UID: promUID, Type: "prometheus"}
 
 	var askedAbout string
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -229,7 +232,7 @@ func TestAuthorizeServiceAccountCaller(t *testing.T) {
 
 	a := newAuthorizer(srv.Client())
 
-	if err := a.authorize(context.Background(), srv.URL, "plugin-token",
+	if err := a.authorize(t.Context(), srv.URL, "plugin-token",
 		&backend.User{Login: "sa-1-test"}, prom); err != nil {
 		t.Fatalf("a service account with the permission should be allowed: %v", err)
 	}
@@ -247,7 +250,7 @@ func TestAuthorizeServiceAccountWithoutPermission(t *testing.T) {
 
 	a := newAuthorizer(srv.Client())
 
-	err := a.authorize(context.Background(), srv.URL, "plugin-token", &backend.User{Login: "sa-1-test"}, prom)
+	err := a.authorize(t.Context(), srv.URL, "plugin-token", &backend.User{Login: "sa-1-test"}, prom)
 	if err == nil || !strings.Contains(err.Error(), "not allowed to query") {
 		t.Fatalf("expected a permission denial, got: %v", err)
 	}

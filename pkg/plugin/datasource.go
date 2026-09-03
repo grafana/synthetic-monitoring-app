@@ -115,6 +115,7 @@ func (d *Datasource) CheckHealth(_ context.Context, _ *backend.CheckHealthReques
 	if d.settings.Metrics.UID == "" {
 		missing = append(missing, "metrics")
 	}
+
 	if d.settings.Logs.UID == "" {
 		missing = append(missing, "logs")
 	}

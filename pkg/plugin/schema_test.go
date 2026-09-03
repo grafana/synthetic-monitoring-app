@@ -17,11 +17,11 @@ type namedQuerySchema struct {
 }
 
 var querySchemas = map[string]namedQuerySchema{
-	"probe_execution_rate": {
+	queryProbeExecutionRate: {
 		description: "Rate of successful check executions per probe, summed across all checks in the tenant.",
 		goType:      reflect.TypeFor[*TenantWideQuery](),
 	},
-	"checks_uptime": {
+	queryChecksUptime: {
 		description: "Uptime for a single check over its execution frequency window, as the app displays it.",
 		goType:      reflect.TypeFor[*CheckFrequencyQuery](),
 	},
