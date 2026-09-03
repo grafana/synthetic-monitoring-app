@@ -4,10 +4,13 @@ import { Alert, Button, Collapse, Space, Stack, Text } from '@grafana/ui';
 import { LabelMode } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useLabelMode, useSetLabelMode } from 'data/useLabelMode';
+import { useTenant } from 'data/useTenant';
 import { ConfirmModal } from 'components/ConfirmModal';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../../ConfigContent';
+import { CollidingLabelRename } from './CollidingLabelRename';
+import { getMigrationCooldown } from './migrationCooldown';
 import { SeriesPreview } from './SeriesPreview';
 import { useCheckInfoLabels } from './useCheckInfoLabels';
 
@@ -42,6 +45,8 @@ export function LabelMigrationTab() {
 
   const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
   const setLabelModeMutation = useSetLabelMode();
+  const { data: tenant } = useTenant();
+  const cooldown = getMigrationCooldown(tenant?.modified, Date.now());
 
   const [updateError, setUpdateError] = useState<string | undefined>(undefined);
   const [collisionError, setCollisionError] = useState<CollisionError | undefined>(undefined);
@@ -112,7 +117,9 @@ export function LabelMigrationTab() {
                   labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
-                {isAdmin && (
+                {/* While the conflicts alert is up, its "Retry enabling dual-write"
+                    button is the only sanctioned path into dual-write. */}
+                {isAdmin && !collisionError && (
                   <Button
                     onClick={() =>
                       openConfirm(
@@ -156,7 +163,8 @@ export function LabelMigrationTab() {
                         'Finalize'
                       )
                     }
-                    disabled={busy}
+                    disabled={busy || cooldown.isCoolingDown}
+                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
                   >
                     Finalize migration
                   </Button>
@@ -198,6 +206,15 @@ export function LabelMigrationTab() {
               </>
             )}
 
+            {isAdmin && state.mode === LabelMode.DualWrite && cooldown.isCoolingDown && (
+              <>
+                <Space v={1} />
+                <Text color="secondary" variant="bodySmall">
+                  {cooldown.message}
+                </Text>
+              </>
+            )}
+
             {updateError && (
               <>
                 <Space v={2} />
@@ -220,17 +237,17 @@ export function LabelMigrationTab() {
                   onRemove={() => setCollisionError(undefined)}
                 >
                   <Text>
-                    The following labels conflict with reserved system names. Rename or remove them from your checks and
-                    probes, then try again:
+                    The following labels conflict with reserved system names. Rename them across your checks below, then
+                    retry. Labels set on probes are not covered by the rename and must be edited on the probe itself.
                   </Text>
                   <Space v={1} />
-                  <ul>
-                    {collisionError.collidingLabels.map((name) => (
-                      <li key={name}>
-                        <code>{name}</code>
-                      </li>
-                    ))}
-                  </ul>
+                  <CollidingLabelRename
+                    labels={collisionError.collidingLabels}
+                    systemLabels={state.systemLabels}
+                    disabled={!isAdmin}
+                    retrying={busy}
+                    onRetry={() => applyMode(LabelMode.DualWrite)}
+                  />
                 </Alert>
               </>
             )}

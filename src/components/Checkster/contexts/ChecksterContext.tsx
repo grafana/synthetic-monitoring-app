@@ -24,12 +24,14 @@ import { getCheckType } from 'utils';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useDOMId } from 'hooks/useDOMId';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
+import { useHydrateCalLabels } from '../hooks/useHydrateCalLabels';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
@@ -119,14 +121,20 @@ export function ChecksterProvider({
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const { status: defaultFolderStatus } = useDefaultFolder(isFoldersEnabled);
-  // Pre-fill the folder through the form defaults so a new form stays
-  // pristine: the default folder when the user can edit it, else their only
-  // editable folder. With several candidates the choice is theirs.
+  // Pre-fill the default folder through the form defaults (only when the
+  // user can edit it) so a new form stays pristine. Everyone else picks a
+  // folder themselves from the org-wide picker.
   const { preselectUid: seedFolderUid, isPreselectReady } = useFolderSelection({ enabled: isFoldersEnabled });
   // A folder-less check effectively lives in the default folder, which the
   // user may not be able to edit — so a folder is required when folder data
   // is available. When it isn't, checks save without one, as before.
   const requiresFolder = isFoldersEnabled && defaultFolderStatus === 'available';
+
+  // Cost attribution labels are stored alongside custom ones. Rather than block the form on the
+  // CALs query, defaults load with labels unsplit and useHydrateCalLabels repartitions once the
+  // tenant's CAL names arrive — without touching unrelated fields via the global reset effect.
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = useMemo(() => calData?.names ?? [], [calData]);
 
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
@@ -211,6 +219,8 @@ export function ChecksterProvider({
       formMethods.trigger(dirtyFields as any);
     }
   }, [defaultFormValues, formMethodRef, formMethods, values]);
+
+  useHydrateCalLabels(formMethods, calNames, defaultFormValues);
 
   const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 

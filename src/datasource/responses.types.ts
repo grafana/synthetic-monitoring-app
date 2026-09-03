@@ -1,6 +1,14 @@
 import { DataFrameJSON } from '@grafana/data';
 
-import { AlertRecord, Check, CheckAlertPublished, Probe, PrometheusAlertsGroup, Settings, ThresholdSettings } from 'types';
+import {
+  AlertRecord,
+  Check,
+  CheckAlertPublished,
+  Probe,
+  PrometheusAlertsGroup,
+  Settings,
+  ThresholdSettings,
+} from 'types';
 import { AccountingClassNames, DashboardInfo } from 'datasource/types';
 
 export type ListProbeResult = Probe[];
@@ -191,6 +199,30 @@ export enum LabelMode {
 export type LabelModeResponse = {
   mode: LabelMode;
   systemLabels: string[];
+};
+
+export type RenameCheckLabelsResponse = {
+  updated_ids: number[];
+};
+
+export type TokenInfo = {
+  id: string;
+  created: number; // Unix seconds
+  lastUsed: number; // Unix seconds
+};
+
+export type ListTokensResponse = {
+  items: TokenInfo[];
+  next_cursor: string;
+  prev_cursor: string;
+  next?: string;
+  prev?: string;
+  total_count: number;
+  current_token_id?: string;
+};
+
+export type RevokeTokenByIDResponse = {
+  msg: string;
 };
 
 export type CheckAlertsResponse = {

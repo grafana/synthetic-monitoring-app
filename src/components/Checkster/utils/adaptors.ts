@@ -24,6 +24,7 @@ import { getPingCheckFormValues } from '../transformations/toFormValues.ping';
 import { getScriptedCheckFormValues } from '../transformations/toFormValues.scripted';
 import { getTCPCheckFormValues } from '../transformations/toFormValues.tcp';
 import { getTracerouteCheckFormValues } from '../transformations/toFormValues.traceroute';
+import { partitionCalLabels } from '../transformations/toFormValues.utils';
 import { getBrowserPayload } from '../transformations/toPayload.browser';
 import { getDNSPayload } from '../transformations/toPayload.dns';
 import { getGRPCPayload } from '../transformations/toPayload.grpc';
@@ -34,7 +35,7 @@ import { getScriptedPayload } from '../transformations/toPayload.scripted';
 import { getTCPPayload } from '../transformations/toPayload.tcp';
 import { getTraceroutePayload } from '../transformations/toPayload.traceroute';
 
-export function getDefaultFormValues(checkType: CheckType = CheckType.Http) {
+export function getDefaultFormValues(checkType: CheckType = CheckType.Http, calNames: string[] = []) {
   const check: Check = DEFAULT_CHECK_CONFIG_MAP[checkType] ?? DEFAULT_CHECK_CONFIG;
   if (process.env.NODE_ENV === 'development') {
     if (!(checkType in DEFAULT_CHECK_CONFIG_MAP)) {
@@ -42,10 +43,20 @@ export function getDefaultFormValues(checkType: CheckType = CheckType.Http) {
     }
   }
 
-  return toFormValues(check);
+  return toFormValues(check, calNames);
 }
 
-export function toFormValues(check: Check): CheckFormValues {
+export function toFormValues(check: Check, calNames: string[] = []): CheckFormValues {
+  const values = toCheckTypeFormValues(check);
+
+  if (calNames.length === 0) {
+    return values;
+  }
+
+  return { ...values, ...partitionCalLabels(values.labels, calNames) };
+}
+
+function toCheckTypeFormValues(check: Check): CheckFormValues {
   const checkType = getCheckType(check.settings);
 
   switch (checkType) {

@@ -37,6 +37,13 @@ jest.mock('data/useDefaultFolder', () => ({
   })),
 }));
 
+jest.mock('data/useTenantCostAttributionLabels', () => ({
+  useTenantCostAttributionLabels: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+  })),
+}));
+
 // ChecksterProvider is rendered without a QueryClient here, so the folder
 // selection hook (react-query based) must be mocked like useDefaultFolder above.
 jest.mock('components/FolderSelector/FolderSelector.hooks', () => ({

@@ -1,27 +1,26 @@
 import React from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { KnowledgeGraphServiceLink } from 'features/knowledgeGraph/KnowledgeGraphServiceLink';
+import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { FormSectionName } from '../../../types';
-import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
-import { useTenantLimits } from 'data/useTenantLimits';
+import { useShowCostAttributionSetupNudge } from 'components/CostAttribution/CostAttribution.hooks';
+import { CostAttributionSetupHint } from 'components/CostAttribution/CostAttributionSetupHint';
 import { LimitsFetchWarning } from 'components/LabelField';
 
-import { DEFAULT_MAX_ALLOWED_LOG_LABELS, DEFAULT_MAX_ALLOWED_METRIC_LABELS } from '../../../constants';
+import { SectionContent } from '../../ui/SectionContent';
 import { FormSection } from '../FormSection';
+import { CostAttributionLabelsField } from '../generic/CostAttributionLabelsField';
 import { GenericLabelContent } from '../layouts/GenericLabelContent';
-
+import { useLabelSectionData } from './LabelSection.hooks';
 export const LABEL_SECTION_FIELDS = ['labels'];
 
 export function LabelSection() {
-  // TODO: Pipe this data through the front door? Meaning as a prop to Checkster/ChecksterProvider (tenantLimits)
-  const { data: limits, isLoading: limitsLoading, error, isRefetching, refetch } = useTenantLimits();
-  const { data: calData, isLoading: calLoading } = useTenantCostAttributionLabels();
-
-  const isInitialLoad = (limitsLoading && !limits) || (calLoading && !calData);
-
-  const maxAllowedMetricLabels = limits?.maxAllowedMetricLabels ?? DEFAULT_MAX_ALLOWED_METRIC_LABELS;
-  const maxAllowedLogLabels = limits?.maxAllowedLogLabels ?? DEFAULT_MAX_ALLOWED_LOG_LABELS;
-  const description = `Custom labels to be included with collected metrics and logs. You can add up to ${maxAllowedMetricLabels}. If you add more than ${maxAllowedLogLabels} labels, they will potentially not be used to index logs, and rather added as part of the log message.`;
+  const { error, isRefetching, refetch, isLoading, customLabelLimit, description } = useLabelSectionData();
+  const showNudge = useShowCostAttributionSetupNudge();
+  const styles = useStyles2(getStyles);
 
   return (
     <FormSection sectionName={FormSectionName.Labels} fields={LABEL_SECTION_FIELDS}>
@@ -30,13 +29,27 @@ export function LabelSection() {
           <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />
         </div>
       )}
+      {showNudge && (
+        <div className={styles.nudge}>
+          <CostAttributionSetupHint />
+        </div>
+      )}
       <KnowledgeGraphServiceLink />
-      <GenericLabelContent
-        description={description}
-        isLoading={isInitialLoad}
-        calNames={calData?.names ?? []}
-        labelLimit={maxAllowedMetricLabels}
-      />
+      <SectionContent>
+        <Stack direction="column" gap={2} data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root}>
+          <CostAttributionLabelsField />
+          <GenericLabelContent description={description} isLoading={isLoading} labelLimit={customLabelLimit} />
+        </Stack>
+      </SectionContent>
     </FormSection>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    // Matches the KnowledgeGraphServiceLink container so the hint aligns with the section content
+    nudge: css`
+      padding: ${theme.spacing(2, 2, 0, 2)};
+    `,
+  };
 }

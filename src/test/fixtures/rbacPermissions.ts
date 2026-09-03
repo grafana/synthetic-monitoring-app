@@ -6,7 +6,9 @@ export const FULL_ADMIN_ACCESS = {
   'grafana-synthetic-monitoring-app.probes:write': true,
   'grafana-synthetic-monitoring-app.alerts:write': true,
   'grafana-synthetic-monitoring-app.thresholds:write': true,
+  'grafana-synthetic-monitoring-app.access-tokens:read': true,
   'grafana-synthetic-monitoring-app.access-tokens:write': true,
+  'grafana-synthetic-monitoring-app.access-tokens:delete': true,
   'grafana-synthetic-monitoring-app.checks:read': true,
   'grafana-synthetic-monitoring-app.probes:read': true,
   'grafana-synthetic-monitoring-app.alerts:read': true,
@@ -19,6 +21,8 @@ export const FULL_ADMIN_ACCESS = {
   'secret.securevalues:read': true,
   'secret.securevalues:write': true,
   'secret.securevalues:delete': true,
+  'folders:read': true,
+  'folders:create': true,
 };
 
 export const FULL_WRITER_ACCESS = {
@@ -28,7 +32,6 @@ export const FULL_WRITER_ACCESS = {
   'grafana-synthetic-monitoring-app.probes:write': true,
   'grafana-synthetic-monitoring-app.alerts:write': true,
   'grafana-synthetic-monitoring-app.thresholds:write': true,
-  'grafana-synthetic-monitoring-app.access-tokens:write': true,
   'grafana-synthetic-monitoring-app.checks:read': true,
   'grafana-synthetic-monitoring-app.probes:read': true,
   'grafana-synthetic-monitoring-app.alerts:read': true,

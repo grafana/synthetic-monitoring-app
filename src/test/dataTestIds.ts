@@ -37,6 +37,9 @@ export const CHECKS_TEST_ID = {
     selectAll: 'checks header select-all',
     sortBy: 'checks header sort-by',
   },
+  folderView: {
+    sectionHeader: 'checks folder-view section-header',
+  },
   listItem: {
     editButton: 'checks list-item edit-button',
   },

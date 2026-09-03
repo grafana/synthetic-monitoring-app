@@ -1,25 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import {
-  Badge,
-  Button,
-  Checkbox,
-  ConfirmModal,
-  Icon,
-  IconButton,
-  Pagination,
-  Spinner,
-  Stack,
-  Tooltip,
-  useStyles2,
-} from '@grafana/ui';
+import { Button, Checkbox, Icon, Pagination, Spinner, Stack, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 import { Check, CheckSort, CheckType, GrafanaFolder, Label } from 'types';
 import { useCheckFolderStatus } from 'contexts/CheckFolderAccessContext';
 import { CheckRuntimeAlertStates, getCheckRuntimeAlertState } from 'data/useCheckAlertStates';
-import { useDeleteFolder } from 'data/useFolders';
 import {
   buildChecksByFolder,
   collectAllCheckIds,
@@ -31,13 +19,12 @@ import {
 import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
-import { FolderBulkActions } from 'page/CheckList/components/FolderBulkActions';
+import { FolderActionsMenu } from 'page/CheckList/components/FolderActionsMenu';
 
 interface CheckListFolderViewProps {
   checks: Check[];
   folders: GrafanaFolder[];
-  externalFolders?: GrafanaFolder[];
-  foldersMap: Map<string, GrafanaFolder>;
+  outsideFolders?: GrafanaFolder[];
   foldersLoading?: boolean;
   foldersError?: boolean;
   onRetryFolders?: () => void;
@@ -52,13 +39,19 @@ interface CheckListFolderViewProps {
   onDeselectChecks: (checkIds: number[]) => void;
   selectedCheckIds: Set<number>;
   sortType: CheckSort;
+  /**
+   * Bulk actions for the current selection, rendered on the folders row in
+   * place of the expand toggle. Owned by CheckList — the folder view only
+   * provides the position, since a selection is list-wide rather than
+   * per-folder.
+   */
+  bulkActions?: React.ReactNode;
 }
 
 export function CheckListFolderView({
   checks,
   folders,
-  externalFolders,
-  foldersMap,
+  outsideFolders,
   foldersLoading,
   foldersError,
   onRetryFolders,
@@ -73,38 +66,16 @@ export function CheckListFolderView({
   onDeselectChecks,
   selectedCheckIds,
   sortType,
+  bulkActions,
 }: CheckListFolderViewProps) {
   const styles = useStyles2(getStyles);
   const reverseFolderSort = sortType === CheckSort.ZToA;
-  const { folderTree, rootChecks } = useMemo(
-    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort, externalFolders),
-    [checks, folders, defaultFolderUid, reverseFolderSort, externalFolders]
+  const { folderTree } = useMemo(
+    () => buildChecksByFolder(checks, folders, defaultFolderUid, reverseFolderSort, outsideFolders),
+    [checks, folders, defaultFolderUid, reverseFolderSort, outsideFolders]
   );
 
-  const defaultFolderNode: FolderNode | null = useMemo(() => {
-    if (!defaultFolderUid) {
-      return null;
-    }
-    const folder = foldersMap.get(defaultFolderUid);
-    return {
-      folderUid: defaultFolderUid,
-      folder: folder ? { ...folder, title: `${folder.title} (default)` } : undefined,
-      folderPath: folder?.title ?? 'Default folder',
-      checks: rootChecks,
-      children: [],
-      isAccessible: !!folder,
-      isOrphaned: false,
-      isDefault: true,
-    };
-  }, [rootChecks, defaultFolderUid, foldersMap]);
-
-  const allUids = useMemo(() => {
-    const uids = collectAllFolderUids(folderTree);
-    if (defaultFolderNode) {
-      uids.unshift(defaultFolderNode.folderUid);
-    }
-    return uids;
-  }, [folderTree, defaultFolderNode]);
+  const allUids = useMemo(() => collectAllFolderUids(folderTree), [folderTree]);
 
   // Track collapsed folders rather than expanded ones so that folders
   // arriving from async data (e.g. permission queries) appear expanded
@@ -151,55 +122,32 @@ export function CheckListFolderView({
     selectedCheckIds,
   };
 
-  const foldersWithChecks = useMemo(() => folderTree.filter((n) => getTotalCheckCount(n) > 0), [folderTree]);
-  const emptyFolders = useMemo(() => folderTree.filter((n) => getTotalCheckCount(n) === 0), [folderTree]);
-
-  const hasAnyContent = folderTree.length > 0 || defaultFolderNode !== null;
-
   return (
     <div className={styles.container}>
-      {hasAnyContent && (
+      {folderTree.length === 0 ? (
+        <div className={styles.emptyState}>No checks to display</div>
+      ) : (
         <div className={styles.foldersSection}>
-          <div className={styles.foldersSectionHeader}>
+          <div className={styles.foldersSectionHeader} data-testid={CHECKS_TEST_ID.folderView.sectionHeader}>
             <h3 className={styles.sectionTitle}>
               Folders ({allUids.length})
               <Feedback feature="folder-view" about={{ text: 'New feature!' }} />
             </h3>
-            <Button
-              variant="secondary"
-              icon={allExpanded ? 'table-collapse-all' : 'table-expand-all'}
-              onClick={toggleAllExpanded}
-              aria-label={allExpanded ? 'Collapse all folders' : 'Expand all folders'}
-            >
-              {allExpanded ? 'Collapse all' : 'Expand all'}
-            </Button>
+            {/* The bulk actions take this row over while checks are selected,
+                so the expand toggle steps aside. */}
+            {bulkActions ?? (
+              <Button
+                variant="secondary"
+                icon={allExpanded ? 'table-collapse-all' : 'table-expand-all'}
+                onClick={toggleAllExpanded}
+                aria-label={allExpanded ? 'Collapse all folders' : 'Expand all folders'}
+              >
+                {allExpanded ? 'Collapse all' : 'Expand all'}
+              </Button>
+            )}
           </div>
 
-          {foldersWithChecks.map((node) => (
-            <FolderTreeBranch
-              key={node.folderUid}
-              node={node}
-              depth={0}
-              collapsedFolders={collapsedFolders}
-              toggleFolder={toggleFolder}
-              checkItemProps={checkItemProps}
-              onRetryFolders={onRetryFolders}
-            />
-          ))}
-
-          {defaultFolderNode && (
-            <FolderTreeBranch
-              key={defaultFolderNode.folderUid}
-              node={defaultFolderNode}
-              depth={0}
-              collapsedFolders={collapsedFolders}
-              toggleFolder={toggleFolder}
-              checkItemProps={checkItemProps}
-              onRetryFolders={onRetryFolders}
-            />
-          )}
-
-          {emptyFolders.map((node) => (
+          {folderTree.map((node) => (
             <FolderTreeBranch
               key={node.folderUid}
               node={node}
@@ -212,8 +160,6 @@ export function CheckListFolderView({
           ))}
         </div>
       )}
-
-      {!hasAnyContent && <div className={styles.emptyState}>No checks to display</div>}
     </div>
   );
 }
@@ -257,7 +203,7 @@ function FolderTreeBranch({
   const isRoot = depth === 0;
 
   const folderStatus = useCheckFolderStatus({ folderUid: node.folderUid });
-  const folderCanDelete = folderStatus.type === 'accessible' && folderStatus.permissions.canDelete;
+  const folderCanEdit = folderStatus.type === 'accessible' && folderStatus.permissions.canEdit;
 
   const allFolderCheckIds = useMemo(() => collectAllCheckIds(node), [node]);
   const allChecksInFolder = useMemo(() => collectAllChecks(node), [node]);
@@ -268,37 +214,20 @@ function FolderTreeBranch({
   const selectedCount = selectedChecksInFolder.length;
   const isAllInFolderSelected = totalChecks > 0 && selectedCount === totalChecks;
   const isSomeInFolderSelected = selectedCount > 0 && !isAllInFolderSelected;
+  // The selected count belongs to the folder whose own checks are selected.
+  // Ancestors reflect descendant selections through their (indeterminate)
+  // checkbox only — repeating the count at every level would just
+  // duplicate it.
+  const showSelectedCount = node.checks.some((c) => checkItemProps.selectedCheckIds.has(c.id!));
 
-  // External folders live outside the SM folder tree and may hold unrelated
-  // content (dashboards, subfolders, alert rules), so we never offer to delete
-  // them -- the badge guides the user to move their checks out instead.
-  const deleteFolderTarget =
-    isAllInFolderSelected && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal
-      ? { uid: node.folderUid, title: node.folder?.title ?? node.folderUid }
-      : undefined;
+  const displayTitle = node.isDefault ? `${node.folder?.title ?? node.folderUid} (default)` : node.folder?.title;
 
-  const isEmpty = totalChecks === 0;
-  const canDeleteEmptyFolder =
-    isEmpty && folderCanDelete && !node.isDefault && !node.isOrphaned && !node.isExternal;
-  const [emptyFolderSelected, setEmptyFolderSelected] = useState(false);
-  const [showDeleteEmptyFolderModal, setShowDeleteEmptyFolderModal] = useState(false);
-  const { mutateAsync: deleteFolderAsync } = useDeleteFolder();
-
-  const handleDeleteEmptyFolder = async () => {
-    try {
-      await deleteFolderAsync(node.folderUid);
-    } catch {
-      // Folder deletion failed — modal closes, folder stays visible
-    }
-    setShowDeleteEmptyFolderModal(false);
-    setEmptyFolderSelected(false);
-  };
+  // Any editable folder can be moved anywhere in the Grafana folder tree
+  // (destinations picked with Grafana's folder picker). Orphaned folders are
+  // not movable here.
+  const canMoveFolder = folderCanEdit && !node.isDefault && !node.isOrphaned && !!node.folder;
 
   const handleFolderSelectAll = () => {
-    if (isEmpty) {
-      setEmptyFolderSelected((prev) => !prev);
-      return;
-    }
     if (isAllInFolderSelected) {
       checkItemProps.onDeselectChecks(allFolderCheckIds);
     } else {
@@ -310,19 +239,13 @@ function FolderTreeBranch({
     checkItemProps.onDeselectChecks(allFolderCheckIds);
   };
 
-  const showActions = isEmpty ? emptyFolderSelected : selectedCount > 0;
-
   return (
     <div className={isRoot ? styles.folderGroup : styles.nestedFolder}>
       <div className={isRoot ? styles.folderHeaderRoot : styles.folderHeaderNested}>
         <Checkbox
-          aria-label={
-            isEmpty
-              ? `Select folder ${node.folder?.title ?? 'folder'}`
-              : `Select all checks in ${node.folder?.title ?? 'folder'}`
-          }
-          checked={isEmpty ? emptyFolderSelected : isAllInFolderSelected}
-          indeterminate={!isEmpty && isSomeInFolderSelected}
+          aria-label={`Select all checks in ${displayTitle ?? 'folder'}`}
+          checked={isAllInFolderSelected}
+          indeterminate={isSomeInFolderSelected}
           onChange={handleFolderSelectAll}
         />
         <button
@@ -349,17 +272,9 @@ function FolderTreeBranch({
               ) : node.isOrphaned ? (
                 <span className={styles.orphanedLabel}>Folder not found</span>
               ) : (
-                (node.folder?.title ?? node.folderUid)
+                (displayTitle ?? node.folderUid)
               )}
             </span>
-            {node.isExternal && (
-              <Badge
-                text="Outside default folder"
-                color="orange"
-                icon="exclamation-triangle"
-                tooltip={`This is a separate folder (UID: ${node.folderUid}) outside the default Synthetic Monitoring folder. Move its checks to another folder to organize them with the rest.`}
-              />
-            )}
             {node.isOrphaned && !checkItemProps.foldersLoading && checkItemProps.foldersError && onRetryFolders && (
               <Button
                 variant="secondary"
@@ -379,42 +294,14 @@ function FolderTreeBranch({
             </span>
           </Stack>
         </button>
-        {showActions && !isEmpty && (
-          <div className={styles.folderActions}>
-            <FolderBulkActions
-              checks={selectedChecksInFolder}
-              onResolved={handleFolderBulkResolved}
-              deleteFolder={deleteFolderTarget}
-            />
-            <span className={styles.selectedCount}>{selectedCount} selected</span>
-          </div>
-        )}
-        {showActions && canDeleteEmptyFolder && (
-          <div className={styles.folderActions}>
-            <IconButton
-              name="trash-alt"
-              aria-label="Delete folder"
-              tooltip="Delete folder"
-              size="sm"
-              variant="destructive"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDeleteEmptyFolderModal(true);
-              }}
-            />
-            <span className={styles.selectedCount}>1 selected</span>
-            {showDeleteEmptyFolderModal && (
-              <ConfirmModal
-                isOpen={showDeleteEmptyFolderModal}
-                title={`Delete folder "${node.folder?.title ?? node.folderUid}"`}
-                body="This will delete the empty folder. This action cannot be undone."
-                confirmText="Delete folder"
-                onConfirm={handleDeleteEmptyFolder}
-                onDismiss={() => setShowDeleteEmptyFolderModal(false)}
-              />
-            )}
-          </div>
-        )}
+        {showSelectedCount && <span className={styles.selectedCount}>{selectedCount} selected</span>}
+        <FolderActionsMenu
+          folderTitle={displayTitle ?? node.folderUid}
+          checks={allChecksInFolder}
+          selectedChecks={selectedChecksInFolder}
+          onResolved={handleFolderBulkResolved}
+          moveFolder={canMoveFolder ? node.folder : undefined}
+        />
       </div>
 
       {isExpanded && hasContent && (
@@ -559,12 +446,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
       outlineOffset: 2,
       borderRadius: theme.shape.radius.default,
     },
-  }),
-  folderActions: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    flexShrink: 0,
   }),
   selectedCount: css({
     fontSize: theme.typography.bodySmall.fontSize,
