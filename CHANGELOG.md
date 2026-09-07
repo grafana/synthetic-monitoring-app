@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.61.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.60.0...v1.61.0) (2026-08-28)
+
+
+### Features
+
+* add cost attribution discovery nudges with click-through tracking ([#1778](https://github.com/grafana/synthetic-monitoring-app/issues/1778)) ([3aaefe0](https://github.com/grafana/synthetic-monitoring-app/commit/3aaefe08a1adb5f04027f75aab4131311a37d7f3))
+* add feature feedback widget to the Connected services section ([#1830](https://github.com/grafana/synthetic-monitoring-app/issues/1830)) ([28d6473](https://github.com/grafana/synthetic-monitoring-app/commit/28d64739bc0bdeea4d3cd3b8df4e2718cc77a191))
+* Add UI to list and revoke API access tokens ([#1637](https://github.com/grafana/synthetic-monitoring-app/issues/1637)) ([bfbc16f](https://github.com/grafana/synthetic-monitoring-app/commit/bfbc16fc840f9d44d0aff83d0b73ccdc09228d45))
+* allow checks and folders to live in any Grafana folder, using the standard folder picker ([#1790](https://github.com/grafana/synthetic-monitoring-app/issues/1790)) ([f55078d](https://github.com/grafana/synthetic-monitoring-app/commit/f55078d0c79130742d3352e7dd980bd9afe79e0c))
+* reference the synthetic-monitoring-checks agent skill in check authoring surfaces ([#1786](https://github.com/grafana/synthetic-monitoring-app/issues/1786)) ([93b26e5](https://github.com/grafana/synthetic-monitoring-app/commit/93b26e5c67a876589fa34836886d82970981fa2e))
+* rename colliding labels from the label migration tab ([#1824](https://github.com/grafana/synthetic-monitoring-app/issues/1824)) ([7965ec2](https://github.com/grafana/synthetic-monitoring-app/commit/7965ec2e232e00ce81defd20ac2e1ee6371dfb12))
+
+
+### Fixes
+
+* dedupe probe_success join in response latency panel ([#1817](https://github.com/grafana/synthetic-monitoring-app/issues/1817)) ([d3e489a](https://github.com/grafana/synthetic-monitoring-app/commit/d3e489ac6b947ccf3d61566d4d93af07f4c169a2))
+* Hide label_ prefix hint once tenant leaves PREFIXED mode ([#1836](https://github.com/grafana/synthetic-monitoring-app/issues/1836)) ([52c1dbc](https://github.com/grafana/synthetic-monitoring-app/commit/52c1dbcc20d15d03c9c812b01995339be0598273))
+* open the Knowledge Graph on the check's neighbourhood and namespace its labels ([#1833](https://github.com/grafana/synthetic-monitoring-app/issues/1833)) ([ab1f003](https://github.com/grafana/synthetic-monitoring-app/commit/ab1f0031abbb130ca841f9d8399beca35964ce73))
+* populate the KG graph search from the connected-services drawer links ([#1831](https://github.com/grafana/synthetic-monitoring-app/issues/1831)) ([5e410f6](https://github.com/grafana/synthetic-monitoring-app/commit/5e410f600eed6f4f7c5a6f28c3d484436d851a71))
+* replace expand/collapse all with a single toggle in folder view ([#1805](https://github.com/grafana/synthetic-monitoring-app/issues/1805)) ([e50eeac](https://github.com/grafana/synthetic-monitoring-app/commit/e50eeacf3fbab9497d8ec93d74b27af27d713681))
+* support publishing releases from vX.Y.Z tags ([#1828](https://github.com/grafana/synthetic-monitoring-app/issues/1828)) ([0434fb9](https://github.com/grafana/synthetic-monitoring-app/commit/0434fb9f590cdc471ddf061d1a6b5580f85aa63a))
+* sync grouped probe checkbox state ([#1838](https://github.com/grafana/synthetic-monitoring-app/issues/1838)) ([2795a6e](https://github.com/grafana/synthetic-monitoring-app/commit/2795a6e798c21afeaa5fa50284f3ea478a022671))
+
 ## [1.60.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.59.0...v1.60.0) (2026-08-21)
 
 
