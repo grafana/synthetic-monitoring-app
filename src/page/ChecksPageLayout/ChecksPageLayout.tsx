@@ -1,0 +1,54 @@
+import React, { useMemo } from 'react';
+import { Outlet } from 'react-router';
+import { NavModelItem } from '@grafana/data';
+import { t } from '@grafana/i18n';
+import { PluginPage } from '@grafana/runtime';
+
+import { FeatureName } from 'types';
+import { AppRoutes } from 'routing/types';
+import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
+import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
+
+/**
+ * Wraps the check list and its sibling tabs. Only the tabbed routes sit under this layout:
+ * the check editor and dashboard pages stay outside it so they keep their own page chrome.
+ */
+export function ChecksPageLayout() {
+  const getChecksTabUrl = useTabUrl(AppRoutes.Checks);
+  const activeTab = useActiveTab(AppRoutes.Checks);
+  const { isFeatureEnabled } = useFeatureFlagContext();
+
+  const pageNav: NavModelItem | undefined = useMemo(() => {
+    // Recommendations is the only sibling tab, so with the flag off there is nothing to
+    // switch between and the page keeps the plain header it has always had.
+    if (!isFeatureEnabled(FeatureName.Recommendations)) {
+      return undefined;
+    }
+
+    return {
+      text: t('checksPageLayout.title', 'Checks'),
+      url: getChecksTabUrl(),
+      hideFromBreadcrumbs: true, // It would stack with the parent breadcrumb ('checks')
+      children: [
+        {
+          icon: 'check-square',
+          text: t('checksPageLayout.tabs.checks', 'Checks'),
+          url: getChecksTabUrl(),
+          active: activeTab(),
+        },
+        {
+          icon: 'lightbulb-alt',
+          text: t('checksPageLayout.tabs.recommendations', 'Recommendations'),
+          url: getChecksTabUrl('recommendations'),
+          active: activeTab('recommendations'),
+        },
+      ],
+    };
+  }, [activeTab, getChecksTabUrl, isFeatureEnabled]);
+
+  return (
+    <PluginPage pageNav={pageNav}>
+      <Outlet />
+    </PluginPage>
+  );
+}
