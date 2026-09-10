@@ -1,5 +1,8 @@
 import { Check } from 'types';
 
+/** How loudly a finding is presented, via the colour of the row's leading bar. */
+export type RecommendationSeverity = 'error' | 'warning' | 'info';
+
 export enum RecommendationId {
   AlertingGaps = 'alerting-gaps',
   MissingCostLabels = 'missing-cost-labels',

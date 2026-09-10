@@ -47,7 +47,7 @@ export const CHECKS_TEST_ID = {
 } as const;
 
 export const RECOMMENDATIONS_TEST_ID = {
-  card: 'recommendations card',
+  section: 'recommendations section',
   emptyState: 'recommendations empty-state',
 } as const;
 
