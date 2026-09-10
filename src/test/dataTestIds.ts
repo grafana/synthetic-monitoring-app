@@ -45,6 +45,11 @@ export const CHECKS_TEST_ID = {
   },
 } as const;
 
+export const RECOMMENDATIONS_TEST_ID = {
+  card: 'recommendations card',
+  emptyState: 'recommendations empty-state',
+} as const;
+
 export const CHECKSTER_TEST_ID = {
   navigation: {
     root: 'checkEditor navigation root',

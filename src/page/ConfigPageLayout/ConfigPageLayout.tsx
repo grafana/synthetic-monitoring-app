@@ -1,31 +1,15 @@
-import React, { useCallback, useMemo } from 'react';
-import { matchPath, Outlet, useLocation } from 'react-router';
+import React, { useMemo } from 'react';
+import { Outlet } from 'react-router';
 import { NavModelItem } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
-import { getRoute } from 'routing/utils';
+import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 
-function getConfigTabUrl(tab = '/') {
-  return `${getRoute(AppRoutes.Config)}/${tab}`.replace(/\/+/g, '/');
-}
-
-function useActiveTab(route: AppRoutes) {
-  const fullRoute = getRoute(route);
-  const location = useLocation();
-
-  return useCallback(
-    (path?: string) => {
-      const url = `${fullRoute}/${path ?? ''}`.replace(/\/+/g, '/');
-      return Boolean(matchPath(url ?? '', location.pathname));
-    },
-    [fullRoute, location.pathname]
-  );
-}
-
 export function ConfigPageLayout() {
+  const getConfigTabUrl = useTabUrl(AppRoutes.Config);
   const activeTab = useActiveTab(AppRoutes.Config);
   const { isFeatureEnabled } = useFeatureFlagContext();
 
@@ -80,7 +64,7 @@ export function ConfigPageLayout() {
       });
     }
     return navModel;
-  }, [activeTab, isFeatureEnabled]);
+  }, [activeTab, getConfigTabUrl, isFeatureEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>

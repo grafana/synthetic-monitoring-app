@@ -16,6 +16,8 @@ import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
+import { ChecksPageLayout } from 'page/ChecksPageLayout';
+import { RecommendationsTab } from 'page/ChecksPageLayout/tabs/Recommendations';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
@@ -76,7 +78,13 @@ export const InitialisedRouter = () => {
       />
 
       <Route path={AppRoutes.Checks}>
-        <Route index element={<CheckList />} />
+        {/* Only the tabbed routes sit under the layout; the editor and dashboard keep their own chrome. */}
+        <Route element={<ChecksPageLayout />}>
+          <Route index element={<CheckList />} />
+          {isFeatureEnabled(FeatureName.Recommendations) && (
+            <Route path="recommendations" element={<RecommendationsTab />} />
+          )}
+        </Route>
         <Route path=":id">
           <Route
             index
