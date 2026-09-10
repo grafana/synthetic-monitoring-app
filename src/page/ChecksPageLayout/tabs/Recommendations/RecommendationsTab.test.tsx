@@ -24,10 +24,10 @@ function renderTab(checks: Check[]) {
   return render(<RecommendationsTab />);
 }
 
-async function findCard(name: RegExp) {
+async function findSection(name: RegExp) {
   const heading = await screen.findByRole('heading', { name });
 
-  return heading.closest(`[data-testid="${RECOMMENDATIONS_TEST_ID.card}"]`) as HTMLElement;
+  return heading.closest(`[data-testid="${RECOMMENDATIONS_TEST_ID.section}"]`) as HTMLElement;
 }
 
 describe('Recommendations tab', () => {
@@ -37,36 +37,70 @@ describe('Recommendations tab', () => {
       buildCheck({ job: 'alerted', target: 'https://b.com', alertSensitivity: AlertSensitivity.High }),
     ]);
 
-    const card = await findCard(/running without alerts/i);
+    const section = await findSection(/alerting/i);
 
-    expect(within(card).getByLabelText('Affected checks: 1')).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: /set up alerts/i })).toHaveAttribute(
+    expect(within(section).getByText('1 of 2 checks have no alerts')).toBeInTheDocument();
+    expect(within(section).getByText('unalerted')).toBeInTheDocument();
+    expect(within(section).queryByText('alerted')).not.toBeInTheDocument();
+    expect(within(section).getByRole('link', { name: /set up alerts/i })).toHaveAttribute(
       'href',
       expect.stringContaining('alerts=without&status=enabled')
+    );
+  });
+
+  it('links each affected check to its editor', async () => {
+    const check = buildCheck({ job: 'unalerted', target: 'https://a.com', id: 42 });
+
+    await renderTab([check]);
+
+    const section = await findSection(/alerting/i);
+
+    expect(within(section).getByRole('link', { name: 'Edit unalerted' })).toHaveAttribute(
+      'href',
+      expect.stringContaining('/checks/42/edit')
     );
   });
 
   it('reports paused checks and links to the disabled checks', async () => {
     await renderTab([buildCheck({ job: 'forgotten', enabled: false, alertSensitivity: AlertSensitivity.High })]);
 
-    const card = await findCard(/paused checks/i);
+    const section = await findSection(/paused checks/i);
 
-    expect(within(card).getByRole('link', { name: /review paused checks/i })).toHaveAttribute(
+    expect(within(section).getByText('forgotten')).toBeInTheDocument();
+    expect(within(section).getByText('paused')).toBeInTheDocument();
+    expect(within(section).getByRole('link', { name: /review paused checks/i })).toHaveAttribute(
       'href',
       expect.stringContaining('status=disabled')
     );
   });
 
-  it('lists each duplicated target as its own group', async () => {
-    await renderTab([
+  it('collapses a finding when its heading is clicked', async () => {
+    const { user } = await renderTab([buildCheck({ job: 'unalerted', target: 'https://a.com' })]);
+
+    const section = await findSection(/alerting/i);
+    expect(within(section).getByText('unalerted')).toBeInTheDocument();
+
+    await user.click(within(section).getByRole('button', { expanded: true }));
+
+    expect(within(section).queryByText('unalerted')).not.toBeInTheDocument();
+  });
+
+  it('hides the checks inside a duplicate group until it is expanded', async () => {
+    const { user } = await renderTab([
       buildCheck({ job: 'primary', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
       buildCheck({ job: 'copy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
     ]);
 
-    const card = await findCard(/duplicate checks/i);
+    const section = await findSection(/duplicate checks/i);
 
-    expect(within(card).getByRole('link', { name: 'https://grafana.com' })).toBeInTheDocument();
-    expect(within(card).getByText(/2 checks/)).toBeInTheDocument();
+    expect(within(section).getByText('https://grafana.com')).toBeInTheDocument();
+    expect(within(section).getByText('http · 2 checks')).toBeInTheDocument();
+    expect(within(section).queryByText('primary')).not.toBeInTheDocument();
+
+    await user.click(within(section).getByRole('button', { name: /grafana\.com/ }));
+
+    expect(within(section).getByText('primary')).toBeInTheDocument();
+    expect(within(section).getByText('copy')).toBeInTheDocument();
   });
 
   it('reports a target covered by more than one check type', async () => {
@@ -75,7 +109,23 @@ describe('Recommendations tab', () => {
       buildCheck({ job: 'ping', target: 'grafana.com', alertSensitivity: AlertSensitivity.High }, CheckType.Ping),
     ]);
 
-    expect(await findCard(/several check types/i)).toBeInTheDocument();
+    const section = await findSection(/overlapping targets/i);
+
+    expect(within(section).getByText(/http, ping · 2 checks/)).toBeInTheDocument();
+  });
+
+  it('pages the rows rather than listing every affected check at once', async () => {
+    const checks = Array.from({ length: 9 }, (_, index) =>
+      buildCheck({ job: `unalerted-${index}`, target: `https://${index}.com` })
+    );
+
+    await renderTab(checks);
+
+    const section = await findSection(/alerting/i);
+
+    expect(within(section).getByText('unalerted-0')).toBeInTheDocument();
+    expect(within(section).queryByText('unalerted-8')).not.toBeInTheDocument();
+    expect(within(section).getByRole('navigation')).toBeInTheDocument();
   });
 
   it('says nothing needs attention when every check is well configured', async () => {
@@ -84,7 +134,7 @@ describe('Recommendations tab', () => {
     ]);
 
     expect(await screen.findByText(/nothing needs your attention/i)).toBeInTheDocument();
-    expect(screen.queryAllByTestId(RECOMMENDATIONS_TEST_ID.card)).toHaveLength(0);
+    expect(screen.queryAllByTestId(RECOMMENDATIONS_TEST_ID.section)).toHaveLength(0);
   });
 
   it('sends people to create a check when they have none', async () => {
@@ -113,9 +163,9 @@ describe('Recommendations tab', () => {
         buildCheck({ job: 'unattributed', alertSensitivity: AlertSensitivity.High, target: 'https://a.com' }),
       ]);
 
-      const card = await findCard(/missing cost attribution labels/i);
+      const section = await findSection(/cost attribution/i);
 
-      expect(within(card).getByRole('link', { name: /add labels/i })).toHaveAttribute(
+      expect(within(section).getByRole('link', { name: /add labels/i })).toHaveAttribute(
         'href',
         expect.stringContaining('__unattributed__')
       );
