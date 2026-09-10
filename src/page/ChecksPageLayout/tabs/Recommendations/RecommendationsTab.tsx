@@ -1,15 +1,10 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import { t, Trans } from '@grafana/i18n';
-import { EmptyState, LinkButton, Stack, Text } from '@grafana/ui';
-import {
-  trackRecommendationActioned,
-  trackRecommendationShown,
-  trackRecommendationsTabViewed,
-} from 'features/tracking/recommendationEvents';
+import { Button, EmptyState, Stack, Text, useStyles2 } from '@grafana/ui';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
-import { Recommendation, RecommendationId, RecommendationSeverity } from './Recommendations.types';
-import { Check, FeatureName } from 'types';
+import { Recommendation, RecommendationId } from './Recommendations.types';
+import { FeatureName } from 'types';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -17,13 +12,12 @@ import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { Feedback } from 'components/Feedback';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
-import { CheckRow, GroupRow, PaginatedRows, RecommendationSection } from './Recommendations.components';
-import {
-  getChecksByTargetUrl,
-  getChecksMissingCostLabelsUrl,
-  getChecksWithoutAlertsUrl,
-  getPausedChecksUrl,
-} from './Recommendations.links';
+import { AlertingGapsFinding } from './findings/AlertingGapsFinding';
+import { MissingCostLabelsFinding } from './findings/MissingCostLabelsFinding';
+import { PausedChecksFinding } from './findings/PausedChecksFinding';
+import { RedundancyFinding } from './findings/RedundancyFinding';
+import { useDismissedRecommendations, useRecommendationImpressions } from './Recommendations.hooks';
+import { getStyles } from './Recommendations.styles';
 import { computeRecommendations } from './Recommendations.utils';
 
 export function RecommendationsTab() {
@@ -35,14 +29,23 @@ export function RecommendationsTab() {
 }
 
 function RecommendationsTabContent() {
+  const styles = useStyles2(getStyles);
   const { data: checks } = useSuspenseChecks();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData } = useTenantCostAttributionLabels();
   const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);
 
   const recommendations = useMemo(() => computeRecommendations({ checks, calNames }), [checks, calNames]);
+  const { dismissed, dismiss, restoreAll } = useDismissedRecommendations();
+  const visible = useMemo(
+    () => recommendations.filter((recommendation) => !dismissed.includes(recommendation.id)),
+    [recommendations, dismissed]
+  );
+  // Only findings that exist for this tenant count as dismissed; a stale dismissal of a finding
+  // that has since resolved itself is not something to offer bringing back.
+  const dismissedCount = recommendations.length - visible.length;
 
-  useRecommendationImpressions(recommendations, checks.length);
+  useRecommendationImpressions(visible, { checkCount: checks.length, dismissedCount });
 
   if (checks.length === 0) {
     return <ChecksEmptyState />;
@@ -55,12 +58,12 @@ function RecommendationsTabContent() {
       <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
         <Text color="secondary">
           <Trans i18nKey="recommendations.intro">
-            Findings derived from how your checks are configured. Each one opens the checks it refers to.
+            Findings derived from how your checks are configured. Act on them here, or open the checks they refer to.
           </Trans>
         </Text>
         <Feedback feature="recommendations" about={{ text: `New feature!` }} />
       </Stack>
-      {recommendations.length === 0 ? (
+      {recommendations.length === 0 && (
         <EmptyState
           variant="completed"
           message={t('recommendations.emptyState.message', 'Nothing needs your attention')}
@@ -70,199 +73,50 @@ function RecommendationsTabContent() {
             Every check is alerting, attributed, running and pointed at something nothing else covers.
           </Trans>
         </EmptyState>
-      ) : (
-        recommendations.map((recommendation) => (
-          <RecommendationFinding
-            key={recommendation.id}
-            calNames={calNames}
-            recommendation={recommendation}
-            totalCheckCount={checks.length}
-          />
-        ))
+      )}
+      {visible.map((recommendation) => (
+        <Finding
+          key={recommendation.id}
+          recommendation={recommendation}
+          calNames={calNames}
+          totalCheckCount={checks.length}
+          onDismiss={() => dismiss(recommendation.id)}
+        />
+      ))}
+      {dismissedCount > 0 && (
+        <Stack direction="row" gap={1} alignItems="center" justifyContent="flex-end">
+          <span className={styles.mutedText}>
+            {dismissedCount === 1
+              ? t('recommendations.dismissed.summarySingle', '1 finding dismissed')
+              : t('recommendations.dismissed.summary', '{{dismissedCount}} findings dismissed', { dismissedCount })}
+          </span>
+          <Button size="sm" variant="secondary" fill="text" onClick={restoreAll}>
+            <Trans i18nKey="recommendations.dismissed.restore">Show dismissed</Trans>
+          </Button>
+        </Stack>
       )}
     </Stack>
   );
 }
 
-interface RecommendationFindingProps {
+interface FindingDispatchProps {
   recommendation: Recommendation;
   calNames: string[];
   totalCheckCount: number;
+  onDismiss: () => void;
 }
 
-function RecommendationFinding({ recommendation, calNames, totalCheckCount }: RecommendationFindingProps) {
-  const { id, checks, groups } = recommendation;
-  const { severity, title, tooltip, actionLabel, href } = getRecommendationCopy(recommendation, calNames);
-
-  return (
-    <RecommendationSection
-      title={title}
-      tooltip={tooltip}
-      summary={getSummary(recommendation, totalCheckCount)}
-      action={
-        <LinkButton
-          variant="secondary"
-          fill="outline"
-          size="sm"
-          href={href}
-          onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
-        >
-          {actionLabel}
-        </LinkButton>
-      }
-    >
-      {groups ? (
-        <PaginatedRows
-          items={groups}
-          renderItem={(group) => (
-            <GroupRow
-              key={group.key}
-              label={group.label}
-              detail={
-                group.detail
-                  ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
-                      detail: group.detail,
-                      checkCount: group.checks.length,
-                    })
-                  : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: group.checks.length })
-              }
-              severity={severity}
-              checks={group.checks}
-            />
-          )}
-        />
-      ) : (
-        <PaginatedRows
-          items={checks}
-          renderItem={(check) => <CheckRow key={check.id} check={check} severity={severity} />}
-        />
-      )}
-    </RecommendationSection>
-  );
-}
-
-function getSummary({ id, checks, groups }: Recommendation, totalCheckCount: number) {
-  if (groups) {
-    return t('recommendations.summary.groups', '{{groupCount}} of {{totalCheckCount}} checks across {{targetCount}} targets', {
-      groupCount: checks.length,
-      totalCheckCount,
-      targetCount: groups.length,
-    });
-  }
-
-  switch (id) {
+/** Each finding owns its action, so each gets its own component rather than a shared shape with switches. */
+function Finding({ recommendation, calNames, ...props }: FindingDispatchProps) {
+  switch (recommendation.id) {
     case RecommendationId.AlertingGaps:
-      return t(
-        'recommendations.summary.alertingGaps',
-        '{{affectedCheckCount}} of {{totalCheckCount}} checks have no alerts',
-        { affectedCheckCount: checks.length, totalCheckCount }
-      );
-
+      return <AlertingGapsFinding recommendation={recommendation} {...props} />;
     case RecommendationId.MissingCostLabels:
-      return t(
-        'recommendations.summary.missingCostLabels',
-        '{{affectedCheckCount}} of {{totalCheckCount}} checks are unattributed',
-        { affectedCheckCount: checks.length, totalCheckCount }
-      );
-
-    default:
-      return t('recommendations.summary.paused', '{{affectedCheckCount}} of {{totalCheckCount}} checks are paused', {
-        affectedCheckCount: checks.length,
-        totalCheckCount,
-      });
-  }
-}
-
-interface RecommendationCopy {
-  severity: RecommendationSeverity;
-  title: string;
-  tooltip: string;
-  actionLabel: string;
-  href: string;
-}
-
-function getRecommendationCopy({ id, checks, groups }: Recommendation, calNames: string[]): RecommendationCopy {
-  switch (id) {
-    case RecommendationId.AlertingGaps:
-      return {
-        // The only finding where doing nothing means a real failure goes unseen.
-        severity: 'error',
-        title: t('recommendations.alertingGaps.title', 'Alerting'),
-        tooltip: t(
-          'recommendations.alertingGaps.description',
-          'These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.'
-        ),
-        actionLabel: t('recommendations.alertingGaps.action', 'Set up alerts'),
-        href: getChecksWithoutAlertsUrl(),
-      };
-
-    case RecommendationId.MissingCostLabels:
-      return {
-        severity: 'warning',
-        title: t('recommendations.missingCostLabels.title', 'Cost attribution'),
-        tooltip: t(
-          'recommendations.missingCostLabels.description',
-          'These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.',
-          { labels: calNames.join(', ') }
-        ),
-        actionLabel: t('recommendations.missingCostLabels.action', 'Add labels'),
-        href: getChecksMissingCostLabelsUrl(calNames),
-      };
-
+      return <MissingCostLabelsFinding recommendation={recommendation} calNames={calNames} {...props} />;
     case RecommendationId.DuplicateChecks:
-      return {
-        severity: 'info',
-        title: t('recommendations.duplicateChecks.title', 'Duplicate checks'),
-        tooltip: t(
-          'recommendations.duplicateChecks.description',
-          'These targets are monitored more than once by the same type of check. Duplicates cost the same as the original and rarely tell you anything new.'
-        ),
-        actionLabel: t('recommendations.duplicateChecks.action', 'Review duplicates'),
-        href: getChecksByTargetUrl(groups?.[0]?.label ?? checks[0].target),
-      };
-
     case RecommendationId.OverlappingTargets:
-      return {
-        severity: 'info',
-        title: t('recommendations.overlappingTargets.title', 'Overlapping targets'),
-        tooltip: t(
-          'recommendations.overlappingTargets.description',
-          'These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.'
-        ),
-        actionLabel: t('recommendations.overlappingTargets.action', 'Review overlap'),
-        href: getChecksByTargetUrl(groups?.[0]?.label ?? checks[0].target),
-      };
-
+      return <RedundancyFinding recommendation={recommendation} {...props} />;
     case RecommendationId.PausedChecks:
-      return {
-        severity: 'warning',
-        title: t('recommendations.pausedChecks.title', 'Paused checks'),
-        tooltip: t(
-          'recommendations.pausedChecks.description',
-          'These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.'
-        ),
-        actionLabel: t('recommendations.pausedChecks.action', 'Review paused checks'),
-        href: getPausedChecksUrl(),
-      };
+      return <PausedChecksFinding recommendation={recommendation} {...props} />;
   }
-}
-
-/**
- * Engagement is what decides which findings survive past this experiment, so impressions are
- * reported alongside clicks. Both are reported once per visit rather than on every re-render.
- */
-function useRecommendationImpressions(recommendations: Recommendation[], checkCount: number) {
-  const reported = useRef(false);
-
-  useEffect(() => {
-    if (reported.current) {
-      return;
-    }
-
-    reported.current = true;
-    trackRecommendationsTabViewed({ findingCount: recommendations.length, checkCount });
-    recommendations.forEach(({ id, checks }: { id: RecommendationId; checks: Check[] }) =>
-      trackRecommendationShown({ finding: id, affectedCheckCount: checks.length })
-    );
-  }, [recommendations, checkCount]);
 }

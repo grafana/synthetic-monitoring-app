@@ -45,14 +45,18 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     backgroundColor: theme.colors.background.secondary,
     border: `1px solid ${theme.colors.border.weak}`,
   }),
-  rowClickable: css({
-    cursor: 'pointer',
-    transition: 'border-color 0.15s ease',
-    '&:hover': { borderColor: theme.colors.border.medium },
-  }),
-  rowInfo: css({
+  groupToggle: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
     flex: 1,
     minWidth: 0,
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    color: 'inherit',
+    textAlign: 'left',
   }),
   rowName: css({
     fontWeight: theme.typography.fontWeightMedium,
@@ -92,5 +96,36 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.disabled,
     display: 'inline-flex',
     '&:hover': { color: theme.colors.text.primary },
+  }),
+
+  // Inline panel that opens under a row to preview an action before it runs
+  inlinePanel: css({
+    padding: theme.spacing(2, 3),
+    margin: theme.spacing(0.5, 0, 1),
+    borderRadius: theme.shape.radius.default,
+    border: `1px solid ${theme.colors.border.medium}`,
+    backgroundColor: theme.colors.background.primary,
+  }),
+  inlinePanelTitle: css({
+    fontSize: theme.typography.body.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+  }),
+  previewItem: css({
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: theme.spacing(0.75, 1.5),
+    borderRadius: theme.shape.radius.default,
+    border: `1px solid ${theme.colors.border.weak}`,
+  }),
+  previewItemLabel: css({
+    fontWeight: theme.typography.fontWeightMedium,
+    fontSize: theme.typography.body.fontSize,
+  }),
+  doneText: css({
+    color: theme.colors.success.text,
+    fontWeight: theme.typography.fontWeightMedium,
+    fontSize: theme.typography.bodySmall.fontSize,
   }),
 });

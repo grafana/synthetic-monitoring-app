@@ -5,6 +5,8 @@ const recommendationEvents = createSMEventFactory('recommendations');
 interface TabViewed extends TrackingEventProps {
   /** How many findings the tab had for this tenant, so an empty tab is distinguishable from an unread one. */
   findingCount: number;
+  /** How many of those findings the user had dismissed, so a quiet tab is distinguishable from a muted one. */
+  dismissedCount: number;
   /** How many checks the tenant has, to read the findings against the size of the fleet. */
   checkCount: number;
 }
@@ -25,9 +27,37 @@ export const trackRecommendationShown = recommendationEvents<FindingShown>('find
 interface FindingActioned extends TrackingEventProps {
   /** The `RecommendationId` of the finding. */
   finding: string;
-  /** Whether the whole finding was opened or a single group within it. */
-  scope: 'finding' | 'group';
+  /** Whether the click was on the whole finding, a group within it, or a single check. */
+  scope: 'finding' | 'group' | 'check';
 }
 
-/** Tracks a click through from a finding into the filtered check list. */
+/** Tracks a click through from a finding into the check list or a check's editor. */
 export const trackRecommendationActioned = recommendationEvents<FindingActioned>('finding_actioned');
+
+interface ActionCompleted extends TrackingEventProps {
+  /** The `RecommendationId` of the finding. */
+  finding: string;
+  /** What was changed on the user's behalf. */
+  action: 'alerts_added' | 'check_resumed';
+  /** How many checks the change reached. */
+  checkCount: number;
+  /** Whether the action ran for the whole finding or a single check. */
+  scope: 'finding' | 'check';
+}
+
+/**
+ * Tracks an action carried out from the tab itself, as opposed to a click that leads somewhere.
+ * Alongside impressions and clicks, this is what shows whether a finding gets acted on.
+ */
+export const trackRecommendationActionCompleted = recommendationEvents<ActionCompleted>('action_completed');
+
+interface FindingDismissed extends TrackingEventProps {
+  /** The `RecommendationId` of the finding. */
+  finding: string;
+}
+
+/** Tracks a finding being hidden from the tab; a dismissed finding is one the user judged not worth acting on. */
+export const trackRecommendationDismissed = recommendationEvents<FindingDismissed>('finding_dismissed');
+
+/** Tracks dismissed findings being brought back. */
+export const trackRecommendationRestored = recommendationEvents<FindingDismissed>('finding_restored');

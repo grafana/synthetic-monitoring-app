@@ -127,10 +127,7 @@ describe('redundant checks', () => {
   });
 
   it('does not report overlap when the duplicates are all the same type', () => {
-    const checks = [
-      buildCheck({ job: 'a', target: 'grafana.com' }),
-      buildCheck({ job: 'b', target: 'grafana.com' }),
-    ];
+    const checks = [buildCheck({ job: 'a', target: 'grafana.com' }), buildCheck({ job: 'b', target: 'grafana.com' })];
 
     expect(findingIds(checks)).not.toContain(RecommendationId.OverlappingTargets);
   });
@@ -147,6 +144,19 @@ describe('redundant checks', () => {
     const groups = finding(RecommendationId.DuplicateChecks, checks)?.groups;
 
     expect(groups?.map(({ label }) => label)).toEqual(['https://trio.com', 'https://pair.com']);
+  });
+});
+
+describe('paused checks', () => {
+  it('puts the checks untouched for longest first, and those without a timestamp last', () => {
+    const recent = buildCheck({ job: 'recent', enabled: false, modified: 3_000 });
+    const forgotten = buildCheck({ job: 'forgotten', enabled: false, modified: 1_000 });
+    const undated = buildCheck({ job: 'undated', enabled: false, modified: undefined });
+
+    const [finding] = computeRecommendations({ checks: [recent, undated, forgotten], calNames: [] });
+
+    expect(finding.id).toBe(RecommendationId.PausedChecks);
+    expect(finding.checks.map((check) => check.job)).toEqual(['forgotten', 'recent', 'undated']);
   });
 });
 

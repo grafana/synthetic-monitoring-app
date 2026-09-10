@@ -1,4 +1,4 @@
-import { Check } from 'types';
+import { Check, CheckType } from 'types';
 
 /** How loudly a finding is presented, via the colour of the row's leading bar. */
 export type RecommendationSeverity = 'error' | 'warning' | 'info';
@@ -21,6 +21,8 @@ export interface RecommendationGroup {
   label: string;
   /** Qualifies the label, e.g. the check type the group shares. */
   detail?: string;
+  /** Set when every check in the group is of one type, so the group can link to a type-filtered list. */
+  type?: CheckType;
   checks: Check[];
 }
 

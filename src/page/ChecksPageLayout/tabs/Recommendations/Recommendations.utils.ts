@@ -1,9 +1,4 @@
-import {
-  Recommendation,
-  RecommendationGroup,
-  RecommendationId,
-  RecommendationInputs,
-} from './Recommendations.types';
+import { Recommendation, RecommendationGroup, RecommendationId, RecommendationInputs } from './Recommendations.types';
 import { Check, CheckType } from 'types';
 import { checkHasAlerting, getCheckType } from 'utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
@@ -51,12 +46,11 @@ function findDuplicateChecks({ checks }: RecommendationInputs): Recommendation |
 
   const groups = Object.values(byTypeAndTarget)
     .filter((group) => group.length > 1)
-    .map<RecommendationGroup>((group) => ({
-      key: `${getCheckType(group[0].settings)}-${group[0].target}`,
-      label: group[0].target,
-      detail: getCheckType(group[0].settings),
-      checks: group,
-    }));
+    .map<RecommendationGroup>((group) => {
+      const type = getCheckType(group[0].settings);
+
+      return { key: `${type}-${group[0].target}`, label: group[0].target, detail: type, type, checks: group };
+    });
 
   return toGroupedRecommendation(RecommendationId.DuplicateChecks, groups);
 }
@@ -81,11 +75,30 @@ function findOverlappingTargets({ checks }: RecommendationInputs): Recommendatio
   return toGroupedRecommendation(RecommendationId.OverlappingTargets, groups);
 }
 
-/** D. Checks that were paused and never turned back on. */
+/**
+ * D. Checks that were paused and never turned back on. The ones untouched for longest are the
+ * most likely to have been forgotten, so they come first rather than sorting by name.
+ */
 function findPausedChecks({ checks }: RecommendationInputs): Recommendation | undefined {
-  const affected = checks.filter((check) => !check.enabled);
+  const affected = checks.filter((check) => !check.enabled).sort(byLeastRecentlyModified);
 
-  return toRecommendation(RecommendationId.PausedChecks, affected);
+  return affected.length > 0 ? { id: RecommendationId.PausedChecks, checks: affected } : undefined;
+}
+
+/**
+ * The configuration only records when a check was last modified, and pausing is a modification,
+ * so for a check that has not been touched since this is when it was paused. Undefined when the
+ * API did not send a timestamp.
+ */
+export function getPausedSince(check: Check): Date | undefined {
+  return check.modified ? new Date(check.modified * 1000) : undefined;
+}
+
+function byLeastRecentlyModified(a: Check, b: Check) {
+  // Checks without a timestamp cannot be ranked, so they go last.
+  return (
+    (a.modified ?? Number.POSITIVE_INFINITY) - (b.modified ?? Number.POSITIVE_INFINITY) || a.job.localeCompare(b.job)
+  );
 }
 
 function toRecommendation(id: RecommendationId, checks: Check[]): Recommendation | undefined {
