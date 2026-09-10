@@ -58,12 +58,37 @@
   },
   "recommendations": {
     "alertingGaps": {
-      "action": "Set up alerts",
+      "bulkApplied": "Added alerts to {{checkCount}} checks",
+      "bulkAppliedSingle": "Added alerts to 1 check",
+      "confirm": {
+        "applying": "Adding alerts...",
+        "body": "This adds {{alertCount}} alerts across {{checkCount}} checks, using the default thresholds for each check type. You can tune or remove any of them from the check editor afterwards.",
+        "confirm": "Add alerts",
+        "title": "Set up alerts for all checks"
+      },
       "description": "These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.",
-      "title": "Alerting"
+      "row": {
+        "apply": "Add {{alertCount}} alerts",
+        "applying": "Adding...",
+        "applySingle": "Add alert",
+        "cancel": "Cancel",
+        "close": "Close",
+        "done": "Alerts added",
+        "previewTitle": "Recommended alerts for {{job}}",
+        "setUp": "Set up",
+        "setUpLabel": "Set up alerts for {{job}}",
+        "thresholdWithPeriod": "{{threshold}} over {{period}}"
+      },
+      "setUpAll": "Set up alerts for all {{checkCount}} checks",
+      "title": "Alerting",
+      "viewInList": "View in check list"
+    },
+    "dismissed": {
+      "restore": "Show dismissed",
+      "summary": "{{dismissedCount}} findings dismissed",
+      "summarySingle": "1 finding dismissed"
     },
     "duplicateChecks": {
-      "action": "Review duplicates",
       "description": "These targets are monitored more than once by the same type of check. Duplicates cost the same as the original and rarely tell you anything new.",
       "title": "Duplicate checks"
     },
@@ -73,31 +98,44 @@
     },
     "group": {
       "count": "{{checkCount}} checks",
-      "detail": "{{detail}} · {{checkCount}} checks"
+      "detail": "{{detail}} · {{checkCount}} checks",
+      "viewInList": "Show these checks in the check list"
     },
-    "intro": "Findings derived from how your checks are configured. Each one opens the checks it refers to.",
+    "intro": "Findings derived from how your checks are configured. Act on them here, or open the checks they refer to.",
     "missingCostLabels": {
-      "action": "Add labels",
+      "action": "View in check list",
       "description": "These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.",
+      "row": {
+        "addLabels": "Add labels",
+        "addLabelsLabel": "Add labels to {{job}}",
+        "missing": "Missing {{labels}}"
+      },
       "title": "Cost attribution"
     },
     "overlappingTargets": {
-      "action": "Review overlap",
       "description": "These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.",
       "title": "Overlapping targets"
     },
     "pausedChecks": {
       "action": "Review paused checks",
       "description": "These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.",
+      "row": {
+        "resume": "Resume",
+        "resumeLabel": "Resume {{job}}",
+        "since": "Paused {{timeAgo}}"
+      },
       "title": "Paused checks"
     },
     "row": {
       "editCheck": "Edit {{job}}",
       "paused": "paused"
     },
+    "section": {
+      "dismiss": "Dismiss this finding"
+    },
     "summary": {
       "alertingGaps": "{{affectedCheckCount}} of {{totalCheckCount}} checks have no alerts",
-      "groups": "{{groupCount}} of {{totalCheckCount}} checks across {{targetCount}} targets",
+      "groups": "{{affectedCheckCount}} of {{totalCheckCount}} checks across {{targetCount}} targets",
       "missingCostLabels": "{{affectedCheckCount}} of {{totalCheckCount}} checks are unattributed",
       "paused": "{{affectedCheckCount}} of {{totalCheckCount}} checks are paused"
     }
