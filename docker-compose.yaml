@@ -19,7 +19,7 @@ services:
       # src/datasource/plugin.json. Without both of these Grafana issues no
       # credential and every named query is refused -- it fails closed rather
       # than querying as itself. See pkg/plugin/authz.go.
-      GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins externalServiceAccounts
+      GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins externalServiceAccounts synthetic-monitoring-recommendations
       GF_AUTH_MANAGED_SERVICE_ACCOUNTS_ENABLED: 'true'
 
 volumes:
