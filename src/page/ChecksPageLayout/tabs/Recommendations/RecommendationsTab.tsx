@@ -50,16 +50,15 @@ function RecommendationsTabContent() {
 
   return (
     <Stack direction="column" gap={3}>
-      {/* The tab itself carries the NEW badge, so the feedback control does not repeat it.
-          It sits outside the empty state too: hearing that we found nothing worth showing is
-          as useful a signal as hearing that a finding was wrong. */}
+      {/* Feedback sits outside the empty state as well as the findings: hearing that we
+          found nothing worth showing is as useful a signal as hearing that a finding was wrong. */}
       <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
         <Text color="secondary">
           <Trans i18nKey="recommendations.intro">
             Findings derived from how your checks are configured. Each one opens the checks it refers to.
           </Trans>
         </Text>
-        <Feedback feature="recommendations" />
+        <Feedback feature="recommendations" about={{ text: `New feature!` }} />
       </Stack>
       {recommendations.length === 0 ? (
         <EmptyState
