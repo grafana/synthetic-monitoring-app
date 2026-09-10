@@ -58,12 +58,37 @@
   },
   "recommendations": {
     "alertingGaps": {
-      "action": "",
+      "bulkApplied": "",
+      "bulkAppliedSingle": "",
+      "confirm": {
+        "applying": "",
+        "body": "",
+        "confirm": "",
+        "title": ""
+      },
       "description": "",
-      "title": ""
+      "row": {
+        "apply": "",
+        "applying": "",
+        "applySingle": "",
+        "cancel": "",
+        "close": "",
+        "done": "",
+        "previewTitle": "",
+        "setUp": "",
+        "setUpLabel": "",
+        "thresholdWithPeriod": ""
+      },
+      "setUpAll": "",
+      "title": "",
+      "viewInList": ""
+    },
+    "dismissed": {
+      "restore": "",
+      "summary": "",
+      "summarySingle": ""
     },
     "duplicateChecks": {
-      "action": "",
       "description": "",
       "title": ""
     },
@@ -73,27 +98,40 @@
     },
     "group": {
       "count": "",
-      "detail": ""
+      "detail": "",
+      "viewInList": ""
     },
     "intro": "",
     "missingCostLabels": {
       "action": "",
       "description": "",
+      "row": {
+        "addLabels": "",
+        "addLabelsLabel": "",
+        "missing": ""
+      },
       "title": ""
     },
     "overlappingTargets": {
-      "action": "",
       "description": "",
       "title": ""
     },
     "pausedChecks": {
       "action": "",
       "description": "",
+      "row": {
+        "resume": "",
+        "resumeLabel": "",
+        "since": ""
+      },
       "title": ""
     },
     "row": {
       "editCheck": "",
       "paused": ""
+    },
+    "section": {
+      "dismiss": ""
     },
     "summary": {
       "alertingGaps": "",

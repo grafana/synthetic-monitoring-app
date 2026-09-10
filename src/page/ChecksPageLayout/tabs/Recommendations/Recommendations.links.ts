@@ -1,3 +1,4 @@
+import { CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
@@ -25,6 +26,7 @@ export function getPausedChecksUrl() {
   return getCheckListUrl({ status: 'disabled' });
 }
 
-export function getChecksByTargetUrl(target: string) {
-  return getCheckListUrl({ search: target });
+/** Narrowed to one check type for duplicates, since overlapping targets span several by definition. */
+export function getChecksByTargetUrl(target: string, type?: CheckType) {
+  return getCheckListUrl(type ? { search: target, type } : { search: target });
 }
