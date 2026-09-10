@@ -256,10 +256,23 @@ jest.mock('@grafana/runtime', () => {
     }),
     getLocationSrv: () => ({ update: (args: any) => args }),
     getAppEvents: () => appEvents,
+    // Stands in for Grafana's own PageTabs, which renders pageNav.children as tabs and
+    // forwards each child's `tabSuffix` to its Tab. Kept faithful to that contract so tests
+    // can assert on tab links and their badges.
     PluginPage: ({ actions, children, pageNav }: { actions: any; children: ReactNode; pageNav: NavModelItem }) => (
       <div>
         <h2>{pageNav?.text}</h2>
         <div>{actions}</div>
+        {pageNav?.children && (
+          <div role="tablist">
+            {pageNav.children.map(({ text, url, active, tabSuffix: TabSuffix }) => (
+              <a key={url} role="tab" href={url} aria-selected={Boolean(active)}>
+                {text}
+                {TabSuffix && <TabSuffix />}
+              </a>
+            ))}
+          </div>
+        )}
         {children}
         <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
           {pageNav?.children?.find((c) => c.active)?.text ?? 'No active tab'}
