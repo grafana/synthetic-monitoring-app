@@ -49,6 +49,7 @@
   "checksPageLayout": {
     "tabs": {
       "checks": "",
+      "newBadge": "",
       "recommendations": ""
     },
     "title": ""

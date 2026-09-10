@@ -137,6 +137,34 @@ describe('Recommendations tab', () => {
     expect(screen.queryAllByTestId(RECOMMENDATIONS_TEST_ID.section)).toHaveLength(0);
   });
 
+  describe('feedback', () => {
+    it('collects a reaction and a comment', async () => {
+      const reportInteraction = jest.fn();
+      jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+      const { user } = await renderTab([buildCheck({ job: 'unalerted', target: 'https://a.com' })]);
+
+      await user.click(await screen.findByRole('button', { name: /i love this feature/i }));
+      await user.type(screen.getByRole('textbox', { name: /additional comments/i }), 'useful');
+      await user.click(screen.getByRole('button', { name: /submit/i }));
+
+      expect(screen.getByText(/thank you/i)).toBeInTheDocument();
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_feature_feedback_feature_feedback_submitted',
+        expect.objectContaining({ feature: 'recommendations', reaction: 'good' })
+      );
+    });
+
+    // Finding nothing worth showing is as useful a signal as a finding being wrong.
+    it('is available even when there is nothing to report', async () => {
+      await renderTab([
+        buildCheck({ job: 'healthy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
+      ]);
+
+      expect(await screen.findByRole('button', { name: /i don't like this feature/i })).toBeInTheDocument();
+    });
+  });
+
   it('sends people to create a check when they have none', async () => {
     await renderTab([]);
 
