@@ -62,11 +62,6 @@
       "description": "",
       "title": ""
     },
-    "card": {
-      "checkCount": "",
-      "groupCount": "",
-      "groupDetail": ""
-    },
     "duplicateChecks": {
       "action": "",
       "description": "",
@@ -75,6 +70,10 @@
     "emptyState": {
       "body": "",
       "message": ""
+    },
+    "group": {
+      "count": "",
+      "detail": ""
     },
     "intro": "",
     "missingCostLabels": {
@@ -91,6 +90,16 @@
       "action": "",
       "description": "",
       "title": ""
+    },
+    "row": {
+      "editCheck": "",
+      "paused": ""
+    },
+    "summary": {
+      "alertingGaps": "",
+      "groups": "",
+      "missingCostLabels": "",
+      "paused": ""
     }
   },
   "testing-and-synthetics-landing": {

@@ -60,12 +60,7 @@
     "alertingGaps": {
       "action": "Set up alerts",
       "description": "These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.",
-      "title": "Checks running without alerts"
-    },
-    "card": {
-      "checkCount": "Affected checks: {{checkCount}}",
-      "groupCount": "{{checkCount}} checks",
-      "groupDetail": "{{detail}} · {{checkCount}} checks"
+      "title": "Alerting"
     },
     "duplicateChecks": {
       "action": "Review duplicates",
@@ -76,21 +71,35 @@
       "body": "Every check is alerting, attributed, running and pointed at something nothing else covers.",
       "message": "Nothing needs your attention"
     },
+    "group": {
+      "count": "{{checkCount}} checks",
+      "detail": "{{detail}} · {{checkCount}} checks"
+    },
     "intro": "Findings derived from how your checks are configured. Each one opens the checks it refers to.",
     "missingCostLabels": {
       "action": "Add labels",
       "description": "These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.",
-      "title": "Checks missing cost attribution labels"
+      "title": "Cost attribution"
     },
     "overlappingTargets": {
       "action": "Review overlap",
       "description": "These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.",
-      "title": "Targets monitored by several check types"
+      "title": "Overlapping targets"
     },
     "pausedChecks": {
       "action": "Review paused checks",
       "description": "These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.",
       "title": "Paused checks"
+    },
+    "row": {
+      "editCheck": "Edit {{job}}",
+      "paused": "paused"
+    },
+    "summary": {
+      "alertingGaps": "{{affectedCheckCount}} of {{totalCheckCount}} checks have no alerts",
+      "groups": "{{groupCount}} of {{totalCheckCount}} checks across {{targetCount}} targets",
+      "missingCostLabels": "{{affectedCheckCount}} of {{totalCheckCount}} checks are unattributed",
+      "paused": "{{affectedCheckCount}} of {{totalCheckCount}} checks are paused"
     }
   },
   "testing-and-synthetics-landing": {

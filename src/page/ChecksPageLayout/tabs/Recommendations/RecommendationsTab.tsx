@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { IconName } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
-import { EmptyState, Stack, Text } from '@grafana/ui';
+import { EmptyState, LinkButton, Stack, Text } from '@grafana/ui';
 import {
   trackRecommendationActioned,
   trackRecommendationShown,
@@ -9,15 +8,15 @@ import {
 } from 'features/tracking/recommendationEvents';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
-import { Recommendation, RecommendationId } from './Recommendations.types';
-import { FeatureName } from 'types';
+import { Recommendation, RecommendationId, RecommendationSeverity } from './Recommendations.types';
+import { Check, FeatureName } from 'types';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
-import { RecommendationCard } from './RecommendationCard';
+import { CheckRow, GroupRow, PaginatedRows, RecommendationSection } from './Recommendations.components';
 import {
   getChecksByTargetUrl,
   getChecksMissingCostLabelsUrl,
@@ -63,52 +62,117 @@ function RecommendationsTabContent() {
   }
 
   return (
-    <Stack direction="column" gap={2}>
+    <Stack direction="column" gap={3}>
       <Text color="secondary">
         <Trans i18nKey="recommendations.intro">
           Findings derived from how your checks are configured. Each one opens the checks it refers to.
         </Trans>
       </Text>
-      <Stack direction="column" gap={1}>
-        {recommendations.map((recommendation) => (
-          <RecommendationCardFor key={recommendation.id} calNames={calNames} recommendation={recommendation} />
-        ))}
-      </Stack>
+      {recommendations.map((recommendation) => (
+        <RecommendationFinding
+          key={recommendation.id}
+          calNames={calNames}
+          recommendation={recommendation}
+          totalCheckCount={checks.length}
+        />
+      ))}
     </Stack>
   );
 }
 
-interface RecommendationCardForProps {
+interface RecommendationFindingProps {
   recommendation: Recommendation;
   calNames: string[];
+  totalCheckCount: number;
 }
 
-function RecommendationCardFor({ recommendation, calNames }: RecommendationCardForProps) {
+function RecommendationFinding({ recommendation, calNames, totalCheckCount }: RecommendationFindingProps) {
   const { id, checks, groups } = recommendation;
-  const { icon, title, description, actionLabel, href } = getRecommendationCopy(recommendation, calNames);
+  const { severity, title, tooltip, actionLabel, href } = getRecommendationCopy(recommendation, calNames);
 
   return (
-    <RecommendationCard
-      icon={icon}
+    <RecommendationSection
       title={title}
-      description={description}
-      checkCount={checks.length}
-      action={{
-        label: actionLabel,
-        href,
-        onClick: () => trackRecommendationActioned({ finding: id, scope: 'finding' }),
-      }}
-      groups={groups}
-      getGroupHref={(group) => getChecksByTargetUrl(group.label)}
-      onGroupClick={() => trackRecommendationActioned({ finding: id, scope: 'group' })}
-    />
+      tooltip={tooltip}
+      summary={getSummary(recommendation, totalCheckCount)}
+      action={
+        <LinkButton
+          variant="secondary"
+          fill="outline"
+          size="sm"
+          href={href}
+          onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
+        >
+          {actionLabel}
+        </LinkButton>
+      }
+    >
+      {groups ? (
+        <PaginatedRows
+          items={groups}
+          renderItem={(group) => (
+            <GroupRow
+              key={group.key}
+              label={group.label}
+              detail={
+                group.detail
+                  ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
+                      detail: group.detail,
+                      checkCount: group.checks.length,
+                    })
+                  : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: group.checks.length })
+              }
+              severity={severity}
+              checks={group.checks}
+            />
+          )}
+        />
+      ) : (
+        <PaginatedRows
+          items={checks}
+          renderItem={(check) => <CheckRow key={check.id} check={check} severity={severity} />}
+        />
+      )}
+    </RecommendationSection>
   );
 }
 
+function getSummary({ id, checks, groups }: Recommendation, totalCheckCount: number) {
+  if (groups) {
+    return t('recommendations.summary.groups', '{{groupCount}} of {{totalCheckCount}} checks across {{targetCount}} targets', {
+      groupCount: checks.length,
+      totalCheckCount,
+      targetCount: groups.length,
+    });
+  }
+
+  switch (id) {
+    case RecommendationId.AlertingGaps:
+      return t(
+        'recommendations.summary.alertingGaps',
+        '{{affectedCheckCount}} of {{totalCheckCount}} checks have no alerts',
+        { affectedCheckCount: checks.length, totalCheckCount }
+      );
+
+    case RecommendationId.MissingCostLabels:
+      return t(
+        'recommendations.summary.missingCostLabels',
+        '{{affectedCheckCount}} of {{totalCheckCount}} checks are unattributed',
+        { affectedCheckCount: checks.length, totalCheckCount }
+      );
+
+    default:
+      return t('recommendations.summary.paused', '{{affectedCheckCount}} of {{totalCheckCount}} checks are paused', {
+        affectedCheckCount: checks.length,
+        totalCheckCount,
+      });
+  }
+}
+
 interface RecommendationCopy {
-  icon: IconName;
+  severity: RecommendationSeverity;
   title: string;
-  description: string;
+  tooltip: string;
   actionLabel: string;
   href: string;
 }
@@ -117,9 +181,10 @@ function getRecommendationCopy({ id, checks, groups }: Recommendation, calNames:
   switch (id) {
     case RecommendationId.AlertingGaps:
       return {
-        icon: 'bell-slash',
-        title: t('recommendations.alertingGaps.title', 'Checks running without alerts'),
-        description: t(
+        // The only finding where doing nothing means a real failure goes unseen.
+        severity: 'error',
+        title: t('recommendations.alertingGaps.title', 'Alerting'),
+        tooltip: t(
           'recommendations.alertingGaps.description',
           'These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.'
         ),
@@ -129,9 +194,9 @@ function getRecommendationCopy({ id, checks, groups }: Recommendation, calNames:
 
     case RecommendationId.MissingCostLabels:
       return {
-        icon: 'tag-alt',
-        title: t('recommendations.missingCostLabels.title', 'Checks missing cost attribution labels'),
-        description: t(
+        severity: 'warning',
+        title: t('recommendations.missingCostLabels.title', 'Cost attribution'),
+        tooltip: t(
           'recommendations.missingCostLabels.description',
           'These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.',
           { labels: calNames.join(', ') }
@@ -142,9 +207,9 @@ function getRecommendationCopy({ id, checks, groups }: Recommendation, calNames:
 
     case RecommendationId.DuplicateChecks:
       return {
-        icon: 'file-copy-alt',
+        severity: 'info',
         title: t('recommendations.duplicateChecks.title', 'Duplicate checks'),
-        description: t(
+        tooltip: t(
           'recommendations.duplicateChecks.description',
           'These targets are monitored more than once by the same type of check. Duplicates cost the same as the original and rarely tell you anything new.'
         ),
@@ -154,9 +219,9 @@ function getRecommendationCopy({ id, checks, groups }: Recommendation, calNames:
 
     case RecommendationId.OverlappingTargets:
       return {
-        icon: 'layers-alt',
-        title: t('recommendations.overlappingTargets.title', 'Targets monitored by several check types'),
-        description: t(
+        severity: 'info',
+        title: t('recommendations.overlappingTargets.title', 'Overlapping targets'),
+        tooltip: t(
           'recommendations.overlappingTargets.description',
           'These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.'
         ),
@@ -166,9 +231,9 @@ function getRecommendationCopy({ id, checks, groups }: Recommendation, calNames:
 
     case RecommendationId.PausedChecks:
       return {
-        icon: 'pause-circle',
+        severity: 'warning',
         title: t('recommendations.pausedChecks.title', 'Paused checks'),
-        description: t(
+        tooltip: t(
           'recommendations.pausedChecks.description',
           'These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.'
         ),
@@ -192,7 +257,7 @@ function useRecommendationImpressions(recommendations: Recommendation[], checkCo
 
     reported.current = true;
     trackRecommendationsTabViewed({ findingCount: recommendations.length, checkCount });
-    recommendations.forEach(({ id, checks }) =>
+    recommendations.forEach(({ id, checks }: { id: RecommendationId; checks: Check[] }) =>
       trackRecommendationShown({ finding: id, affectedCheckCount: checks.length })
     );
   }, [recommendations, checkCount]);
