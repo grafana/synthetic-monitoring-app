@@ -3,21 +3,12 @@ import { Outlet } from 'react-router';
 import { NavModelItem } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { PluginPage } from '@grafana/runtime';
-import { Badge } from '@grafana/ui';
 
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
 import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
-
-/**
- * `tabSuffix` is the only extension point Grafana's PageTabs forwards to a tab (alongside
- * `tabCounter`); the `isNew` flag on a NavModelItem is read by the mega menu, not by tabs.
- * Must stay module level so the pageNav memo has a stable component reference.
- */
-function NewTabBadge({ className }: { className?: string }) {
-  return <Badge className={className} text={t('checksPageLayout.tabs.newBadge', 'NEW')} color="orange" />;
-}
+import { NewBadge } from 'components/NewStatusBadge';
 
 /**
  * Wraps the check list and its sibling tabs. Only the tabbed routes sit under this layout:
@@ -51,7 +42,9 @@ export function ChecksPageLayout() {
           text: t('checksPageLayout.tabs.recommendations', 'Recommendations'),
           url: getChecksTabUrl('recommendations'),
           active: activeTab('recommendations'),
-          tabSuffix: NewTabBadge,
+          // `tabSuffix` is the extension point Grafana's PageTabs forwards to a Tab; the
+          // `isNew` flag on a NavModelItem is read by the mega menu, not by page tabs.
+          tabSuffix: NewBadge,
         },
       ],
     };
