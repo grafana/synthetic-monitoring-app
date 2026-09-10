@@ -14,6 +14,7 @@ import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
+import { Feedback } from 'components/Feedback';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
 import { CheckRow, GroupRow, PaginatedRows, RecommendationSection } from './Recommendations.components';
@@ -47,35 +48,39 @@ function RecommendationsTabContent() {
     return <ChecksEmptyState />;
   }
 
-  if (recommendations.length === 0) {
-    return (
-      <EmptyState
-        variant="completed"
-        message={t('recommendations.emptyState.message', 'Nothing needs your attention')}
-        data-testid={RECOMMENDATIONS_TEST_ID.emptyState}
-      >
-        <Trans i18nKey="recommendations.emptyState.body">
-          Every check is alerting, attributed, running and pointed at something nothing else covers.
-        </Trans>
-      </EmptyState>
-    );
-  }
-
   return (
     <Stack direction="column" gap={3}>
-      <Text color="secondary">
-        <Trans i18nKey="recommendations.intro">
-          Findings derived from how your checks are configured. Each one opens the checks it refers to.
-        </Trans>
-      </Text>
-      {recommendations.map((recommendation) => (
-        <RecommendationFinding
-          key={recommendation.id}
-          calNames={calNames}
-          recommendation={recommendation}
-          totalCheckCount={checks.length}
-        />
-      ))}
+      {/* The tab itself carries the NEW badge, so the feedback control does not repeat it.
+          It sits outside the empty state too: hearing that we found nothing worth showing is
+          as useful a signal as hearing that a finding was wrong. */}
+      <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
+        <Text color="secondary">
+          <Trans i18nKey="recommendations.intro">
+            Findings derived from how your checks are configured. Each one opens the checks it refers to.
+          </Trans>
+        </Text>
+        <Feedback feature="recommendations" />
+      </Stack>
+      {recommendations.length === 0 ? (
+        <EmptyState
+          variant="completed"
+          message={t('recommendations.emptyState.message', 'Nothing needs your attention')}
+          data-testid={RECOMMENDATIONS_TEST_ID.emptyState}
+        >
+          <Trans i18nKey="recommendations.emptyState.body">
+            Every check is alerting, attributed, running and pointed at something nothing else covers.
+          </Trans>
+        </EmptyState>
+      ) : (
+        recommendations.map((recommendation) => (
+          <RecommendationFinding
+            key={recommendation.id}
+            calNames={calNames}
+            recommendation={recommendation}
+            totalCheckCount={checks.length}
+          />
+        ))
+      )}
     </Stack>
   );
 }
