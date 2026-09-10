@@ -46,8 +46,52 @@
       "missingLabels": "Missing cost attribution labels: {{labelList}}"
     }
   },
+  "checksPageLayout": {
+    "tabs": {
+      "checks": "Checks",
+      "recommendations": "Recommendations"
+    },
+    "title": "Checks"
+  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"
+  },
+  "recommendations": {
+    "alertingGaps": {
+      "action": "Set up alerts",
+      "description": "These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.",
+      "title": "Checks running without alerts"
+    },
+    "card": {
+      "checkCount": "Affected checks: {{checkCount}}",
+      "groupCount": "{{checkCount}} checks",
+      "groupDetail": "{{detail}} · {{checkCount}} checks"
+    },
+    "duplicateChecks": {
+      "action": "Review duplicates",
+      "description": "These targets are monitored more than once by the same type of check. Duplicates cost the same as the original and rarely tell you anything new.",
+      "title": "Duplicate checks"
+    },
+    "emptyState": {
+      "body": "Every check is alerting, attributed, running and pointed at something nothing else covers.",
+      "message": "Nothing needs your attention"
+    },
+    "intro": "Findings derived from how your checks are configured. Each one opens the checks it refers to.",
+    "missingCostLabels": {
+      "action": "Add labels",
+      "description": "These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.",
+      "title": "Checks missing cost attribution labels"
+    },
+    "overlappingTargets": {
+      "action": "Review overlap",
+      "description": "These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.",
+      "title": "Targets monitored by several check types"
+    },
+    "pausedChecks": {
+      "action": "Review paused checks",
+      "description": "These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.",
+      "title": "Paused checks"
+    }
   },
   "testing-and-synthetics-landing": {
     "performance": {

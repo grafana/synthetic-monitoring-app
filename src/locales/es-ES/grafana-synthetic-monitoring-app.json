@@ -46,8 +46,52 @@
       "missingLabels": ""
     }
   },
+  "checksPageLayout": {
+    "tabs": {
+      "checks": "",
+      "recommendations": ""
+    },
+    "title": ""
+  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Etiquetas"
+  },
+  "recommendations": {
+    "alertingGaps": {
+      "action": "",
+      "description": "",
+      "title": ""
+    },
+    "card": {
+      "checkCount": "",
+      "groupCount": "",
+      "groupDetail": ""
+    },
+    "duplicateChecks": {
+      "action": "",
+      "description": "",
+      "title": ""
+    },
+    "emptyState": {
+      "body": "",
+      "message": ""
+    },
+    "intro": "",
+    "missingCostLabels": {
+      "action": "",
+      "description": "",
+      "title": ""
+    },
+    "overlappingTargets": {
+      "action": "",
+      "description": "",
+      "title": ""
+    },
+    "pausedChecks": {
+      "action": "",
+      "description": "",
+      "title": ""
+    }
   },
   "testing-and-synthetics-landing": {
     "performance": {
