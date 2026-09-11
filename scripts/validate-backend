@@ -33,8 +33,8 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 # Grafana only instantiates a datasource backend for a configured datasource, so
-# provision one. Mounted as a single file *inside* the dev/provisioning bind so
-# the checked-in provisioning is left untouched.
+# provision one. Mount the temp directory over the container datasources path so
+# nothing is written under dev/provisioning on the host.
 cat > "$provisioning/sm-backend-validate.yaml" <<EOT
 apiVersion: 1
 datasources:
@@ -52,7 +52,7 @@ services:
     ports: !override
       - $PORT:3000
     volumes:
-      - $provisioning/sm-backend-validate.yaml:/etc/grafana/provisioning/datasources/sm-backend-validate.yaml
+      - $provisioning:/etc/grafana/provisioning/datasources
 EOT
 
 fail() {
@@ -69,7 +69,15 @@ else
 	go run github.com/magefile/mage -v buildAll >/dev/null
 fi
 
-echo "==> checking dist/ has a binary for linux (the container's OS)"
+echo "==> staging plugin metadata in dist/"
+mkdir -p dist/datasource
+cp src/plugin.json dist/plugin.json
+cp src/datasource/plugin.json dist/datasource/plugin.json
+
+echo "==> checking dist/ has plugin metadata and a linux binary (the container's OS)"
+test -f dist/plugin.json || fail "missing dist/plugin.json"
+test -f dist/datasource/plugin.json || fail "missing dist/datasource/plugin.json"
+echo "    found dist/plugin.json and dist/datasource/plugin.json"
 arch=$(docker version --format '{{.Server.Arch}}')
 case "$arch" in
 	amd64) want=dist/datasource/gpx_sm_datasource_linux_amd64 ;;
