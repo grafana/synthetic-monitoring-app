@@ -3,6 +3,7 @@
 package plugin
 
 import (
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -14,8 +15,8 @@ import (
 // This file is excluded from the normal `go test ./pkg/...` run (what `mage
 // test`/`testRace` -- and so CI's "Test" step -- invoke) by the schemadrift
 // build tag. Detecting drift in the generated schema files is a distinct
-// concern from "do the backend tests pass", so it runs on its own via `mage
-// go:detectSchemaDrift`, called from its own CI workflow. See Magefile.go.
+// concern from "do the backend tests pass", so it runs on its own via
+// `mage go:detectSchemaDrift`, called from its own CI workflow. See Magefile.go.
 
 // TestUpdateSchema regenerates the static query-type schema Grafana serves at
 // /public/plugins/synthetic-monitoring-datasource/schema/v0alpha1/query.types.json.
@@ -35,8 +36,20 @@ func TestUpdateSchema(t *testing.T) {
 	})
 	require.NoError(t, err)
 
+	// Map iteration order is randomized per run; sort the names first so
+	// query.types.json's item order is stable and the drift check doesn't
+	// flag a spurious diff.
+	names := make([]string, 0, len(querySchemas))
+	for name := range querySchemas {
+		names = append(names, name)
+	}
+
+	sort.Strings(names)
+
 	var queries []schemabuilder.QueryTypeInfo
-	for name, qs := range querySchemas {
+
+	for _, name := range names {
+		qs := querySchemas[name]
 		queries = append(queries, schemabuilder.QueryTypeInfo{
 			Description:    qs.description,
 			Discriminators: sdkapi.NewDiscriminators("queryType", name),

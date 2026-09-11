@@ -15,8 +15,7 @@
 // sent straight to the Prometheus or Loki datasource. This backend lets the app
 // ask for a query *by name* instead -- `probe_execution_rate`, say -- and
 // resolves that name to an expression against whichever backing datasource is
-// appropriate, querying it as the calling user rather than as itself. See
-// authz.go for why that distinction matters.
+// appropriate, querying it as the calling user rather than as itself.
 package plugin
 
 import (
@@ -85,11 +84,14 @@ func NewDatasource(_ context.Context, is backend.DataSourceInstanceSettings) (in
 	var jsonData struct {
 		APIHost string `json:"apiHost"`
 	}
+
 	var s settings
+
 	if len(is.JSONData) > 0 {
 		if err := json.Unmarshal(is.JSONData, &jsonData); err != nil {
 			return nil, fmt.Errorf("parsing datasource settings: %w", err)
 		}
+
 		if err := json.Unmarshal(is.JSONData, &s); err != nil {
 			return nil, fmt.Errorf("parsing datasource settings: %w", err)
 		}
