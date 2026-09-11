@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.62.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61.0...v1.62.0) (2026-09-11)
+
+
+### Features
+
+* add affordance for checks impacted by label migration ([#1846](https://github.com/grafana/synthetic-monitoring-app/issues/1846)) ([ee3ff2f](https://github.com/grafana/synthetic-monitoring-app/commit/ee3ff2f65bc1e607caa1d8970b47f340a9374207))
+* implement grafana datasource querying for backend component ([#1843](https://github.com/grafana/synthetic-monitoring-app/issues/1843)) ([87df929](https://github.com/grafana/synthetic-monitoring-app/commit/87df9293a8244211463b532da69d906f9280f9c4))
+* render invalidLabels from the label-mode 409 collision response ([#1837](https://github.com/grafana/synthetic-monitoring-app/issues/1837)) ([c974f02](https://github.com/grafana/synthetic-monitoring-app/commit/c974f022fe0415f7759fb0df4c588887b55c7572))
+
+
+### Fixes
+
+* **alerts:** respect tenant label mode in alert routing preview ([#1847](https://github.com/grafana/synthetic-monitoring-app/issues/1847)) ([b5bc5b3](https://github.com/grafana/synthetic-monitoring-app/commit/b5bc5b3025f4775d6ec716b17b60402ef34a5d9a))
+* **security/high/:** update module google.golang.org/grpc to v1.83.1 [security] ([#1841](https://github.com/grafana/synthetic-monitoring-app/issues/1841)) ([211a804](https://github.com/grafana/synthetic-monitoring-app/commit/211a80449f7c2e4654a49419f023489c8a9e4eb0))
+* **security/high/:** update module google.golang.org/grpc to v1.83.2 [security] ([#1845](https://github.com/grafana/synthetic-monitoring-app/issues/1845)) ([5c6ebcc](https://github.com/grafana/synthetic-monitoring-app/commit/5c6ebcc300318382723f3112aa079e82389967ed))
+
 ## [1.61.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.60.0...v1.61.0) (2026-08-28)
 
 
