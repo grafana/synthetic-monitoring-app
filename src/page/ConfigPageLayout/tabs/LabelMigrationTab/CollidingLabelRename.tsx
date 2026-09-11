@@ -1,8 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { Button, Field, Input, Space, Stack, Text } from '@grafana/ui';
 
+import { type Check } from 'types';
 import { validateLabelName } from 'validation';
 import { useRenameCheckLabels } from 'data/useRenameCheckLabels';
+
+import { BlockingChecksList } from './BlockingChecksList';
 
 interface RowState {
   value: string;
@@ -15,6 +18,7 @@ interface RowState {
 interface CollidingLabelRenameProps {
   labels: string[];
   systemLabels: string[];
+  checks: Check[];
   disabled: boolean;
   retrying: boolean;
   onRetry: () => void;
@@ -24,7 +28,14 @@ interface CollidingLabelRenameProps {
 // transition retry on every label having been renamed. Renames only cover
 // checks: a label that reports zero updated checks most likely lives on a
 // probe, which must be edited directly.
-export function CollidingLabelRename({ labels, systemLabels, disabled, retrying, onRetry }: CollidingLabelRenameProps) {
+export function CollidingLabelRename({
+  labels,
+  systemLabels,
+  checks,
+  disabled,
+  retrying,
+  onRetry,
+}: CollidingLabelRenameProps) {
   const renameMutation = useRenameCheckLabels();
   const [rows, setRows] = useState<Record<string, RowState>>({});
   // Guards a same-row double click: isPending only disables the button after a
@@ -101,31 +112,34 @@ export function CollidingLabelRename({ labels, systemLabels, disabled, retrying,
               </Text>
             }
           >
-            <Stack direction="row" gap={1} alignItems="center">
-              <Input
-                width={30}
-                placeholder="New label name"
-                disabled={disabled || row.pending || row.renamed}
-                invalid={!!row.error}
-                value={row.value}
-                onChange={(e) => patchRow(label, { value: e.currentTarget.value, error: undefined })}
-                data-testid={`rename-input-${label}`}
-              />
-              <Button
-                size="sm"
-                variant="secondary"
-                onClick={() => rename(label)}
-                disabled={disabled || row.pending || row.renamed || renameMutation.isPending}
-              >
-                Rename
-              </Button>
-              {row.renamed && (
-                <Text color="secondary">
-                  {row.updatedCount === 0
-                    ? '✓ no checks carried this label — it may be set on a probe, which must be edited directly'
-                    : `✓ renamed on ${row.updatedCount} check${row.updatedCount === 1 ? '' : 's'}`}
-                </Text>
-              )}
+            <Stack direction="column" gap={1}>
+              <Stack direction="row" gap={1} alignItems="center">
+                <Input
+                  width={30}
+                  placeholder="New label name"
+                  disabled={disabled || row.pending || row.renamed}
+                  invalid={!!row.error}
+                  value={row.value}
+                  onChange={(e) => patchRow(label, { value: e.currentTarget.value, error: undefined })}
+                  data-testid={`rename-input-${label}`}
+                />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => rename(label)}
+                  disabled={disabled || row.pending || row.renamed || renameMutation.isPending}
+                >
+                  Rename
+                </Button>
+                {row.renamed && (
+                  <Text color="secondary">
+                    {row.updatedCount === 0
+                      ? '✓ no checks carried this label — it may be set on a probe, which must be edited directly'
+                      : `✓ renamed on ${row.updatedCount} check${row.updatedCount === 1 ? '' : 's'}`}
+                  </Text>
+                )}
+              </Stack>
+              {!row.renamed && <BlockingChecksList label={label} checks={checks} />}
             </Stack>
           </Field>
         );

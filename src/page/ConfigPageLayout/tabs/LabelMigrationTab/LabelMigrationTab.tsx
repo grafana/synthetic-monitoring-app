@@ -4,6 +4,7 @@ import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { LabelMode } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
+import { useChecks } from 'data/useChecks';
 import { useLabelMode, useSetLabelMode } from 'data/useLabelMode';
 import { useTenant } from 'data/useTenant';
 import { ConfirmModal } from 'components/ConfirmModal';
@@ -11,6 +12,7 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../../ConfigContent';
 import { CollidingLabelRename } from './CollidingLabelRename';
+import { ImpactedChecksWarning } from './ImpactedChecksWarning';
 import { getMigrationCooldown } from './migrationCooldown';
 import { SeriesPreview } from './SeriesPreview';
 import { useCheckInfoLabels } from './useCheckInfoLabels';
@@ -47,6 +49,7 @@ export function LabelMigrationTab() {
 
   const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
   const setLabelModeMutation = useSetLabelMode();
+  const { data: checks } = useChecks();
   const { data: tenant } = useTenant();
   const cooldown = getMigrationCooldown(tenant?.modified, Date.now());
 
@@ -122,6 +125,7 @@ export function LabelMigrationTab() {
                   labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
+                {!collisionError && <ImpactedChecksWarning checks={checks ?? []} systemLabels={state.systemLabels} />}
                 {/* While the conflicts alert is up, its "Retry enabling dual-write"
                     button is the only sanctioned path into dual-write. */}
                 {isAdmin && !collisionError && (
@@ -155,6 +159,7 @@ export function LabelMigrationTab() {
                   metrics and log streams.
                 </Alert>
                 <Space v={2} />
+                {!collisionError && <ImpactedChecksWarning checks={checks ?? []} systemLabels={state.systemLabels} />}
                 {isAdmin && (
                   <Button
                     onClick={() =>
@@ -273,6 +278,7 @@ export function LabelMigrationTab() {
                   <CollidingLabelRename
                     labels={collisionError.collidingLabels ?? []}
                     systemLabels={state.systemLabels}
+                    checks={checks ?? []}
                     disabled={!isAdmin}
                     retrying={busy}
                     onRetry={() => applyMode(LabelMode.DualWrite)}
