@@ -10,6 +10,8 @@ function getChecksListHref(label: string) {
   return `${getRoute(AppRoutes.Checks)}?${params.toString()}`;
 }
 
+const MAX_VISIBLE_CHECKS = 5;
+
 interface BlockingChecksListProps {
   label: string;
   checks: Check[];
@@ -42,19 +44,23 @@ export function BlockingChecksList({ label, checks, checksError }: BlockingCheck
     );
   }
 
+  const visibleChecks = blockingChecks.slice(0, MAX_VISIBLE_CHECKS);
+
   return (
-    <Stack direction="row" gap={1} wrap="wrap" alignItems="center" data-testid={`blocking-checks-${label}`}>
-      <Text color="secondary" variant="bodySmall">
-        Blocking checks:
-      </Text>
-      {blockingChecks.map((check, i) => (
-        <React.Fragment key={check.id}>
-          <TextLink variant="bodySmall" href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}>
-            {check.job}
-          </TextLink>
-          {i < blockingChecks.length - 1 && <Text color="secondary">,</Text>}
-        </React.Fragment>
-      ))}
+    <Stack direction="row" justifyContent="space-between" alignItems="center" data-testid={`blocking-checks-${label}`}>
+      <Stack direction="row" gap={1} wrap="wrap" alignItems="center">
+        <Text color="secondary" variant="bodySmall">
+          Blocking checks:
+        </Text>
+        {visibleChecks.map((check, i) => (
+          <React.Fragment key={check.id}>
+            <TextLink variant="bodySmall" href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}>
+              {check.job}
+            </TextLink>
+            {i < visibleChecks.length - 1 && <Text color="secondary">,</Text>}
+          </React.Fragment>
+        ))}
+      </Stack>
       <TextLink variant="bodySmall" href={getChecksListHref(label)} data-testid={`blocking-checks-view-all-${label}`}>
         View all {blockingChecks.length} in Checks list
       </TextLink>
