@@ -95,8 +95,14 @@ export const BASIC_HTTP_CHECK: HTTPCheck = DB.check.build(
 export const BASIC_SCRIPTED_CHECK: ScriptedCheck = DB.check.build(
   {
     job: 'Job name for k6',
-    labels: [{ name: 'Team', value: 'frontend' }, { name: 'scriptedLabelName', value: 'scriptedLabelValue' }],
+    labels: [
+      { name: 'Team', value: 'frontend' },
+      { name: 'scriptedLabelName', value: 'scriptedLabelValue' },
+    ],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+    // Factory draws timeout 1s–60s and frequency ≥10s. Scripted checks require ≥5s / ≥1m.
+    timeout: 10_000,
+    frequency: 60_000,
     settings: {
       scripted: {
         script: btoa('console.log("hello world")'),
@@ -237,7 +243,10 @@ export const BASIC_TRACEROUTE_CHECK: TracerouteCheck = DB.check.build(
 export const FULL_HTTP_CHECK: HTTPCheck = DB.check.build(
   {
     alertSensitivity: AlertSensitivity.Medium,
-    labels: [{ name: 'Service', value: 'monitoring' }, { name: 'agreatlabel', value: 'totally awesome label' }],
+    labels: [
+      { name: 'Service', value: 'monitoring' },
+      { name: 'agreatlabel', value: 'totally awesome label' },
+    ],
     probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
     basicMetricsOnly: true,
     settings: {
