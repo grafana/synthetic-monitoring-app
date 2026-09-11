@@ -1,0 +1,36 @@
+name: Detect schema drift
+
+# src/datasource/schema/v0alpha1/query.types.json is generated from the named
+# query registry in pkg/plugin (see pkg/plugin/schema_drift_test.go). Nothing
+# in the shared plugin CI workflow regenerates or checks it, so this is a
+# separate concern from "do the backend tests pass" and gets its own workflow
+# rather than being folded into that run.
+#
+# Run the same check locally with `mage go:detectSchemaDrift`.
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  detect-schema-drift:
+    name: Detect schema drift
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      # mage is a module dependency, so `go run` uses the pinned version and
+      # needs no separate install step.
+      - name: Detect schema drift
+        run: go run github.com/magefile/mage -v go:detectSchemaDrift
