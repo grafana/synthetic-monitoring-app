@@ -63,6 +63,8 @@ export function useAllSLOs() {
   const canFetch = pluginInstalled && !functionsLoading && typeof getSLOApi === 'function';
 
   const query = useQuery({
+    // getSLOApi is a function; react-query hashes keys via JSON.stringify so it serialises to null.
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: sloQueryKeys.all,
     queryFn: () => {
       if (!getSLOApi) {

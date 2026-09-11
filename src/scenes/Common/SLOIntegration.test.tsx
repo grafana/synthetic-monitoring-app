@@ -3,9 +3,9 @@ import { usePluginComponent } from '@grafana/runtime';
 import { screen, waitFor, within } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
-import { showAlert } from 'data/utils';
 
 import type { SLO } from './grafanaSLOApp.types';
+import { showAlert } from 'data/utils';
 
 import { SLOIntegration } from './SLOIntegration';
 import { buildSLOName } from './SLOIntegration.utils';
