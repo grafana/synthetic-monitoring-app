@@ -19,6 +19,7 @@ interface CollidingLabelRenameProps {
   labels: string[];
   systemLabels: string[];
   checks: Check[];
+  checksError?: boolean;
   disabled: boolean;
   retrying: boolean;
   onRetry: () => void;
@@ -32,6 +33,7 @@ export function CollidingLabelRename({
   labels,
   systemLabels,
   checks,
+  checksError,
   disabled,
   retrying,
   onRetry,
@@ -139,7 +141,7 @@ export function CollidingLabelRename({
                   </Text>
                 )}
               </Stack>
-              {!row.renamed && <BlockingChecksList label={label} checks={checks} />}
+              {!row.renamed && <BlockingChecksList label={label} checks={checks} checksError={checksError} />}
             </Stack>
           </Field>
         );

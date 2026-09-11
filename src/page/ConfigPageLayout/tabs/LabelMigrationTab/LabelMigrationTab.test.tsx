@@ -66,7 +66,7 @@ describe('LabelMigrationTab', () => {
     const warning = await screen.findByTestId('impacted-checks-warning');
     expect(warning).toHaveTextContent(/1 check/i);
 
-    await userEvent.click(within(warning).getByText(/Show 1 impacted label/i));
+    await userEvent.click(within(warning).getByText(/Impacted label \(1\)/i));
 
     // The offending label name itself is shown, not just the checks carrying it.
     expect(within(warning).getByText('instance')).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe('LabelMigrationTab', () => {
     await renderTab();
 
     const warning = await screen.findByTestId('impacted-checks-warning');
-    await userEvent.click(within(warning).getByText(/Show 1 impacted label/i));
+    await userEvent.click(within(warning).getByText(/Impacted label \(1\)/i));
     expect(within(warning).getByRole('link', { name: 'checkout-ping' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Finalize migration/i })).toBeInTheDocument();
   });
@@ -105,6 +105,34 @@ describe('LabelMigrationTab', () => {
 
     expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
     expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
+  });
+
+  // A failed checks fetch leaves the checks list empty, which is
+  // indistinguishable from "confirmed zero collisions" unless the failure is
+  // surfaced explicitly — otherwise a real 500/permissions gap silently reads
+  // as an all-clear.
+  it('surfaces a failed check fetch instead of silently reporting no impacted checks', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning-error');
+    expect(warning).toHaveTextContent(/couldn't verify/i);
+    // The confident "no collisions" state must not also render.
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+  });
+
+  it('surfaces a failed check fetch in the reactive collision alert instead of a false "no checks" hint', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+
+    await triggerCollision(['instance']);
+
+    expect(await screen.findByTestId('blocking-checks-error-instance')).toHaveTextContent(/couldn't load checks/i);
+    // The unconditional "no checks carry this label" hint is misleading here — a
+    // failed fetch is not evidence the label lives on a probe.
+    expect(screen.queryByTestId('blocking-checks-empty-instance')).not.toBeInTheDocument();
   });
 
   it('shows a confirmation modal with contextual confirmText when Enable dual-write is clicked', async () => {

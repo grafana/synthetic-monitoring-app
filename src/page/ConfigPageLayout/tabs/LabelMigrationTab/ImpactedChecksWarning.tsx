@@ -10,6 +10,7 @@ import { BlockingChecksList } from './BlockingChecksList';
 interface ImpactedChecksWarningProps {
   checks: Check[];
   systemLabels: string[];
+  checksError?: boolean;
 }
 
 // Surfaces which reserved-name collisions already exist before the admin
@@ -18,9 +19,23 @@ interface ImpactedChecksWarningProps {
 // breakdown lives in its own Collapse (not inside the Alert body) so a
 // tenant with many colliding labels doesn't turn the warning into a wall of
 // text — the Alert states the headline, the Collapse holds the detail.
-export function ImpactedChecksWarning({ checks, systemLabels }: ImpactedChecksWarningProps) {
+export function ImpactedChecksWarning({ checks, systemLabels, checksError }: ImpactedChecksWarningProps) {
   const styles = useStyles2(getStyles);
   const [isOpen, setIsOpen] = useState(false);
+
+  // A failed check-list fetch leaves `checks` empty, which looks identical to
+  // a confirmed "no collisions" result below — surface the failure instead of
+  // silently reporting a false negative.
+  if (checksError) {
+    return (
+      <div data-testid="impacted-checks-warning-error">
+        <Alert severity="warning" title="Couldn't verify whether any checks use reserved label names">
+          <Text>The check list failed to load, so this can&apos;t confirm whether this transition will be blocked.</Text>
+        </Alert>
+        <Space v={2} />
+      </div>
+    );
+  }
 
   const impactedLabels = systemLabels.filter((name) => checks.some((check) => check.labels.some((l) => l.name === name)));
 
@@ -44,7 +59,7 @@ export function ImpactedChecksWarning({ checks, systemLabels }: ImpactedChecksWa
         </Text>
       </Alert>
       <Collapse
-        label={`${isOpen ? 'Hide' : 'Show'} ${impactedLabels.length} impacted label${impactedLabels.length === 1 ? '' : 's'}`}
+        label={`Impacted label${impactedLabels.length === 1 ? '' : 's'} (${impactedLabels.length})`}
         isOpen={isOpen}
         onToggle={() => setIsOpen((v) => !v)}
       >

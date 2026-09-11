@@ -49,7 +49,7 @@ export function LabelMigrationTab() {
 
   const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
   const setLabelModeMutation = useSetLabelMode();
-  const { data: checks } = useChecks();
+  const { data: checks, isError: checksError } = useChecks();
   const { data: tenant } = useTenant();
   const cooldown = getMigrationCooldown(tenant?.modified, Date.now());
 
@@ -125,7 +125,13 @@ export function LabelMigrationTab() {
                   labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
-                {!collisionError && <ImpactedChecksWarning checks={checks ?? []} systemLabels={state.systemLabels} />}
+                {!collisionError && (
+                  <ImpactedChecksWarning
+                    checks={checks ?? []}
+                    systemLabels={state.systemLabels}
+                    checksError={checksError}
+                  />
+                )}
                 {/* While the conflicts alert is up, its "Retry enabling dual-write"
                     button is the only sanctioned path into dual-write. */}
                 {isAdmin && !collisionError && (
@@ -159,7 +165,13 @@ export function LabelMigrationTab() {
                   metrics and log streams.
                 </Alert>
                 <Space v={2} />
-                {!collisionError && <ImpactedChecksWarning checks={checks ?? []} systemLabels={state.systemLabels} />}
+                {!collisionError && (
+                  <ImpactedChecksWarning
+                    checks={checks ?? []}
+                    systemLabels={state.systemLabels}
+                    checksError={checksError}
+                  />
+                )}
                 {isAdmin && (
                   <Button
                     onClick={() =>
@@ -279,6 +291,7 @@ export function LabelMigrationTab() {
                     labels={collisionError.collidingLabels ?? []}
                     systemLabels={state.systemLabels}
                     checks={checks ?? []}
+                    checksError={checksError}
                     disabled={!isAdmin}
                     retrying={busy}
                     onRetry={() => applyMode(LabelMode.DualWrite)}
