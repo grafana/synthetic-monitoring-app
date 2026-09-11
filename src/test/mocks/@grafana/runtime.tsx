@@ -29,15 +29,20 @@ jest.mock('@grafana/runtime', () => {
   };
 
   type Location = { pathname: string; search: string; hash: string; state: unknown; key: string };
-  type PathArg = string | { pathname?: string; search?: string; hash?: string };
+  type PathArg = string | { pathname?: string; search?: string; hash?: string; state?: unknown };
 
   let location: Location = { pathname: '/', search: '', hash: '', state: null, key: 'default' };
   let listeners: Array<(update: { location: Location; action: string }) => void> = [];
   let blockers: Array<(location: Location, action: string) => boolean | void> = [];
 
-  const parsePath = (path: PathArg) => {
+  const parsePath = (path: PathArg, state?: unknown) => {
     if (typeof path !== 'string') {
-      return { pathname: path.pathname || '/', search: path.search || '', hash: path.hash || '' };
+      return {
+        pathname: path.pathname || '/',
+        search: path.search || '',
+        hash: path.hash || '',
+        state: state ?? path.state ?? null,
+      };
     }
     const searchIdx = path.indexOf('?');
     const hashIdx = path.indexOf('#');
@@ -45,16 +50,17 @@ jest.mock('@grafana/runtime', () => {
       pathname: searchIdx >= 0 ? path.slice(0, searchIdx) : hashIdx >= 0 ? path.slice(0, hashIdx) : path,
       search: searchIdx >= 0 ? path.slice(searchIdx, hashIdx >= 0 ? hashIdx : undefined) : '',
       hash: hashIdx >= 0 ? path.slice(hashIdx) : '',
+      state: state ?? null,
     };
   };
 
-  const navigate = (path: PathArg, action: string) => {
-    const parsed = parsePath(path);
+  const navigate = (path: PathArg, action: string, state?: unknown) => {
+    const parsed = parsePath(path, state);
     // Prevent infinite loops by skipping navigation to the same location
-    if (location.pathname === parsed.pathname && location.search === parsed.search) {
+    if (location.pathname === parsed.pathname && location.search === parsed.search && location.state === parsed.state) {
       return;
     }
-    const next: Location = { ...parsed, state: null, key: Math.random().toString(36).slice(2) };
+    const next: Location = { ...parsed, key: Math.random().toString(36).slice(2) };
     for (const blocker of blockers) {
       if (blocker(next, action) === false) {
         return;
@@ -74,8 +80,8 @@ jest.mock('@grafana/runtime', () => {
     get action() {
       return 'POP' as const;
     },
-    push: (path: PathArg) => navigate(path, 'PUSH'),
-    replace: (path: PathArg) => navigate(path, 'REPLACE'),
+    push: (path: PathArg, state?: unknown) => navigate(path, 'PUSH', state),
+    replace: (path: PathArg, state?: unknown) => navigate(path, 'REPLACE', state),
     go: () => {},
     back: () => {},
     forward: () => {},
@@ -95,8 +101,8 @@ jest.mock('@grafana/runtime', () => {
   };
 
   const locationService = {
-    push: jest.fn((path: PathArg) => history.push(path)),
-    replace: jest.fn((path: PathArg) => history.replace(path)),
+    push: jest.fn((path: PathArg, state?: unknown) => history.push(path, state)),
+    replace: jest.fn((path: PathArg, state?: unknown) => history.replace(path, state)),
     getLocation: jest.fn(() => location),
     getHistory: jest.fn(() => history),
     getSearch: jest.fn(() => new URLSearchParams(location.search)),
@@ -106,7 +112,7 @@ jest.mock('@grafana/runtime', () => {
       Object.entries(query).forEach(([k, v]) => (v == null ? params.delete(k) : params.set(k, v)));
       const search = params.toString();
       const href = search ? `${location.pathname}?${search}` : location.pathname;
-      replace ? history.replace(href) : history.push(href);
+      replace ? history.replace(href, location.state) : history.push(href, location.state);
     }),
   };
 
