@@ -2,12 +2,15 @@ import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CONFIG_TEST_ID } from 'test/dataTestIds';
+import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from 'test/fixtures/checks';
 import { TENANT, TENANT_LABEL_MODE } from 'test/fixtures/tenants';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { runTestAsSMAdmin, runTestAsSMViewer } from 'test/utils';
 
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { queryInstantMetric } from 'data/utils';
 
 import { LabelMigrationTab } from './LabelMigrationTab';
@@ -44,6 +47,92 @@ describe('LabelMigrationTab', () => {
     runTestAsSMAdmin();
     await renderTab();
     await waitFor(() => expect(screen.getByRole('button', { name: /Enable dual-write/i })).toBeInTheDocument());
+  });
+
+  it('shows no pre-flight warning when no checks use reserved label names', async () => {
+    runTestAsSMAdmin();
+    await renderTab();
+    await screen.findByRole('button', { name: /Enable dual-write/i });
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+  });
+
+  it('shows a pre-flight warning with the impacted check count before Enable dual-write is clicked', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_HTTP_CHECK, id: 201, job: 'checkout-http', labels: [{ name: 'instance', value: 'x' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) }));
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning');
+    expect(warning).toHaveTextContent(/1 check/i);
+
+    await userEvent.click(within(warning).getByText(/Impacted label \(1\)/i));
+
+    // The offending label name itself is shown, not just the checks carrying it.
+    expect(within(warning).getByText('instance')).toBeInTheDocument();
+    expect(within(warning).getByRole('link', { name: 'checkout-http' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.EditCheck, { id: 201 })
+    );
+    // The action to actually attempt the transition is still available.
+    expect(screen.getByRole('button', { name: /Enable dual-write/i })).toBeInTheDocument();
+  });
+
+  it('shows a pre-flight warning before Finalize migration is clicked', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_PING_CHECK, id: 202, job: 'checkout-ping', labels: [{ name: 'job', value: 'x' }] };
+    server.use(
+      apiRoute('getLabelMode', {
+        result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+      }),
+      apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) })
+    );
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning');
+    await userEvent.click(within(warning).getByText(/Impacted label \(1\)/i));
+    expect(within(warning).getByRole('link', { name: 'checkout-ping' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Finalize migration/i })).toBeInTheDocument();
+  });
+
+  it('hides the pre-flight warning while the reactive collision alert is shown', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_HTTP_CHECK, id: 203, job: 'checkout-http', labels: [{ name: 'instance', value: 'x' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) }));
+
+    await triggerCollision(['instance']);
+
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
+  });
+
+  // A failed checks fetch leaves the checks list empty, which is
+  // indistinguishable from "confirmed zero collisions" unless the failure is
+  // surfaced explicitly — otherwise a real 500/permissions gap silently reads
+  // as an all-clear.
+  it('surfaces a failed check fetch instead of silently reporting no impacted checks', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning-error');
+    expect(warning).toHaveTextContent(/couldn't verify/i);
+    // The confident "no collisions" state must not also render.
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+  });
+
+  it('surfaces a failed check fetch in the reactive collision alert instead of a false "no checks" hint', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+
+    await triggerCollision(['instance']);
+
+    expect(await screen.findByTestId('blocking-checks-error-instance')).toHaveTextContent(/couldn't load checks/i);
+    // The unconditional "no checks carry this label" hint is misleading here — a
+    // failed fetch is not evidence the label lives on a probe.
+    expect(screen.queryByTestId('blocking-checks-empty-instance')).not.toBeInTheDocument();
   });
 
   it('shows a confirmation modal with contextual confirmText when Enable dual-write is clicked', async () => {
@@ -709,6 +798,48 @@ describe('LabelMigrationTab', () => {
     // The gate opens even though nothing was fixed: the retry will 409 again
     // and remount the flow — deliberate, since only the API knows the truth.
     expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeEnabled();
+  });
+
+  it('lists checks that carry a colliding label, linking to each check\'s edit page', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck1 = { ...BASIC_HTTP_CHECK, id: 101, job: 'checkout-http', labels: [{ name: 'probe', value: 'x' }] };
+    const blockingCheck2 = { ...BASIC_PING_CHECK, id: 102, job: 'checkout-ping', labels: [{ name: 'probe', value: 'y' }] };
+    const unrelatedCheck = { ...BASIC_TCP_CHECK, id: 103, job: 'unrelated-tcp', labels: [{ name: 'env', value: 'prod' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck1, blockingCheck2, unrelatedCheck] }) }));
+
+    await triggerCollision(['probe']);
+
+    const blockingList = await screen.findByTestId('blocking-checks-probe');
+    expect(within(blockingList).getByRole('link', { name: 'checkout-http' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.EditCheck, { id: 101 })
+    );
+    expect(within(blockingList).getByRole('link', { name: 'checkout-ping' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.EditCheck, { id: 102 })
+    );
+    expect(within(blockingList).queryByRole('link', { name: 'unrelated-tcp' })).not.toBeInTheDocument();
+  });
+
+  it('links to a Checks list filtered to the colliding label', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_HTTP_CHECK, id: 101, job: 'checkout-http', labels: [{ name: 'probe', value: 'x' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) }));
+
+    await triggerCollision(['probe']);
+
+    const viewAll = await screen.findByTestId('blocking-checks-view-all-probe');
+    expect(viewAll).toHaveAttribute('href', `${getRoute(AppRoutes.Checks)}?search=probe`);
+  });
+
+  it('shows a hint instead of a check list when no check carries the colliding label', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ json: [] }) }));
+
+    await triggerCollision(['probe']);
+
+    expect(await screen.findByTestId('blocking-checks-empty-probe')).toHaveTextContent(/may be set on a probe/i);
+    expect(screen.queryByTestId('blocking-checks-view-all-probe')).not.toBeInTheDocument();
   });
 
   it('locks a row after a successful rename', async () => {
