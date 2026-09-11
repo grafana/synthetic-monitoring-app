@@ -11,6 +11,7 @@ import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
 import { registerFaroInteractionEchoBackend } from 'faroEchoBackend';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
+import { ExternalDependenciesProvider } from 'contexts/ExternalDependenciesContext';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -73,21 +74,23 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MetaContextProvider meta={meta}>
-        <SMOpenFeatureProvider>
-          <FeatureFlagProvider>
-            <GlobalStyles />
-            <SMDatasourceProvider>
-              <PermissionsContextProvider>
-                <AssistantContext />
-                <TrackingIdentity />
-                <DevTools>
-                  <InitialisedRouter />
-                </DevTools>
-              </PermissionsContextProvider>
-              <ReactQueryDevtools />
-            </SMDatasourceProvider>
-          </FeatureFlagProvider>
-        </SMOpenFeatureProvider>
+        <ExternalDependenciesProvider>
+          <SMOpenFeatureProvider>
+            <FeatureFlagProvider>
+              <GlobalStyles />
+              <SMDatasourceProvider>
+                <PermissionsContextProvider>
+                  <AssistantContext />
+                  <TrackingIdentity />
+                  <DevTools>
+                    <InitialisedRouter />
+                  </DevTools>
+                </PermissionsContextProvider>
+                <ReactQueryDevtools />
+              </SMDatasourceProvider>
+            </FeatureFlagProvider>
+          </SMOpenFeatureProvider>
+        </ExternalDependenciesProvider>
       </MetaContextProvider>
     </QueryClientProvider>
   );
