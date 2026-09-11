@@ -136,6 +136,9 @@ export const CONFIG_TEST_ID = {
   layout: {
     activeTab: 'config layout active-tab',
   },
+  labelMigration: {
+    invalidList: 'config label-migration invalid-list',
+  },
   secretEditModal: 'config secret-edit-modal',
 } as const;
 
