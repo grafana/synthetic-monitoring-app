@@ -62,7 +62,7 @@ export function BlockingChecksList({ label, checks, checksError }: BlockingCheck
         ))}
       </Stack>
       <TextLink variant="bodySmall" href={getChecksListHref(label)} data-testid={`blocking-checks-view-all-${label}`}>
-        View all {blockingChecks.length} in Checks list
+        View all in Checks list
       </TextLink>
     </Stack>
   );
