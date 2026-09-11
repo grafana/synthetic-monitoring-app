@@ -39,6 +39,7 @@ module.exports = {
       '@faker-js/faker',
       'react-error-boundary',
       'until-async', // Transitive dependency of MSW v2
+      '@grafana/plugin-ui', // Ships ESM-only; must be transformed for Jest
     ]),
   ],
 };

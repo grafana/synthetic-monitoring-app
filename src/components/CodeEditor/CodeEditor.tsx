@@ -89,6 +89,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
     k6Channel,
     language = 'javascript',
     onBeforeEditorMount,
+    onEditorDidMount,
     onChange,
     onDidChangeContentInEditableRange,
     onValidation,
@@ -178,6 +179,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const handleEditorDidMount = (editor: monacoType.editor.IStandaloneCodeEditor, monaco: typeof monacoType) => {
     setEditorRef(editor);
+
+    onEditorDidMount?.(editor, monaco);
 
     monaco.editor.onDidChangeMarkers(() => {
       handleValidation(monaco, editor);

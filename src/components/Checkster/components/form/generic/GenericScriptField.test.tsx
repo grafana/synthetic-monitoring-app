@@ -38,6 +38,22 @@ jest.mock('components/CodeEditor', () => ({
   )),
 }));
 
+// Secret scanner integration: the feature is off by default here, and its data
+// hooks require app-level providers this lightweight renderer doesn't supply.
+jest.mock('contexts/FeatureFlagContext', () => ({
+  ...jest.requireActual('contexts/FeatureFlagContext'),
+  isFeatureEnabled: jest.fn(() => false),
+}));
+
+jest.mock('data/permissions', () => ({
+  ...jest.requireActual('data/permissions'),
+  getUserPermissions: jest.fn(() => ({ canCreateSecrets: false, canReadSecrets: false })),
+}));
+
+jest.mock('data/useSecrets', () => ({
+  useSecrets: jest.fn(() => ({ data: [] })),
+}));
+
 const defaultProps = {
   field: 'value',
 } as any;
