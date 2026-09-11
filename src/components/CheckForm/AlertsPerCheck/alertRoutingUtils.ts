@@ -10,6 +10,7 @@ import {
 type RoutingTree = Parameters<typeof matchInstancesToRouteTrees>[0][number];
 
 import { CheckAlertType, CheckType, Label } from 'types';
+import { LabelMode } from 'datasource/responses.types';
 
 export interface PolicyInfo {
   text: string;
@@ -24,7 +25,17 @@ export const generateAlertLabels = (
     customLabels,
     job,
     instance,
-  }: { checkType: CheckType; frequency: number; customLabels: Label[]; job: string; instance: string }
+    labelMode,
+  }: {
+    checkType: CheckType;
+    frequency: number;
+    customLabels: Label[];
+    job: string;
+    instance: string;
+    // Unknown (still loading) is treated as Prefixed, matching pre-migration behavior
+    // and the fallback used elsewhere (see GenericLabelContent).
+    labelMode?: LabelMode;
+  }
 ): Record<string, string> => {
   const labels: Record<string, string> = {
     job: job || '',
@@ -37,9 +48,21 @@ export const generateAlertLabels = (
     alertname: alertType,
   };
 
+  const mode = labelMode ?? LabelMode.Prefixed;
+
   (customLabels || []).forEach((label: Label) => {
     if (label.name && label.value) {
-      labels[`label_${label.name}`] = label.value;
+      // Mirrors the tenant's actual sm_check_info label shape (see SeriesPreview's
+      // exampleUserLabelPairs) so the routing preview reflects what will really be
+      // written, instead of always assuming the legacy prefixed form.
+      if (mode === LabelMode.Unprefixed) {
+        labels[label.name] = label.value;
+      } else if (mode === LabelMode.DualWrite) {
+        labels[label.name] = label.value;
+        labels[`label_${label.name}`] = label.value;
+      } else {
+        labels[`label_${label.name}`] = label.value;
+      }
     }
   });
 
