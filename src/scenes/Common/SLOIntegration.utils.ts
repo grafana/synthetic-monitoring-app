@@ -1,7 +1,5 @@
-import type { SLO, SLORatioQuery, SLOWizardInitialValues } from './grafanaSLOApp.types';
+import type { SLORatioQuery, SLOWizardInitialValues } from './grafanaSLOApp.types';
 import { Check } from 'types';
-
-type LinkedSLOLabels = Pick<SLO, 'labels'>;
 
 const REACHABILITY_SUFFIX = ' (Reachability)';
 
@@ -39,22 +37,7 @@ export function buildSLODescription(check: Check): string {
 export const SM_OBJECTIVE_KIND_LABEL_KEY = 'sm_objective_kind';
 export const REACHABILITY_OBJECTIVE_KIND_VALUE = 'reachability';
 
-export function linkedSLOsHaveReachabilityObjectiveKind(linkedSLOs: LinkedSLOLabels[]): boolean {
-  return linkedSLOs.some((slo) =>
-    slo.labels?.some(
-      (label) => label.key === SM_OBJECTIVE_KIND_LABEL_KEY && label.value === REACHABILITY_OBJECTIVE_KIND_VALUE
-    )
-  );
-}
-
-export function buildSLOWizardInitialValuesForCheck(
-  check: Check,
-  linkedSLOs: LinkedSLOLabels[]
-): SLOWizardInitialValues {
-  if (linkedSLOsHaveReachabilityObjectiveKind(linkedSLOs)) {
-    return {};
-  }
-
+export function buildSLOWizardInitialValuesForCheck(check: Check): SLOWizardInitialValues {
   return {
     name: buildSLOName(check),
     description: buildSLODescription(check),

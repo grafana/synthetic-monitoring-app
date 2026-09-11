@@ -1,22 +1,21 @@
 import { renderHook, waitFor } from '@testing-library/react';
+import { DB } from 'test/db';
 import { spyUsePluginFunctionsForSLOs } from 'test/helpers/mockUsePluginFunctionsForSLOs';
 import { createWrapper } from 'test/render';
 
 import type { SLO } from './grafanaSLOApp.types';
+import { CheckType } from 'types';
 import { useChecks } from 'data/useChecks';
 
-import {
-  sloQueryKeys,
-  useAllSLOs,
-  useChecksForSLO,
-  useDeleteSLO,
-  useSLOsForCheck,
-  useUpdateSLO,
-} from './useSLOCheckLinks';
+import { sloQueryKeys, useAllSLOs, useDeleteSLO, useSLOsForCheck } from './useSLOCheckLinks';
 import { buildSLOCheckLinkMap, getSLOQueryStrings, sloMatchesSMCheck } from './useSLOCheckLinks.utils';
 
 const JOB = 'my-api-check';
 const INSTANCE = 'https://api.example.com';
+
+function makeCheck(id: number, job: string, target: string) {
+  return DB.check.build({ id, job, target }, { transient: { type: CheckType.Http } });
+}
 
 const baseSLO: Omit<SLO, 'uuid' | 'name' | 'query'> = {
   description: '',
@@ -175,21 +174,6 @@ describe('useSLOCheckLinks utils', () => {
 });
 
 describe('buildSLOCheckLinkMap', () => {
-  const makeCheck = (id: number, job: string, target: string) =>
-    ({
-      id,
-      job,
-      target,
-      frequency: 60000,
-      timeout: 3000,
-      enabled: true,
-      alertSensitivity: 'none',
-      basicMetricsOnly: false,
-      labels: [],
-      probes: [1],
-      settings: { http: {} },
-    }) as any;
-
   const checkA = makeCheck(1, JOB, 'https://api.example.com');
   const checkB = makeCheck(2, JOB, 'https://other.example.com');
   const checkC = makeCheck(3, 'different-job', 'https://different.example.com');
@@ -303,21 +287,6 @@ describe('useAllSLOs', () => {
 jest.mock('data/useChecks');
 const mockUseChecks = useChecks as jest.MockedFunction<typeof useChecks>;
 
-const makeCheck = (id: number, job: string, target: string) =>
-  ({
-    id,
-    job,
-    target,
-    frequency: 60000,
-    timeout: 3000,
-    enabled: true,
-    alertSensitivity: 'none',
-    basicMetricsOnly: false,
-    labels: [],
-    probes: [1],
-    settings: { http: {} },
-  }) as any;
-
 describe('useSLOsForCheck', () => {
   let usePluginFunctionsSpy: jest.SpyInstance | undefined;
 
@@ -383,105 +352,6 @@ describe('useSLOsForCheck', () => {
     });
 
     expect(result.current.slos).toEqual([]);
-  });
-});
-
-describe('useChecksForSLO', () => {
-  let usePluginFunctionsSpy: jest.SpyInstance | undefined;
-
-  afterEach(() => {
-    usePluginFunctionsSpy?.mockRestore();
-    mockUseChecks.mockReset();
-  });
-
-  it('returns the checks covered by the given slo uuid', async () => {
-    const checkA = makeCheck(1, JOB, 'https://api.example.com');
-    const checkB = makeCheck(2, 'different-job', 'https://different.example.com');
-    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio]);
-    mockUseChecks.mockReturnValue({
-      data: [checkA, checkB],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    } as unknown as ReturnType<typeof useChecks>);
-
-    const { Wrapper } = createWrapper();
-    const { result } = renderHook(() => useChecksForSLO(sloManualRatio.uuid), { wrapper: Wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.checks).toEqual([checkA]);
-  });
-
-  it('returns an empty array for an unknown slo uuid', async () => {
-    const checkA = makeCheck(1, JOB, 'https://api.example.com');
-    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio]);
-    mockUseChecks.mockReturnValue({
-      data: [checkA],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    } as unknown as ReturnType<typeof useChecks>);
-
-    const { Wrapper } = createWrapper();
-    const { result } = renderHook(() => useChecksForSLO('nonexistent-uuid'), { wrapper: Wrapper });
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.checks).toEqual([]);
-  });
-});
-
-describe('useUpdateSLO', () => {
-  let usePluginFunctionsSpy: jest.SpyInstance | undefined;
-
-  beforeEach(() => {
-    mockUseChecks.mockReturnValue({
-      data: [],
-      isLoading: false,
-      error: null,
-      refetch: jest.fn(),
-    } as unknown as ReturnType<typeof useChecks>);
-  });
-
-  afterEach(() => {
-    usePluginFunctionsSpy?.mockRestore();
-    mockUseChecks.mockReset();
-  });
-
-  it('calls the plugin api updateSlo and returns no error', async () => {
-    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio]);
-
-    const { Wrapper } = createWrapper();
-    const { result } = renderHook(() => useUpdateSLO(), { wrapper: Wrapper });
-
-    await waitFor(() => {
-      expect(typeof result.current).toBe('function');
-    });
-
-    const updateResult = await result.current(sloManualRatio);
-    expect(updateResult.error).toBeUndefined();
-  });
-
-  it('returns the rejection as an error rather than throwing', async () => {
-    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio]);
-
-    const { Wrapper } = createWrapper();
-    const { result } = renderHook(() => useUpdateSLO(), { wrapper: Wrapper });
-
-    await waitFor(() => {
-      expect(typeof result.current).toBe('function');
-    });
-
-    const api = await usePluginFunctionsSpy.mock.results[0].value.functions[0].fn();
-    api.updateSlo.mockRejectedValueOnce({ status: 500, message: 'Boom' });
-
-    const updateResult = await result.current(sloManualRatio);
-    expect(updateResult.error?.message).toBe('Boom');
   });
 });
 

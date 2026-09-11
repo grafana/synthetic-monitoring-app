@@ -16,10 +16,6 @@ export const sloQueryKeys = {
 /** The SLO app registers a getter that resolves to the API object, not the API itself. */
 type GetSLOApi = () => Promise<SLOApiV1>;
 
-export type SLOPluginUpdateResult = {
-  error?: Error;
-};
-
 export type SLOPluginDeleteResult = {
   data?: { uuid: string };
   error?: Error;
@@ -67,7 +63,7 @@ export function useAllSLOs() {
   const canFetch = pluginInstalled && !functionsLoading && typeof getSLOApi === 'function';
 
   const query = useQuery({
-    queryKey: [...sloQueryKeys.all, getSLOApi],
+    queryKey: sloQueryKeys.all,
     queryFn: () => {
       if (!getSLOApi) {
         return Promise.resolve<SLO[]>([]);
@@ -103,41 +99,11 @@ export function useSLOsForCheck(checkId: number | undefined) {
   return { slos, isLoading, error };
 }
 
-export function useChecksForSLO(sloUuid: string) {
-  const { map, isLoading, error } = useSLOCheckLinkMap();
-  const checks = map.checksBySLOUuid.get(sloUuid) ?? [];
-  return { checks, isLoading, error };
-}
-
 function useSLOPluginApi() {
   const { functions, isLoading } = usePluginFunctions<GetSLOApi>({
     extensionPointId: SLO_APP_API_EXTENSION_POINT_ID,
   });
   return { getSLOApi: functions[0]?.fn, isLoading };
-}
-
-export function useUpdateSLO() {
-  const { getSLOApi } = useSLOPluginApi();
-
-  return useCallback(
-    async (payload: SLO): Promise<SLOPluginUpdateResult> => {
-      if (!getSLOApi) {
-        return { error: new Error('SLO plugin API is not available') };
-      }
-      try {
-        const api = await getSLOApi();
-        // The installed SLO app may predate this method even though it registers `slo-api/v1`.
-        if (typeof api.updateSlo !== 'function') {
-          return { error: new Error('SLO plugin API does not support updateSlo') };
-        }
-        await api.updateSlo(payload);
-        return {};
-      } catch (e: unknown) {
-        return { error: toError(e) };
-      }
-    },
-    [getSLOApi]
-  );
 }
 
 export function useDeleteSLO() {

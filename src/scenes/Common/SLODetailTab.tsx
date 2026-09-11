@@ -49,14 +49,15 @@ type StatCardProps = {
   value: number | null;
   format: (value: number) => string;
   isLoading: boolean;
+  isError: boolean;
   getColor: (value: number, theme: GrafanaTheme2) => string;
 };
 
-function StatCard({ title, tooltip, value, format, isLoading, getColor }: StatCardProps) {
+function StatCard({ title, tooltip, value, format, isLoading, isError, getColor }: StatCardProps) {
   const styles = useStyles2(getStatCardStyles);
   const theme = useTheme2();
 
-  const displayValue = isLoading ? null : value;
+  const displayValue = isLoading || isError ? null : value;
   const color = displayValue !== null ? getColor(displayValue, theme) : theme.colors.text.secondary;
 
   return (
@@ -74,6 +75,8 @@ function StatCard({ title, tooltip, value, format, isLoading, getColor }: StatCa
       <div className={styles.cardValue}>
         {isLoading ? (
           <LoadingPlaceholder text="" />
+        ) : isError ? (
+          <Text color="secondary">Unable to load</Text>
         ) : displayValue !== null ? (
           <span style={{ color }}>{format(displayValue)}</span>
         ) : (
@@ -145,6 +148,7 @@ export function SLODetailTab({ slo, onEdit, onDelete, isDeleting }: SLODetailTab
           value={metrics.sli}
           format={formatSliPercent}
           isLoading={metrics.isLoading}
+          isError={metrics.isError}
           getColor={getSliColor}
         />
         <StatCard
@@ -153,6 +157,7 @@ export function SLODetailTab({ slo, onEdit, onDelete, isDeleting }: SLODetailTab
           value={metrics.remainingErrorBudget}
           format={formatErrorBudget}
           isLoading={metrics.isLoading}
+          isError={metrics.isError}
           getColor={getErrorBudgetColor}
         />
         <StatCard
@@ -161,6 +166,7 @@ export function SLODetailTab({ slo, onEdit, onDelete, isDeleting }: SLODetailTab
           value={metrics.burnRate}
           format={formatBurnRate}
           isLoading={metrics.isLoading}
+          isError={metrics.isError}
           getColor={getBurnRateColor}
         />
       </div>

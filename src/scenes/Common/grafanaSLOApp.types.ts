@@ -299,6 +299,11 @@ export type SLORatioQuery = {
 };
 
 export type SLOWizardInitialValues = {
+  /**
+   * Existing SLO uuid. grafana-slo-app Save updates when this is set; omitted means create.
+   * Requires the SLO exposed-wizard contract that hydrates `initialValues.uuid`.
+   */
+  uuid?: string;
   name?: string;
   description?: string;
   query?: SLORatioQuery;

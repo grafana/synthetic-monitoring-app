@@ -5,6 +5,7 @@ import { Box, Button, Drawer, Spinner, Stack, Tab, TabsBar, Text, Tooltip } from
 
 import { type SLO, type SLOComponentPropsV1, type SLOWizardInitialValues, StepKey } from './grafanaSLOApp.types';
 import { Check } from 'types';
+import { showAlert } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { Feedback } from 'components/Feedback/Feedback';
 
@@ -19,6 +20,7 @@ const NEW_SLO_TAB_KEY = 'new-slo';
 function buildWizardInitialValuesForSLO(slo: SLO): SLOWizardInitialValues {
   if (slo.query.type !== 'ratio' || !slo.query.ratio) {
     return {
+      uuid: slo.uuid,
       name: slo.name,
       description: slo.description,
       labels: slo.labels,
@@ -42,6 +44,7 @@ function buildWizardInitialValuesForSLO(slo: SLO): SLOWizardInitialValues {
       : undefined;
 
   return {
+    uuid: slo.uuid,
     name: slo.name,
     description: slo.description,
     labels: slo.labels,
@@ -77,13 +80,16 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
       setDeletingUuid(slo.uuid);
       try {
         const result = await deleteSLO(slo.uuid);
-        if (!result.error) {
-          await handleSLOListInvalidate();
-          const remaining = slos.filter((s) => s.uuid !== slo.uuid);
-          setActiveTabKey(remaining.length > 0 ? remaining[0].uuid : NEW_SLO_TAB_KEY);
-          if (remaining.length === 0) {
-            setDrawerOpen(false);
-          }
+        if (result.error) {
+          showAlert('error', `Failed to delete SLO: ${result.error.message}`);
+          return;
+        }
+
+        await handleSLOListInvalidate();
+        const remaining = slos.filter((s) => s.uuid !== slo.uuid);
+        setActiveTabKey(remaining.length > 0 ? remaining[0].uuid : NEW_SLO_TAB_KEY);
+        if (remaining.length === 0) {
+          setDrawerOpen(false);
         }
       } finally {
         setDeletingUuid(undefined);
@@ -109,7 +115,7 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
   const isEditingActiveSLO = Boolean(activeSLO && editingUuid === activeSLO.uuid);
   const isWizardReady = !isWizardLoading && Boolean(SLOComponent) && Boolean(metricsDsUid);
 
-  const newSLOInitialValues: SLOWizardInitialValues = buildSLOWizardInitialValuesForCheck(check, slos);
+  const newSLOInitialValues: SLOWizardInitialValues = buildSLOWizardInitialValuesForCheck(check);
 
   const editInitialValues = activeSLO && isEditingActiveSLO ? buildWizardInitialValuesForSLO(activeSLO) : undefined;
 
@@ -125,7 +131,9 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
     setShowNewSLOTab(false);
     if (slos.length > 0) {
       setActiveTabKey(slos[0].uuid);
+      return;
     }
+    setDrawerOpen(false);
   };
 
   const drawerTitle = (
@@ -172,6 +180,7 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
             {activeSLO ? (
               isEditingActiveSLO && isWizardReady && SLOComponent ? (
                 <SLOComponent
+                  // Save updates only after grafana-slo-app hydrates initialValues.uuid; until then this creates.
                   initialValues={editInitialValues}
                   dataSourceUid={metricsDsUid}
                   stepperOrientation="horizontal"

@@ -32,36 +32,8 @@ describe('SLOIntegration utils', () => {
   });
 
   describe('buildSLOWizardInitialValuesForCheck', () => {
-    it('prefills reachability values and labels when there are no linked SLOs', () => {
-      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, []);
-
-      expect(result).toEqual({
-        name: buildSLOName(BASIC_HTTP_CHECK),
-        description: buildSLODescription(BASIC_HTTP_CHECK),
-        query: buildSLOQuery(BASIC_HTTP_CHECK),
-        labels: [
-          { key: 'sm_objective_kind', value: 'reachability' },
-          { key: 'source', value: 'grafana-synthetic-monitoring-app' },
-        ],
-      });
-    });
-
-    it('returns empty object when linked SLOs already contain reachability objective label', () => {
-      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, [
-        {
-          labels: [{ key: 'sm_objective_kind', value: 'reachability' }],
-        },
-      ]);
-
-      expect(result).toEqual({});
-    });
-
-    it('prefills reachability values when linked SLOs do not include reachability objective label', () => {
-      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK, [
-        {
-          labels: [{ key: 'source', value: 'grafana-synthetic-monitoring-app' }],
-        },
-      ]);
+    it('prefills reachability values and labels', () => {
+      const result = buildSLOWizardInitialValuesForCheck(BASIC_HTTP_CHECK);
 
       expect(result).toEqual({
         name: buildSLOName(BASIC_HTTP_CHECK),

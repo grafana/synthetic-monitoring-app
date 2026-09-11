@@ -3,6 +3,7 @@ import { usePluginComponent } from '@grafana/runtime';
 import { screen, waitFor, within } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
+import { showAlert } from 'data/utils';
 
 import type { SLO } from './grafanaSLOApp.types';
 
@@ -26,6 +27,11 @@ jest.mock('hooks/useMetricsDS', () => ({
   useMetricsDS: () => ({ uid: 'metrics-test-uid', name: 'Prometheus' }),
 }));
 
+jest.mock('data/utils', () => ({
+  ...jest.requireActual('data/utils'),
+  showAlert: jest.fn(),
+}));
+
 jest.mock('./SLODetailTab.hooks', () => ({
   useSLOMetrics: () => ({
     sli: 0.999,
@@ -36,12 +42,15 @@ jest.mock('./SLODetailTab.hooks', () => ({
   }),
 }));
 
-function MockWizard({ onSuccess }: { onSuccess?: () => void }) {
+function MockWizard({ onSuccess, onCancel }: { onSuccess?: () => void; onCancel?: () => void }) {
   return (
     <div>
       <span>Mock SLO Wizard</span>
       <button type="button" onClick={() => onSuccess?.()}>
         complete wizard
+      </button>
+      <button type="button" onClick={() => onCancel?.()}>
+        cancel wizard
       </button>
     </div>
   );
@@ -74,6 +83,7 @@ describe('SLOIntegration', () => {
   beforeEach(() => {
     mockUseSLOsForCheck.mockReset();
     mockUseDeleteSLO.mockReset();
+    jest.mocked(showAlert).mockReset();
     defaultDeleteSLO = jest.fn().mockResolvedValue({ data: {} });
     jest.mocked(usePluginComponent).mockReturnValue({
       isLoading: false,
@@ -99,6 +109,21 @@ describe('SLOIntegration', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('tab', { name: prefilledSLOTabName })).toBeInTheDocument();
     expect(within(dialog).getByText('Mock SLO Wizard')).toBeInTheDocument();
+  });
+
+  it('closes the drawer when cancel is clicked and there are no SLOs', async () => {
+    mockHookReturn({ slos: [] });
+
+    const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
+
+    await user.click(await screen.findByRole('button', { name: /slos/i }));
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /cancel wizard/i }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
   });
 
   it('does not render a New SLO button in the drawer title', async () => {
@@ -204,5 +229,24 @@ describe('SLOIntegration', () => {
       expect(deleteSLO).toHaveBeenCalledWith('delete-me');
     });
     expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: sloQueryKeys.all });
+  });
+
+  it('surfaces a delete error and leaves the drawer open', async () => {
+    const deleteSLO = jest.fn().mockResolvedValue({ error: new Error('SLO plugin API is not available') });
+    const slo = makeSLO({ uuid: 'delete-me', name: 'Doomed SLO' });
+    mockHookReturn({ slos: [slo], deleteSLO });
+
+    const { queryClient, user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
+    const invalidateQueries = jest.spyOn(queryClient, 'invalidateQueries');
+
+    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
+    await user.click(await screen.findByRole('button', { name: /delete/i }));
+    await user.click(await screen.findByTestId('data-testid Confirm Modal Danger Button'));
+
+    await waitFor(() => {
+      expect(showAlert).toHaveBeenCalledWith('error', 'Failed to delete SLO: SLO plugin API is not available');
+    });
+    expect(invalidateQueries).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 });

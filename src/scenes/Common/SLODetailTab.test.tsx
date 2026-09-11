@@ -38,6 +38,14 @@ const noDataMetrics: SLOMetrics = {
   isError: false,
 };
 
+const errorMetrics: SLOMetrics = {
+  sli: null,
+  remainingErrorBudget: null,
+  burnRate: null,
+  isLoading: false,
+  isError: true,
+};
+
 const baseSLO = (overrides: Partial<SLO> = {}): SLO => ({
   uuid: 'slo-uuid-1',
   name: 'Checkout availability',
@@ -96,6 +104,14 @@ describe('SLODetailTab', () => {
     render(<SLODetailTab slo={baseSLO()} />);
     const noDataElements = await screen.findAllByText('No data');
     expect(noDataElements).toHaveLength(3);
+  });
+
+  it('shows "Unable to load" when metrics fail to query', async () => {
+    mockUseSLOMetrics.mockReturnValue(errorMetrics);
+    render(<SLODetailTab slo={baseSLO()} />);
+    const errorElements = await screen.findAllByText('Unable to load');
+    expect(errorElements).toHaveLength(3);
+    expect(screen.queryByText('No data')).not.toBeInTheDocument();
   });
 
   it('shows loading placeholders while metrics are loading', async () => {
