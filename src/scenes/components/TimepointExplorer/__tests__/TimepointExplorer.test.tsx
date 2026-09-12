@@ -8,6 +8,8 @@ import { render } from 'test/render';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { checksLogs1 } from 'test/fixtures/httpCheck/checkLogs';
+import { createExecutionLogsResponse } from 'test/fixtures/httpCheck/executionLogsResponse';
+import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import {
   createUniqueConfigFrame,
   createUniqueConfigsResponse,
@@ -36,7 +38,7 @@ const TIME_MODIFIED_HTTP_CHECK: HTTPCheck = {
   modified: Math.floor((baseTime - 10 * 60 * 1000) / 1000),
 };
 
-function setupMSWHandlers() {
+function setupMSWHandlers(executionLogs: (refId: string) => object = checksLogs1) {
   server.use(
     apiRoute('getHttpDashboard', {
       result: async (req) => {
@@ -72,11 +74,11 @@ function setupMSWHandlers() {
         }
 
         if (refId?.startsWith(REF_ID_EXECUTION_LIST_LOGS)) {
-          return { json: checksLogs1(refId) };
+          return { json: executionLogs(refId) };
         }
 
         if (refId?.startsWith(REF_ID_EXECUTION_VIEWER_LOGS)) {
-          return { json: checksLogs1(refId) };
+          return { json: executionLogs(refId) };
         }
 
         return { json: { results: {} } };
@@ -131,6 +133,99 @@ describe('TimepointExplorer', () => {
     expect(mockScrollIntoView).toHaveBeenCalledWith({
       behavior: 'smooth',
       block: 'start',
+    });
+  });
+
+  describe(`partial failures in uptime view`, () => {
+    const frequency = TIME_MODIFIED_HTTP_CHECK.frequency;
+    // in jsdom the list has no width, so only the latest timepoint is visible — target that one
+    const latestTimepointTime = baseTime - (baseTime % frequency);
+    const logTime = latestTimepointTime + 1000;
+
+    function setupExecutionLogs(logs: Array<{ probe: string; probeSuccess: '0' | '1' }>) {
+      setupMSWHandlers((refId) =>
+        createExecutionLogsResponse(refId, {
+          job: TIME_MODIFIED_HTTP_CHECK.job,
+          instance: TIME_MODIFIED_HTTP_CHECK.target,
+          logs: logs.map((log) => ({ ...log, time: logTime })),
+        })
+      );
+    }
+
+    it(`should render a failure segment proportional to the failed executions when some (but not all) probes fail`, async () => {
+      mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+      setupExecutionLogs([
+        { probe: PRIVATE_PROBE.name, probeSuccess: '1' },
+        { probe: PUBLIC_PROBE.name, probeSuccess: '0' },
+      ]);
+
+      render(renderTimepointExplorer());
+
+      const failureSegments = await screen.findAllByTestId(
+        new RegExp(`${SCENES_TEST_ID.timepoint.listEntryFailureSegment}-`)
+      );
+
+      expect(failureSegments).toHaveLength(1);
+      expect(failureSegments[0]).toHaveStyle({ height: `${(1 / 2) * 100}%` });
+      // the bar swaps its success tick for a warning icon (Icon is mocked as <svg name="..." /> in tests)
+      expect(failureSegments[0].parentElement?.querySelector('svg[name="exclamation-triangle"]')).toBeInTheDocument();
+    });
+
+    it(`should keep showing a partially failed bar when filtering on failures`, async () => {
+      mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+      setupExecutionLogs([
+        { probe: PRIVATE_PROBE.name, probeSuccess: '1' },
+        { probe: PUBLIC_PROBE.name, probeSuccess: '0' },
+      ]);
+
+      const { user } = render(renderTimepointExplorer());
+
+      await screen.findAllByTestId(new RegExp(`${SCENES_TEST_ID.timepoint.listEntryFailureSegment}-`));
+
+      // filter down to failures only via the viz legend
+      await user.click(screen.getByRole('button', { name: 'failure' }));
+
+      expect(
+        await screen.findByTestId(new RegExp(`${SCENES_TEST_ID.timepoint.listEntryFailureSegment}-`))
+      ).toBeInTheDocument();
+    });
+
+    it(`should not render a failure segment when all probes succeed`, async () => {
+      mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+      setupExecutionLogs([
+        { probe: PRIVATE_PROBE.name, probeSuccess: '1' },
+        { probe: PUBLIC_PROBE.name, probeSuccess: '1' },
+      ]);
+
+      render(renderTimepointExplorer());
+
+      // wait for the success tick so we know the logs have been mapped to the timepoint
+      await waitFor(() => expect(document.querySelector('svg[name="check"]')).toBeInTheDocument());
+
+      expect(
+        screen.queryByTestId(new RegExp(`${SCENES_TEST_ID.timepoint.listEntryFailureSegment}-`))
+      ).not.toBeInTheDocument();
+    });
+
+    it(`should not render a failure segment when all probes fail`, async () => {
+      mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+
+      setupExecutionLogs([
+        { probe: PRIVATE_PROBE.name, probeSuccess: '0' },
+        { probe: PUBLIC_PROBE.name, probeSuccess: '0' },
+      ]);
+
+      render(renderTimepointExplorer());
+
+      // wait for the failure cross so we know the logs have been mapped to the timepoint
+      await waitFor(() => expect(document.querySelector('svg[name="times"]')).toBeInTheDocument());
+
+      expect(
+        screen.queryByTestId(new RegExp(`${SCENES_TEST_ID.timepoint.listEntryFailureSegment}-`))
+      ).not.toBeInTheDocument();
     });
   });
 

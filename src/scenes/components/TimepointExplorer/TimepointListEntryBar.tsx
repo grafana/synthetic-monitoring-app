@@ -27,6 +27,9 @@ interface TimepointListEntryPendingProps {
   children: ReactNode;
   timepoint: StatelessTimepoint;
   status: TimepointStatus;
+  // overrides the default `vizDisplay.includes(status)` visibility check,
+  // e.g. a success bar with partial failures should stay visible when filtering on failures
+  isVisible?: boolean;
 }
 
 const GLOBAL_CLASS = `list_entry_bar`;
@@ -36,6 +39,7 @@ export const TimepointListEntryBar = ({
   children,
   status,
   timepoint,
+  isVisible,
 }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
   const { checkType, handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
@@ -58,7 +62,7 @@ export const TimepointListEntryBar = ({
     handleViewerStateChange([timepoint, probeNameToView, 0]);
   }, [analyticsEventName, checkType, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
 
-  if (!vizDisplay.includes(status)) {
+  if (!(isVisible ?? vizDisplay.includes(status))) {
     return <div />;
   }
 

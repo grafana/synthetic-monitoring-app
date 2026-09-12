@@ -45,5 +45,6 @@ export const ANNOTATION_COLOR_ALERTS_FIRING = `red`;
 
 // Selection styling constants
 export const NON_SELECTED_BAR_OPACITY = 0.7;
+export const PARTIAL_FAILURE_SEGMENT_ALPHA = 0.5;
 export const SELECTED_BAR_BORDER_WIDTH = 3;
 export const BAR_BORDER_WIDTH = 2;
