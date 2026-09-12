@@ -62,6 +62,8 @@ import {
   getVisibleTimepointsTimeRange,
   getYAxisMax,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { useCheckRumAvailability } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.hooks';
+import { RumAvailability } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.utils';
 
 interface TimepointExplorerContextType {
   alertEvents: CheckEvent[];
@@ -91,11 +93,13 @@ interface TimepointExplorerContextType {
   isLogsRetentionPeriodWithinTimerange: boolean;
   listLogsMap: Record<UnixTimestamp, StatefulTimepoint>;
   listWidth: number;
+  markRumPresent: () => void;
   miniMapCurrentPage: number;
   miniMapCurrentPageSections: MiniMapSections;
   miniMapCurrentSectionIndex: number;
   miniMapPages: MiniMapPages;
   renderingStrategy: 'start' | 'end';
+  rumAvailability: RumAvailability;
   timepoints: StatelessTimepoint[];
   timepointsDisplayCount: number;
   timepointWidth: number;
@@ -372,6 +376,11 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timeRange.to.valueOf()
   );
 
+  const { rumAvailability, markRumPresent } = useCheckRumAvailability({
+    checkType,
+    listLogsMap,
+  });
+
   const value: TimepointExplorerContextType = useMemo(() => {
     return {
       alertEvents,
@@ -401,11 +410,13 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
       isLogsRetentionPeriodWithinTimerange,
       listLogsMap,
       listWidth,
+      markRumPresent,
       miniMapCurrentPage,
       miniMapCurrentPageSections,
       miniMapCurrentSectionIndex,
       miniMapPages,
       renderingStrategy,
+      rumAvailability,
       timepoints,
       timepointsDisplayCount,
       timepointWidth,
@@ -444,11 +455,13 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isLogsRetentionPeriodWithinTimerange,
     listLogsMap,
     listWidth,
+    markRumPresent,
     miniMapCurrentPage,
     miniMapCurrentPageSections,
     miniMapCurrentSectionIndex,
     miniMapPages,
     renderingStrategy,
+    rumAvailability,
     timepoints,
     timepointsDisplayCount,
     timepointWidth,
