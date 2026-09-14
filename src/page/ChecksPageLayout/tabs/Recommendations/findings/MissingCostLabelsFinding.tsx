@@ -24,6 +24,7 @@ export function MissingCostLabelsFinding({
   recommendation,
   totalCheckCount,
   calNames,
+  isFocused,
   onDismiss,
 }: MissingCostLabelsFindingProps) {
   const { id, checks } = recommendation;
@@ -34,6 +35,8 @@ export function MissingCostLabelsFinding({
       title={title}
       tooltip={tooltip}
       summary={getRecommendationSummary(recommendation, totalCheckCount)}
+      severity={severity}
+      isFocused={isFocused}
       onDismiss={onDismiss}
       actions={
         <LinkButton
@@ -53,7 +56,6 @@ export function MissingCostLabelsFinding({
           <CheckRow
             key={check.id}
             check={check}
-            severity={severity}
             detail={t('recommendations.missingCostLabels.row.missing', 'Missing {{labels}}', {
               labels: getMissingCalNames(check.labels, calNames).join(', '),
             })}

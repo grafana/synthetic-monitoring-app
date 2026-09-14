@@ -7,7 +7,6 @@ import {
   trackRecommendationActioned,
 } from 'features/tracking/recommendationEvents';
 
-import { RecommendationSeverity } from '../Recommendations.types';
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -37,7 +36,7 @@ interface AlertPlan {
  * applied from here so the gap closes without leaving the page: one check at a time after a
  * preview, or every check at once after confirming.
  */
-export function AlertingGapsFinding({ recommendation, totalCheckCount, onDismiss }: FindingProps) {
+export function AlertingGapsFinding({ recommendation, totalCheckCount, isFocused, onDismiss }: FindingProps) {
   const { id, checks } = recommendation;
   const { severity, title, tooltip } = getRecommendationCopy(id, []);
   const queryClient = useQueryClient();
@@ -88,6 +87,8 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, onDismiss
       title={title}
       tooltip={tooltip}
       summary={getRecommendationSummary(recommendation, totalCheckCount)}
+      severity={severity}
+      isFocused={isFocused}
       onDismiss={onDismiss}
       actions={
         <>
@@ -116,7 +117,6 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, onDismiss
           <AlertSetupRow
             key={check.id}
             check={check}
-            severity={severity}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             onApplied={() =>
               trackRecommendationActionCompleted({ finding: id, action: 'alerts_added', checkCount: 1, scope: 'check' })
@@ -147,13 +147,12 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, onDismiss
 
 interface AlertSetupRowProps {
   check: Check;
-  severity: RecommendationSeverity;
   onEditClick: () => void;
   onApplied: () => void;
 }
 
 /** One unalerted check with a "Set up" control that previews the default alerts before adding them. */
-function AlertSetupRow({ check, severity, onEditClick, onApplied }: AlertSetupRowProps) {
+function AlertSetupRow({ check, onEditClick, onApplied }: AlertSetupRowProps) {
   const styles = useStyles2(getStyles);
   const queryClient = useQueryClient();
   const { mutateAsync: updateAlerts, isPending } = useUpdateAlertsForCheck();
@@ -179,7 +178,6 @@ function AlertSetupRow({ check, severity, onEditClick, onApplied }: AlertSetupRo
   return (
     <CheckRow
       check={check}
-      severity={severity}
       onEditClick={onEditClick}
       action={
         isDone ? (

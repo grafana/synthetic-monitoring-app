@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router';
 import {
   trackRecommendationDismissed,
   trackRecommendationRestored,
@@ -19,7 +20,7 @@ import { DISMISSED_FINDINGS_STORAGE_KEY } from './Recommendations.constants';
 export function useDismissedRecommendations() {
   const [stored, setStored] = useLocalStorage<RecommendationId[]>(DISMISSED_FINDINGS_STORAGE_KEY, []);
   // Guard against a hand-edited or stale value: only known ids count.
-  const dismissed = useMemo(() => stored.filter((id) => Object.values(RecommendationId).includes(id)), [stored]);
+  const dismissed = useMemo(() => stored.filter(isRecommendationId), [stored]);
 
   const dismiss = useCallback(
     (id: RecommendationId) => {
@@ -40,6 +41,7 @@ export function useDismissedRecommendations() {
 interface ImpressionContext {
   checkCount: number;
   dismissedCount: number;
+  focusedId?: RecommendationId;
 }
 
 /**
@@ -49,7 +51,7 @@ interface ImpressionContext {
  */
 export function useRecommendationImpressions(
   visible: Recommendation[],
-  { checkCount, dismissedCount }: ImpressionContext
+  { checkCount, dismissedCount, focusedId }: ImpressionContext
 ) {
   const reported = useRef(false);
 
@@ -59,7 +61,30 @@ export function useRecommendationImpressions(
     }
 
     reported.current = true;
-    trackRecommendationsTabViewed({ findingCount: visible.length + dismissedCount, dismissedCount, checkCount });
+    trackRecommendationsTabViewed({
+      findingCount: visible.length + dismissedCount,
+      dismissedCount,
+      checkCount,
+      focusSource: focusedId,
+    });
     visible.forEach(({ id, checks }) => trackRecommendationShown({ finding: id, affectedCheckCount: checks.length }));
-  }, [visible, checkCount, dismissedCount]);
+  }, [visible, checkCount, dismissedCount, focusedId]);
+}
+
+const FOCUS_PARAM = 'finding';
+
+/**
+ * The finding a deep link (`?finding=<RecommendationId>`) points at, so a banner or the
+ * Reliability Inbox can land someone on one panel rather than the top of the tab. Unknown
+ * values are ignored.
+ */
+export function useFocusedRecommendation(): RecommendationId | undefined {
+  const { search } = useLocation();
+  const value = new URLSearchParams(search).get(FOCUS_PARAM);
+
+  return isRecommendationId(value) ? value : undefined;
+}
+
+function isRecommendationId(value: string | null): value is RecommendationId {
+  return value !== null && Object.values(RecommendationId).includes(value as RecommendationId);
 }

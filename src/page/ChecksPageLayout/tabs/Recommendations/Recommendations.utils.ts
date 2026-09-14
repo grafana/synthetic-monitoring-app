@@ -6,14 +6,14 @@ import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 /**
  * Milestone 1 findings, all derived from check configuration alone so the tab needs nothing
  * from Mimir or Loki. Order is the order they are presented in: gaps that let failures go
- * unnoticed come before cleanup.
+ * unnoticed, then things that are not doing their job, then redundancy.
  */
 const FINDERS: Array<(inputs: RecommendationInputs) => Recommendation | undefined> = [
   findAlertingGaps,
   findMissingCostLabels,
+  findPausedChecks,
   findDuplicateChecks,
   findOverlappingTargets,
-  findPausedChecks,
 ];
 
 export function computeRecommendations(inputs: RecommendationInputs): Recommendation[] {

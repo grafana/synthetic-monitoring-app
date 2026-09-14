@@ -9,6 +9,8 @@ interface TabViewed extends TrackingEventProps {
   dismissedCount: number;
   /** How many checks the tenant has, to read the findings against the size of the fleet. */
   checkCount: number;
+  /** The `RecommendationId` a deep link pointed at, when the visit came from one. */
+  focusSource?: string;
 }
 
 /** Tracks a visit to the Recommendations tab, whether or not it found anything. */

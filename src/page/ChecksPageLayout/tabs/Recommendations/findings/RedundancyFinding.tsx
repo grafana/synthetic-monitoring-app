@@ -13,7 +13,7 @@ import { getChecksByTargetUrl } from '../Recommendations.links';
  * human call, and deleting is destructive, so each group deep-links into the check list filtered
  * to just those checks, where they can be compared and bulk-deleted with the usual confirmation.
  */
-export function RedundancyFinding({ recommendation, totalCheckCount, onDismiss }: FindingProps) {
+export function RedundancyFinding({ recommendation, totalCheckCount, isFocused, onDismiss }: FindingProps) {
   const { id, groups = [] } = recommendation;
   const { severity, title, tooltip } = getRecommendationCopy(id, []);
 
@@ -22,6 +22,8 @@ export function RedundancyFinding({ recommendation, totalCheckCount, onDismiss }
       title={title}
       tooltip={tooltip}
       summary={getRecommendationSummary(recommendation, totalCheckCount)}
+      severity={severity}
+      isFocused={isFocused}
       onDismiss={onDismiss}
     >
       <PaginatedRows
@@ -38,7 +40,6 @@ export function RedundancyFinding({ recommendation, totalCheckCount, onDismiss }
                   })
                 : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: group.checks.length })
             }
-            severity={severity}
             checks={group.checks}
             href={getChecksByTargetUrl(group.label, group.type)}
             onLinkClick={() => trackRecommendationActioned({ finding: id, scope: 'group' })}

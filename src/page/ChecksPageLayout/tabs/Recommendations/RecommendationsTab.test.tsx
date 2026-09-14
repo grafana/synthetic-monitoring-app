@@ -29,10 +29,10 @@ function buildCheck(overrides: Partial<Check>, type = CheckType.Http): Check {
   );
 }
 
-function renderTab(checks: Check[]) {
+function renderTab(checks: Check[], options?: Parameters<typeof render>[1]) {
   server.use(apiRoute('listChecks', { result: () => ({ json: checks }) }));
 
-  return render(<RecommendationsTab />);
+  return render(<RecommendationsTab />, options);
 }
 
 function mockReportInteraction() {
@@ -382,10 +382,11 @@ describe('Recommendations tab', () => {
         expect.objectContaining({ finding: 'alerting-gaps' })
       );
 
-      await user.click(screen.getByRole('button', { name: /show dismissed/i }));
+      await user.click(screen.getByRole('button', { name: /show dismissed findings/i }));
 
       expect(await findSection(/alerting/i)).toBeInTheDocument();
-      expect(screen.queryByText(/finding dismissed/i)).not.toBeInTheDocument();
+      expect(screen.getByText('Nothing dismissed')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /show dismissed findings/i })).toBeDisabled();
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_finding_restored',
         expect.objectContaining({ finding: 'alerting-gaps' })
@@ -411,6 +412,95 @@ describe('Recommendations tab', () => {
         'synthetic-monitoring_recommendations_finding_shown',
         expect.objectContaining({ finding: 'alerting-gaps' })
       );
+    });
+  });
+
+  it('always offers the restore control, disabled when nothing is dismissed', async () => {
+    await renderTab([buildCheck({ job: 'unalerted', target: 'https://a.com' })]);
+
+    await findSection(/alerting/i);
+
+    expect(screen.getByText('Nothing dismissed')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /show dismissed findings/i })).toBeDisabled();
+  });
+
+  it('presents findings in a fixed priority order', async () => {
+    await renderTab([
+      buildCheck({ job: 'primary', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
+      buildCheck({ job: 'copy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
+      buildCheck({ job: 'forgotten', enabled: false, alertSensitivity: AlertSensitivity.High }),
+      buildCheck({ job: 'unalerted', target: 'https://a.com' }),
+    ]);
+
+    await findSection(/alerting/i);
+    const headings = screen.getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
+
+    expect(headings).toEqual(['Alerting', 'Paused checks', 'Duplicate checks']);
+  });
+
+  it('sums up how much of the fleet needs attention and what to tackle first', async () => {
+    await renderTab([
+      // Unalerted and a duplicate: counted once.
+      buildCheck({ job: 'primary', target: 'https://grafana.com' }),
+      buildCheck({ job: 'copy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
+      buildCheck({ job: 'healthy', target: 'https://b.com', alertSensitivity: AlertSensitivity.High }),
+    ]);
+
+    expect(
+      await screen.findByText('2 of 3 checks need attention. Alerting is the gap to close first.')
+    ).toBeInTheDocument();
+  });
+
+  it('keeps the summary visible when a finding is collapsed', async () => {
+    const { user } = await renderTab([buildCheck({ job: 'unalerted', target: 'https://a.com' })]);
+
+    const section = await findSection(/alerting/i);
+    await user.click(within(section).getByRole('button', { name: /^Alerting/, expanded: true }));
+
+    expect(within(section).getByText('1 of 1 checks have no alerts')).toBeInTheDocument();
+    expect(within(section).queryByText('unalerted')).not.toBeInTheDocument();
+  });
+
+  describe('deep linking', () => {
+    const scrollIntoView = jest.fn();
+
+    beforeEach(() => {
+      scrollIntoView.mockClear();
+      Element.prototype.scrollIntoView = scrollIntoView;
+    });
+
+    it('highlights and scrolls to the finding named in the URL', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      await renderTab(
+        [
+          buildCheck({ job: 'unalerted', target: 'https://a.com' }),
+          buildCheck({ job: 'forgotten', enabled: false, alertSensitivity: AlertSensitivity.High }),
+        ],
+        { path: 'checks/recommendations?finding=paused-checks' }
+      );
+
+      const paused = await findSection(/paused checks/i);
+      const alerting = await findSection(/alerting/i);
+
+      expect(within(paused).getByText('Opened from a link')).toBeInTheDocument();
+      expect(within(alerting).queryByText('Opened from a link')).not.toBeInTheDocument();
+      expect(scrollIntoView).toHaveBeenCalledTimes(1);
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_tab_viewed',
+        expect.objectContaining({ focusSource: 'paused-checks' })
+      );
+    });
+
+    it('ignores a finding it does not know', async () => {
+      await renderTab([buildCheck({ job: 'unalerted', target: 'https://a.com' })], {
+        path: 'checks/recommendations?finding=nonsense',
+      });
+
+      await findSection(/alerting/i);
+
+      expect(screen.queryByText('Opened from a link')).not.toBeInTheDocument();
+      expect(scrollIntoView).not.toHaveBeenCalled();
     });
   });
 

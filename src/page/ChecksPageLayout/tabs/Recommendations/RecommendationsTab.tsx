@@ -16,7 +16,12 @@ import { AlertingGapsFinding } from './findings/AlertingGapsFinding';
 import { MissingCostLabelsFinding } from './findings/MissingCostLabelsFinding';
 import { PausedChecksFinding } from './findings/PausedChecksFinding';
 import { RedundancyFinding } from './findings/RedundancyFinding';
-import { useDismissedRecommendations, useRecommendationImpressions } from './Recommendations.hooks';
+import { getRecommendationCopy } from './Recommendations.copy';
+import {
+  useDismissedRecommendations,
+  useFocusedRecommendation,
+  useRecommendationImpressions,
+} from './Recommendations.hooks';
 import { getStyles } from './Recommendations.styles';
 import { computeRecommendations } from './Recommendations.utils';
 
@@ -44,23 +49,27 @@ function RecommendationsTabContent() {
   // Only findings that exist for this tenant count as dismissed; a stale dismissal of a finding
   // that has since resolved itself is not something to offer bringing back.
   const dismissedCount = recommendations.length - visible.length;
+  const focusedId = useFocusedRecommendation();
 
-  useRecommendationImpressions(visible, { checkCount: checks.length, dismissedCount });
+  useRecommendationImpressions(visible, { checkCount: checks.length, dismissedCount, focusedId });
 
   if (checks.length === 0) {
     return <ChecksEmptyState />;
   }
 
   return (
-    <Stack direction="column" gap={3}>
+    <Stack direction="column" gap={2}>
       {/* Feedback sits outside the empty state as well as the findings: hearing that we
           found nothing worth showing is as useful a signal as hearing that a finding was wrong. */}
-      <Stack direction="row" gap={2} alignItems="center" justifyContent="space-between">
-        <Text color="secondary">
-          <Trans i18nKey="recommendations.intro">
-            Findings derived from how your checks are configured. Act on them here, or open the checks they refer to.
-          </Trans>
-        </Text>
+      <Stack direction="row" gap={2} alignItems="flex-start" justifyContent="space-between">
+        <Stack direction="column" gap={0.25}>
+          {visible.length > 0 && <Text weight="medium">{getOverview(visible, checks.length, calNames)}</Text>}
+          <Text variant="bodySmall" color="secondary">
+            <Trans i18nKey="recommendations.intro">
+              Findings derived from how your checks are configured. Act on them here, or open the checks they refer to.
+            </Trans>
+          </Text>
+        </Stack>
         <Feedback feature="recommendations" about={{ text: `New feature!` }} />
       </Stack>
       {recommendations.length === 0 && (
@@ -80,29 +89,56 @@ function RecommendationsTabContent() {
           recommendation={recommendation}
           calNames={calNames}
           totalCheckCount={checks.length}
+          isFocused={recommendation.id === focusedId}
           onDismiss={() => dismiss(recommendation.id)}
         />
       ))}
-      {dismissedCount > 0 && (
-        <Stack direction="row" gap={1} alignItems="center" justifyContent="flex-end">
-          <span className={styles.mutedText}>
-            {dismissedCount === 1
-              ? t('recommendations.dismissed.summarySingle', '1 finding dismissed')
-              : t('recommendations.dismissed.summary', '{{dismissedCount}} findings dismissed', { dismissedCount })}
-          </span>
-          <Button size="sm" variant="secondary" fill="text" onClick={restoreAll}>
-            <Trans i18nKey="recommendations.dismissed.restore">Show dismissed</Trans>
-          </Button>
-        </Stack>
-      )}
+      <Stack direction="row" gap={1} alignItems="center" justifyContent="flex-end">
+        <span className={styles.mutedText}>{getDismissedSummary(dismissedCount)}</span>
+        <Button
+          size="sm"
+          variant="secondary"
+          fill="outline"
+          icon="eye"
+          onClick={restoreAll}
+          disabled={dismissedCount === 0}
+        >
+          <Trans i18nKey="recommendations.dismissed.restoreLong">Show dismissed findings</Trans>
+        </Button>
+      </Stack>
     </Stack>
   );
+}
+
+/** One line that says how much of the fleet is affected and what to tackle first. */
+function getOverview(visible: Recommendation[], totalCheckCount: number, calNames: string[]) {
+  // A check can appear in several findings; count it once.
+  const affectedCheckCount = new Set(visible.flatMap(({ checks }) => checks.map((check) => check.id))).size;
+  const leadFinding = getRecommendationCopy(visible[0].id, calNames).title;
+
+  return t(
+    'recommendations.overview.headline',
+    '{{affectedCheckCount}} of {{totalCheckCount}} checks need attention. {{leadFinding}} is the gap to close first.',
+    { affectedCheckCount, totalCheckCount, leadFinding }
+  );
+}
+
+function getDismissedSummary(dismissedCount: number) {
+  switch (dismissedCount) {
+    case 0:
+      return t('recommendations.dismissed.none', 'Nothing dismissed');
+    case 1:
+      return t('recommendations.dismissed.summarySingle', '1 finding dismissed');
+    default:
+      return t('recommendations.dismissed.summary', '{{dismissedCount}} findings dismissed', { dismissedCount });
+  }
 }
 
 interface FindingDispatchProps {
   recommendation: Recommendation;
   calNames: string[];
   totalCheckCount: number;
+  isFocused: boolean;
   onDismiss: () => void;
 }
 
