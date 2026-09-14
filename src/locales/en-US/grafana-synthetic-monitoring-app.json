@@ -84,7 +84,8 @@
       "viewInList": "View in check list"
     },
     "dismissed": {
-      "restore": "Show dismissed",
+      "none": "Nothing dismissed",
+      "restoreLong": "Show dismissed findings",
       "summary": "{{dismissedCount}} findings dismissed",
       "summarySingle": "1 finding dismissed"
     },
@@ -116,10 +117,14 @@
       "description": "These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.",
       "title": "Overlapping targets"
     },
+    "overview": {
+      "headline": "{{affectedCheckCount}} of {{totalCheckCount}} checks need attention. {{leadFinding}} is the gap to close first."
+    },
     "pausedChecks": {
       "action": "Review paused checks",
       "description": "These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.",
       "row": {
+        "done": "Resumed",
         "resume": "Resume",
         "resumeLabel": "Resume {{job}}",
         "since": "Paused {{timeAgo}}"
@@ -131,7 +136,8 @@
       "paused": "paused"
     },
     "section": {
-      "dismiss": "Dismiss this finding"
+      "dismiss": "Dismiss this finding",
+      "openedFromLink": "Opened from a link"
     },
     "summary": {
       "alertingGaps": "{{affectedCheckCount}} of {{totalCheckCount}} checks have no alerts",
