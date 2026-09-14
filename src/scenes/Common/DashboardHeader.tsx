@@ -8,6 +8,7 @@ import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGr
 import { Check } from 'types';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
+import { SLOIntegration } from 'scenes/Common/SLOIntegration';
 
 interface DashboardHeaderProps {
   annotations: AnnotationQuery[];
@@ -26,6 +27,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
         </div>
         <div className={styles.actions}>
           <CheckKnowledgeGraphInsights check={check} />
+          <SLOIntegration check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
             <TimeRangePicker />
