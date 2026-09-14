@@ -17,41 +17,6 @@ import { sloQueryKeys, useDeleteSLO, useSLOsForCheck } from './useSLOCheckLinks'
 
 const NEW_SLO_TAB_KEY = 'new-slo';
 
-function buildWizardInitialValuesForSLO(slo: SLO): SLOWizardInitialValues {
-  if (slo.query.type !== 'ratio' || !slo.query.ratio) {
-    return {
-      uuid: slo.uuid,
-      name: slo.name,
-      description: slo.description,
-      labels: slo.labels,
-    };
-  }
-
-  const ratio = slo.query.ratio;
-  const successMetric = ratio.successMetric?.prometheusMetric;
-  const totalMetric = ratio.totalMetric?.prometheusMetric;
-
-  const query =
-    successMetric && totalMetric
-      ? {
-          type: 'ratio' as const,
-          ratioQuery: {
-            successMetric,
-            totalMetric,
-            groupByLabels: ratio.groupByLabels?.join(',') ?? '',
-          },
-        }
-      : undefined;
-
-  return {
-    uuid: slo.uuid,
-    name: slo.name,
-    description: slo.description,
-    labels: slo.labels,
-    query,
-  };
-}
-
 type SLOIntegrationProps = {
   check: Check;
 };
@@ -61,7 +26,6 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
   const deleteSLO = useDeleteSLO();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('');
-  const [editingUuid, setEditingUuid] = useState<string | undefined>();
   const [showNewSLOTab, setShowNewSLOTab] = useState(false);
   const [deletingUuid, setDeletingUuid] = useState<string | undefined>();
   const queryClient = useQueryClient();
@@ -112,18 +76,14 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
 
   const countLabel = slos.length > 0 ? (slos.length === 1 ? '1 SLO' : `${slos.length} SLOs`) : 'SLOs';
   const activeSLO = slos.find((slo) => slo.uuid === activeTabKey);
-  const isEditingActiveSLO = Boolean(activeSLO && editingUuid === activeSLO.uuid);
   const isWizardReady = !isWizardLoading && Boolean(SLOComponent) && Boolean(metricsDsUid);
 
   const newSLOInitialValues: SLOWizardInitialValues = buildSLOWizardInitialValuesForCheck(check);
-
-  const editInitialValues = activeSLO && isEditingActiveSLO ? buildWizardInitialValuesForSLO(activeSLO) : undefined;
 
   const handleOpenDrawer = () => {
     const firstSLOKey = slos.length > 0 ? slos[0].uuid : undefined;
     setActiveTabKey(firstSLOKey ?? NEW_SLO_TAB_KEY);
     setShowNewSLOTab(!firstSLOKey);
-    setEditingUuid(undefined);
     setDrawerOpen(true);
   };
 
@@ -161,10 +121,7 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
                   key={slo.uuid}
                   label={slo.name}
                   active={activeTabKey === slo.uuid}
-                  onChangeTab={() => {
-                    setActiveTabKey(slo.uuid);
-                    setEditingUuid(undefined);
-                  }}
+                  onChangeTab={() => setActiveTabKey(slo.uuid)}
                 />
               ))}
               {showNewSLOTab ? (
@@ -178,28 +135,11 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
             </TabsBar>
 
             {activeSLO ? (
-              isEditingActiveSLO && isWizardReady && SLOComponent ? (
-                <SLOComponent
-                  // Save updates only after grafana-slo-app hydrates initialValues.uuid; until then this creates.
-                  initialValues={editInitialValues}
-                  dataSourceUid={metricsDsUid}
-                  stepperOrientation="horizontal"
-                  submitLabel="Save SLO"
-                  onSuccess={() => {
-                    setEditingUuid(undefined);
-                    handleSLOListInvalidate();
-                  }}
-                  onCancel={() => setEditingUuid(undefined)}
-                  initialStep={StepKey.Review}
-                />
-              ) : (
-                <SLODetailTab
-                  slo={activeSLO}
-                  onEdit={(slo) => setEditingUuid(slo.uuid)}
-                  onDelete={handleDeleteSLO}
-                  isDeleting={Boolean(activeSLO && deletingUuid === activeSLO.uuid)}
-                />
-              )
+              <SLODetailTab
+                slo={activeSLO}
+                onDelete={handleDeleteSLO}
+                isDeleting={Boolean(activeSLO && deletingUuid === activeSLO.uuid)}
+              />
             ) : null}
 
             {activeTabKey === NEW_SLO_TAB_KEY && isWizardReady && SLOComponent ? (

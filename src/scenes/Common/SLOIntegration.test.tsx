@@ -187,7 +187,7 @@ describe('SLOIntegration', () => {
     expect(within(dialog).getByRole('tab', { name: 'First SLO' })).toHaveAttribute('aria-selected', 'false');
   });
 
-  it('renders the wizard inline within the same SLO tab when Edit is clicked', async () => {
+  it('links Edit to the SLO app instead of opening the wizard inline', async () => {
     const slo = makeSLO({ uuid: 'edit-me', name: 'Editable SLO' });
     mockHookReturn({ slos: [slo] });
 
@@ -198,10 +198,9 @@ describe('SLOIntegration', () => {
     expect(within(dialog).getByRole('tab', { name: 'Editable SLO' })).toHaveAttribute('aria-selected', 'true');
     expect(within(dialog).queryByText('Mock SLO Wizard')).not.toBeInTheDocument();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Edit' }));
-
-    expect(within(dialog).getByText('Mock SLO Wizard')).toBeInTheDocument();
-    expect(within(dialog).getByRole('tab', { name: 'Editable SLO' })).toHaveAttribute('aria-selected', 'true');
+    const edit = within(dialog).getByRole('link', { name: 'Edit' });
+    expect(edit.getAttribute('href')).toContain('/a/grafana-slo-app/wizard/review/edit-me');
+    expect(within(dialog).queryByText('Mock SLO Wizard')).not.toBeInTheDocument();
   });
 
   it('renders the Experimental badge in the drawer title', async () => {

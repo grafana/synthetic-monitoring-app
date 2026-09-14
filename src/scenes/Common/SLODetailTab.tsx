@@ -18,11 +18,11 @@ import { css } from '@emotion/css';
 
 import type { SLO } from './grafanaSLOApp.types';
 
+import { buildSLOEditHref } from './grafanaSLOApp.constants';
 import { useSLOMetrics } from './SLODetailTab.hooks';
 
 export type SLODetailTabProps = {
   slo: SLO;
-  onEdit?: (slo: SLO) => void;
   onDelete?: (slo: SLO) => void | Promise<void>;
   isDeleting?: boolean;
 };
@@ -117,13 +117,14 @@ function getBurnRateColor(value: number, theme: GrafanaTheme2): string {
   return theme.colors.error.text;
 }
 
-export function SLODetailTab({ slo, onEdit, onDelete, isDeleting }: SLODetailTabProps) {
+export function SLODetailTab({ slo, onDelete, isDeleting }: SLODetailTabProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = React.useState(false);
   const styles = useStyles2(getStyles);
   const metrics = useSLOMetrics(slo);
   const primaryObjective = slo.objectives[0];
   const dashboardUid = slo.readOnly?.drillDownDashboardRef?.UID;
   const dashboardHref = dashboardUid ? `${config.appSubUrl ?? ''}/d/${dashboardUid}` : undefined;
+  const editHref = buildSLOEditHref(slo.uuid);
   const window = primaryObjective?.window ?? '28d';
 
   return (
@@ -190,9 +191,9 @@ export function SLODetailTab({ slo, onEdit, onDelete, isDeleting }: SLODetailTab
             View dashboard
           </LinkButton>
         ) : null}
-        <Button variant="secondary" icon="edit" onClick={() => onEdit?.(slo)}>
+        <LinkButton href={editHref} variant="secondary" icon="edit">
           Edit
-        </Button>
+        </LinkButton>
         {onDelete ? (
           <Button
             variant="destructive"

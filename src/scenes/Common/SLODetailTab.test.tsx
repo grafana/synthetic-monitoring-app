@@ -136,13 +136,11 @@ describe('SLODetailTab', () => {
     expect(screen.queryByRole('link', { name: /view dashboard/i })).not.toBeInTheDocument();
   });
 
-  it('calls onEdit with the active slo when Edit is clicked', async () => {
+  it('links Edit to the SLO app wizard for the active slo', async () => {
     const slo = baseSLO({ uuid: 'abc-123' });
-    const onEdit = jest.fn();
-    const user = userEvent.setup();
-    render(<SLODetailTab slo={slo} onEdit={onEdit} />);
-    await user.click(await screen.findByRole('button', { name: /edit/i }));
-    expect(onEdit).toHaveBeenCalledWith(slo);
+    render(<SLODetailTab slo={slo} />);
+    const link = await screen.findByRole('link', { name: /edit/i });
+    expect(link.getAttribute('href')).toContain('/a/grafana-slo-app/wizard/review/abc-123');
   });
 
   it('uses the objective window in the SLI card title', async () => {
