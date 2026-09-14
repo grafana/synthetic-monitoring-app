@@ -84,7 +84,8 @@
       "viewInList": ""
     },
     "dismissed": {
-      "restore": "",
+      "none": "",
+      "restoreLong": "",
       "summary": "",
       "summarySingle": ""
     },
@@ -116,10 +117,14 @@
       "description": "",
       "title": ""
     },
+    "overview": {
+      "headline": ""
+    },
     "pausedChecks": {
       "action": "",
       "description": "",
       "row": {
+        "done": "",
         "resume": "",
         "resumeLabel": "",
         "since": ""
@@ -131,7 +136,8 @@
       "paused": ""
     },
     "section": {
-      "dismiss": ""
+      "dismiss": "",
+      "openedFromLink": ""
     },
     "summary": {
       "alertingGaps": "",
