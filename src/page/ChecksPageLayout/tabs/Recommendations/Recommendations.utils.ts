@@ -1,5 +1,7 @@
+import { t } from '@grafana/i18n';
+
 import { Recommendation, RecommendationGroup, RecommendationId, RecommendationInputs } from './Recommendations.types';
-import { Check, CheckType } from 'types';
+import { Check, CheckType, Probe } from 'types';
 import { checkHasAlerting, getCheckType } from 'utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
@@ -92,6 +94,32 @@ function findPausedChecks({ checks }: RecommendationInputs): Recommendation | un
  */
 export function getPausedSince(check: Check): Date | undefined {
   return check.modified ? new Date(check.modified * 1000) : undefined;
+}
+
+/** How many probe names to spell out before collapsing the rest into a count. */
+const MAX_LISTED_PROBES = 3;
+
+/**
+ * The names of a check's probes, sorted, with a long list cut to `Atlanta, London, Paris +4`.
+ * Probes the tenant can no longer see (deleted, or a public one since removed) are counted
+ * but not named, so the total still matches the check's configuration.
+ */
+export function describeProbes(check: Check, probes: Probe[]): string {
+  const names = check.probes
+    .map((id) => probes.find((probe) => probe.id === id)?.name)
+    .filter((name): name is string => Boolean(name))
+    .sort((a, b) => a.localeCompare(b));
+  const unnamedCount = check.probes.length - names.length;
+  const listed = names.slice(0, MAX_LISTED_PROBES);
+  const remainder = names.length - listed.length + unnamedCount;
+
+  if (listed.length === 0) {
+    return t('recommendations.probes.count', '{{probeCount}} probes', { probeCount: check.probes.length });
+  }
+
+  return remainder > 0
+    ? t('recommendations.probes.listWithMore', '{{probes}} +{{remainder}}', { probes: listed.join(', '), remainder })
+    : listed.join(', ');
 }
 
 function byLeastRecentlyModified(a: Check, b: Check) {

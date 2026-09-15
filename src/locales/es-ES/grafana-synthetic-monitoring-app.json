@@ -133,6 +133,17 @@
       },
       "title": ""
     },
+    "probes": {
+      "count": "",
+      "listWithMore": ""
+    },
+    "redundancy": {
+      "row": {
+        "edit": "",
+        "editLabel": "",
+        "settings": ""
+      }
+    },
     "row": {
       "editCheck": "",
       "paused": ""
