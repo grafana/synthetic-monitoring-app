@@ -1161,10 +1161,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@faker-js/faker@npm:10.1.0":
-  version: 10.1.0
-  resolution: "@faker-js/faker@npm:10.1.0"
-  checksum: 10c0/3dc277245ec1bef8b839a9dc45b4ccb1688d21b8bde6531a849c1773193de30047e40e085b7e900c42c940911ecf1645b582ad3c85093df5bfdbddeb44a2b554
+"@faker-js/faker@npm:10.5.0":
+  version: 10.5.0
+  resolution: "@faker-js/faker@npm:10.5.0"
+  checksum: 10c0/2de3c7b8f41592d52cefc3ab4c99536656249bca78d5ad184a3b7ac43ecc9d946056cef2c4d37060373ef06ad992d82530de08479fabe16fdbe77b911d842446
   languageName: node
   linkType: hard
 
@@ -13770,7 +13770,7 @@ __metadata:
     "@commitlint/cli": "npm:20.1.0"
     "@commitlint/config-conventional": "npm:20.0.0"
     "@emotion/css": "npm:11.13.5"
-    "@faker-js/faker": "npm:10.1.0"
+    "@faker-js/faker": "npm:10.5.0"
     "@grafana/alerting": "npm:13.0.2"
     "@grafana/assistant": "npm:0.1.25"
     "@grafana/data": "npm:13.0.2"

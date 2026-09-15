@@ -36,7 +36,7 @@
     "@babel/core": "7.29.6",
     "@commitlint/cli": "20.1.0",
     "@commitlint/config-conventional": "20.0.0",
-    "@faker-js/faker": "10.1.0",
+    "@faker-js/faker": "10.5.0",
     "@grafana/eslint-config": "9.0.0",
     "@grafana/tsconfig": "2.2.0",
     "@stylistic/eslint-plugin-ts": "4.4.1",
