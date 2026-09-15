@@ -171,6 +171,17 @@ function AlertSetupRow({ check, onEditClick, onApplied }: AlertSetupRowProps) {
     setIsDone(true);
     setIsExpanded(false);
     onApplied();
+    // Same confirmation the rest of the app gives after a mutation. The hook has no successAlert
+    // of its own because the check editor calls it straight after updateCheck, which already toasts.
+    showAlert(
+      'success',
+      alerts.length === 1
+        ? t('recommendations.alertingGaps.row.appliedSingle', 'Added an alert to {{job}}', { job: check.job })
+        : t('recommendations.alertingGaps.row.applied', 'Added {{alertCount}} alerts to {{job}}', {
+            alertCount: alerts.length,
+            job: check.job,
+          })
+    );
     // The check list carries each check's alerts, so refetching it drops this row from the finding.
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
   };

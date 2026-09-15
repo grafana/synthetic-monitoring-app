@@ -1,4 +1,5 @@
 import React from 'react';
+import appEvents from 'grafana/app/core/app_events';
 import { screen, waitFor, within } from '@testing-library/react';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 import { DB } from 'test/db';
@@ -33,6 +34,11 @@ function renderTab(checks: Check[], options?: Parameters<typeof render>[1]) {
   server.use(apiRoute('listChecks', { result: () => ({ json: checks }) }));
 
   return render(<RecommendationsTab />, options);
+}
+
+/** Toasts go through app_events, which the test setup stubs; spy on it to read the message. */
+function spyOnToasts() {
+  return jest.spyOn(appEvents, 'emit').mockImplementation(() => {});
 }
 
 function mockReportInteraction() {
@@ -98,8 +104,9 @@ describe('Recommendations tab', () => {
       expect(within(section).getByText('30d')).toBeInTheDocument();
     });
 
-    it('adds the default alerts to one check and drops it from the finding', async () => {
+    it('adds the default alerts to one check, confirms it and drops it from the finding', async () => {
       const reportInteraction = mockReportInteraction();
+      const toasts = spyOnToasts();
       const check = buildCheck({ job: 'unalerted', target: 'https://a.com', id: 7 });
       const other = buildCheck({ job: 'also-unalerted', target: 'https://b.com', id: 8 });
       let savedAlerts: CheckAlertDraft[] = [];
@@ -141,6 +148,7 @@ describe('Recommendations tab', () => {
       ]);
       await waitFor(() => expect(within(section).queryByText('unalerted')).not.toBeInTheDocument());
       expect(within(section).getByText('also-unalerted')).toBeInTheDocument();
+      expect(toasts).toHaveBeenCalledWith(expect.anything(), ['Added 3 alerts to unalerted']);
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_action_completed',
         expect.objectContaining({ finding: 'alerting-gaps', action: 'alerts_added', checkCount: 1, scope: 'check' })
@@ -149,6 +157,7 @@ describe('Recommendations tab', () => {
 
     it('adds the default alerts to every unalerted check after confirming', async () => {
       const reportInteraction = mockReportInteraction();
+      const toasts = spyOnToasts();
       const updatedCheckIds: string[] = [];
 
       server.use(
@@ -176,6 +185,7 @@ describe('Recommendations tab', () => {
       await user.click(within(dialog).getByRole('button', { name: 'Add alerts' }));
 
       await waitFor(() => expect(updatedCheckIds.sort()).toEqual(['1', '2']));
+      await waitFor(() => expect(toasts).toHaveBeenCalledWith(expect.anything(), ['Added alerts to 2 checks']));
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_action_completed',
         expect.objectContaining({ finding: 'alerting-gaps', action: 'alerts_added', checkCount: 2, scope: 'finding' })
@@ -183,6 +193,7 @@ describe('Recommendations tab', () => {
     });
 
     it('keeps the row and reports the failure when the alerts cannot be saved', async () => {
+      const toasts = spyOnToasts();
       server.use(apiRoute('updateAlertsForCheck', { result: () => ({ status: 500, json: { err: 'nope' } }) }));
 
       const { user } = await renderTab([buildCheck({ job: 'unalerted', target: 'https://a.com' })]);
@@ -193,6 +204,7 @@ describe('Recommendations tab', () => {
 
       await waitFor(() => expect(within(section).getByRole('button', { name: 'Add 3 alerts' })).toBeEnabled());
       expect(within(section).queryByText(/alerts added/i)).not.toBeInTheDocument();
+      expect(toasts).not.toHaveBeenCalledWith(expect.anything(), [expect.stringMatching(/^Added/)]);
     });
 
     it('stretches the evaluation period to fit a check that runs less often', async () => {
