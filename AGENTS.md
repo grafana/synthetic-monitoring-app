@@ -218,3 +218,7 @@ Agent skill (auto-trigger workflow): [`.agents/skills/write-tests/SKILL.md`](./.
   `api.updateSlo`).
 - Single-word lowercase variables like `slo` and `slos` (e.g. `slos.find((slo) => ...)`)
   follow standard camelCase rules and remain lowercase.
+
+### Security
+
+- Security issues should be reported via [Grafana's security issue reporting page](https://grafana.com/legal/report-a-security-issue/) and not directly in this repository.
