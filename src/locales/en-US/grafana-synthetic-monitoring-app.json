@@ -133,6 +133,17 @@
       },
       "title": "Paused checks"
     },
+    "probes": {
+      "count": "{{probeCount}} probes",
+      "listWithMore": "{{probes}} +{{remainder}}"
+    },
+    "redundancy": {
+      "row": {
+        "edit": "Edit check",
+        "editLabel": "Open {{job}} in the check editor",
+        "settings": "Every {{frequency}} · {{probes}}"
+      }
+    },
     "row": {
       "editCheck": "Edit {{job}}",
       "paused": "paused"

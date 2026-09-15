@@ -302,6 +302,52 @@ describe('Recommendations tab', () => {
       expect(within(section).getByText('copy')).toBeInTheDocument();
     });
 
+    it('shows what sets the checks in a group apart and links each to its editor', async () => {
+      const reportInteraction = mockReportInteraction();
+      server.use(
+        apiRoute('listProbes', {
+          result: () => ({
+            json: [DB.probe.build({ id: 1, name: 'London' }), DB.probe.build({ id: 2, name: 'Atlanta' })],
+          }),
+        })
+      );
+      const { user } = await renderTab([
+        buildCheck({
+          id: 10,
+          job: 'primary',
+          target: 'https://grafana.com',
+          alertSensitivity: AlertSensitivity.High,
+          probes: [1, 2],
+        }),
+        buildCheck({
+          id: 11,
+          job: 'copy',
+          target: 'https://grafana.com',
+          alertSensitivity: AlertSensitivity.High,
+          probes: [1],
+          frequency: 5 * ONE_MINUTE,
+          enabled: false,
+        }),
+      ]);
+
+      const section = await findSection(/duplicate checks/i);
+      await user.click(within(section).getByRole('button', { name: /grafana\.com/ }));
+
+      expect(await within(section).findByText('Every 1m · Atlanta, London')).toBeInTheDocument();
+      expect(within(section).getByText('Every 5m · London')).toBeInTheDocument();
+      expect(within(section).getByText('paused')).toBeInTheDocument();
+
+      const editLink = within(section).getByRole('link', { name: 'Open copy in the check editor' });
+      expect(editLink).toHaveAttribute('href', expect.stringContaining('/checks/11/edit'));
+
+      await user.click(editLink);
+
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_finding_actioned',
+        expect.objectContaining({ finding: 'duplicate-checks', scope: 'check' })
+      );
+    });
+
     it('links each duplicate group to the check list filtered to that target and type', async () => {
       await renderTab([
         buildCheck({ job: 'primary', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
