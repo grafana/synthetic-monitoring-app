@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAssistant } from '@grafana/assistant';
-import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
+import {
+  trackCreateManually,
+  trackRecommendationReviewed,
+  trackSetupWithAssistant,
+} from 'features/tracking/reliabilityInboxEvents';
 
 import { getUserPermissions } from 'data/permissions';
 
@@ -73,6 +77,8 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
     if (!selected) {
       return;
     }
+
+    trackCreateManually({ opportunityId: selected.id });
 
     // Use React Router navigate so location.state reaches NewCheckV2. locationService.push drops it.
     const { pathname, search, state } = getManualCreateLocation(selected);

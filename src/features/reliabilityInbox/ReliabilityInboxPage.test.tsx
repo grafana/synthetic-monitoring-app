@@ -3,7 +3,11 @@ import { useAssistant } from '@grafana/assistant';
 import { FieldType, toDataFrame } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { fireEvent, screen, within } from '@testing-library/react';
-import { trackRecommendationReviewed, trackSetupWithAssistant } from 'features/tracking/reliabilityInboxEvents';
+import {
+  trackCreateManually,
+  trackRecommendationReviewed,
+  trackSetupWithAssistant,
+} from 'features/tracking/reliabilityInboxEvents';
 import { delay } from 'msw';
 import { DB } from 'test/db';
 import { HTTP_RELIABILITY_SUGGESTION } from 'test/fixtures/reliabilityInbox';
@@ -25,6 +29,7 @@ jest.mock('./data', () => ({
 }));
 
 jest.mock('features/tracking/reliabilityInboxEvents', () => ({
+  trackCreateManually: jest.fn(),
   trackRecommendationReviewed: jest.fn(),
   trackSetupWithAssistant: jest.fn(),
 }));
@@ -624,6 +629,7 @@ describe('ReliabilityInboxPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Create manually' }));
 
+    expect(trackCreateManually).toHaveBeenCalledWith({ opportunityId: 'http-suggestion' });
     expect(locationService.getLocation()).toMatchObject({
       pathname: `${generateRoutePath(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}`,
       search: `?checkType=${CheckType.Http}`,
