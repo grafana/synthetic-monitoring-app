@@ -68,6 +68,8 @@
       },
       "description": "These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.",
       "row": {
+        "applied": "Added {{alertCount}} alerts to {{job}}",
+        "appliedSingle": "Added an alert to {{job}}",
         "apply": "Add {{alertCount}} alerts",
         "applying": "Adding...",
         "applySingle": "Add alert",
