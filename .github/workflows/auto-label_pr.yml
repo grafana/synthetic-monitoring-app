@@ -4,18 +4,25 @@ name: Auto-label pull requests
 permissions: {}
 
 on:
-  pull_request_target: # zizmor: ignore[dangerous-triggers] metadata only; never checks out or executes fork code
+  pull_request:
 
 jobs:
   label-by-title:
     runs-on: ubuntu-latest
     permissions:
       contents: none
-      pull-requests: write # needed to add labels to PRs
+      id-token: write # needed to mint a scoped GitHub App token
     steps:
+      - name: Get GitHub App token
+        id: get-github-app-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
+        with:
+          github_app: synthetic-monitoring-ci
+
       - name: Label PR based on title
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
+          github-token: ${{ steps.get-github-app-token.outputs.token }}
           script: |
             const title = context.payload.pull_request && context.payload.pull_request.title || '';
             // Mapping: regex -> label name (aligned with conventional commits & release-please)
