@@ -4,7 +4,7 @@ name: Auto-label pull requests
 permissions: {}
 
 on:
-  pull_request:
+  pull_request_target: # zizmor: ignore[dangerous-triggers] metadata only; never checks out or executes fork code
 
 jobs:
   label-by-title:
@@ -13,8 +13,6 @@ jobs:
       contents: none
       pull-requests: write # needed to add labels to PRs
     steps:
-      # This needs a step to mint a token from GATB. Pass to github-script
-      # action so that it can write to PRs.
       - name: Label PR based on title
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
