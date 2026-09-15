@@ -143,8 +143,10 @@ describe('CheckList - Bulk Actions', () => {
     await user.click(selectAll);
     expect(selectAll).toBeChecked();
 
+    // The checkbox tracks the visible page, and the one check still matching
+    // the type filter is selected, so it stays fully checked.
     await user.click(screen.getByText('HTTP'));
-    expect(selectAll).toBePartiallyChecked();
+    expect(selectAll).toBeChecked();
 
     const enableButton = await screen.getByText('Disable');
     await user.click(enableButton);

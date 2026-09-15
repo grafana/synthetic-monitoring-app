@@ -110,6 +110,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   // (so folder view returns automatically if folders become available again).
   const effectiveViewType =
     viewType === CheckListViewType.Folder && !isFoldersAvailable ? CheckListViewType.Card : viewType;
+  const isFolderView = effectiveViewType === CheckListViewType.Folder;
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.
@@ -186,6 +187,11 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
   const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
 
+  // What the select-all checkbox acts on: never more than the user can see.
+  // Folder view is not paginated and renders the whole list, so there that is
+  // every check.
+  const pageChecks = isFolderView ? visibleChecks : currentPageChecks;
+
   const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
     setCurrentPage(1);
 
@@ -258,14 +264,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     }
   };
 
-  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
+  const isPageSelected = pageChecks.length > 0 && pageChecks.every((check) => selectedCheckIds.has(check.id!));
 
-  const handleSelectAll = () => {
-    if (isAllSelected) {
+  const handleSelectPage = () => {
+    if (isPageSelected) {
       return handleUnselectAll();
     }
-    const allCheckIds = visibleChecks.map((check) => check.id!);
-    setSelectedChecksIds(new Set(allCheckIds));
+    setSelectedChecksIds(new Set(pageChecks.map((check) => check.id!)));
   };
 
   const handleChangeViewType = (value: CheckListViewType) => {
@@ -301,7 +306,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   // Rendered here so the folder view can place it on its folders row while
   // the flat views keep it in the list header.
-  const isFolderView = effectiveViewType === CheckListViewType.Folder;
   const bulkActions =
     selectedCheckIds.size > 0 ? (
       <BulkActions
@@ -321,10 +325,11 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         isFoldersAvailable={isFoldersAvailable}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
-        onSelectAll={handleSelectAll}
+        onSelectPage={handleSelectPage}
         onSort={updateSortMethod}
         onResetFilters={handleResetFilters}
         bulkActions={isFolderView ? undefined : bulkActions}
+        pageChecks={pageChecks}
         selectedCheckIds={selectedCheckIds}
         sortType={sortType}
         viewType={effectiveViewType}

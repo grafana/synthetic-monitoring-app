@@ -25,8 +25,14 @@ type CheckListHeaderProps = {
   onFilterChange: (filters: CheckFiltersType, type: FilterType) => void;
   onSort: (sort: SelectableValue<CheckSort>) => void;
   onResetFilters: () => void;
-  onSelectAll: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectPage: (e: React.ChangeEvent<HTMLInputElement>) => void;
   selectedCheckIds: Set<number>;
+  /**
+   * The checks the select-all checkbox acts on: the current page in the
+   * paginated views, and the whole list in folder view, which renders
+   * everything at once. Equal to `checks` when there is nothing off-screen.
+   */
+  pageChecks: Check[];
   sortType: CheckSort;
   viewType: CheckListViewType;
   alertStatesFetching: boolean;
@@ -79,8 +85,9 @@ export const CheckListHeader = ({
   onFilterChange,
   onSort,
   onResetFilters,
-  onSelectAll,
+  onSelectPage,
   selectedCheckIds,
+  pageChecks,
   sortType,
   viewType,
   alertStatesFetching,
@@ -93,12 +100,11 @@ export const CheckListHeader = ({
 
   const styles = useStyles2(getStyles);
   const [showThresholdModal, setShowThresholdModal] = useState(false);
-  const hasChecks = checks.length > 0;
-  const isAllSelected = !hasChecks ? false : selectedCheckIds.size === checks.length;
-  const isSomeSelected = hasChecks && !isAllSelected && selectedCheckIds.size > 0;
   const hasSelection = selectedCheckIds.size > 0;
+  const isPageSelected = pageChecks.length > 0 && pageChecks.every((check) => selectedCheckIds.has(check.id!));
+  const isSomePageSelected = !isPageSelected && pageChecks.some((check) => selectedCheckIds.has(check.id!));
 
-  const tooltip = isAllSelected
+  const tooltip = isPageSelected
     ? t('checkList.header.deselectAll', 'Deselect all')
     : t('checkList.header.selectAll', 'Select all');
 
@@ -135,9 +141,9 @@ export const CheckListHeader = ({
           <div className={styles.secondaryActions}>
             <Tooltip content={tooltip}>
               <Checkbox
-                onChange={onSelectAll}
-                indeterminate={isSomeSelected}
-                value={isAllSelected}
+                onChange={onSelectPage}
+                indeterminate={isSomePageSelected}
+                value={isPageSelected}
                 disabled={checks.length === 0}
                 aria-label={t('checkList.header.selectAllAriaLabel', 'Select all')}
                 data-testid={CHECKS_TEST_ID.header.selectAll}
