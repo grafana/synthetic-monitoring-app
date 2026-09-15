@@ -168,11 +168,19 @@ interface GroupRowProps {
   /** Where to see this group in the check list, e.g. to bulk-select and delete from there. */
   href: string;
   onLinkClick?: () => void;
-  onCheckEditClick?: () => void;
+  /** How to render each check once the group is expanded; a plain `CheckRow` by default. */
+  renderCheck?: (check: Check) => ReactNode;
 }
 
 /** A cluster of checks that share something, expandable to the checks inside it. */
-export function GroupRow({ label, detail, checks, href, onLinkClick, onCheckEditClick }: GroupRowProps) {
+export function GroupRow({
+  label,
+  detail,
+  checks,
+  href,
+  onLinkClick,
+  renderCheck = (check) => <CheckRow key={check.id} check={check} />,
+}: GroupRowProps) {
   const styles = useStyles2(getStyles);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -195,13 +203,7 @@ export function GroupRow({ label, detail, checks, href, onLinkClick, onCheckEdit
         </a>
         <span className={styles.rowDetail}>{detail}</span>
       </div>
-      {isExpanded && (
-        <div className={styles.nestedRows}>
-          {checks.map((check) => (
-            <CheckRow key={check.id} check={check} onEditClick={onCheckEditClick} />
-          ))}
-        </div>
-      )}
+      {isExpanded && <div className={styles.nestedRows}>{checks.map(renderCheck)}</div>}
     </div>
   );
 }

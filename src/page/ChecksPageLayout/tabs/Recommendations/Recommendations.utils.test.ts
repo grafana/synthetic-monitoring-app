@@ -3,7 +3,7 @@ import { DB } from 'test/db';
 import { RecommendationId } from './Recommendations.types';
 import { AlertSensitivity, Check, CheckAlertType, CheckType } from 'types';
 
-import { computeRecommendations } from './Recommendations.utils';
+import { computeRecommendations, describeProbes } from './Recommendations.utils';
 
 function buildCheck(overrides: Partial<Check>, type = CheckType.Http): Check {
   return DB.check.build(
@@ -177,5 +177,30 @@ describe('the finding list as a whole', () => {
     const paused = buildCheck({ job: 'paused', target: 'https://b.com', enabled: false });
 
     expect(findingIds([unalerted, paused])).toEqual([RecommendationId.AlertingGaps, RecommendationId.PausedChecks]);
+  });
+});
+
+describe('describeProbes', () => {
+  const probes = [
+    DB.probe.build({ id: 1, name: 'London' }),
+    DB.probe.build({ id: 2, name: 'Atlanta' }),
+    DB.probe.build({ id: 3, name: 'Paris' }),
+    DB.probe.build({ id: 4, name: 'Tokyo' }),
+  ];
+
+  it('names the probes in alphabetical order', () => {
+    expect(describeProbes(buildCheck({ probes: [1, 2] }), probes)).toBe('Atlanta, London');
+  });
+
+  it('lists the first few and counts the rest', () => {
+    expect(describeProbes(buildCheck({ probes: [1, 2, 3, 4] }), probes)).toBe('Atlanta, London, Paris +1');
+  });
+
+  it('counts probes it cannot name so the total matches the check', () => {
+    expect(describeProbes(buildCheck({ probes: [1, 99] }), probes)).toBe('London +1');
+  });
+
+  it('falls back to a count when no names are known yet', () => {
+    expect(describeProbes(buildCheck({ probes: [1, 2] }), [])).toBe('2 probes');
   });
 });
