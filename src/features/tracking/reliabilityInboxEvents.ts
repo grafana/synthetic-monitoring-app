@@ -22,3 +22,5 @@ export const trackReviewEntryClicked = reliabilityInboxEvents<RecommendationEven
 export const trackRecommendationReviewed = reliabilityInboxEvents<RecommendationEvent>('recommendation_reviewed');
 /** Tracks when a user explicitly hands a recommendation to Assistant for guided setup. */
 export const trackSetupWithAssistant = reliabilityInboxEvents<RecommendationEvent>('setup_with_assistant_clicked');
+/** Tracks when a user takes a recommendation to the check form to create it themselves. */
+export const trackCreateManually = reliabilityInboxEvents<RecommendationEvent>('create_manually_clicked');

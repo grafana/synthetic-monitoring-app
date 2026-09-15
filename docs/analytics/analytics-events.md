@@ -498,6 +498,16 @@ Tracks when a user explicitly hands a recommendation to Assistant for guided set
 | ------------- | -------- | -------------------------------------------------------------- |
 | opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
 
+#### synthetic-monitoring_reliability_inbox_create_manually_clicked
+
+Tracks when a user takes a recommendation to the check form to create it themselves.
+
+##### Properties
+
+| name          | type     | description                                                    |
+| ------------- | -------- | -------------------------------------------------------------- |
+| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+
 ### screenshots
 
 #### synthetic-monitoring_screenshots_expanded
