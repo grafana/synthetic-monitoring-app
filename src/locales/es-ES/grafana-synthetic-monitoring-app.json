@@ -68,6 +68,8 @@
       },
       "description": "",
       "row": {
+        "applied": "",
+        "appliedSingle": "",
         "apply": "",
         "applying": "",
         "applySingle": "",
