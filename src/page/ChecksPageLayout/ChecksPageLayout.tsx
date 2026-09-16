@@ -7,7 +7,7 @@ import { PluginPage } from '@grafana/runtime';
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
-import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { NewBadge } from 'components/NewStatusBadge';
 
 /**
@@ -17,12 +17,12 @@ import { NewBadge } from 'components/NewStatusBadge';
 export function ChecksPageLayout() {
   const getChecksTabUrl = useTabUrl(AppRoutes.Checks);
   const activeTab = useActiveTab(AppRoutes.Checks);
-  const { isFeatureEnabled } = useFeatureFlagContext();
+  const { isEnabled: isRecommendationsEnabled } = useFeatureFlag(FeatureName.Recommendations);
 
   const pageNav: NavModelItem | undefined = useMemo(() => {
-    // Recommendations is the only sibling tab, so with the flag off there is nothing to
-    // switch between and the page keeps the plain header it has always had.
-    if (!isFeatureEnabled(FeatureName.Recommendations)) {
+    // Recommendations is the only sibling tab, so with the flag off (or not yet resolved)
+    // there is nothing to switch between and the page keeps the plain header it has always had.
+    if (!isRecommendationsEnabled) {
       return undefined;
     }
 
@@ -48,7 +48,7 @@ export function ChecksPageLayout() {
         },
       ],
     };
-  }, [activeTab, getChecksTabUrl, isFeatureEnabled]);
+  }, [activeTab, getChecksTabUrl, isRecommendationsEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>
