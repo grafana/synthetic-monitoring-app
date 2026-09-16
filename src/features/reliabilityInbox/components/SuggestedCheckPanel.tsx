@@ -57,7 +57,7 @@ export function SuggestedCheckPanel({
                 <Badge
                   color="darkgrey"
                   icon="apps"
-                  text={opportunity.namespace}
+                  text={`namespace: ${opportunity.namespace}`}
                   tooltip="Namespace whose telemetry reported this endpoint"
                 />
               )}

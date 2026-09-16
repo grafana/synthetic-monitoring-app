@@ -782,13 +782,33 @@ describe('ReliabilityInboxPage', () => {
 
       const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
 
-      expect(within(suggestedCheck).getByText('checkout')).toBeVisible();
+      // The badge is labelled so a bare value is never left to be guessed at,
+      // and the row repeats it so the attribution reads on its own.
+      expect(within(suggestedCheck).getByText('namespace: checkout')).toBeVisible();
       expect(within(suggestedCheck).getByText('Reported by')).toBeVisible();
-      expect(within(suggestedCheck).getByText('team: payments · service: checkout-api')).toBeVisible();
+      expect(
+        within(suggestedCheck).getByText('namespace: checkout · team: payments · service: checkout-api')
+      ).toBeVisible();
     });
 
-    it('omits the ownership row when the telemetry carried no hints', async () => {
+    // With a namespace but no other labels the row still earns its place: it
+    // is the attribution, not a list of extras.
+    it('shows the namespace alone when the telemetry carried no other hints', async () => {
       renderPage([SHOP_SUGGESTION]);
+
+      const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      // Twice, deliberately: the header badge and the "Reported by" row.
+      expect(within(suggestedCheck).getAllByText('namespace: shop')).toHaveLength(2);
+    });
+
+    it('omits the ownership row when the telemetry carried no attribution at all', async () => {
+      const UNATTRIBUTED: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+        ...HTTP_RELIABILITY_SUGGESTION,
+        namespace: undefined,
+        ownerLabels: undefined,
+      });
+      renderPage([UNATTRIBUTED]);
 
       const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
 

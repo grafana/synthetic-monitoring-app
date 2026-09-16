@@ -15,7 +15,7 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
     suggestion,
     subject: getSuggestionSubject(suggestion.target),
     namespace: suggestion.namespace,
-    ownerHint: formatOwnerHint(suggestion.ownerLabels),
+    ownerHint: formatOwnerHint(suggestion.namespace, suggestion.ownerLabels),
     sortScore: suggestion.relevance ?? suggestion.score * 100,
     requestVolume:
       suggestion.evidence.reqPerS === undefined
@@ -31,22 +31,26 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
 export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>;
 
 /**
- * Renders the ownership hints as "team: payments · service: api" for the
+ * Renders the attribution as "namespace: checkout · service: api" for the
  * suggested check's "Reported by" row. Only the labels a human recognises
- * their own work by, in a fixed order so the same suggestion always reads
- * the same. `namespace` is omitted: it has its own badge.
+ * their own work by, in a fixed order so the same suggestion always reads the
+ * same.
+ *
+ * The namespace leads and is repeated from its badge on purpose: the row is
+ * the full evidence for the attribution, and reading it should not require
+ * looking back at the header to learn which namespace the rest belongs to.
  */
-function formatOwnerHint(ownerLabels?: Record<string, string>) {
-  if (!ownerLabels) {
-    return undefined;
+function formatOwnerHint(namespace?: string, ownerLabels?: Record<string, string>) {
+  const labelled: Array<[string, string]> = namespace ? [['namespace', namespace]] : [];
+
+  for (const label of ['team', 'owner', 'service', 'app', 'ingress', 'cluster']) {
+    const value = ownerLabels?.[label];
+    if (value) {
+      labelled.push([label, value]);
+    }
   }
 
-  const hint = ['team', 'owner', 'service', 'app', 'ingress', 'cluster']
-    .filter((label) => ownerLabels[label])
-    .map((label) => `${label}: ${ownerLabels[label]}`)
-    .join(' · ');
-
-  return hint || undefined;
+  return labelled.length > 0 ? labelled.map(([label, value]) => `${label}: ${value}`).join(' · ') : undefined;
 }
 
 /** The namespaces present in the loaded suggestions, for the filter's options. */
