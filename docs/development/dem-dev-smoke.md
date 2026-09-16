@@ -1,6 +1,6 @@
 # dem-dev CI smoke
 
-The [workflow](../../.github/workflows/dem-dev-smoke.yml) pins dem-dev's
+The [workflow](../../.github/workflows/validate-dem-dev-e2e.yml) pins dem-dev's
 `.github/actions/sm-e2e` implementation by commit SHA. The runtime and browser
 test have been exercised locally; the pull request workflow validates the same
 interface on a hosted runner.
@@ -21,6 +21,8 @@ The workflow installs the app dependencies and Chromium, builds the frontend and
 the nested datasource's Linux backend, then checks out one pinned dem-dev commit.
 It uses the existing scoped GitHub App token for private repository access. The
 first workflow runs on same-repository pull requests.
+Its `validate-dem-dev-e2e.yml` filename is part of the existing Vault binding for
+the `dem-dev-e2e-read` permission set; renaming it requires updating that binding.
 
 The app calls the action with three inputs:
 

@@ -1,6 +1,7 @@
 name: dem-dev smoke
 
 # Integration status and contract: docs/development/dem-dev-smoke.md.
+# This filename is bound to the dem-dev-e2e-read Vault role.
 on:
   pull_request:
 
@@ -52,7 +53,7 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           repository: grafana/dem-dev
-          ref: 52fa1d7614437300cf454c31c8f4d49b698682be
+          ref: 251b7abf720eb1d8670b32ab30066dcb330690d6
           path: work/dem-dev
           token: ${{ steps.dem-dev-token.outputs.token }}
           persist-credentials: false
