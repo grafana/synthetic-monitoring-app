@@ -65,27 +65,23 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   );
   const totalAlertCount = plans.reduce((sum, plan) => sum + plan.alerts.length, 0);
 
-  const applyTo = async (targets: AlertPlan[]) => {
+  /** Applies each plan and returns the checks it succeeded on. Failures toast via the mutation's meta. */
+  const applyTo = async (targets: AlertPlan[], scope: 'finding' | 'selection'): Promise<Check[]> => {
     setIsApplying(true);
 
     const results = await runInBatches(targets, BULK_ACTION_BATCH_SIZE, ({ check, alerts }) =>
       updateAlerts({ alerts: alerts.map((alert) => alert.draft), checkId: check.id! })
     );
-    const succeeded = results.filter((result) => result.status === 'fulfilled').length;
+    const succeeded = targets.filter((_, index) => results[index].status === 'fulfilled').map((plan) => plan.check);
 
-    if (succeeded > 0) {
-      trackRecommendationActionCompleted({
-        finding: id,
-        action: 'alerts_added',
-        checkCount: succeeded,
-        scope: 'finding',
-      });
+    if (succeeded.length > 0) {
+      trackRecommendationActionCompleted({ finding: id, action: 'alerts_added', checkCount: succeeded.length, scope });
       showAlert(
         'success',
-        succeeded === 1
+        succeeded.length === 1
           ? t('recommendations.alertingGaps.bulkAppliedSingle', 'Added alerts to 1 check')
           : t('recommendations.alertingGaps.bulkApplied', 'Added alerts to {{checkCount}} checks', {
-              checkCount: succeeded,
+              checkCount: succeeded.length,
             })
       );
     }
@@ -93,17 +89,23 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
     // The check list carries each check's alerts, so refetching it drops the done rows from the finding.
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
     setIsApplying(false);
+
+    return succeeded;
   };
 
   const handleApplyAll = async () => {
-    await applyTo(plans);
+    await applyTo(plans, 'finding');
     setIsConfirmingAll(false);
   };
 
   const handleApplySelected = async () => {
     const selectedIds = selection.selected.map((check) => check.id);
-    await applyTo(plans.filter((plan) => selectedIds.includes(plan.check.id)));
-    selection.clear();
+    const succeeded = await applyTo(
+      plans.filter((plan) => selectedIds.includes(plan.check.id)),
+      'selection'
+    );
+    // Only the done rows leave the selection; anything that failed stays ticked for a retry.
+    selection.deselect(succeeded);
   };
 
   const selectedCount = selection.selected.length;

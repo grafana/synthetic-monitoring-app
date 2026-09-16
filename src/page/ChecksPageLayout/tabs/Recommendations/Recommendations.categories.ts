@@ -9,11 +9,13 @@ import {
 import { Check } from 'types';
 
 /**
- * Milestone 1 categories, in rail order. A category's severity is the severity of the findings
- * it holds; none of them mixes severities. Fleet reliability will join once execution data is
- * available to the tab.
+ * Milestone 1 categories, in rail order. Severity is declared here and nowhere else: a finding's
+ * panel, the legend and the rail all read it from the category the finding belongs to, so the
+ * three cannot disagree. None of the categories mixes severities. Fleet reliability will join
+ * once execution data is available to the tab.
  */
 export const CATEGORIES: RecommendationCategory[] = [
+  // Alerting is the only finding where doing nothing means a real failure goes unseen.
   { id: RecommendationCategoryId.Alerting, severity: 'error', findings: [RecommendationId.AlertingGaps] },
   { id: RecommendationCategoryId.Cost, severity: 'warning', findings: [RecommendationId.MissingCostLabels] },
   { id: RecommendationCategoryId.Paused, severity: 'warning', findings: [RecommendationId.PausedChecks] },
@@ -31,6 +33,10 @@ export function isCategoryId(value: string | null | undefined): value is Recomme
 export function getCategoryForFinding(id: RecommendationId): RecommendationCategory {
   // Every finding belongs to exactly one category; the table above is exhaustive.
   return CATEGORIES.find((category) => category.findings.includes(id))!;
+}
+
+export function getFindingSeverity(id: RecommendationId): RecommendationSeverity {
+  return getCategoryForFinding(id).severity;
 }
 
 /**
@@ -67,9 +73,7 @@ export function getLegend(findings: Recommendation[]): LegendEntry[] {
   return severities
     .map((severity) => ({
       severity,
-      checkCount: countDistinctChecks(
-        findings.filter((finding) => getCategoryForFinding(finding.id).severity === severity)
-      ),
+      checkCount: countDistinctChecks(findings.filter((finding) => getFindingSeverity(finding.id) === severity)),
     }))
     .filter((entry) => entry.checkCount > 0);
 }
