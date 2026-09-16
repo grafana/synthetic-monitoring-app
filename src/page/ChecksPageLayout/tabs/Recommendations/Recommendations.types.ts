@@ -59,6 +59,9 @@ export interface Recommendation {
   groups?: RecommendationGroup[];
 }
 
+/** Per-check dismissals as persisted: the hidden check ids, by finding. */
+export type DismissedChecks = Partial<Record<RecommendationId, number[]>>;
+
 export interface RecommendationInputs {
   checks: Check[];
   /** Cost-attribution label names configured for the tenant. Empty when CALs are unavailable. */

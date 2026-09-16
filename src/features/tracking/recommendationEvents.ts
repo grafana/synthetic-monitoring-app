@@ -43,8 +43,8 @@ interface ActionCompleted extends TrackingEventProps {
   action: 'alerts_added' | 'check_resumed';
   /** How many checks the change reached. */
   checkCount: number;
-  /** Whether the action ran for the whole finding or a single check. */
-  scope: 'finding' | 'check';
+  /** Whether the action ran for the whole finding, for the rows the user ticked, or a single check. */
+  scope: 'finding' | 'selection' | 'check';
 }
 
 /**

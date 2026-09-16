@@ -21,12 +21,15 @@ import { AttentionRow, CategoryRail, SeverityLegend } from './Recommendations.co
 import { getCategoryCopy, getRecommendationCopy } from './Recommendations.copy';
 import {
   ATTENTION_VIEW,
+  useDismissedCheckMap,
   useDismissedRecommendations,
   useRecommendationImpressions,
   useRecommendationsView,
 } from './Recommendations.hooks';
 import { getStyles } from './Recommendations.styles';
 import { computeRecommendations } from './Recommendations.utils';
+
+const NO_FINDINGS: Recommendation[] = [];
 
 export function RecommendationsTab() {
   return (
@@ -56,8 +59,15 @@ function RecommendationsTabContent() {
   const { view, setView, focusedId } = useRecommendationsView();
   // A category can empty out from under the URL (its findings dismissed, or resolved); land instead.
   const active = categories.find(({ category }) => category.id === view);
+  const dismissedChecks = useDismissedCheckMap();
 
-  useRecommendationImpressions(visible, { checkCount: checks.length, dismissedCount, focusedId });
+  useRecommendationImpressions({
+    visible,
+    shown: active?.findings ?? NO_FINDINGS,
+    checkCount: checks.length,
+    dismissedCount,
+    focusedId,
+  });
 
   if (checks.length === 0) {
     return <ChecksEmptyState />;
@@ -103,6 +113,7 @@ function RecommendationsTabContent() {
                 key={summary.category.id}
                 summary={summary}
                 totalCheckCount={checks.length}
+                dismissedChecks={dismissedChecks}
                 onSelect={() => setView(summary.category.id)}
               />
             ))}
