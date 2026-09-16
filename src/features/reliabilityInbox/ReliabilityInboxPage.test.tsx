@@ -14,6 +14,7 @@ import { HTTP_RELIABILITY_SUGGESTION } from 'test/fixtures/reliabilityInbox';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { selectOption } from 'test/utils';
 
 import { ReliabilitySuggestion } from './types';
 import { CheckType, CheckTypeGroup, HttpMethod } from 'types';
@@ -712,5 +713,95 @@ describe('ReliabilityInboxPage', () => {
     const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
     expect(within(suggestedCheck).queryByText('Probe selection required')).not.toBeInTheDocument();
     expect(within(suggestedCheck).getByText('Probe locations will be selected during review.')).toBeVisible();
+  });
+
+  describe('namespace filtering', () => {
+    const CHECKOUT_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      id: 'checkout-suggestion',
+      target: 'https://checkout.goagain.dev/',
+      namespace: 'checkout',
+      ownerLabels: { team: 'payments', service: 'checkout-api' },
+      relevance: 90,
+    });
+    const SHOP_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      id: 'shop-suggestion',
+      target: 'https://shop.goagain.dev/',
+      namespace: 'shop',
+      relevance: 80,
+    });
+
+    async function renderWithNamespaces() {
+      const requests = jest.fn();
+      server.use(
+        apiRoute('reliabilityInboxSuggestions', {
+          result: () => {
+            requests();
+            return { json: { suggestions: [CHECKOUT_SUGGESTION, SHOP_SUGGESTION], warnings: [] } };
+          },
+        })
+      );
+
+      const { user } = render(<ReliabilityInboxPage />, {
+        path: generateRoutePath(AppRoutes.ReliabilityInbox),
+        route: getRoute(AppRoutes.ReliabilityInbox),
+      });
+
+      await screen.findByRole('button', { name: /checkout\.goagain\.dev/ });
+
+      return { user, requests };
+    }
+
+    it('narrows the queue to the chosen namespace', async () => {
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+
+      expect(await screen.findByRole('button', { name: /shop\.goagain\.dev/ })).toBeVisible();
+      expect(screen.queryByRole('button', { name: /checkout\.goagain\.dev/ })).not.toBeInTheDocument();
+    });
+
+    // Generating suggestions invokes a paid service, so the filter must work
+    // entirely on the response already held — never by asking for a new one.
+    it('filters without requesting suggestions again', async () => {
+      const { user, requests } = await renderWithNamespaces();
+
+      expect(requests).toHaveBeenCalledTimes(1);
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+
+      expect(requests).toHaveBeenCalledTimes(1);
+    });
+
+    // On screen, not in a tooltip: a tooltip is undiscoverable and unavailable
+    // on touch, and this is the evidence for the attribution the badge asserts.
+    it('shows the namespace and its ownership labels on the suggested check', async () => {
+      await renderWithNamespaces();
+
+      const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      expect(within(suggestedCheck).getByText('checkout')).toBeVisible();
+      expect(within(suggestedCheck).getByText('Reported by')).toBeVisible();
+      expect(within(suggestedCheck).getByText('team: payments · service: checkout-api')).toBeVisible();
+    });
+
+    it('omits the ownership row when the telemetry carried no hints', async () => {
+      renderPage([SHOP_SUGGESTION]);
+
+      const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      expect(within(suggestedCheck).queryByText('Reported by')).not.toBeInTheDocument();
+    });
+
+    // One namespace is not a choice, so the control would only add noise.
+    it('hides the filter when every suggestion shares a namespace', async () => {
+      renderPage([CHECKOUT_SUGGESTION]);
+
+      await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      expect(screen.queryByLabelText('Namespace')).not.toBeInTheDocument();
+    });
   });
 });

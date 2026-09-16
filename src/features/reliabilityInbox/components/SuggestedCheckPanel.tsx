@@ -53,6 +53,14 @@ export function SuggestedCheckPanel({
                 Suggested check
               </Text>
               <Badge color="darkgrey" icon="globe" text="HTTP" />
+              {opportunity.namespace && (
+                <Badge
+                  color="darkgrey"
+                  icon="apps"
+                  text={opportunity.namespace}
+                  tooltip="Namespace whose telemetry reported this endpoint"
+                />
+              )}
               {dismissed && <Badge color="darkgrey" text="Dismissed" />}
               {!dismissed && (
                 <div className={styles.creationEncouragement}>
@@ -67,7 +75,7 @@ export function SuggestedCheckPanel({
         />
 
         <ConfigurationSection>
-          <CheckIdentity proposedCheck={proposedCheck} />
+          <CheckIdentity proposedCheck={proposedCheck} ownerHint={opportunity.ownerHint} />
         </ConfigurationSection>
 
         <ConfigurationSection titleId="reliability-inbox-uptime-heading">
@@ -137,7 +145,13 @@ const ConfigurationTitle = ({ title, id }: { title: string; id?: string }) => {
   );
 };
 
-function CheckIdentity({ proposedCheck }: { proposedCheck: ProposedHttpCheckDraft }) {
+function CheckIdentity({
+  proposedCheck,
+  ownerHint,
+}: {
+  proposedCheck: ProposedHttpCheckDraft;
+  ownerHint?: string;
+}) {
   return (
     <div>
       <CheckField icon="tag-alt" label="Job name" layout="row">
@@ -146,6 +160,14 @@ function CheckIdentity({ proposedCheck }: { proposedCheck: ProposedHttpCheckDraf
       <CheckField icon="link" label="Target URL" layout="row">
         <TargetUrl method={proposedCheck.method} target={proposedCheck.target} />
       </CheckField>
+      {/* On screen rather than in the namespace badge's tooltip: a tooltip is
+          undiscoverable and unavailable on touch, and this is the evidence for
+          the attribution the badge asserts. */}
+      {ownerHint && (
+        <CheckField icon="apps" label="Reported by" layout="row">
+          {ownerHint}
+        </CheckField>
+      )}
     </div>
   );
 }

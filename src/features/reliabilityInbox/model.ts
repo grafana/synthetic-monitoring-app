@@ -14,6 +14,8 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
     id: suggestion.id,
     suggestion,
     subject: getSuggestionSubject(suggestion.target),
+    namespace: suggestion.namespace,
+    ownerHint: formatOwnerHint(suggestion.ownerLabels),
     sortScore: suggestion.relevance ?? suggestion.score * 100,
     requestVolume:
       suggestion.evidence.reqPerS === undefined
@@ -27,6 +29,32 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
 }
 
 export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>;
+
+/**
+ * Renders the ownership hints as "team: payments · service: api" for the
+ * suggested check's "Reported by" row. Only the labels a human recognises
+ * their own work by, in a fixed order so the same suggestion always reads
+ * the same. `namespace` is omitted: it has its own badge.
+ */
+function formatOwnerHint(ownerLabels?: Record<string, string>) {
+  if (!ownerLabels) {
+    return undefined;
+  }
+
+  const hint = ['team', 'owner', 'service', 'app', 'ingress', 'cluster']
+    .filter((label) => ownerLabels[label])
+    .map((label) => `${label}: ${ownerLabels[label]}`)
+    .join(' · ');
+
+  return hint || undefined;
+}
+
+/** The namespaces present in the loaded suggestions, for the filter's options. */
+export function getNamespaceOptions(opportunities: ReliabilityOpportunity[]) {
+  return Array.from(
+    new Set(opportunities.map(({ namespace }) => namespace).filter((namespace): namespace is string => !!namespace))
+  ).sort();
+}
 
 /** Orders eligible recommendations by technical relevance. */
 export function compareReliabilityOpportunities(a: ReliabilityOpportunity, b: ReliabilityOpportunity) {

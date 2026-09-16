@@ -26,6 +26,10 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
     opportunities,
     activeOpportunities,
     dismissedOpportunities,
+    hasOpportunities,
+    namespaceOptions,
+    namespaceFilter,
+    setNamespaceFilter,
     queueView,
     selected,
     isLoading,
@@ -96,13 +100,21 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
       selectOpportunity(id);
     });
   };
+  const changeNamespaceFilter = (namespace?: string) => {
+    if (namespace !== namespaceFilter) {
+      runAfterExit('fade', () => setNamespaceFilter(namespace));
+    }
+  };
   const changeQueueView = (view: 'active' | 'dismissed') => {
     if (view !== queueView) {
       runAfterExit('fade', () => setQueueView(view));
     }
   };
 
-  if (activeOpportunities.length === 0 && dismissedOpportunities.length === 0) {
+  // Deliberately checks the UNFILTERED set: a filter that matches nothing
+  // must leave the queue (and its filter) on screen, or the user has no way
+  // back. The queue renders its own empty message for that case.
+  if (!hasOpportunities) {
     return (
       <Stack direction="column" gap={1}>
         {refreshStatus}
@@ -122,8 +134,11 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
         dismissedCount={dismissedOpportunities.length}
         view={queueView}
         selectedId={selected?.id}
+        namespaceOptions={namespaceOptions}
+        namespaceFilter={namespaceFilter}
         onSelect={selectQueueOpportunity}
         onViewChange={changeQueueView}
+        onNamespaceFilterChange={changeNamespaceFilter}
       />
       <article className={styles.review}>
         <div

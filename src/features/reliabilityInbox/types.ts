@@ -7,6 +7,12 @@ export const reliabilitySuggestionSchema = z.object({
   // single such suggestion throw and discard the WHOLE response, because the
   // array parses as a unit. isInitialReviewCandidate narrows to http anyway.
   checkType: z.string(),
+  // The namespace whose telemetry produced this suggestion, and the other
+  // ownership hints from the same series. Optional: a host the stack serves
+  // may carry no ownership labels at all, and that is unattributed rather
+  // than an error.
+  namespace: z.string().optional(),
+  ownerLabels: z.record(z.string(), z.string()).optional(),
   evidence: z.object({
     // Numeric evidence is optional because the service omits zero values.
     // Preserve absence so the UI does not present missing telemetry as zero.
