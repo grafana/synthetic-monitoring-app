@@ -1,6 +1,6 @@
 import { Check, CheckType } from 'types';
 
-/** How loudly a finding is presented, via the colour of the row's leading bar. */
+/** How loudly a finding is presented, via the colour of its panel's leading edge. */
 export type RecommendationSeverity = 'error' | 'warning' | 'info';
 
 export enum RecommendationId {
@@ -9,6 +9,32 @@ export enum RecommendationId {
   DuplicateChecks = 'duplicate-checks',
   OverlappingTargets = 'overlapping-targets',
   PausedChecks = 'paused-checks',
+}
+
+/**
+ * Findings are grouped into categories, one of which is shown at a time, so the tab keeps a
+ * bounded height however many findings are added. The ids double as the `?category=` URL value.
+ */
+export enum RecommendationCategoryId {
+  Alerting = 'alerting',
+  Cost = 'cost',
+  Paused = 'paused',
+  Redundancy = 'redundancy',
+}
+
+export interface RecommendationCategory {
+  id: RecommendationCategoryId;
+  severity: RecommendationSeverity;
+  /** The findings this category holds, in presentation order. */
+  findings: RecommendationId[];
+}
+
+/** A category together with the findings it currently holds for this tenant. */
+export interface CategorySummary {
+  category: RecommendationCategory;
+  findings: Recommendation[];
+  /** Distinct checks across the category's findings; a check in two findings counts once. */
+  checkCount: number;
 }
 
 /**

@@ -1,17 +1,33 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { t } from '@grafana/i18n';
-import { Badge, Icon, IconButton, Pagination, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
+import { t, Trans } from '@grafana/i18n';
+import {
+  Badge,
+  Button,
+  Checkbox,
+  Icon,
+  IconButton,
+  LinkButton,
+  Pagination,
+  Stack,
+  Text,
+  Tooltip,
+  useStyles2,
+  useTheme2,
+} from '@grafana/ui';
 import { cx } from '@emotion/css';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
-import { RecommendationSeverity } from './Recommendations.types';
+import { CategorySummary, RecommendationSeverity } from './Recommendations.types';
 import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
+import { getLegend } from './Recommendations.categories';
 import { ROWS_PER_PAGE } from './Recommendations.constants';
-import { getStyles } from './Recommendations.styles';
+import { getCategoryCopy, getCategoryRowCopy, getLegendLabel } from './Recommendations.copy';
+import { ATTENTION_VIEW, RecommendationsView } from './Recommendations.hooks';
+import { getSeverityColor, getStyles } from './Recommendations.styles';
 
 const PANEL_CLASS: Record<RecommendationSeverity, keyof ReturnType<typeof getStyles>> = {
   error: 'panelError',
@@ -19,13 +35,126 @@ const PANEL_CLASS: Record<RecommendationSeverity, keyof ReturnType<typeof getSty
   info: 'panelInfo',
 };
 
+interface RailProps {
+  categories: CategorySummary[];
+  view: RecommendationsView;
+  onSelect: (view: RecommendationsView) => void;
+}
+
+/**
+ * The category rail. Counts are checks rather than findings, so Redundancy with two findings
+ * over thirteen checks reads 13, and a category with nothing left to show is not listed.
+ */
+export function CategoryRail({ categories, view, onSelect }: RailProps) {
+  const styles = useStyles2(getStyles);
+  const theme = useTheme2();
+
+  return (
+    <nav className={styles.rail} aria-label={t('recommendations.rail.label', 'Recommendation categories')}>
+      <button
+        className={cx(styles.railItem, view === ATTENTION_VIEW && styles.railItemActive)}
+        aria-current={view === ATTENTION_VIEW ? 'page' : undefined}
+        onClick={() => onSelect(ATTENTION_VIEW)}
+      >
+        <Icon name="lightbulb-alt" size="sm" />
+        <Trans i18nKey="recommendations.rail.attention">Needs attention</Trans>
+      </button>
+      <div className={styles.railDivider} role="presentation" />
+      {categories.map(({ category, checkCount }) => (
+        <button
+          key={category.id}
+          className={cx(styles.railItem, view === category.id && styles.railItemActive)}
+          aria-current={view === category.id ? 'page' : undefined}
+          onClick={() => onSelect(category.id)}
+        >
+          <span
+            className={styles.railDot}
+            style={{ backgroundColor: getSeverityColor(theme, category.severity) }}
+            role="presentation"
+          />
+          {getCategoryCopy(category.id).label}
+          <span className={styles.railCount}>{checkCount}</span>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+interface AttentionRowProps {
+  summary: CategorySummary;
+  totalCheckCount: number;
+  onSelect: () => void;
+}
+
+/** One category on the landing view: what is wrong, how much of it, and what the category offers. */
+export function AttentionRow({ summary, totalCheckCount, onSelect }: AttentionRowProps) {
+  const styles = useStyles2(getStyles);
+  const theme = useTheme2();
+  const { label } = getCategoryCopy(summary.category.id);
+  const row = getCategoryRowCopy(summary, totalCheckCount);
+
+  return (
+    <button
+      className={styles.attentionRow}
+      style={{ borderLeftColor: getSeverityColor(theme, summary.category.severity) }}
+      onClick={onSelect}
+      data-testid={RECOMMENDATIONS_TEST_ID.attentionRow}
+    >
+      <span className={styles.attentionLabel}>{label}</span>
+      <Text variant="bodySmall" color="secondary">
+        {row.summary}
+      </Text>
+      <span className={styles.attentionAction}>
+        {row.action}
+        <Icon name="angle-right" size="sm" />
+      </span>
+    </button>
+  );
+}
+
+interface LegendProps {
+  findings: Parameters<typeof getLegend>[0];
+}
+
+/** Severity legend: a bar the shape of a panel's left edge, and how many checks sit behind it. */
+export function SeverityLegend({ findings }: LegendProps) {
+  const styles = useStyles2(getStyles);
+  const theme = useTheme2();
+  const entries = getLegend(findings);
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return (
+    <span className={styles.legend} data-testid={RECOMMENDATIONS_TEST_ID.legend}>
+      {entries.map(({ severity, checkCount }) => (
+        <span key={severity} className={styles.legendEntry}>
+          <span
+            className={styles.legendBar}
+            style={{ backgroundColor: getSeverityColor(theme, severity) }}
+            role="presentation"
+          />
+          {getLegendLabel(severity, checkCount)}
+        </span>
+      ))}
+    </span>
+  );
+}
+
 interface SectionProps {
   title: string;
-  tooltip: string;
-  summary: string;
+  /** Under the title. Omitted on a category with one finding, where the title already is the summary. */
+  summary?: string;
+  /** Only shown where a category holds several findings and they need telling apart. */
+  tooltip?: string;
   severity: RecommendationSeverity;
   /** Finding-level controls, rendered in the header beside the title. */
   actions?: ReactNode;
+  /** Sits between the header and the rows, e.g. the selection bar. */
+  toolbar?: ReactNode;
+  /** Sits under the rows, e.g. the dismissed-checks footer. */
+  footer?: ReactNode;
   /** The URL pointed at this finding; it is highlighted and scrolled into view. */
   isFocused?: boolean;
   onDismiss: () => void;
@@ -38,10 +167,12 @@ interface SectionProps {
  */
 export function RecommendationSection({
   title,
-  tooltip,
   summary,
+  tooltip,
   severity,
   actions,
+  toolbar,
+  footer,
   isFocused = false,
   onDismiss,
   children,
@@ -63,25 +194,29 @@ export function RecommendationSection({
       className={cx(styles.panel, styles[PANEL_CLASS[severity]], isFocused && styles.panelFocused)}
       data-testid={RECOMMENDATIONS_TEST_ID.section}
     >
-      <Stack direction="row" gap={1.5} alignItems="flex-start">
+      <div className={styles.panelHeader}>
         <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.caret} />
           <Stack direction="column" gap={0.25}>
             <h3 className={styles.sectionTitle}>
               {title}
-              <Tooltip content={tooltip} placement="top">
-                <Icon name="info-circle" size="sm" className={styles.tooltipIcon} />
-              </Tooltip>
+              {tooltip && (
+                <Tooltip content={tooltip} placement="top">
+                  <Icon name="info-circle" size="sm" className={styles.tooltipIcon} />
+                </Tooltip>
+              )}
               {isFocused && (
                 <Badge color="blue" text={t('recommendations.section.openedFromLink', 'Opened from a link')} />
               )}
             </h3>
-            <Text variant="bodySmall" color="secondary">
-              {summary}
-            </Text>
+            {summary && (
+              <Text variant="bodySmall" color="secondary">
+                {summary}
+              </Text>
+            )}
           </Stack>
         </button>
-        <Stack direction="row" gap={1} alignItems="center" justifyContent="flex-end" grow={1}>
+        <div className={styles.panelActions}>
           {actions}
           <IconButton
             name="times"
@@ -90,10 +225,77 @@ export function RecommendationSection({
             tooltip={t('recommendations.section.dismiss', 'Dismiss this finding')}
             onClick={onDismiss}
           />
-        </Stack>
-      </Stack>
-      {isOpen && <div className={styles.rows}>{children}</div>}
+        </div>
+      </div>
+      {isOpen && (
+        <>
+          {toolbar}
+          <div className={styles.rows}>{children}</div>
+          {footer}
+        </>
+      )}
     </div>
+  );
+}
+
+interface SelectionBarProps {
+  selectedCount: number;
+  /** The bulk action's label, which carries the count: "Set up alerts for 3". */
+  actionLabel: string;
+  isBusy?: boolean;
+  onAction: () => void;
+  onClear: () => void;
+}
+
+/**
+ * The bulk action for ticked rows. Always in the layout, hidden when nothing is ticked, so the
+ * first tick does not push the rows down. No select-all: the header's "for all N checks" action
+ * already covers that case.
+ */
+export function SelectionBar({ selectedCount, actionLabel, isBusy = false, onAction, onClear }: SelectionBarProps) {
+  const styles = useStyles2(getStyles);
+  const hasSelection = selectedCount > 0;
+
+  return (
+    <div
+      className={cx(styles.selectionBar, !hasSelection && styles.selectionBarHidden)}
+      aria-hidden={!hasSelection}
+      data-testid={RECOMMENDATIONS_TEST_ID.selectionBar}
+    >
+      <Button size="sm" variant="primary" onClick={onAction} disabled={isBusy || !hasSelection}>
+        {actionLabel}
+      </Button>
+      <Button size="sm" variant="secondary" fill="text" onClick={onClear} disabled={isBusy || !hasSelection}>
+        <Trans i18nKey="recommendations.selection.clear">Clear selection</Trans>
+      </Button>
+    </div>
+  );
+}
+
+interface DismissedChecksFooterProps {
+  dismissedCount: number;
+  onRestore: () => void;
+}
+
+/** Under a finding's rows: how many of its checks are hidden, and the way to bring them back. */
+export function DismissedChecksFooter({ dismissedCount, onRestore }: DismissedChecksFooterProps) {
+  const styles = useStyles2(getStyles);
+
+  if (dismissedCount === 0) {
+    return null;
+  }
+
+  return (
+    <Stack direction="row" gap={1} alignItems="center" justifyContent="flex-end">
+      <span className={styles.mutedText}>
+        {dismissedCount === 1
+          ? t('recommendations.dismissedChecks.summarySingle', '1 check dismissed')
+          : t('recommendations.dismissedChecks.summary', '{{dismissedCount}} checks dismissed', { dismissedCount })}
+      </span>
+      <Button size="sm" variant="secondary" fill="outline" icon="eye" onClick={onRestore}>
+        <Trans i18nKey="recommendations.dismissedChecks.restore">Show dismissed checks</Trans>
+      </Button>
+    </Stack>
   );
 }
 
@@ -124,37 +326,87 @@ export function PaginatedRows<T>({ items, renderItem }: PaginatedRowsProps<T>) {
 
 interface CheckRowProps {
   check: Check;
-  /** Right-hand text, e.g. why this check was flagged. */
-  detail?: string;
-  /** A control for acting on this check in place, rendered at the far right. */
+  /** Text after the name, e.g. why this check was flagged. */
+  detail?: ReactNode;
+  /** Shown in place of the controls once the row has been acted on, e.g. "Alerts added". */
+  doneLabel?: string;
+  /** Ticked state; the checkbox only renders when `onSelectChange` is given. */
+  isSelected?: boolean;
+  onSelectChange?: (check: Check) => void;
+  /** A control for acting on this check in place, rendered after the edit button. */
   action?: ReactNode;
   /** Content shown underneath the row, e.g. a preview of what `action` will do. */
   expansion?: ReactNode;
+  /** Off where editing is itself the row's `action`, so the row does not offer it twice. */
+  showEditButton?: boolean;
   onEditClick?: () => void;
+  /** Hides this row; the dismiss button only renders when given. */
+  onDismiss?: (check: Check) => void;
 }
 
-/** One affected check: name, a link to its editor, its type, and an optional action. */
-export function CheckRow({ check, detail, action, expansion, onEditClick }: CheckRowProps) {
+/**
+ * One affected check. Left to right: checkbox, name, type, detail; then on the right the edit
+ * button, the row's action and its dismiss. Once acted on, the controls give way to `doneLabel`.
+ */
+export function CheckRow({
+  check,
+  detail,
+  doneLabel,
+  isSelected = false,
+  onSelectChange,
+  action,
+  expansion,
+  showEditButton = true,
+  onEditClick,
+  onDismiss,
+}: CheckRowProps) {
   const styles = useStyles2(getStyles);
+  const isDone = doneLabel !== undefined;
 
   return (
     <div>
-      <div className={styles.row}>
-        <Stack direction="row" gap={0.5} alignItems="center" wrap="wrap" grow={1}>
+      <div className={cx(styles.row, isSelected && styles.rowSelected)}>
+        {onSelectChange && !isDone && (
+          <Checkbox
+            value={isSelected}
+            onChange={() => onSelectChange(check)}
+            aria-label={t('recommendations.row.select', 'Select {{job}}', { job: check.job })}
+          />
+        )}
+        <div className={styles.rowMain}>
           <span className={styles.rowName}>{check.job}</span>
-          <a
-            className={styles.checkLink}
-            href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}
-            aria-label={t('recommendations.row.editCheck', 'Edit {{job}}', { job: check.job })}
-            onClick={onEditClick}
-          >
-            <Icon name="pen" size="xs" />
-          </a>
           <span className={styles.rowType}>{getCheckType(check.settings)}</span>
-          {!check.enabled && <Badge text={t('recommendations.row.paused', 'paused')} color="orange" />}
-        </Stack>
-        {detail && <span className={styles.rowDetail}>{detail}</span>}
-        {action}
+          {!isDone && detail && <span className={styles.rowDetail}>{detail}</span>}
+        </div>
+        <div className={styles.rowControls}>
+          {isDone ? (
+            <span className={styles.doneText}>{doneLabel}</span>
+          ) : (
+            <>
+              {showEditButton && (
+                <LinkButton
+                  size="sm"
+                  variant="secondary"
+                  fill="outline"
+                  icon="pen"
+                  href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}
+                  aria-label={t('recommendations.row.editCheck', 'Edit {{job}}', { job: check.job })}
+                  onClick={onEditClick}
+                />
+              )}
+              {action}
+              {onDismiss && (
+                <IconButton
+                  name="times"
+                  size="sm"
+                  variant="secondary"
+                  tooltip={t('recommendations.row.dismiss', 'Dismiss {{job}} from this finding', { job: check.job })}
+                  onClick={() => onDismiss(check)}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
       {expansion}
     </div>

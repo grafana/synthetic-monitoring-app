@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { dateTimeFormatTimeAgo } from '@grafana/data';
 import { t, Trans } from '@grafana/i18n';
-import { Button, LinkButton, useStyles2 } from '@grafana/ui';
+import { Button, LinkButton } from '@grafana/ui';
 import {
   trackRecommendationActionCompleted,
   trackRecommendationActioned,
@@ -10,27 +10,55 @@ import {
 
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
-import { QUERY_KEYS, useUpdateCheck } from 'data/useChecks';
+import { QUERY_KEYS, useBulkUpdateChecks, useUpdateCheck } from 'data/useChecks';
 
-import { CheckRow, PaginatedRows, RecommendationSection } from '../Recommendations.components';
-import { getRecommendationCopy, getRecommendationSummary } from '../Recommendations.copy';
+import {
+  CheckRow,
+  DismissedChecksFooter,
+  PaginatedRows,
+  RecommendationSection,
+  SelectionBar,
+} from '../Recommendations.components';
+import { useRowSelection } from '../Recommendations.hooks';
 import { getPausedChecksUrl } from '../Recommendations.links';
-import { getStyles } from '../Recommendations.styles';
 import { getPausedSince } from '../Recommendations.utils';
+import { useFindingPanel } from './Finding.hooks';
 
 /**
  * D. Paused checks, longest-paused first. Resuming is safe and reversible so it is offered in
- * place; deleting is not, so that stays with the check list, which already confirms it.
+ * place, one at a time or for the ticked rows; deleting is not, so that stays with the check
+ * list, which already confirms it.
  */
-export function PausedChecksFinding({ recommendation, totalCheckCount, isFocused, onDismiss }: FindingProps) {
-  const { id, checks } = recommendation;
-  const { severity, title, tooltip } = getRecommendationCopy(id, []);
+export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
+  const { id } = recommendation;
+  const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
+    recommendation,
+    totalCheckCount,
+    isSolo,
+  });
+  const queryClient = useQueryClient();
+  // The same call the check list's bulk actions make: one request, one "Updated N checks." toast.
+  const { mutateAsync: bulkUpdateChecks, isPending: isResuming } = useBulkUpdateChecks();
+  const selection = useRowSelection(rows);
+
+  const handleResumeSelected = async () => {
+    const checkCount = selection.selected.length;
+
+    try {
+      await bulkUpdateChecks(selection.selected.map((check) => ({ ...check, enabled: true })));
+    } catch {
+      // The mutation's meta already raises the error toast; the selection stays for a retry.
+      return;
+    }
+
+    trackRecommendationActionCompleted({ finding: id, action: 'check_resumed', checkCount, scope: 'finding' });
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
+    selection.clear();
+  };
 
   return (
     <RecommendationSection
-      title={title}
-      tooltip={tooltip}
-      summary={getRecommendationSummary(recommendation, totalCheckCount)}
+      {...header}
       severity={severity}
       isFocused={isFocused}
       onDismiss={onDismiss}
@@ -45,13 +73,28 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isFocused
           <Trans i18nKey="recommendations.pausedChecks.action">Review paused checks</Trans>
         </LinkButton>
       }
+      toolbar={
+        <SelectionBar
+          selectedCount={selection.selected.length}
+          actionLabel={t('recommendations.pausedChecks.resumeSelected', 'Resume {{checkCount}}', {
+            checkCount: selection.selected.length,
+          })}
+          isBusy={isResuming}
+          onAction={handleResumeSelected}
+          onClear={selection.clear}
+        />
+      }
+      footer={<DismissedChecksFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
     >
       <PaginatedRows
-        items={checks}
+        items={rows}
         renderItem={(check) => (
           <PausedCheckRow
             key={check.id}
             check={check}
+            isSelected={selection.isSelected(check)}
+            onSelectChange={selection.toggle}
+            onDismiss={dismissCheck}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             onResumed={() =>
               trackRecommendationActionCompleted({
@@ -70,12 +113,14 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isFocused
 
 interface PausedCheckRowProps {
   check: Check;
+  isSelected: boolean;
+  onSelectChange: (check: Check) => void;
+  onDismiss: (check: Check) => void;
   onEditClick: () => void;
   onResumed: () => void;
 }
 
-function PausedCheckRow({ check, onEditClick, onResumed }: PausedCheckRowProps) {
-  const styles = useStyles2(getStyles);
+function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditClick, onResumed }: PausedCheckRowProps) {
   const queryClient = useQueryClient();
   const { mutateAsync: updateCheck } = useUpdateCheck();
   const [isResuming, setIsResuming] = useState(false);
@@ -102,6 +147,10 @@ function PausedCheckRow({ check, onEditClick, onResumed }: PausedCheckRowProps) 
   return (
     <CheckRow
       check={check}
+      doneLabel={isDone ? t('recommendations.pausedChecks.row.done', 'Resumed') : undefined}
+      isSelected={isSelected}
+      onSelectChange={onSelectChange}
+      onDismiss={onDismiss}
       onEditClick={onEditClick}
       detail={
         pausedSince &&
@@ -110,23 +159,16 @@ function PausedCheckRow({ check, onEditClick, onResumed }: PausedCheckRowProps) 
         })
       }
       action={
-        isDone ? (
-          <span className={styles.doneText}>
-            <Trans i18nKey="recommendations.pausedChecks.row.done">Resumed</Trans>
-          </span>
-        ) : (
-          <Button
-            size="sm"
-            variant="secondary"
-            fill="outline"
-            icon={isResuming ? 'spinner' : 'play'}
-            disabled={isResuming}
-            onClick={handleResume}
-            aria-label={t('recommendations.pausedChecks.row.resumeLabel', 'Resume {{job}}', { job: check.job })}
-          >
-            <Trans i18nKey="recommendations.pausedChecks.row.resume">Resume</Trans>
-          </Button>
-        )
+        <Button
+          size="sm"
+          variant="primary"
+          icon={isResuming ? 'spinner' : 'play'}
+          disabled={isResuming}
+          onClick={handleResume}
+          aria-label={t('recommendations.pausedChecks.row.resumeLabel', 'Resume {{job}}', { job: check.job })}
+        >
+          <Trans i18nKey="recommendations.pausedChecks.row.resume">Resume</Trans>
+        </Button>
       }
     />
   );

@@ -8,9 +8,9 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
-import { CheckRow, PaginatedRows, RecommendationSection } from '../Recommendations.components';
-import { getRecommendationCopy, getRecommendationSummary } from '../Recommendations.copy';
+import { CheckRow, DismissedChecksFooter, PaginatedRows, RecommendationSection } from '../Recommendations.components';
 import { getChecksMissingCostLabelsUrl } from '../Recommendations.links';
+import { useFindingPanel } from './Finding.hooks';
 
 interface MissingCostLabelsFindingProps extends FindingProps {
   calNames: string[];
@@ -18,23 +18,26 @@ interface MissingCostLabelsFindingProps extends FindingProps {
 
 /**
  * B. Checks missing a cost attribution label. A label needs a value we cannot guess, so the
- * action is the check editor; each row says which labels it lacks so the visit is a short one.
+ * action is the check editor and there is nothing to do in bulk; rows therefore have no
+ * checkbox. Each row says which labels it lacks so the visit is a short one.
  */
 export function MissingCostLabelsFinding({
   recommendation,
   totalCheckCount,
   calNames,
+  isSolo,
   isFocused,
   onDismiss,
 }: MissingCostLabelsFindingProps) {
-  const { id, checks } = recommendation;
-  const { severity, title, tooltip } = getRecommendationCopy(id, calNames);
+  const { id } = recommendation;
+  const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel(
+    { recommendation, totalCheckCount, isSolo },
+    calNames
+  );
 
   return (
     <RecommendationSection
-      title={title}
-      tooltip={tooltip}
-      summary={getRecommendationSummary(recommendation, totalCheckCount)}
+      {...header}
       severity={severity}
       isFocused={isFocused}
       onDismiss={onDismiss}
@@ -49,9 +52,10 @@ export function MissingCostLabelsFinding({
           <Trans i18nKey="recommendations.missingCostLabels.action">View in check list</Trans>
         </LinkButton>
       }
+      footer={<DismissedChecksFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
     >
       <PaginatedRows
-        items={checks}
+        items={rows}
         renderItem={(check) => (
           <CheckRow
             key={check.id}
@@ -59,12 +63,12 @@ export function MissingCostLabelsFinding({
             detail={t('recommendations.missingCostLabels.row.missing', 'Missing {{labels}}', {
               labels: getMissingCalNames(check.labels, calNames).join(', '),
             })}
+            onDismiss={dismissCheck}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             action={
               <LinkButton
                 size="sm"
-                variant="secondary"
-                fill="outline"
+                variant="primary"
                 href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}
                 onClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
                 aria-label={t('recommendations.missingCostLabels.row.addLabelsLabel', 'Add labels to {{job}}', {
