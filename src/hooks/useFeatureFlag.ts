@@ -3,6 +3,7 @@ import { ProviderStatus } from '@openfeature/web-sdk';
 import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
 
 import { FeatureName } from 'types';
+import { isFeatureEnabledThroughUrl } from 'contexts/FeatureFlagContext';
 
 import { useFeatureFlagContext } from './useFeatureFlagContext';
 
@@ -18,6 +19,13 @@ export function useFeatureFlag(featureFlag: FeatureName) {
   const providerStatus = useOpenFeatureClientStatus();
 
   const isMapped = openFeatureKey !== undefined;
+
+  // The URL override applies to both backends. Mapped flags also answer to their OpenFeature
+  // key, which is the name people see in deployment_tools. A forced flag needs nothing from
+  // the provider, so it is ready immediately.
+  if (isFeatureEnabledThroughUrl(featureFlag, ...(isMapped ? [openFeatureKey] : []))) {
+    return { isEnabled: true, isReady: true };
+  }
 
   return {
     isEnabled: isMapped ? openFeatureValue : isFeatureEnabled(featureFlag),

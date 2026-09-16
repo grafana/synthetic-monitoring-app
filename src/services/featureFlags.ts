@@ -4,6 +4,7 @@ import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/w
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
+import { isFeatureEnabledThroughUrl } from 'contexts/FeatureFlagContext';
 
 export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 
@@ -53,7 +54,14 @@ async function doInit(): Promise<void> {
 }
 
 // For non-React call sites. Returns defaultValue until initOpenFeature() resolves,
-// so avoid module-scope reads (the value would never update).
+// so avoid module-scope reads (the value would never update). Honours the `?features=`
+// override like useFeatureFlag, by either the OpenFeature key or the FeatureName mapped to it.
 export function getBooleanFlag(key: string, defaultValue = false): boolean {
+  const featureName = Object.keys(OPEN_FEATURE_KEYS).find((name) => OPEN_FEATURE_KEYS[name as FeatureName] === key);
+
+  if (isFeatureEnabledThroughUrl(key, ...(featureName ? [featureName] : []))) {
+    return true;
+  }
+
   return client?.getBooleanValue(key, defaultValue) ?? defaultValue;
 }

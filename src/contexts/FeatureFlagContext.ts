@@ -10,16 +10,23 @@ export interface FeatureFlagContextValue {
   isFeatureEnabled: (name: FeatureName) => boolean;
 }
 
-export function isFeatureEnabled(name: FeatureName) {
-  // Override traceroute feature flag until we're sure we don't need it anymore
+// `?features=a&features=b` force-enables flags for the current page load, whichever backend
+// serves them. Read on every call so it reflects the URL at evaluation time.
+export function isFeatureEnabledThroughUrl(...names: string[]) {
   const featuresParam = urlUtil.getUrlSearchParams()['features'];
-  let isEnabledThroughQueryParam = false;
-  if (isArray(featuresParam)) {
-    const stringParams = featuresParam as string[];
-    isEnabledThroughQueryParam = stringParams.includes(name);
+
+  if (!isArray(featuresParam)) {
+    return false;
   }
+
+  const urlFeatures = featuresParam as string[];
+
+  return names.some((name) => urlFeatures.includes(name));
+}
+
+export function isFeatureEnabled(name: FeatureName) {
   //@ts-ignore
-  return Boolean(config.featureToggles[name]) || isEnabledThroughQueryParam;
+  return Boolean(config.featureToggles[name]) || isFeatureEnabledThroughUrl(name);
 }
 
 export function getFeatureContextValues() {
