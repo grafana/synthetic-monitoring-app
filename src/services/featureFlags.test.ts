@@ -12,7 +12,7 @@ const setUrlFeatures = (...features: string[]) => {
 
 afterEach(() => setUrlFeatures());
 
-// The provider is never initialised here, so anything not forced by the URL is the default.
+// No provider is initialised, so un-forced flags return the default.
 describe('getBooleanFlag', () => {
   test('returns the default when the URL does not name the flag', () => {
     expect(getBooleanFlag(MAPPED_KEY)).toBe(false);

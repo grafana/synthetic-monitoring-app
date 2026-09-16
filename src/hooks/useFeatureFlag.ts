@@ -20,7 +20,7 @@ export function useFeatureFlag(featureFlag: FeatureName) {
 
   const isMapped = openFeatureKey !== undefined;
 
-  // Mapped flags also answer to their OpenFeature key, the name used in deployment_tools.
+  // The OpenFeature key is the name used in deployment_tools.
   if (isFeatureEnabledThroughUrl(featureFlag, ...(isMapped ? [openFeatureKey] : []))) {
     return { isEnabled: true, isReady: true };
   }
