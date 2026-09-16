@@ -1,75 +1,40 @@
 # dem-dev CI smoke
 
-The [workflow](../../.github/workflows/validate-dem-dev-e2e.yml) pins dem-dev's
-`.github/actions/sm-e2e` implementation by commit SHA. The runtime and browser
-test have been exercised locally; the pull request workflow validates the same
-interface on a hosted runner.
+The [workflow](../../.github/workflows/validate-dem-dev-e2e.yml) builds this PR's
+plugin, starts dem-dev and runs one Chromium test. The test finds an HTTP check
+provisioned through the real SM API, verifies its job and target, reloads the page
+and verifies them again.
 
-## First milestone
+The runtime selection lives in [`.github/dem-dev.yaml`](../../.github/dem-dev.yaml):
+SM enabled, Simnet off, one `sm/http-check` fixture. The generic dem-dev setup action
+uses this repository's actual checkout commit, plus its pinned runtime baseline.
+Other repository commits can be selected through the config's `sources` mapping.
 
-A pull request builds this plugin, starts an isolated dem-dev SM runtime, and runs
-one Chromium test. The test finds a check provisioned through the real SM API,
-verifies its job name and target, reloads the page, and verifies them again.
+The app owns dependency installation, frontend/backend compilation, Chromium and
+test assertions. dem-dev owns runtime readiness, fixture provisioning, diagnostic
+collection and cleanup. `artifact-path: dist` lets setup reuse our build. The test
+is an ordinary workflow step using `GRAFANA_URL` and `DEM_FIXTURES_FILE`; it does
+not pass a test command into the action.
 
-This covers plugin loading, provisioning and reading persisted check data through
-the real API. Live probe execution, historical telemetry, dashboard values,
-feature-flag variations and alerting are follow-up work.
+Source access uses the existing scoped GitHub App token. GAR access uses Workload
+Identity. The workflow's `validate-dem-dev-e2e.yml` filename must remain unchanged
+because it is bound to the `dem-dev-e2e-read` Vault role. The job runs on standard
+`ubuntu-latest` for same-repository PRs, which can access the private dependencies.
 
-## App-owned setup
+An explicit cleanup step collects runtime logs before the report upload. The
+setup action also registers automatic post-job cleanup for failures and
+cancellation. Artifacts include the fixture manifest, resolved source/image
+manifest, runtime logs and Playwright report.
 
-The workflow installs the app dependencies and Chromium, builds the frontend and
-the nested datasource's Linux backend, then checks out one pinned dem-dev commit.
-It uses the existing scoped GitHub App token for private repository access. The
-first workflow runs on same-repository pull requests using `ubuntu-x64-large`,
-matching plugin-graft's browser and E2E jobs.
-Its `validate-dem-dev-e2e.yml` filename is part of the existing Vault binding for
-the `dem-dev-e2e-read` permission set; renaming it requires updating that binding.
+## Rollout dependency
 
-The app calls the action with three inputs:
+This integration requires [deployment_tools #722465](https://github.com/grafana/deployment_tools/pull/722465)
+to be approved and applied, followed by the first dem-dev runtime publication and
+image-manifest pin. Update the dem-dev checkout SHA to the commit containing those
+pins before expecting a green hosted smoke run. Until then, setup reports the
+missing image manifest rather than building the baseline from source.
 
-| Input          | Meaning                                                                          |
-| -------------- | -------------------------------------------------------------------------------- |
-| `plugin-dist`  | Absolute path to this PR's built `dist/`, including the Linux datasource binary. |
-| `github-token` | Scoped token for dem-dev's private runtime dependencies.                         |
-| `test-command` | `yarn e2e:dem`, executed from the app checkout with its installed dependencies.  |
-
-The app owns the [test](../../e2e/smoke.spec.ts), its assertions and Playwright
-report. It uploads `artifacts/` after the action, including on failure.
-
-## dem-dev-owned behavior
-
-The action is responsible for:
-
-1. Resolve its pinned, compatible runtime dependencies and install the tools it
-   needs. Consumers select only the dem-dev commit.
-2. Start an isolated SM runtime with the supplied plugin mounted, local auth and
-   datasource provisioning. Disable live probes, Simnet, alerts, FEO and background
-   traffic for this smoke test.
-3. Wait for the app and nested datasource to load, datasource health to pass, and
-   the SM API to be usable. Use dem-dev's existing anonymous Grafana access.
-4. Provision one disabled HTTP check and any required probe records through the
-   real SM API, then confirm the check can be read back. Historical data is not
-   required. Pass the fixture identity to the consumer command:
-
-   | Environment variable     | Meaning                                        |
-   | ------------------------ | ---------------------------------------------- |
-   | `GRAFANA_URL`            | URL of this run's ready Grafana instance.      |
-   | `DEM_SMOKE_CHECK_JOB`    | Unique job name of the provisioned HTTP check. |
-   | `DEM_SMOKE_CHECK_TARGET` | Exact target stored for that check.            |
-
-5. Run `test-command`, save runtime diagnostics to the app's `artifacts/dem-dev/`
-   on failure, and tear down its own resources on success or failure, including
-   partial startup. Preserve the test's failure status; fail on cleanup errors
-   when the test succeeded. Handle cancellation with best-effort cleanup.
-
-The action reuses `scripts/sm-e2e.sh` with a smoke profile and pins its API source
-checkout and runtime images. Source builds remain an internal detail. Cleanup
-targets only its Compose project, and resolved configuration containing runtime
-credentials is excluded from the artifacts.
-
-## Validation
-
-Local validation has exercised a passing browser test and an intentionally
-failing assertion, including diagnostics and teardown. Hosted CI additionally
-checks private repository access and report upload. Cancellation cleanup is
-best-effort and needs separate verification on the hosted runner.
+The original smoke test passed locally and on hosted CI. Those runs used the
+source-build wrapper; they do not prove the new registry-backed integration. A
+fresh hosted run is required after publication. Live probe execution, historical
+telemetry, dashboard values and alerting remain outside this smoke test's scope.

@@ -1,0 +1,5 @@
+version: 1
+products: [synthetic-monitoring]
+simnet: false
+fixtures: [sm/http-check]
+sources: {}

@@ -15,7 +15,7 @@ jobs:
   smoke:
     # The runtime needs access to private Grafana repositories.
     if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-x64-large
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
@@ -53,17 +53,31 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
         with:
           repository: grafana/dem-dev
-          ref: 251b7abf720eb1d8670b32ab30066dcb330690d6
+          ref: f33050eecc7288ba4c91beeb091b6a80b7487fee
           path: work/dem-dev
           token: ${{ steps.dem-dev-token.outputs.token }}
           persist-credentials: false
 
-      - name: Run the smoke test in dem-dev
-        uses: ./work/dem-dev/.github/actions/sm-e2e
+      - name: Log in to the runtime registry
+        uses: grafana/shared-workflows/actions/login-to-gar@1f541877ceb22c7be7667d8a8df04984aeac9f9d # login-to-gar/v1.0.3
+
+      - name: Set up dem-dev
+        id: dem
+        uses: ./work/dem-dev/.github/actions/setup
+        env:
+          DEM_GITHUB_TOKEN: ${{ steps.dem-dev-token.outputs.token }}
         with:
-          plugin-dist: ${{ github.workspace }}/dist
-          github-token: ${{ steps.dem-dev-token.outputs.token }}
-          test-command: yarn e2e:dem
+          config: .github/dem-dev.yaml
+          artifact-path: dist
+
+      - name: Run the smoke test
+        run: yarn e2e:dem
+
+      - name: Collect runtime diagnostics and clean up
+        if: always() && steps.dem.outputs.state-path != ''
+        uses: ./work/dem-dev/.github/actions/cleanup
+        with:
+          state-path: ${{ steps.dem.outputs.state-path }}
 
       - name: Upload test report and runtime logs
         if: always()
