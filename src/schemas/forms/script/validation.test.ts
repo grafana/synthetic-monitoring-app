@@ -1,6 +1,11 @@
 import { RefinementCtx } from 'zod';
 
-import { MULTIPLE_SCENARIOS_MESSAGE, UNRESOLVABLE_SPREAD_MESSAGE, validateBrowserScript, validateNonBrowserScript } from './validation';
+import {
+  MULTIPLE_SCENARIOS_MESSAGE,
+  UNRESOLVABLE_SPREAD_MESSAGE,
+  validateBrowserScript,
+  validateNonBrowserScript,
+} from './validation';
 
 const VALID_BROWSER_SCRIPT = `
 import { browser } from 'k6/browser';
@@ -376,9 +381,7 @@ export default async function () {
 }
 `;
 
-    expect(runValidation(script)).toEqual([
-      expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE }),
-    ]);
+    expect(runValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 
   it('errors when multiple scenarios are referenced by identifier (including shorthand)', () => {
@@ -412,9 +415,7 @@ export default async function () {
 }
 `;
 
-    expect(runValidation(script)).toEqual([
-      expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE }),
-    ]);
+    expect(runValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 
   it(`errors when the script does not import { browser } from 'k6/browser'`, () => {
@@ -448,11 +449,35 @@ describe('validateNonBrowserScript', () => {
       addIssue: (issue: { message?: string }) => {
         issues.push(issue);
       },
-    } as RefinementCtx;
+    } as unknown as RefinementCtx;
 
     validateNonBrowserScript(script, context);
     return issues;
   }
+
+  it('passes when the script does not export any options', () => {
+    const script = `
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([]);
+  });
+
+  it('passes when the script defines a single scenario', () => {
+    const script = `
+export const options = {
+  scenarios: {
+    api: {
+      executor: 'shared-iterations',
+    },
+  },
+};
+
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([]);
+  });
 
   it('errors when the script defines more than one scenario', () => {
     const script = `
@@ -470,9 +495,7 @@ export const options = {
 export default function () {}
 `;
 
-    expect(runNonBrowserValidation(script)).toEqual([
-      expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE }),
-    ]);
+    expect(runNonBrowserValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 
   it('errors when multiple non-browser scenarios use identifier shorthand', () => {
@@ -487,8 +510,6 @@ export const options = {
 export default function () {}
 `;
 
-    expect(runNonBrowserValidation(script)).toEqual([
-      expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE }),
-    ]);
+    expect(runNonBrowserValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 });
