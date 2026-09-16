@@ -67,8 +67,14 @@ export function RecommendationQueue({
               </Text>
             </Stack>
           </div>
-          {/* Only worth the space once there is something to choose between. */}
-          {namespaceOptions.length > 1 && (
+          {/*
+            Only worth the space once there is something to choose between —
+            but never hidden while a filter is applied. A refresh can leave a
+            single namespace that is the one already filtered to: the filter
+            stays valid, so it keeps hiding unattributed suggestions, and
+            unmounting the control would leave no way to clear it.
+          */}
+          {(namespaceOptions.length > 1 || namespaceFilter) && (
             <Field className={styles.namespaceFilter} label="Namespace">
               <Combobox
                 id="reliability-inbox-namespace-filter"

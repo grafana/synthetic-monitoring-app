@@ -795,6 +795,46 @@ describe('ReliabilityInboxPage', () => {
       expect(within(suggestedCheck).queryByText('Reported by')).not.toBeInTheDocument();
     });
 
+    // A refresh can leave a single namespace which is the one already
+    // filtered to: the filter stays valid and keeps hiding unattributed
+    // suggestions, so unmounting the control would trap the user with no way
+    // to clear it.
+    it('keeps the filter on screen when a refresh leaves only the filtered namespace', async () => {
+      const UNATTRIBUTED_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+        ...HTTP_RELIABILITY_SUGGESTION,
+        id: 'unattributed-suggestion',
+        target: 'https://unattributed.goagain.dev/',
+        namespace: undefined,
+        relevance: 70,
+      });
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+
+      // The refresh drops the second namespace, leaving only `shop` plus a
+      // suggestion the telemetry could not attribute.
+      server.use(
+        apiRoute('reliabilityInboxSuggestions', {
+          result: () => ({ json: { suggestions: [SHOP_SUGGESTION, UNATTRIBUTED_SUGGESTION], warnings: [] } }),
+        })
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Refresh suggestions' }));
+      await user.click(
+        within(await screen.findByTestId('toggletip-content')).getByRole('button', { name: 'Refresh suggestions' })
+      );
+
+      // The control survives, still showing the active filter, so its clear
+      // affordance remains reachable — without it the user would be stuck
+      // with the unattributed suggestion permanently hidden.
+      const namespaceFilter = await screen.findByLabelText('Namespace');
+      expect(namespaceFilter).toBeVisible();
+      expect(namespaceFilter).toHaveValue('shop');
+      expect(namespaceFilter).toBeEnabled();
+      expect(screen.queryByRole('button', { name: /unattributed\.goagain\.dev/ })).not.toBeInTheDocument();
+    });
+
     // One namespace is not a choice, so the control would only add noise.
     it('hides the filter when every suggestion shares a namespace', async () => {
       renderPage([CHECKOUT_SUGGESTION]);
