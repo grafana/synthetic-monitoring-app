@@ -1,6 +1,14 @@
 import { t } from '@grafana/i18n';
 
-import { Recommendation, RecommendationId, RecommendationSeverity } from './Recommendations.types';
+import {
+  CategorySummary,
+  Recommendation,
+  RecommendationCategoryId,
+  RecommendationId,
+  RecommendationSeverity,
+} from './Recommendations.types';
+
+import { getRecommendedAlerts } from './Recommendations.alerts';
 
 export interface RecommendationCopy {
   severity: RecommendationSeverity;
@@ -36,9 +44,11 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
       return {
         severity: 'info',
         title: t('recommendations.duplicateChecks.title', 'Duplicate checks'),
+        // The tooltip's job is to tell this finding from its sibling, so it says what was
+        // matched on. Matching ignores probes and frequency, and the copy has to be honest about that.
         tooltip: t(
           'recommendations.duplicateChecks.description',
-          'These targets are monitored more than once by the same type of check. Duplicates cost the same as the original and rarely tell you anything new.'
+          'Same target, same check type, more than one check. Matched on target and type only, so compare the frequency and probes shown on each row before deciding. Each duplicate bills at full rate. Safe to delete down to one unless you are deliberately running from different probe sets.'
         ),
       };
 
@@ -48,7 +58,7 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
         title: t('recommendations.overlappingTargets.title', 'Overlapping targets'),
         tooltip: t(
           'recommendations.overlappingTargets.description',
-          'These targets are covered by more than one kind of check. Some overlap is deliberate, so this is worth a look rather than a clean-up.'
+          'Same target, different check types, for example an HTTP check and a browser check on the same URL. Often deliberate: HTTP for uptime, browser for the user journey. Review rather than delete, and keep the one whose failure you would actually act on.'
         ),
       };
 
@@ -89,12 +99,120 @@ export function getRecommendationSummary({ id, checks, groups }: Recommendation,
         counts
       );
 
+    // Each says what kind of redundancy it is, since either can stand alone as a panel's title.
     case RecommendationId.DuplicateChecks:
-    case RecommendationId.OverlappingTargets:
       return t(
-        'recommendations.summary.groups',
-        '{{affectedCheckCount}} of {{totalCheckCount}} checks across {{targetCount}} targets',
+        'recommendations.summary.duplicates',
+        '{{affectedCheckCount}} of {{totalCheckCount}} checks are duplicates across {{targetCount}} targets',
         { ...counts, targetCount: groups?.length ?? 0 }
       );
+
+    case RecommendationId.OverlappingTargets:
+      return t(
+        'recommendations.summary.overlapping',
+        '{{affectedCheckCount}} of {{totalCheckCount}} checks overlap across {{targetCount}} targets',
+        { ...counts, targetCount: groups?.length ?? 0 }
+      );
+  }
+}
+
+/**
+ * The finding's headline action as it reads on its panel, so the landing view can promise the
+ * same thing the panel then offers. Mirrors the buttons each finding component renders.
+ */
+export function getRecommendationActionLabel({ id, checks }: Recommendation): string {
+  switch (id) {
+    case RecommendationId.AlertingGaps: {
+      // Only checks with an applicable default alert take part in the bulk action.
+      const applicableCount = checks.filter((check) => getRecommendedAlerts(check).length > 0).length;
+
+      return applicableCount > 1
+        ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}} checks', {
+            checkCount: applicableCount,
+          })
+        : t('recommendations.alertingGaps.viewInList', 'View in check list');
+    }
+
+    case RecommendationId.MissingCostLabels:
+      return t('recommendations.missingCostLabels.action', 'View in check list');
+
+    case RecommendationId.PausedChecks:
+      return t('recommendations.pausedChecks.action', 'Review paused checks');
+
+    case RecommendationId.DuplicateChecks:
+    case RecommendationId.OverlappingTargets:
+      return t('recommendations.categories.review', 'Review');
+  }
+}
+
+export interface CategoryCopy {
+  label: string;
+  /** One line under the pane heading saying what the category is about. */
+  caption: string;
+}
+
+export function getCategoryCopy(id: RecommendationCategoryId): CategoryCopy {
+  switch (id) {
+    case RecommendationCategoryId.Alerting:
+      return {
+        label: t('recommendations.categories.alerting.label', 'Alerting'),
+        caption: t('recommendations.categories.alerting.caption', 'Checks that are running but would fail silently.'),
+      };
+
+    case RecommendationCategoryId.Cost:
+      return {
+        label: t('recommendations.categories.cost.label', 'Cost & attribution'),
+        caption: t('recommendations.categories.cost.caption', 'Checks whose spend cannot be attributed to a team.'),
+      };
+
+    case RecommendationCategoryId.Paused:
+      return {
+        label: t('recommendations.categories.paused.label', 'Paused checks'),
+        caption: t('recommendations.categories.paused.caption', 'Checks that exist but are not monitoring anything.'),
+      };
+
+    case RecommendationCategoryId.Redundancy:
+      return {
+        label: t('recommendations.categories.redundancy.label', 'Redundancy'),
+        caption: t(
+          'recommendations.categories.redundancy.caption',
+          'Targets covered more than once. Worth a look, not always a clean-up.'
+        ),
+      };
+  }
+}
+
+/**
+ * What a category's row on the landing view says. A category with one finding borrows that
+ * finding's own summary and action; one with several rolls them up.
+ */
+export function getCategoryRowCopy({ findings, checkCount }: CategorySummary, totalCheckCount: number) {
+  if (findings.length === 1) {
+    return {
+      summary: getRecommendationSummary(findings[0], totalCheckCount),
+      action: getRecommendationActionLabel(findings[0]),
+    };
+  }
+
+  return {
+    summary: t(
+      'recommendations.categories.summary',
+      '{{checkCount}} of {{totalCheckCount}} checks across {{findingCount}} findings',
+      { checkCount, totalCheckCount, findingCount: findings.length }
+    ),
+    action: t('recommendations.categories.reviewMany', 'Review {{findingCount}} findings', {
+      findingCount: findings.length,
+    }),
+  };
+}
+
+export function getLegendLabel(severity: RecommendationSeverity, checkCount: number) {
+  switch (severity) {
+    case 'error':
+      return t('recommendations.legend.critical', '{{checkCount}} critical', { checkCount });
+    case 'warning':
+      return t('recommendations.legend.warning', '{{checkCount}} warning', { checkCount });
+    case 'info':
+      return t('recommendations.legend.info', '{{checkCount}} info', { checkCount });
   }
 }

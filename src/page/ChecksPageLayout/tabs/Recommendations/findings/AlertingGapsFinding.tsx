@@ -20,11 +20,18 @@ import {
   RecommendedAlert,
   runInBatches,
 } from '../Recommendations.alerts';
-import { CheckRow, PaginatedRows, RecommendationSection } from '../Recommendations.components';
+import {
+  CheckRow,
+  DismissedChecksFooter,
+  PaginatedRows,
+  RecommendationSection,
+  SelectionBar,
+} from '../Recommendations.components';
 import { BULK_ACTION_BATCH_SIZE } from '../Recommendations.constants';
-import { getRecommendationCopy, getRecommendationSummary } from '../Recommendations.copy';
+import { useRowSelection } from '../Recommendations.hooks';
 import { getChecksWithoutAlertsUrl } from '../Recommendations.links';
 import { getStyles } from '../Recommendations.styles';
+import { useFindingPanel } from './Finding.hooks';
 
 interface AlertPlan {
   check: Check;
@@ -34,28 +41,33 @@ interface AlertPlan {
 /**
  * A. Checks running without alerting. The action is the check editor's own default alerts,
  * applied from here so the gap closes without leaving the page: one check at a time after a
- * preview, or every check at once after confirming.
+ * preview, the ticked checks at once, or every check at once after confirming.
  */
-export function AlertingGapsFinding({ recommendation, totalCheckCount, isFocused, onDismiss }: FindingProps) {
-  const { id, checks } = recommendation;
-  const { severity, title, tooltip } = getRecommendationCopy(id, []);
+export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
+  const { id } = recommendation;
+  const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
+    recommendation,
+    totalCheckCount,
+    isSolo,
+  });
   const queryClient = useQueryClient();
   const { mutateAsync: updateAlerts } = useUpdateAlertsForCheck();
+  const selection = useRowSelection(rows);
   const [isConfirmingAll, setIsConfirmingAll] = useState(false);
-  const [isApplyingAll, setIsApplyingAll] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   // A check that runs less often than the longest alert period has nothing we can safely apply.
   const plans = useMemo<AlertPlan[]>(
     () =>
-      checks.map((check) => ({ check, alerts: getRecommendedAlerts(check) })).filter((plan) => plan.alerts.length > 0),
-    [checks]
+      rows.map((check) => ({ check, alerts: getRecommendedAlerts(check) })).filter((plan) => plan.alerts.length > 0),
+    [rows]
   );
   const totalAlertCount = plans.reduce((sum, plan) => sum + plan.alerts.length, 0);
 
-  const handleApplyAll = async () => {
-    setIsApplyingAll(true);
+  const applyTo = async (targets: AlertPlan[]) => {
+    setIsApplying(true);
 
-    const results = await runInBatches(plans, BULK_ACTION_BATCH_SIZE, ({ check, alerts }) =>
+    const results = await runInBatches(targets, BULK_ACTION_BATCH_SIZE, ({ check, alerts }) =>
       updateAlerts({ alerts: alerts.map((alert) => alert.draft), checkId: check.id! })
     );
     const succeeded = results.filter((result) => result.status === 'fulfilled').length;
@@ -77,16 +89,25 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isFocused
       );
     }
 
+    // The check list carries each check's alerts, so refetching it drops the done rows from the finding.
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-    setIsApplyingAll(false);
+    setIsApplying(false);
+  };
+
+  const handleApplyAll = async () => {
+    await applyTo(plans);
     setIsConfirmingAll(false);
+  };
+
+  const handleApplySelected = async () => {
+    const selectedIds = selection.selected.map((check) => check.id);
+    await applyTo(plans.filter((plan) => selectedIds.includes(plan.check.id)));
+    selection.clear();
   };
 
   return (
     <RecommendationSection
-      title={title}
-      tooltip={tooltip}
-      summary={getRecommendationSummary(recommendation, totalCheckCount)}
+      {...header}
       severity={severity}
       isFocused={isFocused}
       onDismiss={onDismiss}
@@ -110,13 +131,28 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isFocused
           )}
         </>
       }
+      toolbar={
+        <SelectionBar
+          selectedCount={selection.selected.length}
+          actionLabel={t('recommendations.alertingGaps.setUpSelected', 'Set up alerts for {{checkCount}}', {
+            checkCount: selection.selected.length,
+          })}
+          isBusy={isApplying}
+          onAction={handleApplySelected}
+          onClear={selection.clear}
+        />
+      }
+      footer={<DismissedChecksFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
     >
       <PaginatedRows
-        items={checks}
+        items={rows}
         renderItem={(check) => (
           <AlertSetupRow
             key={check.id}
             check={check}
+            isSelected={selection.isSelected(check)}
+            onSelectChange={selection.toggle}
+            onDismiss={dismissCheck}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             onApplied={() =>
               trackRecommendationActionCompleted({ finding: id, action: 'alerts_added', checkCount: 1, scope: 'check' })
@@ -133,11 +169,11 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isFocused
           { alertCount: totalAlertCount, checkCount: plans.length }
         )}
         confirmText={
-          isApplyingAll
+          isApplying
             ? t('recommendations.alertingGaps.confirm.applying', 'Adding alerts...')
             : t('recommendations.alertingGaps.confirm.confirm', 'Add alerts')
         }
-        disabled={isApplyingAll}
+        disabled={isApplying}
         onConfirm={handleApplyAll}
         onDismiss={() => setIsConfirmingAll(false)}
       />
@@ -147,12 +183,15 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isFocused
 
 interface AlertSetupRowProps {
   check: Check;
+  isSelected: boolean;
+  onSelectChange: (check: Check) => void;
+  onDismiss: (check: Check) => void;
   onEditClick: () => void;
   onApplied: () => void;
 }
 
 /** One unalerted check with a "Set up" control that previews the default alerts before adding them. */
-function AlertSetupRow({ check, onEditClick, onApplied }: AlertSetupRowProps) {
+function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditClick, onApplied }: AlertSetupRowProps) {
   const styles = useStyles2(getStyles);
   const queryClient = useQueryClient();
   const { mutateAsync: updateAlerts, isPending } = useUpdateAlertsForCheck();
@@ -189,17 +228,16 @@ function AlertSetupRow({ check, onEditClick, onApplied }: AlertSetupRowProps) {
   return (
     <CheckRow
       check={check}
+      doneLabel={isDone ? t('recommendations.alertingGaps.row.done', 'Alerts added') : undefined}
+      isSelected={isSelected}
+      onSelectChange={alerts.length > 0 ? onSelectChange : undefined}
+      onDismiss={onDismiss}
       onEditClick={onEditClick}
       action={
-        isDone ? (
-          <span className={styles.doneText}>
-            <Trans i18nKey="recommendations.alertingGaps.row.done">Alerts added</Trans>
-          </span>
-        ) : alerts.length > 0 ? (
+        alerts.length > 0 ? (
           <Button
             size="sm"
-            variant="secondary"
-            fill="outline"
+            variant="primary"
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
             aria-label={t('recommendations.alertingGaps.row.setUpLabel', 'Set up alerts for {{job}}', {
