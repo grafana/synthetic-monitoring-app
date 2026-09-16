@@ -260,14 +260,11 @@ export function HeaderAction({ label, selectedCount, isBusy = false, onAction, o
   return (
     <>
       {selectedCount > 0 && (
-        <IconButton
-          name="times"
-          size="sm"
-          variant="secondary"
-          tooltip={t('recommendations.selection.clear', 'Clear selection')}
-          disabled={isBusy}
-          onClick={onClearSelection}
-        />
+        // A worded button, not a ✕: the finding's dismiss is a ✕ two buttons along, and the two
+        // must not read as the same control.
+        <Button size="sm" variant="secondary" fill="text" disabled={isBusy} onClick={onClearSelection}>
+          <Trans i18nKey="recommendations.selection.clear">Clear selection</Trans>
+        </Button>
       )}
       <Button size="sm" variant="primary" onClick={onAction} disabled={isBusy}>
         {label}
