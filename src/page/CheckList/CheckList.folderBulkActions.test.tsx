@@ -17,6 +17,7 @@ import { mockFeatureToggles } from 'test/utils';
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import { confirmBulkDelete } from 'page/CheckList/__testHelpers__/bulkDelete';
 
 import { CheckList } from './CheckList';
 
@@ -126,7 +127,7 @@ describe('CheckList - Bulk Delete leaves folders intact', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete selected checks' }));
 
     expect(await screen.findByText('Delete 2 checks')).toBeInTheDocument();
-    expect(screen.getByText('Are you sure you want to delete these checks?')).toBeInTheDocument();
+    expect(screen.getByText('Are you sure you want to delete 2 checks?')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Delete checks' })).toBeInTheDocument();
     expect(screen.queryByText(/Delete folder/)).not.toBeInTheDocument();
   });
@@ -146,8 +147,7 @@ describe('CheckList - Bulk Delete leaves folders intact', () => {
     await user.click(screen.getByRole('button', { name: 'Actions for folder Deletable' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Delete selected checks' }));
 
-    const confirmButton = await screen.findByRole('button', { name: 'Delete checks' });
-    await user.click(confirmButton);
+    await confirmBulkDelete(user);
 
     await waitFor(() => {
       expect(deleteRequests.length).toBe(2);
@@ -193,7 +193,7 @@ describe('CheckList - Folder Actions menu', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete selected checks' }));
 
     expect(await screen.findByText('Delete 1 check')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Delete checks' }));
+    await confirmBulkDelete(user);
 
     await waitFor(() => {
       expect(deleteRequests.length).toBe(1);
@@ -213,7 +213,7 @@ describe('CheckList - Folder Actions menu', () => {
     await user.click(await screen.findByRole('menuitem', { name: 'Delete all checks' }));
 
     expect(await screen.findByText('Delete 2 checks')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Delete checks' }));
+    await confirmBulkDelete(user);
 
     await waitFor(() => {
       expect(deleteRequests.length).toBe(2);
