@@ -1,9 +1,8 @@
 import { useBooleanFlagValue, useOpenFeatureClientStatus } from '@openfeature/react-sdk';
 import { ProviderStatus } from '@openfeature/web-sdk';
-import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
+import { isFeatureEnabledThroughUrl, OPEN_FEATURE_KEYS } from 'services/featureFlags';
 
 import { FeatureName } from 'types';
-import { isFeatureEnabledThroughUrl } from 'contexts/FeatureFlagContext';
 
 import { useFeatureFlagContext } from './useFeatureFlagContext';
 

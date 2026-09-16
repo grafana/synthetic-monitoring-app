@@ -1,10 +1,11 @@
+import { urlUtil } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
 import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/web-sdk';
+import { invert, isArray } from 'lodash';
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
-import { isFeatureEnabledThroughUrl } from 'contexts/FeatureFlagContext';
 
 export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 
@@ -13,6 +14,21 @@ export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
   [FeatureName.CheckSuggestions]: 'synthetic-monitoring.check-suggestions',
 };
+
+const FEATURE_NAME_BY_OPEN_FEATURE_KEY: Record<string, string | undefined> = invert(OPEN_FEATURE_KEYS);
+
+// Repeat the key for several flags: `?features=a&features=b`
+export function isFeatureEnabledThroughUrl(...names: string[]) {
+  const featuresParam = urlUtil.getUrlSearchParams()['features'];
+
+  if (!isArray(featuresParam)) {
+    return false;
+  }
+
+  const urlFeatures = featuresParam as string[];
+
+  return names.some((name) => urlFeatures.includes(name));
+}
 
 let initPromise: Promise<void> | undefined;
 let client: Client | undefined;
@@ -56,7 +72,7 @@ async function doInit(): Promise<void> {
 // For non-React call sites. Returns defaultValue until initOpenFeature() resolves,
 // so avoid module-scope reads (the value would never update).
 export function getBooleanFlag(key: string, defaultValue = false): boolean {
-  const featureName = Object.keys(OPEN_FEATURE_KEYS).find((name) => OPEN_FEATURE_KEYS[name as FeatureName] === key);
+  const featureName = FEATURE_NAME_BY_OPEN_FEATURE_KEY[key];
 
   if (isFeatureEnabledThroughUrl(key, ...(featureName ? [featureName] : []))) {
     return true;
