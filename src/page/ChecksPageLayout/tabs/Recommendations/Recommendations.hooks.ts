@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
+import { locationService } from '@grafana/runtime';
 import {
   trackRecommendationDismissed,
   trackRecommendationRestored,
@@ -8,9 +9,17 @@ import {
 } from 'features/tracking/recommendationEvents';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { Recommendation, RecommendationId } from './Recommendations.types';
+import { Recommendation, RecommendationCategoryId, RecommendationId } from './Recommendations.types';
+import { Check } from 'types';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
-import { DISMISSED_FINDINGS_STORAGE_KEY } from './Recommendations.constants';
+import { getCategoryForFinding, isCategoryId } from './Recommendations.categories';
+import {
+  CATEGORY_PARAM,
+  DISMISSED_CHECKS_STORAGE_KEY,
+  DISMISSED_FINDINGS_STORAGE_KEY,
+  FOCUS_PARAM,
+} from './Recommendations.constants';
 
 /**
  * Findings the user has hidden. M1 keeps no server-side state, so this lives in the browser
@@ -25,17 +34,71 @@ export function useDismissedRecommendations() {
   const dismiss = useCallback(
     (id: RecommendationId) => {
       setStored((current) => (current.includes(id) ? current : [...current, id]));
-      trackRecommendationDismissed({ finding: id });
+      trackRecommendationDismissed({ finding: id, scope: 'finding' });
     },
     [setStored]
   );
 
   const restoreAll = useCallback(() => {
-    dismissed.forEach((id) => trackRecommendationRestored({ finding: id }));
+    dismissed.forEach((id) => trackRecommendationRestored({ finding: id, scope: 'finding' }));
     setStored([]);
   }, [dismissed, setStored]);
 
   return { dismissed, dismiss, restoreAll };
+}
+
+type DismissedChecks = Partial<Record<RecommendationId, number[]>>;
+
+/**
+ * Individual rows the user has hidden within a finding, keyed by finding then check id, so
+ * "not this one" can be said without dismissing the whole finding. Kept separately from finding
+ * dismissals so either can be restored on its own.
+ */
+export function useDismissedChecks(finding: RecommendationId) {
+  const [stored, setStored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, {});
+  const dismissedIds = useMemo(() => stored[finding] ?? [], [stored, finding]);
+
+  const dismissCheck = useCallback(
+    (check: Check) => {
+      setStored((current) => {
+        const ids = current[finding] ?? [];
+
+        return ids.includes(check.id!) ? current : { ...current, [finding]: [...ids, check.id!] };
+      });
+      trackRecommendationDismissed({ finding, scope: 'check' });
+    },
+    [finding, setStored]
+  );
+
+  const restoreChecks = useCallback(() => {
+    setStored(({ [finding]: _removed, ...rest }) => rest);
+    trackRecommendationRestored({ finding, scope: 'check' });
+  }, [finding, setStored]);
+
+  return { dismissedIds, dismissCheck, restoreChecks };
+}
+
+/**
+ * Which rows of a finding are ticked. Selection is per finding and per visit: it is a means to
+ * a bulk action, not something to remember.
+ */
+export function useRowSelection(checks: Check[]) {
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Rows can leave the list (acted on, dismissed, refetched); a selection must not outlive its row.
+  const selected = useMemo(() => checks.filter((check) => selectedIds.includes(check.id!)), [checks, selectedIds]);
+
+  const toggle = useCallback((check: Check) => {
+    setSelectedIds((current) =>
+      current.includes(check.id!) ? current.filter((id) => id !== check.id) : [...current, check.id!]
+    );
+  }, []);
+
+  const clear = useCallback(() => setSelectedIds([]), []);
+
+  const isSelected = useCallback((check: Check) => selectedIds.includes(check.id!), [selectedIds]);
+
+  return { selected, isSelected, toggle, clear };
 }
 
 interface ImpressionContext {
@@ -71,20 +134,52 @@ export function useRecommendationImpressions(
   }, [visible, checkCount, dismissedCount, focusedId]);
 }
 
-const FOCUS_PARAM = 'finding';
+/** The landing view: one row per category, no findings rendered. */
+export const ATTENTION_VIEW = 'attention';
+
+export type RecommendationsView = typeof ATTENTION_VIEW | RecommendationCategoryId;
 
 /**
- * The finding a deep link (`?finding=<RecommendationId>`) points at, so a banner or the
- * Reliability Inbox can land someone on one panel rather than the top of the tab. Unknown
- * values are ignored.
+ * Which view the tab shows, held in the URL so it survives a reload and can be linked to.
+ * `?finding=<RecommendationId>` (a deep link from a banner or the Reliability Inbox) wins over
+ * `?category=`: it selects the category holding that finding and marks the finding focused.
+ * Anything unrecognised falls back to the landing view.
  */
-export function useFocusedRecommendation(): RecommendationId | undefined {
-  const { search } = useLocation();
-  const value = new URLSearchParams(search).get(FOCUS_PARAM);
+export function useRecommendationsView() {
+  const { pathname, search } = useLocation();
+  const params = useURLSearchParams();
+  const focusParam = params.get(FOCUS_PARAM);
+  const categoryParam = params.get(CATEGORY_PARAM);
+  const focusedId = isRecommendationId(focusParam) ? focusParam : undefined;
 
-  return isRecommendationId(value) ? value : undefined;
+  const view: RecommendationsView = focusedId
+    ? getCategoryForFinding(focusedId).id
+    : isCategoryId(categoryParam)
+      ? categoryParam
+      : ATTENTION_VIEW;
+
+  const setView = useCallback(
+    (next: RecommendationsView) => {
+      const nextParams = new URLSearchParams(search);
+      // Moving on from a deep link ends the focus; otherwise the finding would keep pulling
+      // the view back to its category.
+      nextParams.delete(FOCUS_PARAM);
+
+      if (next === ATTENTION_VIEW) {
+        nextParams.delete(CATEGORY_PARAM);
+      } else {
+        nextParams.set(CATEGORY_PARAM, next);
+      }
+
+      const nextSearch = nextParams.toString();
+      locationService.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
+    },
+    [pathname, search]
+  );
+
+  return { view, setView, focusedId };
 }
 
-function isRecommendationId(value: string | null): value is RecommendationId {
-  return value !== null && Object.values(RecommendationId).includes(value as RecommendationId);
+function isRecommendationId(value: string | null | undefined): value is RecommendationId {
+  return value != null && Object.values(RecommendationId).includes(value as RecommendationId);
 }

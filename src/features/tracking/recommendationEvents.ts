@@ -56,10 +56,15 @@ export const trackRecommendationActionCompleted = recommendationEvents<ActionCom
 interface FindingDismissed extends TrackingEventProps {
   /** The `RecommendationId` of the finding. */
   finding: string;
+  /** Whether the whole finding was hidden or one check within it. */
+  scope: 'finding' | 'check';
 }
 
-/** Tracks a finding being hidden from the tab; a dismissed finding is one the user judged not worth acting on. */
+/**
+ * Tracks a finding, or a single check within one, being hidden from the tab. A dismissal says
+ * the user saw the recommendation and judged it not worth acting on.
+ */
 export const trackRecommendationDismissed = recommendationEvents<FindingDismissed>('finding_dismissed');
 
-/** Tracks dismissed findings being brought back. */
+/** Tracks dismissed findings or checks being brought back. */
 export const trackRecommendationRestored = recommendationEvents<FindingDismissed>('finding_restored');
