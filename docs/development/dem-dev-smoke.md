@@ -20,7 +20,8 @@ feature-flag variations and alerting are follow-up work.
 The workflow installs the app dependencies and Chromium, builds the frontend and
 the nested datasource's Linux backend, then checks out one pinned dem-dev commit.
 It uses the existing scoped GitHub App token for private repository access. The
-first workflow runs on same-repository pull requests.
+first workflow runs on same-repository pull requests using `ubuntu-x64-large`,
+matching plugin-graft's browser and E2E jobs.
 Its `validate-dem-dev-e2e.yml` filename is part of the existing Vault binding for
 the `dem-dev-e2e-read` permission set; renaming it requires updating that binding.
 

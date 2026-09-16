@@ -15,7 +15,7 @@ jobs:
   smoke:
     # The runtime needs access to private Grafana repositories.
     if: github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-x64-large
     timeout-minutes: 20
     permissions:
       contents: read
