@@ -180,7 +180,7 @@ function getOverview(visible: Recommendation[], totalCheckCount: number, calName
 function getDismissedSummary(dismissedCount: number) {
   switch (dismissedCount) {
     case 0:
-      return t('recommendations.dismissed.none', 'Nothing dismissed');
+      return t('recommendations.dismissed.none', 'No findings dismissed');
     case 1:
       return t('recommendations.dismissed.summarySingle', '1 finding dismissed');
     default:
