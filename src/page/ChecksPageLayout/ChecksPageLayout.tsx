@@ -20,8 +20,7 @@ export function ChecksPageLayout() {
   const { isEnabled: isRecommendationsEnabled } = useFeatureFlag(FeatureName.Recommendations);
 
   const pageNav: NavModelItem | undefined = useMemo(() => {
-    // Recommendations is the only sibling tab, so with the flag off (or not yet resolved)
-    // there is nothing to switch between and the page keeps the plain header it has always had.
+    // Recommendations is the only sibling tab; without it there is nothing to switch between.
     if (!isRecommendationsEnabled) {
       return undefined;
     }

@@ -58,8 +58,6 @@ describe('Checks page tabs', () => {
       expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     });
 
-    // The route stays registered so an async flag can't drop it; with the flag off a stale
-    // link lands on a not-found state inside the checks page rather than the tab.
     it('shows not found on the recommendations route', async () => {
       renderAt(AppRoutes.CheckRecommendations);
 
@@ -80,7 +78,7 @@ describe('Checks page tabs', () => {
     it('holds the recommendations route on a spinner instead of not found', async () => {
       renderAt(AppRoutes.CheckRecommendations);
 
-      // The datasource/permissions providers show their own spinner first; wait for that to clear.
+      // The providers' own loading spinner comes first.
       await waitForElementToBeRemoved(() => screen.queryByTestId(UI_TEST_ID.centeredSpinner));
 
       expect(await screen.findByTestId('Spinner')).toBeInTheDocument();

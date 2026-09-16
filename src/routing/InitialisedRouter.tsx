@@ -84,8 +84,7 @@ export const InitialisedRouter = () => {
         {/* Only the tabbed routes sit under the layout; the editor and dashboard keep their own chrome. */}
         <Route element={<ChecksPageLayout />}>
           <Route index element={<CheckList />} />
-          {/* Always registered so an async flag can't drop the route mid-resolution; the layout
-              already provides the page chrome, so the not-found state is the bare variant. */}
+          {/* Always registered so an async flag can't drop the route mid-resolution. */}
           <Route
             path="recommendations"
             element={
