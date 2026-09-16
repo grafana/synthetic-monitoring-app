@@ -52,7 +52,7 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
       return;
     }
 
-    trackRecommendationActionCompleted({ finding: id, action: 'check_resumed', checkCount, scope: 'finding' });
+    trackRecommendationActionCompleted({ finding: id, action: 'check_resumed', checkCount, scope: 'selection' });
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
     selection.clear();
   };

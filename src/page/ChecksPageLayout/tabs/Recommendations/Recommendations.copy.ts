@@ -2,6 +2,7 @@ import { t } from '@grafana/i18n';
 
 import {
   CategorySummary,
+  DismissedChecks,
   Recommendation,
   RecommendationCategoryId,
   RecommendationId,
@@ -9,9 +10,9 @@ import {
 } from './Recommendations.types';
 
 import { getRecommendedAlerts } from './Recommendations.alerts';
+import { getDismissedCheckIds } from './Recommendations.utils';
 
 export interface RecommendationCopy {
-  severity: RecommendationSeverity;
   title: string;
   tooltip: string;
 }
@@ -20,8 +21,6 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
   switch (id) {
     case RecommendationId.AlertingGaps:
       return {
-        // The only finding where doing nothing means a real failure goes unseen.
-        severity: 'error',
         title: t('recommendations.alertingGaps.title', 'Alerting'),
         tooltip: t(
           'recommendations.alertingGaps.description',
@@ -31,7 +30,6 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
 
     case RecommendationId.MissingCostLabels:
       return {
-        severity: 'warning',
         title: t('recommendations.missingCostLabels.title', 'Cost attribution'),
         tooltip: t(
           'recommendations.missingCostLabels.description',
@@ -42,7 +40,6 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
 
     case RecommendationId.DuplicateChecks:
       return {
-        severity: 'info',
         title: t('recommendations.duplicateChecks.title', 'Duplicate checks'),
         // The tooltip's job is to tell this finding from its sibling, so it says what was
         // matched on. Matching ignores probes and frequency, and the copy has to be honest about that.
@@ -54,7 +51,6 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
 
     case RecommendationId.OverlappingTargets:
       return {
-        severity: 'info',
         title: t('recommendations.overlappingTargets.title', 'Overlapping targets'),
         tooltip: t(
           'recommendations.overlappingTargets.description',
@@ -64,7 +60,6 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
 
     case RecommendationId.PausedChecks:
       return {
-        severity: 'warning',
         title: t('recommendations.pausedChecks.title', 'Paused checks'),
         tooltip: t(
           'recommendations.pausedChecks.description',
@@ -118,13 +113,16 @@ export function getRecommendationSummary({ id, checks, groups }: Recommendation,
 
 /**
  * The finding's headline action as it reads on its panel, so the landing view can promise the
- * same thing the panel then offers. Mirrors the buttons each finding component renders.
+ * same thing the panel then offers. Mirrors the buttons each finding component renders, so it
+ * has to leave out the same rows the panel does: `dismissedCheckIds` are the per-check dismissals.
  */
-export function getRecommendationActionLabel({ id, checks }: Recommendation): string {
+export function getRecommendationActionLabel({ id, checks }: Recommendation, dismissedCheckIds: number[]): string {
   switch (id) {
     case RecommendationId.AlertingGaps: {
-      // Only checks with an applicable default alert take part in the bulk action.
-      const applicableCount = checks.filter((check) => getRecommendedAlerts(check).length > 0).length;
+      // Only rows still showing, with an applicable default alert, take part in the bulk action.
+      const applicableCount = checks.filter(
+        (check) => !dismissedCheckIds.includes(check.id!) && getRecommendedAlerts(check).length > 0
+      ).length;
 
       return applicableCount > 1
         ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}}', {
@@ -186,11 +184,15 @@ export function getCategoryCopy(id: RecommendationCategoryId): CategoryCopy {
  * What a category's row on the landing view says. A category with one finding borrows that
  * finding's own summary and action; one with several rolls them up.
  */
-export function getCategoryRowCopy({ findings, checkCount }: CategorySummary, totalCheckCount: number) {
+export function getCategoryRowCopy(
+  { findings, checkCount }: CategorySummary,
+  totalCheckCount: number,
+  dismissedChecks: DismissedChecks
+) {
   if (findings.length === 1) {
     return {
       summary: getRecommendationSummary(findings[0], totalCheckCount),
-      action: getRecommendationActionLabel(findings[0]),
+      action: getRecommendationActionLabel(findings[0], getDismissedCheckIds(dismissedChecks, findings[0].id)),
     };
   }
 

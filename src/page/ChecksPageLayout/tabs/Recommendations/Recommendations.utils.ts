@@ -1,6 +1,12 @@
 import { t } from '@grafana/i18n';
 
-import { Recommendation, RecommendationGroup, RecommendationId, RecommendationInputs } from './Recommendations.types';
+import {
+  DismissedChecks,
+  Recommendation,
+  RecommendationGroup,
+  RecommendationId,
+  RecommendationInputs,
+} from './Recommendations.types';
 import { Check, CheckType, Probe } from 'types';
 import { checkHasAlerting, getCheckType } from 'utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
@@ -94,6 +100,13 @@ function findPausedChecks({ checks }: RecommendationInputs): Recommendation | un
  */
 export function getPausedSince(check: Check): Date | undefined {
   return check.modified ? new Date(check.modified * 1000) : undefined;
+}
+
+/** The check ids hidden from one finding, or none; tolerates a hand-edited or stale stored value. */
+export function getDismissedCheckIds(map: DismissedChecks | null | undefined, finding: RecommendationId): number[] {
+  const ids = map?.[finding];
+
+  return Array.isArray(ids) ? ids : [];
 }
 
 /** How many probe names to spell out before collapsing the rest into a count. */

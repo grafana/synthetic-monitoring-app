@@ -1,4 +1,5 @@
 import React from 'react';
+import { locationService } from '@grafana/runtime';
 import appEvents from 'grafana/app/core/app_events';
 import { screen, waitFor, within } from '@testing-library/react';
 import { RECOMMENDATIONS_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
@@ -137,6 +138,24 @@ describe('Recommendations tab', () => {
       expect(await findSection(/checks are paused/)).toBeInTheDocument();
       expect(screen.getByTestId(ROUTER_TEST_ID.search)).toHaveTextContent('?category=paused');
       expect(activeRailItem()).toBe('Paused checks1');
+      // A history entry, so Back returns to the landing view rather than leaving the tab.
+      expect(locationService.push).toHaveBeenCalledWith(expect.stringContaining('?category=paused'));
+      expect(locationService.replace).not.toHaveBeenCalled();
+    });
+
+    it('promises the same action the panel will offer, leaving out dismissed rows', async () => {
+      localStorage.setItem(DISMISSED_CHECKS_STORAGE_KEY, JSON.stringify({ 'alerting-gaps': [1] }));
+
+      await renderTab([
+        buildCheck({ job: 'one', target: 'https://a.com', id: 1 }),
+        buildCheck({ job: 'two', target: 'https://b.com', id: 2 }),
+        buildCheck({ job: 'three', target: 'https://c.com', id: 3 }),
+      ]);
+
+      const [row] = await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+
+      // The summary still counts every check (hiding a row is not fixing it); the action does not.
+      expect(row).toHaveTextContent('Alerting3 of 3 checks have no alertsSet up alerts for all 2');
     });
   });
 
@@ -187,6 +206,38 @@ describe('Recommendations tab', () => {
       expect(await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow)).toHaveLength(1);
       expect(within(rail()).queryByRole('button', { name: /^Alerting/ })).not.toBeInTheDocument();
       expect(activeRailItem()).toBe('Needs attention');
+    });
+  });
+
+  describe('impressions', () => {
+    it('counts a finding as shown only once its panel is on screen, and only once', async () => {
+      const reportInteraction = mockReportInteraction();
+      const { user } = await renderTab([UNALERTED(), PAUSED()]);
+      await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+
+      // The landing view lists categories, not findings: nothing has been seen yet.
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_tab_viewed',
+        expect.anything()
+      );
+      expect(reportInteraction).not.toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_finding_shown',
+        expect.anything()
+      );
+
+      await user.click(within(rail()).getByRole('button', { name: /^Alerting/ }));
+      await findSection(/have no alerts/);
+      await user.click(within(rail()).getByRole('button', { name: 'Needs attention' }));
+      await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+      await user.click(within(rail()).getByRole('button', { name: /^Alerting/ }));
+      await findSection(/have no alerts/);
+
+      const shown = reportInteraction.mock.calls.filter(
+        ([event]) => event === 'synthetic-monitoring_recommendations_finding_shown'
+      );
+      expect(shown).toEqual([
+        ['synthetic-monitoring_recommendations_finding_shown', expect.objectContaining({ finding: 'alerting-gaps' })],
+      ]);
     });
   });
 
@@ -407,6 +458,41 @@ describe('Recommendations tab', () => {
       await waitFor(() => expect(updatedCheckIds.sort()).toEqual(['1', '3']));
     });
 
+    it('keeps the rows that failed ticked so they can be retried', async () => {
+      const reportInteraction = mockReportInteraction();
+      server.use(
+        apiRoute('updateAlertsForCheck', {
+          result: (req) =>
+            new URL(req.url).pathname.includes('/2/') ? { status: 500, json: { err: 'nope' } } : { json: null },
+        })
+      );
+
+      const { user } = await renderCategory(
+        [
+          buildCheck({ job: 'one', target: 'https://a.com', id: 1 }),
+          buildCheck({ job: 'two', target: 'https://b.com', id: 2 }),
+          buildCheck({ job: 'three', target: 'https://c.com', id: 3 }),
+        ],
+        RecommendationCategoryId.Alerting
+      );
+      const section = await findSection(/have no alerts/);
+
+      await user.click(within(section).getByRole('checkbox', { name: 'Select one' }));
+      await user.click(within(section).getByRole('checkbox', { name: 'Select two' }));
+      await user.click(within(section).getByRole('button', { name: 'Set up alerts for 2 checks' }));
+
+      // The one that went through leaves the selection; the one that failed is still ticked.
+      await waitFor(() =>
+        expect(within(section).getByRole('button', { name: 'Set up alerts for 1 check' })).toBeInTheDocument()
+      );
+      expect(within(section).getByRole('checkbox', { name: 'Select two' })).toBeChecked();
+      expect(within(section).getByRole('checkbox', { name: 'Select one' })).not.toBeChecked();
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_action_completed',
+        expect.objectContaining({ finding: 'alerting-gaps', action: 'alerts_added', checkCount: 1, scope: 'selection' })
+      );
+    });
+
     it('clears a selection without acting on it', async () => {
       const { user } = await renderCategory(
         [
@@ -554,7 +640,12 @@ describe('Recommendations tab', () => {
       await waitFor(() => expect(resumedJobs.sort()).toEqual(['one', 'two']));
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_action_completed',
-        expect.objectContaining({ finding: 'paused-checks', action: 'check_resumed', checkCount: 2, scope: 'finding' })
+        expect.objectContaining({
+          finding: 'paused-checks',
+          action: 'check_resumed',
+          checkCount: 2,
+          scope: 'selection',
+        })
       );
     });
   });
@@ -753,17 +844,21 @@ describe('Recommendations tab', () => {
       );
     });
 
-    it('does not count impressions for findings the user has dismissed', async () => {
+    it('counts the visit with its dismissals, but not a dismissed finding as shown', async () => {
       localStorage.setItem(DISMISSED_FINDINGS_STORAGE_KEY, JSON.stringify(['alerting-gaps']));
       const reportInteraction = mockReportInteraction();
 
-      await renderTab([UNALERTED(), PAUSED()]);
+      await renderCategory([UNALERTED(), PAUSED()], RecommendationCategoryId.Paused);
 
-      await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+      await findSection(/checks are paused/);
 
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_tab_viewed',
         expect.objectContaining({ findingCount: 2, dismissedCount: 1, checkCount: 2 })
+      );
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_finding_shown',
+        expect.objectContaining({ finding: 'paused-checks' })
       );
       expect(reportInteraction).not.toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_finding_shown',

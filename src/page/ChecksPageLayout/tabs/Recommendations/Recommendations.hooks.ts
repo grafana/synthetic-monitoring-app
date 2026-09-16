@@ -9,7 +9,7 @@ import {
 } from 'features/tracking/recommendationEvents';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { Recommendation, RecommendationCategoryId, RecommendationId } from './Recommendations.types';
+import { DismissedChecks, Recommendation, RecommendationCategoryId, RecommendationId } from './Recommendations.types';
 import { Check } from 'types';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
@@ -20,6 +20,7 @@ import {
   DISMISSED_FINDINGS_STORAGE_KEY,
   FOCUS_PARAM,
 } from './Recommendations.constants';
+import { getDismissedCheckIds } from './Recommendations.utils';
 
 /**
  * Findings the user has hidden. M1 keeps no server-side state, so this lives in the browser
@@ -47,7 +48,18 @@ export function useDismissedRecommendations() {
   return { dismissed, dismiss, restoreAll };
 }
 
-type DismissedChecks = Partial<Record<RecommendationId, number[]>>;
+const NO_DISMISSED_CHECKS: DismissedChecks = {};
+
+/**
+ * Every per-check dismissal, by finding. The landing view reads this so what it promises for a
+ * finding ("Set up alerts for all 2") matches what the finding's own panel will offer.
+ */
+export function useDismissedCheckMap(): DismissedChecks {
+  const [stored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
+
+  // Guard against a hand-edited value: anything that is not an object of arrays reads as empty.
+  return useMemo(() => (stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}), [stored]);
+}
 
 /**
  * Individual rows the user has hidden within a finding, keyed by finding then check id, so
@@ -55,13 +67,13 @@ type DismissedChecks = Partial<Record<RecommendationId, number[]>>;
  * dismissals so either can be restored on its own.
  */
 export function useDismissedChecks(finding: RecommendationId) {
-  const [stored, setStored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, {});
-  const dismissedIds = useMemo(() => stored[finding] ?? [], [stored, finding]);
+  const [stored, setStored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
+  const dismissedIds = useMemo(() => getDismissedCheckIds(stored, finding), [stored, finding]);
 
   const dismissCheck = useCallback(
     (check: Check) => {
       setStored((current) => {
-        const ids = current[finding] ?? [];
+        const ids = getDismissedCheckIds(current, finding);
 
         return ids.includes(check.id!) ? current : { ...current, [finding]: [...ids, check.id!] };
       });
@@ -71,7 +83,7 @@ export function useDismissedChecks(finding: RecommendationId) {
   );
 
   const restoreChecks = useCallback(() => {
-    setStored(({ [finding]: _removed, ...rest }) => rest);
+    setStored(({ [finding]: _removed, ...rest } = {}) => rest);
     trackRecommendationRestored({ finding, scope: 'check' });
   }, [finding, setStored]);
 
@@ -96,12 +108,22 @@ export function useRowSelection(checks: Check[]) {
 
   const clear = useCallback(() => setSelectedIds([]), []);
 
+  /** Untick just these, e.g. the ones an action succeeded on, leaving the rest ticked for a retry. */
+  const deselect = useCallback((checks: Check[]) => {
+    const ids = checks.map((check) => check.id);
+    setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
+  }, []);
+
   const isSelected = useCallback((check: Check) => selectedIds.includes(check.id!), [selectedIds]);
 
-  return { selected, isSelected, toggle, clear };
+  return { selected, isSelected, toggle, clear, deselect };
 }
 
 interface ImpressionContext {
+  /** Every finding the tenant has that is not dismissed, whichever view is showing. */
+  visible: Recommendation[];
+  /** The findings whose panels are on screen right now: the active category's, or none on the landing view. */
+  shown: Recommendation[];
   checkCount: number;
   dismissedCount: number;
   focusedId?: RecommendationId;
@@ -109,29 +131,41 @@ interface ImpressionContext {
 
 /**
  * Engagement is what decides which findings survive past this experiment, so impressions are
- * reported alongside clicks. Both are reported once per visit rather than on every re-render,
- * and only for findings the user can actually see.
+ * reported alongside clicks. The visit is reported once; a finding is reported the first time its
+ * panel is actually rendered, so a category the user never opens does not count as seen.
  */
-export function useRecommendationImpressions(
-  visible: Recommendation[],
-  { checkCount, dismissedCount, focusedId }: ImpressionContext
-) {
-  const reported = useRef(false);
+export function useRecommendationImpressions({
+  visible,
+  shown,
+  checkCount,
+  dismissedCount,
+  focusedId,
+}: ImpressionContext) {
+  const visitReported = useRef(false);
+  const shownReported = useRef(new Set<RecommendationId>());
 
   useEffect(() => {
-    if (reported.current) {
+    if (visitReported.current) {
       return;
     }
 
-    reported.current = true;
+    visitReported.current = true;
     trackRecommendationsTabViewed({
       findingCount: visible.length + dismissedCount,
       dismissedCount,
       checkCount,
       focusSource: focusedId,
     });
-    visible.forEach(({ id, checks }) => trackRecommendationShown({ finding: id, affectedCheckCount: checks.length }));
   }, [visible, checkCount, dismissedCount, focusedId]);
+
+  useEffect(() => {
+    shown.forEach(({ id, checks }) => {
+      if (!shownReported.current.has(id)) {
+        shownReported.current.add(id);
+        trackRecommendationShown({ finding: id, affectedCheckCount: checks.length });
+      }
+    });
+  }, [shown]);
 }
 
 /** The landing view: one row per category, no findings rendered. */
@@ -171,8 +205,9 @@ export function useRecommendationsView() {
         nextParams.set(CATEGORY_PARAM, next);
       }
 
+      // Pushed, not replaced: Back from a category should return to the landing view, not leave the tab.
       const nextSearch = nextParams.toString();
-      locationService.replace(nextSearch ? `${pathname}?${nextSearch}` : pathname);
+      locationService.push(nextSearch ? `${pathname}?${nextSearch}` : pathname);
     },
     [pathname, search]
   );

@@ -17,7 +17,7 @@ import {
 import { cx } from '@emotion/css';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
-import { CategorySummary, RecommendationSeverity } from './Recommendations.types';
+import { CategorySummary, DismissedChecks, RecommendationSeverity } from './Recommendations.types';
 import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
@@ -83,15 +83,17 @@ export function CategoryRail({ categories, view, onSelect }: RailProps) {
 interface AttentionRowProps {
   summary: CategorySummary;
   totalCheckCount: number;
+  /** Per-check dismissals, so the action promised here counts the same rows the panel will. */
+  dismissedChecks: DismissedChecks;
   onSelect: () => void;
 }
 
 /** One category on the landing view: what is wrong, how much of it, and what the category offers. */
-export function AttentionRow({ summary, totalCheckCount, onSelect }: AttentionRowProps) {
+export function AttentionRow({ summary, totalCheckCount, dismissedChecks, onSelect }: AttentionRowProps) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const { label } = getCategoryCopy(summary.category.id);
-  const row = getCategoryRowCopy(summary, totalCheckCount);
+  const row = getCategoryRowCopy(summary, totalCheckCount, dismissedChecks);
 
   return (
     <button
