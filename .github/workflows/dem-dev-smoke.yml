@@ -1,0 +1,74 @@
+name: dem-dev smoke
+
+# Integration status and contract: docs/development/dem-dev-smoke.md.
+on:
+  pull_request:
+
+permissions: {}
+
+concurrency:
+  group: dem-dev-smoke-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    # The runtime needs access to private Grafana repositories.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+
+      - name: Install app dependencies
+        uses: ./.github/actions/setup-env
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+
+      - name: Build the plugin under test
+        run: |
+          yarn typecheck:e2e
+          yarn build
+          go run github.com/magefile/mage -v build:backend
+
+      - name: Install Chromium
+        run: yarn playwright install --with-deps chromium
+
+      - name: Get dem-dev repository access
+        id: dem-dev-token
+        uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
+        with:
+          github_app: synthetic-monitoring-ci
+          permission_set: dem-dev-e2e-read
+
+      - name: Check out the dem-dev runtime
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          repository: grafana/dem-dev
+          ref: 52fa1d7614437300cf454c31c8f4d49b698682be
+          path: work/dem-dev
+          token: ${{ steps.dem-dev-token.outputs.token }}
+          persist-credentials: false
+
+      - name: Run the smoke test in dem-dev
+        uses: ./work/dem-dev/.github/actions/sm-e2e
+        with:
+          plugin-dist: ${{ github.workspace }}/dist
+          github-token: ${{ steps.dem-dev-token.outputs.token }}
+          test-command: yarn e2e:dem
+
+      - name: Upload test report and runtime logs
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: dem-dev-smoke
+          path: artifacts/
+          if-no-files-found: ignore
+          retention-days: 7
