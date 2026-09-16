@@ -20,9 +20,7 @@ export function useFeatureFlag(featureFlag: FeatureName) {
 
   const isMapped = openFeatureKey !== undefined;
 
-  // The URL override applies to both backends. Mapped flags also answer to their OpenFeature
-  // key, which is the name people see in deployment_tools. A forced flag needs nothing from
-  // the provider, so it is ready immediately.
+  // Mapped flags also answer to their OpenFeature key, the name used in deployment_tools.
   if (isFeatureEnabledThroughUrl(featureFlag, ...(isMapped ? [openFeatureKey] : []))) {
     return { isEnabled: true, isReady: true };
   }

@@ -10,8 +10,7 @@ export interface FeatureFlagContextValue {
   isFeatureEnabled: (name: FeatureName) => boolean;
 }
 
-// `?features=a&features=b` force-enables flags for the current page load, whichever backend
-// serves them. Read on every call so it reflects the URL at evaluation time.
+// `?features=a&features=b`
 export function isFeatureEnabledThroughUrl(...names: string[]) {
   const featuresParam = urlUtil.getUrlSearchParams()['features'];
 
