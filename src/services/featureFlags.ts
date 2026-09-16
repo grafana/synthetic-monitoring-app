@@ -1,9 +1,9 @@
-import { urlUtil } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
 import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/web-sdk';
-import { invert, isArray } from 'lodash';
+import { invert } from 'lodash';
 import pluginJson from 'plugin.json';
+import { isFeatureEnabledThroughUrl } from 'services/featureFlagUrlOverride';
 
 import { FeatureName } from 'types';
 
@@ -16,19 +16,6 @@ export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
 };
 
 const FEATURE_NAME_BY_OPEN_FEATURE_KEY: Record<string, string | undefined> = invert(OPEN_FEATURE_KEYS);
-
-// Repeat the key for several flags: `?features=a&features=b`
-export function isFeatureEnabledThroughUrl(...names: string[]) {
-  const featuresParam = urlUtil.getUrlSearchParams()['features'];
-
-  if (!isArray(featuresParam)) {
-    return false;
-  }
-
-  const urlFeatures = featuresParam as string[];
-
-  return names.some((name) => urlFeatures.includes(name));
-}
 
 let initPromise: Promise<void> | undefined;
 let client: Client | undefined;

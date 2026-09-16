@@ -1,7 +1,7 @@
 import { createContext } from 'react';
 import { FeatureToggles } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { isFeatureEnabledThroughUrl } from 'services/featureFlags';
+import { isFeatureEnabledThroughUrl } from 'services/featureFlagUrlOverride';
 
 import { FeatureName } from 'types';
 
