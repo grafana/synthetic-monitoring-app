@@ -1,5 +1,6 @@
 import React from 'react';
-import { screen, within } from '@testing-library/react';
+import { screen, waitForElementToBeRemoved, within } from '@testing-library/react';
+import { UI_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 import { mockFeatureToggles } from 'test/utils';
 
@@ -7,6 +8,12 @@ import { FeatureName } from 'types';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import * as useFeatureFlagModule from 'hooks/useFeatureFlag';
+
+jest.mock('hooks/useFeatureFlag', () => {
+  const actual = jest.requireActual('hooks/useFeatureFlag');
+  return { ...actual, useFeatureFlag: jest.fn(actual.useFeatureFlag) };
+});
 
 function renderAt(route: AppRoutes) {
   return render(<InitialisedRouter />, { path: generateRoutePath(route), route: '*' });
@@ -51,12 +58,33 @@ describe('Checks page tabs', () => {
       expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     });
 
-    // With the route unregistered the path falls through to `checks/:id`, so a stale link
-    // lands on the check-not-found page rather than the tab.
-    it('does not resolve the recommendations route', async () => {
+    // The route stays registered so an async flag can't drop it; with the flag off a stale
+    // link lands on a not-found state inside the checks page rather than the tab.
+    it('shows not found on the recommendations route', async () => {
       renderAt(AppRoutes.CheckRecommendations);
 
-      expect(await screen.findByText(/check you're trying to view does not exist/i)).toBeInTheDocument();
+      expect(await screen.findByText(/page you are looking for does not exist/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /checks listing/i })).toHaveAttribute(
+        'href',
+        expect.stringContaining('/checks')
+      );
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('while the flag is still resolving', () => {
+    beforeEach(() => {
+      jest.mocked(useFeatureFlagModule.useFeatureFlag).mockReturnValue({ isEnabled: false, isReady: false });
+    });
+
+    it('holds the recommendations route on a spinner instead of not found', async () => {
+      renderAt(AppRoutes.CheckRecommendations);
+
+      // The datasource/permissions providers show their own spinner first; wait for that to clear.
+      await waitForElementToBeRemoved(() => screen.queryByTestId(UI_TEST_ID.centeredSpinner));
+
+      expect(await screen.findByTestId('Spinner')).toBeInTheDocument();
+      expect(screen.queryByText(/page you are looking for does not exist/i)).not.toBeInTheDocument();
     });
   });
 });
