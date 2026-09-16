@@ -83,6 +83,7 @@
       },
       "setUpAll": "",
       "setUpSelected": "",
+      "setUpSelectedSingle": "",
       "title": "",
       "viewInList": ""
     },
@@ -158,6 +159,7 @@
       "action": "",
       "description": "",
       "resumeSelected": "",
+      "resumeSelectedSingle": "",
       "row": {
         "done": "",
         "resume": "",

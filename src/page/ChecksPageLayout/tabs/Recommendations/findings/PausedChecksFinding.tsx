@@ -14,10 +14,10 @@ import { QUERY_KEYS, useBulkUpdateChecks, useUpdateCheck } from 'data/useChecks'
 
 import {
   CheckRow,
-  DismissedChecksFooter,
+  HeaderAction,
   PaginatedRows,
+  PanelFooter,
   RecommendationSection,
-  SelectionBar,
 } from '../Recommendations.components';
 import { useRowSelection } from '../Recommendations.hooks';
 import { getPausedChecksUrl } from '../Recommendations.links';
@@ -40,6 +40,7 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
   // The same call the check list's bulk actions make: one request, one "Updated N checks." toast.
   const { mutateAsync: bulkUpdateChecks, isPending: isResuming } = useBulkUpdateChecks();
   const selection = useRowSelection(rows);
+  const selectedCount = selection.selected.length;
 
   const handleResumeSelected = async () => {
     const checkCount = selection.selected.length;
@@ -63,28 +64,40 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
       isFocused={isFocused}
       onDismiss={onDismiss}
       actions={
-        <LinkButton
-          variant="secondary"
-          fill="outline"
-          size="sm"
-          href={getPausedChecksUrl()}
-          onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
-        >
-          <Trans i18nKey="recommendations.pausedChecks.action">Review paused checks</Trans>
-        </LinkButton>
-      }
-      toolbar={
-        <SelectionBar
-          selectedCount={selection.selected.length}
-          actionLabel={t('recommendations.pausedChecks.resumeSelected', 'Resume {{checkCount}}', {
-            checkCount: selection.selected.length,
-          })}
+        // Resuming everything at once is not offered: some of these are paused on purpose.
+        <HeaderAction
+          label={
+            selectedCount === 1
+              ? t('recommendations.pausedChecks.resumeSelectedSingle', 'Resume 1 check')
+              : selectedCount > 1
+                ? t('recommendations.pausedChecks.resumeSelected', 'Resume {{checkCount}} checks', {
+                    checkCount: selectedCount,
+                  })
+                : undefined
+          }
+          selectedCount={selectedCount}
           isBusy={isResuming}
           onAction={handleResumeSelected}
-          onClear={selection.clear}
+          onClearSelection={selection.clear}
         />
       }
-      footer={<DismissedChecksFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
+      footer={
+        <PanelFooter
+          dismissedCount={dismissedCount}
+          onRestore={restoreChecks}
+          secondaryAction={
+            <LinkButton
+              variant="secondary"
+              fill="outline"
+              size="sm"
+              href={getPausedChecksUrl()}
+              onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
+            >
+              <Trans i18nKey="recommendations.pausedChecks.action">Review paused checks</Trans>
+            </LinkButton>
+          }
+        />
+      }
     >
       <PaginatedRows
         items={rows}

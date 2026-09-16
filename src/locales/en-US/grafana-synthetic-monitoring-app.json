@@ -81,8 +81,9 @@
         "setUpLabel": "Set up alerts for {{job}}",
         "thresholdWithPeriod": "{{threshold}} over {{period}}"
       },
-      "setUpAll": "Set up alerts for all {{checkCount}} checks",
-      "setUpSelected": "Set up alerts for {{checkCount}}",
+      "setUpAll": "Set up alerts for all {{checkCount}}",
+      "setUpSelected": "Set up alerts for {{checkCount}} checks",
+      "setUpSelectedSingle": "Set up alerts for 1 check",
       "title": "Alerting",
       "viewInList": "View in check list"
     },
@@ -108,7 +109,7 @@
       "summary": "{{checkCount}} of {{totalCheckCount}} checks across {{findingCount}} findings"
     },
     "dismissed": {
-      "none": "Nothing dismissed",
+      "none": "No findings dismissed",
       "restoreLong": "Show dismissed findings",
       "summary": "{{dismissedCount}} findings dismissed",
       "summarySingle": "1 finding dismissed"
@@ -157,7 +158,8 @@
     "pausedChecks": {
       "action": "Review paused checks",
       "description": "These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.",
-      "resumeSelected": "Resume {{checkCount}}",
+      "resumeSelected": "Resume {{checkCount}} checks",
+      "resumeSelectedSingle": "Resume 1 check",
       "row": {
         "done": "Resumed",
         "resume": "Resume",

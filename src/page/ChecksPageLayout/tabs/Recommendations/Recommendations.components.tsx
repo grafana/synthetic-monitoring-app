@@ -149,11 +149,12 @@ interface SectionProps {
   /** Only shown where a category holds several findings and they need telling apart. */
   tooltip?: string;
   severity: RecommendationSeverity;
-  /** Finding-level controls, rendered in the header beside the title. */
+  /**
+   * The finding's primary control, rendered in the header. Kept to one button (plus a clear
+   * control when rows are selected) so the header stays one line whatever the title.
+   */
   actions?: ReactNode;
-  /** Sits between the header and the rows, e.g. the selection bar. */
-  toolbar?: ReactNode;
-  /** Sits under the rows, e.g. the dismissed-checks footer. */
+  /** Sits under the rows: the secondary link out and the dismissed-checks restore. */
   footer?: ReactNode;
   /** The URL pointed at this finding; it is highlighted and scrolled into view. */
   isFocused?: boolean;
@@ -171,7 +172,6 @@ export function RecommendationSection({
   tooltip,
   severity,
   actions,
-  toolbar,
   footer,
   isFocused = false,
   onDismiss,
@@ -194,12 +194,12 @@ export function RecommendationSection({
       className={cx(styles.panel, styles[PANEL_CLASS[severity]], isFocused && styles.panelFocused)}
       data-testid={RECOMMENDATIONS_TEST_ID.section}
     >
-      <div className={styles.panelHeader}>
+      <div className={styles.panelHeader} data-testid={RECOMMENDATIONS_TEST_ID.sectionHeader}>
         <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.caret} />
           <Stack direction="column" gap={0.25}>
             <h3 className={styles.sectionTitle}>
-              {title}
+              <span className={styles.sectionTitleText}>{title}</span>
               {tooltip && (
                 <Tooltip content={tooltip} placement="top">
                   <Icon name="info-circle" size="sm" className={styles.tooltipIcon} />
@@ -229,7 +229,6 @@ export function RecommendationSection({
       </div>
       {isOpen && (
         <>
-          {toolbar}
           <div className={styles.rows}>{children}</div>
           {footer}
         </>
@@ -238,63 +237,79 @@ export function RecommendationSection({
   );
 }
 
-interface SelectionBarProps {
+interface HeaderActionProps {
+  /** The button's label; carries the count when rows are selected ("Set up alerts for 3 checks"). */
+  label?: string;
   selectedCount: number;
-  /** The bulk action's label, which carries the count: "Set up alerts for 3". */
-  actionLabel: string;
   isBusy?: boolean;
   onAction: () => void;
-  onClear: () => void;
+  onClearSelection: () => void;
 }
 
 /**
- * The bulk action for ticked rows. Always in the layout, hidden when nothing is ticked, so the
- * first tick does not push the rows down. No select-all: the header's "for all N checks" action
- * already covers that case.
+ * The header's one button, meaning "act on everything" with nothing selected and "act on the
+ * selection" otherwise, with a compact clear beside it in the latter case. One slot for both
+ * keeps findings with and without a bulk action laid out identically. No select-all: the
+ * all-variant of the button covers it; no "N selected": the count is in the label.
  */
-export function SelectionBar({ selectedCount, actionLabel, isBusy = false, onAction, onClear }: SelectionBarProps) {
-  const styles = useStyles2(getStyles);
-  const hasSelection = selectedCount > 0;
+export function HeaderAction({ label, selectedCount, isBusy = false, onAction, onClearSelection }: HeaderActionProps) {
+  if (!label) {
+    return null;
+  }
 
   return (
-    <div
-      className={cx(styles.selectionBar, !hasSelection && styles.selectionBarHidden)}
-      aria-hidden={!hasSelection}
-      data-testid={RECOMMENDATIONS_TEST_ID.selectionBar}
-    >
-      <Button size="sm" variant="primary" onClick={onAction} disabled={isBusy || !hasSelection}>
-        {actionLabel}
+    <>
+      {selectedCount > 0 && (
+        <IconButton
+          name="times"
+          size="sm"
+          variant="secondary"
+          tooltip={t('recommendations.selection.clear', 'Clear selection')}
+          disabled={isBusy}
+          onClick={onClearSelection}
+        />
+      )}
+      <Button size="sm" variant="primary" onClick={onAction} disabled={isBusy}>
+        {label}
       </Button>
-      <Button size="sm" variant="secondary" fill="text" onClick={onClear} disabled={isBusy || !hasSelection}>
-        <Trans i18nKey="recommendations.selection.clear">Clear selection</Trans>
-      </Button>
-    </div>
+    </>
   );
 }
 
-interface DismissedChecksFooterProps {
-  dismissedCount: number;
-  onRestore: () => void;
+interface PanelFooterProps {
+  dismissedCount?: number;
+  onRestore?: () => void;
+  /** The finding's link out, e.g. "View in check list". */
+  secondaryAction?: ReactNode;
 }
 
-/** Under a finding's rows: how many of its checks are hidden, and the way to bring them back. */
-export function DismissedChecksFooter({ dismissedCount, onRestore }: DismissedChecksFooterProps) {
+/**
+ * Under a finding's rows, right-aligned: how many of its checks are hidden and the way to
+ * bring them back, then the secondary action. The link out lives here rather than in the
+ * header so the header can stay one line.
+ */
+export function PanelFooter({ dismissedCount = 0, onRestore, secondaryAction }: PanelFooterProps) {
   const styles = useStyles2(getStyles);
 
-  if (dismissedCount === 0) {
+  if (dismissedCount === 0 && !secondaryAction) {
     return null;
   }
 
   return (
     <Stack direction="row" gap={1} alignItems="center" justifyContent="flex-end">
-      <span className={styles.mutedText}>
-        {dismissedCount === 1
-          ? t('recommendations.dismissedChecks.summarySingle', '1 check dismissed')
-          : t('recommendations.dismissedChecks.summary', '{{dismissedCount}} checks dismissed', { dismissedCount })}
-      </span>
-      <Button size="sm" variant="secondary" fill="outline" icon="eye" onClick={onRestore}>
-        <Trans i18nKey="recommendations.dismissedChecks.restore">Show dismissed checks</Trans>
-      </Button>
+      {dismissedCount > 0 && (
+        <>
+          <span className={styles.mutedText}>
+            {dismissedCount === 1
+              ? t('recommendations.dismissedChecks.summarySingle', '1 check dismissed')
+              : t('recommendations.dismissedChecks.summary', '{{dismissedCount}} checks dismissed', { dismissedCount })}
+          </span>
+          <Button size="sm" variant="secondary" fill="outline" icon="eye" onClick={onRestore}>
+            <Trans i18nKey="recommendations.dismissedChecks.restore">Show dismissed checks</Trans>
+          </Button>
+        </>
+      )}
+      {secondaryAction}
     </Stack>
   );
 }
