@@ -174,11 +174,11 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     borderColor: theme.colors.primary.border,
   }),
 
-  // Panel header
+  // Panel header: one line. The title is the only thing allowed to give way, so the actions
+  // beside it have to stay narrow or they eat the heading.
   panelHeader: css({
     display: 'flex',
     alignItems: 'flex-start',
-    flexWrap: 'wrap',
     gap: theme.spacing(1.5),
   }),
   collapseToggle: css({
@@ -186,7 +186,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'flex-start',
     gap: theme.spacing(0.75),
     flex: 1,
-    minWidth: 260,
+    minWidth: 0,
     background: 'none',
     border: 'none',
     padding: 0,
@@ -202,12 +202,17 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   sectionTitle: css({
     display: 'flex',
     alignItems: 'center',
-    flexWrap: 'wrap',
     gap: theme.spacing(0.75),
+    minWidth: 0,
     margin: 0,
     fontSize: theme.typography.h5.fontSize,
     fontWeight: theme.typography.fontWeightMedium,
     lineHeight: 1.4,
+  }),
+  sectionTitleText: css({
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   }),
   tooltipIcon: css({
     color: theme.colors.text.disabled,
@@ -220,18 +225,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     gap: theme.spacing(1),
     marginLeft: 'auto',
-  }),
-
-  // Selection bar: always in the layout so ticking the first row does not shift the list.
-  selectionBar: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    height: 24,
-    padding: theme.spacing(0, 2),
-  }),
-  selectionBarHidden: css({
-    visibility: 'hidden',
+    flexShrink: 0,
   }),
 
   // Rows
@@ -254,7 +248,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   rowMain: css({
     display: 'flex',
     alignItems: 'center',
-    flexWrap: 'wrap',
     gap: theme.spacing(1),
     flex: 1,
     minWidth: 0,
@@ -278,15 +271,21 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     color: 'inherit',
     textAlign: 'left',
   }),
+  // The name gives way before anything else on the row does.
   rowName: css({
     fontWeight: theme.typography.fontWeightMedium,
     fontSize: theme.typography.body.fontSize,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   }),
   // text.secondary rather than text.disabled: the latter fails contrast at this size.
   rowType: css({
     fontFamily: theme.typography.fontFamilyMonospace,
     fontSize: theme.typography.bodySmall.fontSize,
     color: theme.colors.text.secondary,
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
   }),
   rowDetail: css({
     fontSize: theme.typography.bodySmall.fontSize,

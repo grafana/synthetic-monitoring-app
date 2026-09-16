@@ -22,10 +22,10 @@ import {
 } from '../Recommendations.alerts';
 import {
   CheckRow,
-  DismissedChecksFooter,
+  HeaderAction,
   PaginatedRows,
+  PanelFooter,
   RecommendationSection,
-  SelectionBar,
 } from '../Recommendations.components';
 import { BULK_ACTION_BATCH_SIZE } from '../Recommendations.constants';
 import { useRowSelection } from '../Recommendations.hooks';
@@ -41,7 +41,8 @@ interface AlertPlan {
 /**
  * A. Checks running without alerting. The action is the check editor's own default alerts,
  * applied from here so the gap closes without leaving the page: one check at a time after a
- * preview, the ticked checks at once, or every check at once after confirming.
+ * preview, the ticked checks at once, or every check at once after confirming. The header
+ * button means whichever of the last two applies.
  */
 export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
   const { id } = recommendation;
@@ -105,6 +106,21 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
     selection.clear();
   };
 
+  const selectedCount = selection.selected.length;
+  // Ticked rows were chosen one by one, so they go straight through; "all" still confirms.
+  const headerLabel =
+    selectedCount === 1
+      ? t('recommendations.alertingGaps.setUpSelectedSingle', 'Set up alerts for 1 check')
+      : selectedCount > 1
+        ? t('recommendations.alertingGaps.setUpSelected', 'Set up alerts for {{checkCount}} checks', {
+            checkCount: selectedCount,
+          })
+        : plans.length > 1
+          ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}}', {
+              checkCount: plans.length,
+            })
+          : undefined;
+
   return (
     <RecommendationSection
       {...header}
@@ -112,37 +128,31 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
       isFocused={isFocused}
       onDismiss={onDismiss}
       actions={
-        <>
-          <LinkButton
-            variant="secondary"
-            fill="outline"
-            size="sm"
-            href={getChecksWithoutAlertsUrl()}
-            onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
-          >
-            <Trans i18nKey="recommendations.alertingGaps.viewInList">View in check list</Trans>
-          </LinkButton>
-          {plans.length > 1 && (
-            <Button variant="primary" size="sm" onClick={() => setIsConfirmingAll(true)}>
-              {t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}} checks', {
-                checkCount: plans.length,
-              })}
-            </Button>
-          )}
-        </>
-      }
-      toolbar={
-        <SelectionBar
-          selectedCount={selection.selected.length}
-          actionLabel={t('recommendations.alertingGaps.setUpSelected', 'Set up alerts for {{checkCount}}', {
-            checkCount: selection.selected.length,
-          })}
+        <HeaderAction
+          label={headerLabel}
+          selectedCount={selectedCount}
           isBusy={isApplying}
-          onAction={handleApplySelected}
-          onClear={selection.clear}
+          onAction={selectedCount > 0 ? handleApplySelected : () => setIsConfirmingAll(true)}
+          onClearSelection={selection.clear}
         />
       }
-      footer={<DismissedChecksFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
+      footer={
+        <PanelFooter
+          dismissedCount={dismissedCount}
+          onRestore={restoreChecks}
+          secondaryAction={
+            <LinkButton
+              variant="secondary"
+              fill="outline"
+              size="sm"
+              href={getChecksWithoutAlertsUrl()}
+              onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
+            >
+              <Trans i18nKey="recommendations.alertingGaps.viewInList">View in check list</Trans>
+            </LinkButton>
+          }
+        />
+      }
     >
       <PaginatedRows
         items={rows}

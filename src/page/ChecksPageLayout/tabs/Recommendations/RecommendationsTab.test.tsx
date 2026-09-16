@@ -234,6 +234,22 @@ describe('Recommendations tab', () => {
       );
     });
 
+    it('keeps the header to one button and puts the link out in the footer', async () => {
+      await renderCategory(
+        [
+          buildCheck({ job: 'one', target: 'https://a.com', id: 1 }),
+          buildCheck({ job: 'two', target: 'https://b.com', id: 2 }),
+        ],
+        RecommendationCategoryId.Alerting
+      );
+      const section = await findSection(/have no alerts/);
+      const header = within(section).getByTestId(RECOMMENDATIONS_TEST_ID.sectionHeader);
+
+      expect(within(header).getByRole('button', { name: 'Set up alerts for all 2' })).toBeInTheDocument();
+      expect(within(header).queryByRole('link', { name: /view in check list/i })).not.toBeInTheDocument();
+      expect(within(section).getByRole('link', { name: /view in check list/i })).toBeInTheDocument();
+    });
+
     it('offers each affected check its editor', async () => {
       await renderCategory(
         [buildCheck({ job: 'unalerted', target: 'https://a.com', id: 42 })],
@@ -337,7 +353,7 @@ describe('Recommendations tab', () => {
       );
       const section = await findSection(/have no alerts/);
 
-      await user.click(within(section).getByRole('button', { name: 'Set up alerts for all 2 checks' }));
+      await user.click(within(section).getByRole('button', { name: 'Set up alerts for all 2' }));
 
       const dialog = await screen.findByRole('dialog');
       // Three for the HTTP check and the failed-executions alert for the scripted one.
@@ -375,17 +391,19 @@ describe('Recommendations tab', () => {
         RecommendationCategoryId.Alerting
       );
       const section = await findSection(/have no alerts/);
-      const bar = within(section).getByTestId(RECOMMENDATIONS_TEST_ID.selectionBar);
 
-      // In the layout but out of sight until something is ticked, so the rows do not jump.
-      expect(bar).toHaveAttribute('aria-hidden', 'true');
+      // One header button: for everything until something is ticked, then for the selection.
+      expect(within(section).getByRole('button', { name: 'Set up alerts for all 3' })).toBeInTheDocument();
 
       await user.click(within(section).getByRole('checkbox', { name: 'Select one' }));
+
+      expect(within(section).getByRole('button', { name: 'Set up alerts for 1 check' })).toBeInTheDocument();
+
       await user.click(within(section).getByRole('checkbox', { name: 'Select three' }));
+      await user.click(within(section).getByRole('button', { name: 'Set up alerts for 2 checks' }));
 
-      expect(bar).toHaveAttribute('aria-hidden', 'false');
-      await user.click(within(bar).getByRole('button', { name: 'Set up alerts for 2' }));
-
+      // Ticked rows were chosen one by one, so no confirmation stands between them and the action.
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       await waitFor(() => expect(updatedCheckIds.sort()).toEqual(['1', '3']));
     });
 
@@ -403,7 +421,8 @@ describe('Recommendations tab', () => {
       await user.click(within(section).getByRole('button', { name: 'Clear selection' }));
 
       expect(within(section).getByRole('checkbox', { name: 'Select one' })).not.toBeChecked();
-      expect(within(section).getByTestId(RECOMMENDATIONS_TEST_ID.selectionBar)).toHaveAttribute('aria-hidden', 'true');
+      expect(within(section).getByRole('button', { name: 'Set up alerts for all 2' })).toBeInTheDocument();
+      expect(within(section).queryByRole('button', { name: 'Clear selection' })).not.toBeInTheDocument();
     });
 
     it('keeps the row and reports the failure when the alerts cannot be saved', async () => {
@@ -525,9 +544,12 @@ describe('Recommendations tab', () => {
       );
       const section = await findSection(/checks are paused/);
 
+      // Nothing to resume everything with: some checks are paused on purpose.
+      expect(within(section).queryByRole('button', { name: /^Resume .*checks?$/ })).not.toBeInTheDocument();
+
       await user.click(within(section).getByRole('checkbox', { name: 'Select one' }));
       await user.click(within(section).getByRole('checkbox', { name: 'Select two' }));
-      await user.click(within(section).getByRole('button', { name: 'Resume 2' }));
+      await user.click(within(section).getByRole('button', { name: 'Resume 2 checks' }));
 
       await waitFor(() => expect(resumedJobs.sort()).toEqual(['one', 'two']));
       expect(reportInteraction).toHaveBeenCalledWith(
@@ -723,7 +745,7 @@ describe('Recommendations tab', () => {
 
       // Restored, and the URL's category is showable again.
       expect(await findSection(/have no alerts/)).toBeInTheDocument();
-      expect(screen.getByText('Nothing dismissed')).toBeInTheDocument();
+      expect(screen.getByText('No findings dismissed')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /show dismissed findings/i })).toBeDisabled();
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_finding_restored',
@@ -754,7 +776,7 @@ describe('Recommendations tab', () => {
 
       await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
 
-      expect(screen.getByText('Nothing dismissed')).toBeInTheDocument();
+      expect(screen.getByText('No findings dismissed')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /show dismissed findings/i })).toBeDisabled();
     });
   });

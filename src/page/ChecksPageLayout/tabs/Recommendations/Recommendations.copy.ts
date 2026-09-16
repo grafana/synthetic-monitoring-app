@@ -127,7 +127,7 @@ export function getRecommendationActionLabel({ id, checks }: Recommendation): st
       const applicableCount = checks.filter((check) => getRecommendedAlerts(check).length > 0).length;
 
       return applicableCount > 1
-        ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}} checks', {
+        ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}}', {
             checkCount: applicableCount,
           })
         : t('recommendations.alertingGaps.viewInList', 'View in check list');

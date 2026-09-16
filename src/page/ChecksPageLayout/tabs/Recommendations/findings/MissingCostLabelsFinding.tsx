@@ -8,7 +8,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
-import { CheckRow, DismissedChecksFooter, PaginatedRows, RecommendationSection } from '../Recommendations.components';
+import { CheckRow, PaginatedRows, PanelFooter, RecommendationSection } from '../Recommendations.components';
 import { getChecksMissingCostLabelsUrl } from '../Recommendations.links';
 import { useFindingPanel } from './Finding.hooks';
 
@@ -41,18 +41,23 @@ export function MissingCostLabelsFinding({
       severity={severity}
       isFocused={isFocused}
       onDismiss={onDismiss}
-      actions={
-        <LinkButton
-          variant="secondary"
-          fill="outline"
-          size="sm"
-          href={getChecksMissingCostLabelsUrl(calNames)}
-          onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
-        >
-          <Trans i18nKey="recommendations.missingCostLabels.action">View in check list</Trans>
-        </LinkButton>
+      footer={
+        <PanelFooter
+          dismissedCount={dismissedCount}
+          onRestore={restoreChecks}
+          secondaryAction={
+            <LinkButton
+              variant="secondary"
+              fill="outline"
+              size="sm"
+              href={getChecksMissingCostLabelsUrl(calNames)}
+              onClick={() => trackRecommendationActioned({ finding: id, scope: 'finding' })}
+            >
+              <Trans i18nKey="recommendations.missingCostLabels.action">View in check list</Trans>
+            </LinkButton>
+          }
+        />
       }
-      footer={<DismissedChecksFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
     >
       <PaginatedRows
         items={rows}
