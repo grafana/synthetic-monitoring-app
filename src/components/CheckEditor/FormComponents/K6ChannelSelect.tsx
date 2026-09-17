@@ -52,8 +52,7 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   } = useFilteredK6Channels(true);
 
   // Initialize with default channel when no channel is set (new checks or existing checks without channel).
-  // shouldDirty: false because this is a system default, not a user choice - it shouldn't make a
-  // pristine new check look unsaved (see useHydrateCalLabels for the same pattern).
+  // shouldDirty: false - a system default shouldn't make a pristine check look unsaved.
   useEffect(() => {
     if (!field.value && defaultChannelId && !isLoadingChannels) {
       const defaultChannel = channels.find((channel) => channel.id === defaultChannelId);
