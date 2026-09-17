@@ -43,7 +43,7 @@ export const ProbeOptions = ({
   );
 };
 
-function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
+export function getAvailableProbes(probes: ProbeWithMetadata[], checkType: CheckType) {
   if (checkType === CheckType.Scripted) {
     return probes.filter((probe) => !probe.capabilities.disableScriptedChecks);
   }

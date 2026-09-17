@@ -26,6 +26,31 @@ export async function submitForm(user: UserEvent) {
   await user.click(submitButton);
 }
 
+// New checks come with a default probe preselected, so tests that want a specific probe
+// selected need to also unselect whatever the default preselected, rather than assuming
+// every probe checkbox starts unchecked.
+export async function selectOnlyProbe(user: UserEvent, name: string | RegExp) {
+  const target = await screen.findByRole('checkbox', { name });
+  const probeCheckboxes = screen.getAllByTestId(CHECKSTER_TEST_ID.form.inputs.probeCheckbox);
+
+  for (const checkbox of probeCheckboxes) {
+    const shouldBeChecked = checkbox === target;
+    if ((checkbox as HTMLInputElement).checked !== shouldBeChecked) {
+      await user.click(checkbox);
+    }
+  }
+}
+
+export async function deselectAllProbes(user: UserEvent) {
+  const probeCheckboxes = screen.getAllByTestId(CHECKSTER_TEST_ID.form.inputs.probeCheckbox);
+
+  for (const checkbox of probeCheckboxes) {
+    if ((checkbox as HTMLInputElement).checked) {
+      await user.click(checkbox);
+    }
+  }
+}
+
 export async function removeComboboxOption(user: UserEvent, label: string | RegExp) {
   testUsesCombobox();
 

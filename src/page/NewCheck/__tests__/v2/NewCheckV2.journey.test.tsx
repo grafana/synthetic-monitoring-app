@@ -20,7 +20,12 @@ import { FormSectionName } from '../../../../components/Checkster/types';
 import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import {
+  deselectAllProbes,
+  gotoSection,
+  selectOnlyProbe,
+  submitForm,
+} from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
@@ -186,6 +191,10 @@ describe(`<NewCheckV2 /> journey`, () => {
     const { user } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['probes'] });
+    // New checks start with a default probe preselected, so exercising the "no probes
+    // selected" validation error requires explicitly clearing it first.
+    await gotoSection(user, FormSectionName.Execution);
+    await deselectAllProbes(user);
     await submitForm(user);
 
     const probesFilter = await screen.findByLabelText(/Probe locations/);
@@ -309,8 +318,7 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     await selectBasicFrequency(user, '2m');
 
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName));
 
     await submitForm(user);
 
@@ -323,8 +331,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     const { user } = await renderNewForm(CheckType.Http);
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
     await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));

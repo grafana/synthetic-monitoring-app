@@ -27,6 +27,7 @@ import { useProbesWithMetadata } from 'data/useProbes';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useDOMId } from 'hooks/useDOMId';
 import { CenteredSpinner } from 'components/CenteredSpinner';
+import { getAvailableProbes } from 'components/CheckEditor/ProbeOptions';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
@@ -79,6 +80,14 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
+function getDefaultProbeId(probes: ProbeWithMetadata[], checkType: CheckType) {
+  const availableProbes = getAvailableProbes(probes, checkType).filter((probe) => !probe.deprecated);
+  const onlineProbes = availableProbes.filter((probe) => probe.online);
+  const defaultProbe = onlineProbes.find((probe) => probe.public) ?? onlineProbes[0] ?? availableProbes[0];
+
+  return defaultProbe?.id;
+}
+
 function useFormValuesMeta(
   checkType: CheckType,
   check: Check | undefined,
@@ -87,6 +96,13 @@ function useFormValuesMeta(
   requiresFolder = false
 ) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+  // Computed separately from the schema/formValues memo below: online/public/deprecated
+  // can change (probes poll every 10s) without id/k6Versions changing, so this needs its
+  // own, more sensitive dependency (the probesWithMetadata reference) to stay fresh.
+  const defaultProbeId = useMemo(
+    () => getDefaultProbeId(probesWithMetadata, checkType),
+    [probesWithMetadata, checkType]
+  );
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
@@ -97,6 +113,12 @@ function useFormValuesMeta(
       formValues.folderUid = defaultFolderUid;
     }
 
+    // New checks start with a single cheap default probe rather than none (which fails
+    // validation) or all of them (which multiplies execution cost by the probe count).
+    if (!formValues.probes.length && defaultProbeId !== undefined) {
+      formValues.probes = [defaultProbeId];
+    }
+
     return {
       defaultFormValues: formValues,
       schema: refinedSchema,
@@ -104,7 +126,7 @@ function useFormValuesMeta(
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder, defaultProbeId]);
 }
 
 export function ChecksterProvider({
