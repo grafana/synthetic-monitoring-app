@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useAssistant } from '@grafana/assistant';
 import {
   trackCreateManually,
+  trackNamespaceFilterChanged,
   trackRecommendationReviewed,
   trackSetupWithAssistant,
 } from 'features/tracking/reliabilityInboxEvents';
@@ -36,6 +37,19 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
   // ignored rather than stored back: derived this way it self-corrects on
   // refetch, with no effect to keep in sync.
   const activeFilter = namespaceFilter && namespaceOptions.includes(namespaceFilter) ? namespaceFilter : undefined;
+
+  // Tracked here rather than at the call site so no caller can change the
+  // filter without it being recorded, and because this is where the option
+  // count lives.
+  const selectNamespace = (namespace?: string) => {
+    if (namespace === activeFilter) {
+      return;
+    }
+
+    trackNamespaceFilterChanged({ namespaceCount: namespaceOptions.length, cleared: !namespace });
+    setNamespaceFilter(namespace);
+  };
+
   const visibleOpportunities = activeFilter
     ? allOpportunities.filter(({ namespace }) => namespace === activeFilter)
     : allOpportunities;
@@ -111,7 +125,7 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
     hasOpportunities: allOpportunities.length > 0,
     namespaceOptions,
     namespaceFilter: activeFilter,
-    setNamespaceFilter,
+    selectNamespace,
     queueView,
     selected,
     isLoading,

@@ -5,6 +5,7 @@ import { locationService } from '@grafana/runtime';
 import { fireEvent, screen, within } from '@testing-library/react';
 import {
   trackCreateManually,
+  trackNamespaceFilterChanged,
   trackRecommendationReviewed,
   trackSetupWithAssistant,
 } from 'features/tracking/reliabilityInboxEvents';
@@ -31,6 +32,7 @@ jest.mock('./data', () => ({
 
 jest.mock('features/tracking/reliabilityInboxEvents', () => ({
   trackCreateManually: jest.fn(),
+  trackNamespaceFilterChanged: jest.fn(),
   trackRecommendationReviewed: jest.fn(),
   trackSetupWithAssistant: jest.fn(),
 }));
@@ -760,6 +762,31 @@ describe('ReliabilityInboxPage', () => {
 
       expect(await screen.findByRole('button', { name: /shop\.goagain\.dev/ })).toBeVisible();
       expect(screen.queryByRole('button', { name: /checkout\.goagain\.dev/ })).not.toBeInTheDocument();
+    });
+
+    // Whether teams filter at all is the question this feature exists to
+    // answer, so the count and the set/clear distinction are reported — but
+    // never the namespace itself, which is tenant-authored customer data.
+    it('reports filter use without reporting the namespace', async () => {
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+
+      expect(trackNamespaceFilterChanged).toHaveBeenCalledWith({ namespaceCount: 2, cleared: false });
+      expect(JSON.stringify(jest.mocked(trackNamespaceFilterChanged).mock.calls)).not.toContain('shop');
+    });
+
+    it('does not report a selection that changes nothing', async () => {
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+      expect(trackNamespaceFilterChanged).toHaveBeenCalledTimes(1);
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+
+      expect(trackNamespaceFilterChanged).toHaveBeenCalledTimes(1);
     });
 
     // Generating suggestions invokes a paid service, so the filter must work

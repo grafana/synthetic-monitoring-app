@@ -29,7 +29,7 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
     hasOpportunities,
     namespaceOptions,
     namespaceFilter,
-    setNamespaceFilter,
+    selectNamespace,
     queueView,
     selected,
     isLoading,
@@ -102,7 +102,7 @@ export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxRev
   };
   const changeNamespaceFilter = (namespace?: string) => {
     if (namespace !== namespaceFilter) {
-      runAfterExit('fade', () => setNamespaceFilter(namespace));
+      runAfterExit('fade', () => selectNamespace(namespace));
     }
   };
   const changeQueueView = (view: 'active' | 'dismissed') => {
