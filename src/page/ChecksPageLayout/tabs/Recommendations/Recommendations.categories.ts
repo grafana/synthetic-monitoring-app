@@ -8,14 +8,9 @@ import {
 } from './Recommendations.types';
 import { Check } from 'types';
 
-/**
- * Milestone 1 categories, in rail order. Severity is declared here and nowhere else: a finding's
- * panel, the legend and the rail all read it from the category the finding belongs to, so the
- * three cannot disagree. None of the categories mixes severities. Fleet reliability will join
- * once execution data is available to the tab.
- */
+// Rail order. Severity lives here only; panels, legend and rail all read it from the category.
 export const CATEGORIES: RecommendationCategory[] = [
-  // Alerting is the only finding where doing nothing means a real failure goes unseen.
+  // The only finding where doing nothing means a failure goes unseen.
   { id: RecommendationCategoryId.Alerting, severity: 'error', findings: [RecommendationId.AlertingGaps] },
   { id: RecommendationCategoryId.Cost, severity: 'warning', findings: [RecommendationId.MissingCostLabels] },
   { id: RecommendationCategoryId.Paused, severity: 'warning', findings: [RecommendationId.PausedChecks] },
@@ -31,7 +26,6 @@ export function isCategoryId(value: string | null | undefined): value is Recomme
 }
 
 export function getCategoryForFinding(id: RecommendationId): RecommendationCategory {
-  // Every finding belongs to exactly one category; the table above is exhaustive.
   return CATEGORIES.find((category) => category.findings.includes(id))!;
 }
 
@@ -39,11 +33,7 @@ export function getFindingSeverity(id: RecommendationId): RecommendationSeverity
   return getCategoryForFinding(id).severity;
 }
 
-/**
- * The categories that currently have something to show, each with its findings and the number
- * of distinct checks they cover. A category whose findings are all dismissed or absent is left
- * out, so it disappears from the rail rather than sitting there empty.
- */
+// Categories with nothing left to show are left out, so they drop off the rail.
 export function summariseCategories(visible: Recommendation[]): CategorySummary[] {
   return CATEGORIES.map((category) => {
     const findings = visible.filter((finding) => category.findings.includes(finding.id));
@@ -52,7 +42,6 @@ export function summariseCategories(visible: Recommendation[]): CategorySummary[
   }).filter((summary) => summary.findings.length > 0);
 }
 
-/** How many distinct checks the findings cover between them. */
 export function countDistinctChecks(findings: Recommendation[]): number {
   return new Set(findings.flatMap(({ checks }) => checks.map(getCheckKey))).size;
 }
@@ -62,11 +51,7 @@ export interface LegendEntry {
   checkCount: number;
 }
 
-/**
- * Distinct checks per severity across the given findings, most severe first, omitting severities
- * with nothing in them. Counting checks rather than findings keeps the legend comparable with
- * the rail and the overview line.
- */
+// Counts checks, not findings, so it lines up with the rail and the overview line.
 export function getLegend(findings: Recommendation[]): LegendEntry[] {
   const severities: RecommendationSeverity[] = ['error', 'warning', 'info'];
 
@@ -79,6 +64,5 @@ export function getLegend(findings: Recommendation[]): LegendEntry[] {
 }
 
 function getCheckKey(check: Check) {
-  // Checks always have an id once they have been saved, which is the only kind the tab sees.
   return check.id ?? `${check.job}|${check.target}`;
 }

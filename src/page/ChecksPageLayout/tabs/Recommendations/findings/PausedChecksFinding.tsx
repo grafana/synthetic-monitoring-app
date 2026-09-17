@@ -24,11 +24,7 @@ import { getPausedChecksUrl } from '../Recommendations.links';
 import { getPausedSince } from '../Recommendations.utils';
 import { useFindingPanel } from './Finding.hooks';
 
-/**
- * D. Paused checks, longest-paused first. Resuming is safe and reversible so it is offered in
- * place, one at a time or for the ticked rows; deleting is not, so that stays with the check
- * list, which already confirms it.
- */
+// Resuming is reversible so it is offered here; deleting stays with the check list, which confirms it.
 export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
@@ -37,7 +33,7 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
     isSolo,
   });
   const queryClient = useQueryClient();
-  // The same call the check list's bulk actions make: one request, one "Updated N checks." toast.
+  // Same call as the check list's bulk actions: one request, one toast.
   const { mutateAsync: bulkUpdateChecks, isPending: isResuming } = useBulkUpdateChecks();
   const selection = useRowSelection(rows);
   const selectedCount = selection.selected.length;
@@ -48,7 +44,7 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
     try {
       await bulkUpdateChecks(selection.selected.map((check) => ({ ...check, enabled: true })));
     } catch {
-      // The mutation's meta already raises the error toast; the selection stays for a retry.
+      // The mutation's meta raises the error toast; the selection stays for a retry.
       return;
     }
 
@@ -64,7 +60,7 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
       isFocused={isFocused}
       onDismiss={onDismiss}
       actions={
-        // Resuming everything at once is not offered: some of these are paused on purpose.
+        // No "all": some of these are paused on purpose.
         <HeaderAction
           label={
             selectedCount === 1
@@ -146,14 +142,14 @@ function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditCl
     try {
       await updateCheck({ ...check, enabled: true });
     } catch {
-      // The mutation's meta already raises the error toast.
+      // The mutation's meta raises the error toast.
       setIsResuming(false);
       return;
     }
 
     setIsDone(true);
     onResumed();
-    // Refetching the check list is what removes this row from the finding.
+    // Refetching the check list drops this row.
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
   };
 

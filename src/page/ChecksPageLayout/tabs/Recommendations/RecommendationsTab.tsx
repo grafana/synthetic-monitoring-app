@@ -52,12 +52,11 @@ function RecommendationsTabContent() {
     () => recommendations.filter((recommendation) => !dismissed.includes(recommendation.id)),
     [recommendations, dismissed]
   );
-  // Only findings that exist for this tenant count as dismissed; a stale dismissal of a finding
-  // that has since resolved itself is not something to offer bringing back.
+  // A stale dismissal of a finding since resolved is nothing to restore.
   const dismissedCount = recommendations.length - visible.length;
   const categories = useMemo(() => summariseCategories(visible), [visible]);
   const { view, setView, focusedId } = useRecommendationsView();
-  // A category can empty out from under the URL (its findings dismissed, or resolved); land instead.
+  // The URL's category can empty out (dismissed, resolved); land instead.
   const active = categories.find(({ category }) => category.id === view);
   const dismissedChecks = useDismissedCheckMap();
 
@@ -77,8 +76,7 @@ function RecommendationsTabContent() {
     <div className={styles.layout}>
       <CategoryRail categories={categories} view={active ? view : ATTENTION_VIEW} onSelect={setView} />
       <div className={styles.content}>
-        {/* Feedback sits outside the empty state as well as the findings: hearing that we
-            found nothing worth showing is as useful a signal as hearing that a finding was wrong. */}
+        {/* Feedback shows with the empty state too: finding nothing is a signal as well. */}
         <Stack direction="row" gap={2} alignItems="flex-start" justifyContent="space-between">
           <Heading active={active} visible={visible} totalCheckCount={checks.length} calNames={calNames} />
           <div className={styles.feedback}>
@@ -144,10 +142,6 @@ interface HeadingProps {
   calNames: string[];
 }
 
-/**
- * The pane heading. On the landing view it is the overview line and the tab's intro; on a
- * category it is the category's name and caption. The legend covers whichever is showing.
- */
 function Heading({ active, visible, totalCheckCount, calNames }: HeadingProps) {
   const headline = active ? getCategoryCopy(active.category.id).label : getOverview(visible, totalCheckCount, calNames);
   const caption = active ? (
@@ -171,7 +165,6 @@ function Heading({ active, visible, totalCheckCount, calNames }: HeadingProps) {
   );
 }
 
-/** One line that says how much of the fleet is affected and what to tackle first. */
 function getOverview(visible: Recommendation[], totalCheckCount: number, calNames: string[]) {
   if (visible.length === 0) {
     return undefined;
@@ -208,7 +201,7 @@ interface FindingDispatchProps {
   onDismiss: () => void;
 }
 
-/** Each finding owns its action, so each gets its own component rather than a shared shape with switches. */
+// One component per finding: each owns its own action.
 function Finding({ recommendation, calNames, ...props }: FindingDispatchProps) {
   switch (recommendation.id) {
     case RecommendationId.AlertingGaps:

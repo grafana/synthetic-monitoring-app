@@ -11,22 +11,12 @@ import {
 type AlertPeriod = (typeof ALERT_PERIODS)[number]['value'];
 
 export interface RecommendedAlert {
-  /** The predefined alert this is an instance of, for its display name and unit. */
   definition: PredefinedAlertInterface;
-  /** What will be sent to the API. */
   draft: CheckAlertDraft;
 }
 
-/**
- * The default per-check alerts for a check's type, with the same thresholds the check editor
- * pre-fills, so setting them up from a recommendation ends in the same place as ticking every
- * box in the editor would.
- *
- * Alerts that evaluate over a period need one at least as long as the check's frequency (the
- * editor greys out anything shorter), so the default period is used when it qualifies and the
- * shortest qualifying one otherwise. A check that runs less often than the longest period gets
- * no such alert rather than an invalid one.
- */
+// The editor's defaults, so this ends in the same place as ticking every box there. A period must
+// be at least the check's frequency (the editor greys out shorter ones); none qualifying means no alert.
 export function getRecommendedAlerts(check: Check): RecommendedAlert[] {
   return PREDEFINED_ALERTS[getCheckType(check.settings)].flatMap((definition) => {
     const draft = toDraft(definition, check.frequency);
@@ -57,20 +47,17 @@ function getShortestValidPeriod(frequency: number, preferred?: AlertPeriod): Ale
   return ALERT_PERIODS.map(({ value }) => value).find(isValid);
 }
 
-/** The period as the editor labels it (`5m` → `5 min`), falling back to the raw value. */
+// `5m` → `5 min`, as the editor labels it.
 export function formatAlertPeriod(period: string) {
   return ALERT_PERIODS.find(({ value }) => value === period)?.label ?? period;
 }
 
-/** `300ms`, `30d`, or a bare count for alerts that count occurrences. */
+// `300ms`, `30d`, or a bare count.
 export function formatAlertThreshold({ definition, draft }: RecommendedAlert) {
   return definition.unit === 'no.' ? String(draft.threshold) : `${draft.threshold}${definition.unit}`;
 }
 
-/**
- * Runs `task` over `items` a few at a time. Applying alerts to every unalerted check is one request
- * per check, and the SM API is a single replica, so a large tenant must not fire hundreds at once.
- */
+// One request per check against a single-replica API, so a large tenant must not fire hundreds at once.
 export async function runInBatches<T, R>(
   items: T[],
   batchSize: number,
