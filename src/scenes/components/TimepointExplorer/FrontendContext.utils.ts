@@ -395,6 +395,33 @@ export function buildRealUserActionCountLogQL({ appId, actionName, range }: Real
   return `sum(count_over_time({kind="event", app_id="${appId}"} |= "event_name=faro.user.action" | logfmt | k6_isK6Browser=~"" | action_name="${name}" [${range}]))`;
 }
 
+/**
+ * Real-user failed requests during a named action. Not a join — the same
+ * fetch/XHR event line carries both `action_name` and the HTTP status code
+ * (confirmed live: the view-products sample had both on one record), so this
+ * is exactly buildRealUserHttpErrorsLogQL with the filter swapped from
+ * page_id to action_name.
+ */
+export function buildRealUserActionHttpErrorsLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
+  const name = escapeLogQLString(actionName);
+
+  return `sum(count_over_time({kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" |= "event_data_http.status_code=" | logfmt | k6_isK6Browser=~"" | action_name="${name}" | (event_data_http_status_code >= 400 and event_data_http_status_code < 600) or event_data_http_status_code = 0 [${range}]))`;
+}
+
+/**
+ * Real-user JS exceptions during a named action — unverified whether Faro
+ * actually attaches action_name to exception records (every confirmed
+ * example so far has been on fetch/resource/user.action events, not
+ * exceptions). Low-risk to ship anyway: if the label isn't there, this
+ * matches zero lines and the UI shows nothing, same as any other
+ * fail-silently query here — a nonzero result is its own confirmation.
+ */
+export function buildRealUserActionExceptionsLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
+  const name = escapeLogQLString(actionName);
+
+  return `sum(count_over_time({kind="exception", app_id="${appId}"} | logfmt | k6_isK6Browser=~"" | action_name="${name}" [${range}]))`;
+}
+
 export function buildFaroPageHref({ pluginId, appId, pageId }: { pluginId: string; appId: string; pageId: string }): string {
   return `/a/${encodeURIComponent(pluginId)}/apps/${encodeURIComponent(appId)}/route?var-page_performance_page_id=${encodeURIComponent(pageId)}`;
 }

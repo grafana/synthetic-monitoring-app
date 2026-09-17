@@ -12,6 +12,8 @@ import {
   buildFaroExecutionContextLogQL,
   buildRealUserActionCountLogQL,
   buildRealUserActionDurationLogQL,
+  buildRealUserActionExceptionsLogQL,
+  buildRealUserActionHttpErrorsLogQL,
   buildRealUserExceptionsLogQL,
   buildRealUserHttpErrorsLogQL,
   buildRealUserPageLoadsLogQL,
@@ -169,6 +171,8 @@ export function useRealUserPageBaseline({ appId, pageId, to, enabled = true }: U
 export interface RealUserActionBaseline {
   durationMs: number | null;
   occurrences: number | null;
+  httpErrors: number | null;
+  exceptions: number | null;
 }
 
 interface UseRealUserActionBaselineProps {
@@ -205,6 +209,8 @@ export function useRealUserActionBaseline({ appId, actionName, to, enabled = tru
           queries: [
             { ...instantQuery, refId: 'duration', expr: buildRealUserActionDurationLogQL(queryParams) },
             { ...instantQuery, refId: 'occurrences', expr: buildRealUserActionCountLogQL(queryParams) },
+            { ...instantQuery, refId: 'http-errors', expr: buildRealUserActionHttpErrorsLogQL(queryParams) },
+            { ...instantQuery, refId: 'exceptions', expr: buildRealUserActionExceptionsLogQL(queryParams) },
           ],
           start: to - BASELINE_RANGE_MS,
           end: to,
@@ -213,6 +219,8 @@ export function useRealUserActionBaseline({ appId, actionName, to, enabled = tru
         return {
           durationMs: getInstantValue(results['duration']),
           occurrences: getInstantValue(results['occurrences']),
+          httpErrors: getInstantValue(results['http-errors']),
+          exceptions: getInstantValue(results['exceptions']),
         };
       } catch {
         // Fail silently - the panel simply won't show an action baseline.

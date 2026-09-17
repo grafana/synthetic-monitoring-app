@@ -182,17 +182,26 @@ const ActionRow = ({ appId, action, to }: { appId: string; action: FaroAction; t
   });
 
   return (
-    <Text variant="bodySmall">
-      <span className={cx(styles.mono, styles.actionName)}>{action.actionName}</span>{' '}
-      <Text color={action.errorCount > 0 ? 'error' : 'secondary'} variant="bodySmall">
-        on {action.pageId || 'unknown page'}
-        {action.durationMs !== undefined && ` · ${formatDurationMs(action.durationMs)}`}
-        {baseline?.durationMs != null && ` (real users p75: ${formatDurationMs(baseline.durationMs)})`}
-        {' · '}
-        {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
-        {action.errorCount > 0 && `, ${action.errorCount} failed`}
+    <Stack direction="column" gap={0.25}>
+      <Text variant="bodySmall">
+        <span className={cx(styles.mono, styles.actionName)}>{action.actionName}</span>{' '}
+        <Text color={action.errorCount > 0 ? 'error' : 'secondary'} variant="bodySmall">
+          on {action.pageId || 'unknown page'}
+          {action.durationMs !== undefined && ` · ${formatDurationMs(action.durationMs)}`}
+          {baseline?.durationMs != null && ` (real users p75: ${formatDurationMs(baseline.durationMs)})`}
+          {' · '}
+          {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
+          {action.errorCount > 0 && `, ${action.errorCount} failed`}
+        </Text>
       </Text>
-    </Text>
+      {baseline?.occurrences != null && (
+        <Text color={baseline.httpErrors || baseline.exceptions ? 'error' : 'secondary'} variant="bodySmall">
+          Real users: {baseline.occurrences} occurrence{baseline.occurrences === 1 ? '' : 's'} in the past hour
+          {baseline.httpErrors ? `, ${baseline.httpErrors} failed requests` : ''}
+          {baseline.exceptions ? `, ${baseline.exceptions} JS exceptions` : ''}
+        </Text>
+      )}
+    </Stack>
   );
 };
 
