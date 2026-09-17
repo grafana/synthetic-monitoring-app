@@ -33,7 +33,7 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 }
 
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
-  const { control, getValues } = useFormContext<CheckFormValues>();
+  const { control, getValues, setValue } = useFormContext<CheckFormValues>();
   const id = 'k6-channel-select';
 
   const checkType = getValues('checkType');
@@ -51,15 +51,17 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
     error: channelError,
   } = useFilteredK6Channels(true);
 
-  // Initialize with default channel when no channel is set (new checks or existing checks without channel)
+  // Initialize with default channel when no channel is set (new checks or existing checks without channel).
+  // shouldDirty: false because this is a system default, not a user choice - it shouldn't make a
+  // pristine new check look unsaved (see useHydrateCalLabels for the same pattern).
   useEffect(() => {
     if (!field.value && defaultChannelId && !isLoadingChannels) {
       const defaultChannel = channels.find((channel) => channel.id === defaultChannelId);
       if (defaultChannel) {
-        field.onChange(defaultChannel);
+        setValue('channels.k6', defaultChannel, { shouldDirty: false });
       }
     }
-  }, [field, defaultChannelId, isLoadingChannels, channels]);
+  }, [field.value, defaultChannelId, isLoadingChannels, channels, setValue]);
 
   // Throw error to be caught by QueryErrorBoundary if there's an error
   if (hasChannelError && channelError) {
