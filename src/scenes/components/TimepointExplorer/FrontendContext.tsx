@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Badge, BadgeColor, Icon, LinkButton, Spinner, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx } from '@emotion/css';
 
 import { CheckType } from 'types';
 import { getCheckType } from 'utils';
@@ -86,84 +86,106 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
 
   return (
     <div className={styles.container}>
-      <Stack direction="column" gap={2}>
-        <Stack direction="row" gap={1} alignItems="center" justifyContent="space-between" wrap="wrap">
-          <Stack direction="row" gap={1} alignItems="center">
-            <Icon name="frontend-observability" />
-            <Text variant="h5">Frontend Observability</Text>
-            {context.appName && <Text color="secondary">{context.appName}</Text>}
-            <Tooltip content="What your check's browser session looked like from inside your application, as recorded by the Faro SDK. Faro measures web vitals at a different point than k6 does, so these values can differ slightly from the k6-reported vitals elsewhere on this page.">
-              <Icon name="info-circle" />
-            </Tooltip>
-          </Stack>
-          <Stack direction="row" gap={1} alignItems="center">
-            {context.hasSessionReplay ? (
-              <LinkButton
-                href={sessionHref}
-                icon="play"
-                size="sm"
-                variant="secondary"
-                fill="outline"
-                target="_blank"
-              >
-                Watch session replay
-              </LinkButton>
-            ) : (
-              <Text color="secondary" italic variant="bodySmall">
-                Session replay not available for this run
-              </Text>
-            )}
-          </Stack>
+      <div className={styles.header}>
+        <Stack direction="row" gap={1} alignItems="center">
+          <Icon name="frontend-observability" />
+          <Text variant="h6">Frontend Observability</Text>
+          {context.appName && (
+            <Text color="secondary" variant="bodySmall">
+              <span className={styles.mono}>{context.appName}</span>
+            </Text>
+          )}
+          <Tooltip content="What your check's browser session looked like from inside your application, as recorded by the Faro SDK. Faro measures web vitals at a different point than k6 does, so these values can differ slightly from the k6-reported vitals elsewhere on this page.">
+            <Icon name="info-circle" size="sm" />
+          </Tooltip>
         </Stack>
+        <Stack direction="row" gap={1} alignItems="center">
+          {context.hasSessionReplay ? (
+            <LinkButton href={sessionHref} icon="play" size="sm" variant="secondary" fill="outline" target="_blank">
+              Watch session replay
+            </LinkButton>
+          ) : (
+            <Text color="secondary" italic variant="bodySmall">
+              Session replay not available for this run
+            </Text>
+          )}
+        </Stack>
+      </div>
 
+      <div className={styles.body}>
         <AppVersionLine context={context} from={from} to={to} />
 
-        {context.exceptions.length > 0 && <ExceptionsList context={context} to={to} />}
+        {context.exceptions.length > 0 && (
+          <div className={styles.section}>
+            <ExceptionsList context={context} to={to} />
+          </div>
+        )}
 
-        {context.actions.length > 0 && <ActionsList context={context} />}
+        {context.actions.length > 0 && (
+          <div className={styles.section}>
+            <ActionsList context={context} />
+          </div>
+        )}
 
-        {context.requests.length > 0 && <NetworkRequestsList context={context} />}
+        {context.requests.length > 0 && (
+          <div className={styles.section}>
+            <NetworkRequestsList context={context} />
+          </div>
+        )}
 
-        <Stack direction="column" gap={1}>
-          <Text weight="medium">Pages visited</Text>
-          {context.pages.map((page) => (
-            <PageVisit key={page.pageId} appId={context.appId} page={page} to={to} requests={context.requests} />
-          ))}
-        </Stack>
+        <div className={styles.section}>
+          <Stack direction="column" gap={1}>
+            <Text weight="medium">Pages visited</Text>
+            {context.pages.map((page) => (
+              <PageVisit key={page.pageId} appId={context.appId} page={page} to={to} requests={context.requests} />
+            ))}
+          </Stack>
+        </div>
 
         <SimilarSessions context={context} to={to} />
-      </Stack>
+      </div>
     </div>
   );
 };
 
-const ActionsList = ({ context }: { context: FaroExecutionContext }) => (
-  <Stack direction="column" gap={0.5}>
-    <Stack direction="row" gap={0.5} alignItems="center">
-      <Text weight="medium">Named actions during this run ({context.actions.length})</Text>
-      <Tooltip content="Business-level actions this app tags via Faro's User Actions feature. Each one auto-correlates every network call that happened while it was in progress — a more precise unit than the page it occurred on, and it works the same whether the app uses hard or soft navigation.">
-        <Icon name="info-circle" size="sm" />
-      </Tooltip>
-    </Stack>
-    {context.actions.map((action) => (
-      <ActionRow key={action.actionName} action={action} />
-    ))}
-  </Stack>
-);
+const ActionsList = ({ context }: { context: FaroExecutionContext }) => {
+  const styles = useStyles2(getStyles);
 
-const ActionRow = ({ action }: { action: FaroAction }) => (
-  <Text variant="bodySmall">
-    <Text color={action.errorCount > 0 ? 'error' : undefined} variant="bodySmall">
-      {action.actionName}
-    </Text>{' '}
-    <Text color="secondary" variant="bodySmall">
-      on {action.pageId || 'unknown page'} · {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
-      {action.errorCount > 0 && `, ${action.errorCount} failed`}
+  return (
+    <Stack direction="column" gap={1}>
+      <Stack direction="row" gap={0.5} alignItems="center">
+        <Text weight="medium">Named actions during this run ({context.actions.length})</Text>
+        <Tooltip content="Business-level actions this app tags via Faro's User Actions feature. Each one auto-correlates every network call that happened while it was in progress — a more precise unit than the page it occurred on, and it works the same whether the app uses hard or soft navigation.">
+          <Icon name="info-circle" size="sm" />
+        </Tooltip>
+      </Stack>
+      <Stack direction="column" gap={0.5}>
+        {context.actions.map((action) => (
+          <div key={action.actionName} className={styles.indent}>
+            <ActionRow action={action} />
+          </div>
+        ))}
+      </Stack>
+    </Stack>
+  );
+};
+
+const ActionRow = ({ action }: { action: FaroAction }) => {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <Text variant="bodySmall">
+      <span className={cx(styles.mono, styles.actionName)}>{action.actionName}</span>{' '}
+      <Text color={action.errorCount > 0 ? 'error' : 'secondary'} variant="bodySmall">
+        on {action.pageId || 'unknown page'} · {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
+        {action.errorCount > 0 && `, ${action.errorCount} failed`}
+      </Text>
     </Text>
-  </Text>
-);
+  );
+};
 
 const AppVersionLine = ({ context, from, to }: { context: FaroExecutionContext; from: number; to: number }) => {
+  const styles = useStyles2(getStyles);
   const { data: versionChange } = useAppVersionChange({
     appId: context.appId,
     runVersion: context.appVersion ?? '',
@@ -179,20 +201,26 @@ const AppVersionLine = ({ context, from, to }: { context: FaroExecutionContext; 
 
   if (!versionChange?.previousVersion || !versionChange.firstSeen) {
     return (
-      <Text color="secondary" variant="bodySmall">
-        App version: {versionLabel} — no version change detected in the 6 hours before this run
-      </Text>
+      <div className={styles.section}>
+        <Text color="secondary" variant="bodySmall">
+          App version: <span className={styles.mono}>{versionLabel}</span> — no version change detected in the 6
+          hours before this run
+        </Text>
+      </div>
     );
   }
 
   const minutesBeforeRun = Math.max(0, Math.round((from - versionChange.firstSeen) / 60_000));
 
   return (
-    <Text color="warning" variant="bodySmall" weight="medium">
-      App version: {versionLabel} — first seen {dateTimeFormat(versionChange.firstSeen, { format: 'HH:mm' })}
-      {minutesBeforeRun > 0 && ` (${formatMinutes(minutesBeforeRun)} before this run)`} · previously{' '}
-      {versionChange.previousVersion}
-    </Text>
+    <div className={cx(styles.section, styles.calloutAccent)}>
+      <Text color="warning" variant="bodySmall" weight="medium">
+        App version: <span className={styles.mono}>{versionLabel}</span> — first seen{' '}
+        {dateTimeFormat(versionChange.firstSeen, { format: 'HH:mm' })}
+        {minutesBeforeRun > 0 && ` (${formatMinutes(minutesBeforeRun)} before this run)`} · previously{' '}
+        <span className={styles.mono}>{versionChange.previousVersion}</span>
+      </Text>
+    </div>
   );
 };
 
@@ -279,7 +307,7 @@ const NetworkRequestsList = ({ context }: { context: FaroExecutionContext }) => 
             <Text color="secondary" variant="bodySmall" weight="medium">
               on {pageId || 'unknown page'}
             </Text>
-            <div className={styles.page}>
+            <div className={styles.indent}>
               <Stack direction="column" gap={0.5}>
                 {pageRequests.map((request, index) => (
                   <RequestRow
@@ -392,6 +420,7 @@ const RequestTrace = ({
 const MAX_SIMILAR_SESSIONS = 3;
 
 const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
+  const styles = useStyles2(getStyles);
   const journeyPageIds = context.pages.map((page) => page.pageId);
   const { data: sessions } = useSimilarRealSessions({
     appId: context.appId,
@@ -404,37 +433,43 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
   }
 
   return (
-    <Stack direction="column" gap={0.5}>
-      <Stack direction="row" gap={0.5} alignItems="center">
-        <Text weight="medium">Real user sessions with a similar journey</Text>
-        <Tooltip content="Real user sessions from the hour before this run that loaded the same pages as this check, ranked by how much of the check's journey they cover.">
-          <Icon name="info-circle" size="sm" />
-        </Tooltip>
-      </Stack>
-      {sessions.slice(0, MAX_SIMILAR_SESSIONS).map((session) => (
-        <Stack key={session.sessionId} direction="row" gap={1} alignItems="center">
-          <TextLink
-            href={buildFaroSessionHref({
-              pluginId: FARO_APP_PLUGIN_ID,
-              appId: context.appId,
-              sessionId: session.sessionId,
-            })}
-            inline={false}
-            variant="bodySmall"
-          >
-            {session.sessionId}
-          </TextLink>
-          <Text color="secondary" variant="bodySmall">
-            {session.outcome?.kind === 'completed'
-              ? 'Completed the journey'
-              : session.outcome?.kind === 'stopped-at'
-                ? `Stopped at ${session.outcome.pageId}`
-                : `loaded ${session.matchedPages.length} of ${journeyPageIds.length} pages (${session.matchedPages.join(', ')})`}{' '}
-            · last seen {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
-          </Text>
+    <div className={styles.section}>
+      <Stack direction="column" gap={1}>
+        <Stack direction="row" gap={0.5} alignItems="center">
+          <Text weight="medium">Real user sessions with a similar journey</Text>
+          <Tooltip content="Real user sessions from the hour before this run that loaded the same pages as this check, ranked by how much of the check's journey they cover.">
+            <Icon name="info-circle" size="sm" />
+          </Tooltip>
         </Stack>
-      ))}
-    </Stack>
+        <Stack direction="column" gap={0.5}>
+          {sessions.slice(0, MAX_SIMILAR_SESSIONS).map((session) => (
+            <div key={session.sessionId} className={styles.indent}>
+              <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
+                <TextLink
+                  href={buildFaroSessionHref({
+                    pluginId: FARO_APP_PLUGIN_ID,
+                    appId: context.appId,
+                    sessionId: session.sessionId,
+                  })}
+                  inline={false}
+                  variant="bodySmall"
+                >
+                  <span className={styles.mono}>{session.sessionId}</span>
+                </TextLink>
+                <Text color="secondary" variant="bodySmall">
+                  {session.outcome?.kind === 'completed'
+                    ? 'Completed the journey'
+                    : session.outcome?.kind === 'stopped-at'
+                      ? `Stopped at ${session.outcome.pageId}`
+                      : `loaded ${session.matchedPages.length} of ${journeyPageIds.length} pages (${session.matchedPages.join(', ')})`}{' '}
+                  · last seen {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
+                </Text>
+              </Stack>
+            </div>
+          ))}
+        </Stack>
+      </Stack>
+    </div>
   );
 };
 
@@ -463,7 +498,7 @@ const PageVisit = ({
   const hasOwnRequests = requests.some((request) => request.pageId === page.pageId);
 
   return (
-    <div className={styles.page}>
+    <div className={styles.indent}>
       <Stack direction="column" gap={1}>
         <Stack direction="row" gap={2} alignItems="center" wrap="wrap">
           <TextLink href={pageHref} inline={false}>
@@ -552,12 +587,13 @@ const PageBaseline = ({
 
   if (hasVitals) {
     const verdict = getPageComparisonVerdict(page.vitals, baseline.vitals);
+    const isFidelityFlagged = verdict.rating === 'optimistic' || verdict.rating === 'pessimistic';
 
     return (
-      <Stack direction="column" gap={0.5}>
+      <div className={cx(styles.resultCard, isFidelityFlagged && styles.resultCardFidelity)}>
         <Text
           color={FIDELITY_COLOR[verdict.rating]}
-          variant="bodySmall"
+          variant={verdict.rating === 'optimistic' ? 'body' : 'bodySmall'}
           weight={verdict.rating === 'optimistic' ? 'medium' : undefined}
           italic={verdict.rating === 'insufficient-data'}
         >
@@ -625,13 +661,13 @@ const PageBaseline = ({
             })}
           </tbody>
         </table>
-      </Stack>
+      </div>
     );
   }
 
   if (runLatencyMs !== null || hasRealUserLatency) {
     return (
-      <Stack direction="column" gap={0.5}>
+      <div className={styles.resultCard}>
         <Text color="secondary" variant="bodySmall" italic>
           No web vitals recorded for {page.pageId} — comparing request latency instead. TTFB/FCP/LCP are tied to
           the initial document load; this app doesn&apos;t re-measure them on this page&apos;s navigation.
@@ -673,7 +709,7 @@ const PageBaseline = ({
             </tr>
           </tbody>
         </table>
-      </Stack>
+      </div>
     );
   }
 
@@ -707,11 +743,66 @@ const getStyles = (theme: GrafanaTheme2) => ({
   container: css`
     border: 1px solid ${theme.colors.border.medium};
     border-radius: ${theme.shape.radius.default};
+    overflow: hidden;
+  `,
+  header: css`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: ${theme.spacing(1)};
+    padding: ${theme.spacing(1.5, 2)};
+    background: ${theme.colors.background.secondary};
+    border-bottom: 1px solid ${theme.colors.border.medium};
+  `,
+  body: css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(2)};
     padding: ${theme.spacing(2)};
   `,
-  page: css`
+  // A section is a direct child of .body; the CSS-only "no border on the
+  // first one" rule works regardless of which optional sections rendered,
+  // since removed ones simply aren't in the DOM to be :first-child.
+  section: css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(1)};
+    padding-top: ${theme.spacing(2)};
+    border-top: 1px solid ${theme.colors.border.weak};
+
+    &:first-child {
+      padding-top: 0;
+      border-top: none;
+    }
+  `,
+  calloutAccent: css`
+    border-left: 3px solid ${theme.colors.warning.border};
+    padding-left: ${theme.spacing(1.5)};
+    margin-left: -${theme.spacing(1.5)};
+  `,
+  mono: css`
+    font-family: ${theme.typography.fontFamilyMonospace};
+  `,
+  actionName: css`
+    color: ${theme.colors.text.primary};
+    font-weight: ${theme.typography.fontWeightMedium};
+  `,
+  indent: css`
     border-left: 2px solid ${theme.colors.border.medium};
-    padding-left: ${theme.spacing(1)};
+    padding-left: ${theme.spacing(1.5)};
+  `,
+  resultCard: css`
+    background: ${theme.colors.background.secondary};
+    border-radius: ${theme.shape.radius.default};
+    border-left: 3px solid ${theme.colors.border.medium};
+    padding: ${theme.spacing(1.5)};
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(1)};
+  `,
+  resultCardFidelity: css`
+    border-left-color: ${theme.colors.info.border};
   `,
   comparisonTable: css`
     border-collapse: collapse;
