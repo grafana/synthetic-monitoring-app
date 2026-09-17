@@ -145,3 +145,37 @@ describe('Reliability Inbox model', () => {
     expect(isInitialReviewCandidate({ ...HTTP_RELIABILITY_SUGGESTION, confidence: 'low' })).toBe(false);
   });
 });
+
+describe('ownership hint', () => {
+  const hintFor = (namespace?: string, ownerLabels?: Record<string, string>) =>
+    toReliabilityOpportunity({ ...HTTP_RELIABILITY_SUGGESTION, namespace, ownerLabels }).ownerHint;
+
+  // The scrape job name is a real owner hint where it is not derived from the
+  // namespace — a plain Prometheus setup labels it "payments-api".
+  it('includes job when it names something not already shown', () => {
+    expect(hintFor('checkout', { service: 'cart', job: 'payments-api' })).toBe(
+      'namespace: checkout · service: cart · job: payments-api'
+    );
+  });
+
+  // kube-prometheus renders job as "<namespace>/<service>", so printing it
+  // only repeats the two values beside it. Observed on dev as
+  // "ingress-nginx/ingress-nginx-controller" on every ingress-derived host.
+  it.each([
+    { job: 'checkout/cart', why: 'namespace and service' },
+    { job: 'checkout/anything', why: 'the namespace' },
+    { job: 'other/cart', why: 'the service' },
+  ])('omits job when it restates $why', ({ job }) => {
+    expect(hintFor('checkout', { service: 'cart', job })).toBe('namespace: checkout · service: cart');
+  });
+
+  it('keeps the service-labels order of the suggestions payload', () => {
+    expect(hintFor('checkout', { cluster: 'dev-us-east-0', team: 'payments', service: 'cart' })).toBe(
+      'namespace: checkout · team: payments · service: cart · cluster: dev-us-east-0'
+    );
+  });
+
+  it('has no hint at all when the telemetry carried no attribution', () => {
+    expect(hintFor(undefined, undefined)).toBeUndefined();
+  });
+});

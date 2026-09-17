@@ -43,14 +43,31 @@ export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>
 function formatOwnerHint(namespace?: string, ownerLabels?: Record<string, string>) {
   const labelled: Array<[string, string]> = namespace ? [['namespace', namespace]] : [];
 
-  for (const label of ['team', 'owner', 'service', 'app', 'ingress', 'cluster']) {
+  // Same order as the service's contextLabels, so the row reads the same as
+  // the payload it came from.
+  for (const label of ['team', 'owner', 'service', 'app', 'ingress', 'job', 'cluster']) {
     const value = ownerLabels?.[label];
-    if (value) {
-      labelled.push([label, value]);
+    if (!value || (label === 'job' && restatesAShownValue(value, namespace, ownerLabels?.service))) {
+      continue;
     }
+
+    labelled.push([label, value]);
   }
 
   return labelled.length > 0 ? labelled.map(([label, value]) => `${label}: ${value}`).join(' · ') : undefined;
+}
+
+/**
+ * kube-prometheus renders `job` as "<namespace>/<service>", which only repeats
+ * what is printed beside it — on dev every ingress-derived host reported
+ * job="ingress-nginx/ingress-nginx-controller", identical across all of them.
+ *
+ * A plain Prometheus setup instead uses the scrape job name ("payments-api"),
+ * which IS a useful owner hint, so the label is shown by default and dropped
+ * only when it restates a value already on screen.
+ */
+function restatesAShownValue(job: string, namespace?: string, service?: string) {
+  return [namespace, service].some((shown) => !!shown && job.includes(shown));
 }
 
 /** The namespaces present in the loaded suggestions, for the filter's options. */
