@@ -88,6 +88,21 @@ function getDefaultProbeId(probes: ProbeWithMetadata[], checkType: CheckType) {
   return defaultProbe?.id;
 }
 
+// Picked once per checkType and then left alone: probes refetch every 10s, and re-deriving
+// this from live online status on every poll would silently swap the preselected probe out
+// from under the user while they're still filling in the form.
+function useDefaultProbeId(probesWithMetadata: ProbeWithMetadata[], checkType: CheckType) {
+  const lockedRef = useRef<{ checkType: CheckType; probeId: number | undefined }>();
+
+  if (!lockedRef.current || lockedRef.current.checkType !== checkType) {
+    lockedRef.current = { checkType, probeId: getDefaultProbeId(probesWithMetadata, checkType) };
+  } else if (lockedRef.current.probeId === undefined) {
+    lockedRef.current.probeId = getDefaultProbeId(probesWithMetadata, checkType);
+  }
+
+  return lockedRef.current.probeId;
+}
+
 function useFormValuesMeta(
   checkType: CheckType,
   check: Check | undefined,
@@ -96,11 +111,7 @@ function useFormValuesMeta(
   requiresFolder = false
 ) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
-  // Separate from probeCompatibilityKey: online status changes without id/k6Versions changing.
-  const defaultProbeId = useMemo(
-    () => getDefaultProbeId(probesWithMetadata, checkType),
-    [probesWithMetadata, checkType]
-  );
+  const defaultProbeId = useDefaultProbeId(probesWithMetadata, checkType);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
