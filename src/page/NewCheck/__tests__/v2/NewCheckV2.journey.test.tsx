@@ -191,8 +191,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     const { user } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['probes'] });
-    // New checks start with a default probe preselected, so exercising the "no probes
-    // selected" validation error requires explicitly clearing it first.
+    // Clear the default-preselected probe to hit the "no probes" error.
     await gotoSection(user, FormSectionName.Execution);
     await deselectAllProbes(user);
     await submitForm(user);

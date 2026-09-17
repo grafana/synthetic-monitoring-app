@@ -96,9 +96,7 @@ function useFormValuesMeta(
   requiresFolder = false
 ) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
-  // Computed separately from the schema/formValues memo below: online/public/deprecated
-  // can change (probes poll every 10s) without id/k6Versions changing, so this needs its
-  // own, more sensitive dependency (the probesWithMetadata reference) to stay fresh.
+  // Separate from probeCompatibilityKey: online status changes without id/k6Versions changing.
   const defaultProbeId = useMemo(
     () => getDefaultProbeId(probesWithMetadata, checkType),
     [probesWithMetadata, checkType]
@@ -113,8 +111,7 @@ function useFormValuesMeta(
       formValues.folderUid = defaultFolderUid;
     }
 
-    // New checks start with a single cheap default probe rather than none (which fails
-    // validation) or all of them (which multiplies execution cost by the probe count).
+    // One default probe, not none (invalid) or all of them (expensive).
     if (!formValues.probes.length && defaultProbeId !== undefined) {
       formValues.probes = [defaultProbeId];
     }

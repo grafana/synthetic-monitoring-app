@@ -26,9 +26,8 @@ export async function submitForm(user: UserEvent) {
   await user.click(submitButton);
 }
 
-// New checks come with a default probe preselected, so tests that want a specific probe
-// selected need to also unselect whatever the default preselected, rather than assuming
-// every probe checkbox starts unchecked.
+// Checks don't start with an empty probe list anymore, so this asserts the end state
+// (only `name` checked) instead of assuming every checkbox starts unchecked.
 export async function selectOnlyProbe(user: UserEvent, name: string | RegExp) {
   const target = await screen.findByRole('checkbox', { name });
   const probeCheckboxes = screen.getAllByTestId(CHECKSTER_TEST_ID.form.inputs.probeCheckbox);
