@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useMutation, useQuery, UseQueryResult } from '@tanstack/react-query';
-import { getBackendSrv } from '@grafana/runtime';
+import { config, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { FeatureName, GrafanaFolder } from 'types';
@@ -24,6 +24,7 @@ export interface MoveFolderPayload {
 export const folderQueryKeys = {
   all: ['folders'] as const,
   children: (parentUid: string) => [...folderQueryKeys.all, 'children', parentUid] as const,
+  sharedWithMe: (uid: string) => [...folderQueryKeys.all, 'sharedWithMe', uid] as const,
 };
 
 const FOLDERS_API = '/api/folders';
@@ -83,6 +84,37 @@ export function useFolderChildren(parentUid: string | undefined): UseQueryResult
     refetchOnWindowFocus: false,
     enabled: Boolean(parentUid),
   });
+}
+
+interface SearchResponse {
+  totalHits: number;
+}
+
+// The real folder picker resolves "Shared with me" through this search API, not GET /api/folders.
+function searchSharedWithMe(sharedWithMeUid: string) {
+  return firstValueFrom(
+    getBackendSrv().fetch<SearchResponse>({
+      method: 'GET',
+      url: `/apis/dashboard.grafana.app/v0alpha1/namespaces/${config.namespace}/search`,
+      params: { type: 'folder', folder: sharedWithMeUid, permission: 'edit' },
+      showErrorAlert: false,
+    })
+  ).then((res) => res.data);
+}
+
+// Excludes "Shared with me" from the picker, but only once confirmed empty for this user.
+export function useSharedWithMeExcludeUIDs(): string[] {
+  const sharedWithMeUid = config.sharedWithMeFolderUID;
+
+  const { data } = useQuery({
+    queryKey: folderQueryKeys.sharedWithMe(sharedWithMeUid ?? ''),
+    queryFn: () => searchSharedWithMe(sharedWithMeUid!),
+    staleTime: FOLDERS_STALE_TIME,
+    refetchOnWindowFocus: false,
+    enabled: Boolean(sharedWithMeUid && config.namespace),
+  });
+
+  return sharedWithMeUid && data?.totalHits === 0 ? [sharedWithMeUid] : [];
 }
 
 export interface FolderWithDepth {

@@ -4,7 +4,7 @@ import { Alert, Button, Field, Modal, Text } from '@grafana/ui';
 
 import { GrafanaFolder } from 'types';
 import { useUserPermissions } from 'data/permissions';
-import { useAllFolders, useMoveFolder } from 'data/useFolders';
+import { useAllFolders, useMoveFolder, useSharedWithMeExcludeUIDs } from 'data/useFolders';
 import { getFetchErrorMessage } from 'data/utils';
 
 interface MoveFolderModalProps {
@@ -23,6 +23,7 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
   const { canCreateFolders } = useUserPermissions();
   const { mutateAsync: moveFolder, isPending } = useMoveFolder();
   const [error, setError] = useState<string | null>(null);
+  const sharedWithMeExcludeUIDs = useSharedWithMeExcludeUIDs();
 
   // Exclude the folder itself and its known descendants. The current parent
   // stays visible (hiding it made users think their target folder was
@@ -31,7 +32,7 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
   // Grafana rejects circular moves server-side and the error is surfaced
   // below.
   const excludeUIDs = useMemo(() => {
-    const excluded = new Set<string>([folder.uid]);
+    const excluded = new Set<string>([folder.uid, ...sharedWithMeExcludeUIDs]);
 
     const isDescendantOfMoved = (candidate: GrafanaFolder): boolean => {
       let current: GrafanaFolder | undefined = candidate;
@@ -53,7 +54,7 @@ export function MoveFolderModal({ folder, onDismiss }: MoveFolderModalProps) {
     });
 
     return [...excluded];
-  }, [folder.uid, foldersMap]);
+  }, [folder.uid, foldersMap, sharedWithMeExcludeUIDs]);
 
   // No destination is preselected: moving a folder is deliberate, so the
   // user must pick one explicitly before Move enables ('' means the Grafana

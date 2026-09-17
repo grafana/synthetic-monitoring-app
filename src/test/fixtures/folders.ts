@@ -107,6 +107,29 @@ export const FOLDER_EXTERNAL: GrafanaFolder = {
   canSave: true,
 };
 
+// Grafana core's virtual "Shared with me" pseudo-folder (config.sharedWithMeFolderUID).
+export const FOLDER_SHARED_WITH_ME: GrafanaFolder = {
+  uid: 'sharedwithme',
+  title: 'Shared with me',
+  url: '/dashboards/shared-with-me',
+  canEdit: true,
+  canDelete: false,
+  canAdmin: false,
+  canSave: true,
+};
+
+// A real folder directly shared with the user; it only appears nested under FOLDER_SHARED_WITH_ME.
+export const FOLDER_SHARED_DIRECTLY: GrafanaFolder = {
+  uid: 'folder-shared-directly',
+  title: 'Someone Elses Folder',
+  url: '/dashboards/f/folder-shared-directly/someone-elses-folder',
+  parentUid: FOLDER_SHARED_WITH_ME.uid,
+  canEdit: true,
+  canDelete: false,
+  canAdmin: false,
+  canSave: true,
+};
+
 export const MOCK_FOLDERS: GrafanaFolder[] = [
   DEFAULT_FOLDER,
   FOLDER_PRODUCTION,

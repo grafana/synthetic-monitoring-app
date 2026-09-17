@@ -3,13 +3,14 @@ import {
   FOLDER_FORBIDDEN_UID,
   FOLDER_ROOT,
   FOLDER_ROOT_CHILD,
+  FOLDER_SHARED_WITH_ME,
   MOCK_FOLDERS,
 } from 'test/fixtures/folders';
 
 import { ApiEntry } from './types';
 import { GrafanaFolder } from 'types';
 
-const LISTABLE_FOLDERS = [...MOCK_FOLDERS, FOLDER_ROOT, FOLDER_ROOT_CHILD];
+const LISTABLE_FOLDERS = [...MOCK_FOLDERS, FOLDER_ROOT, FOLDER_ROOT_CHILD, FOLDER_SHARED_WITH_ME];
 
 /**
  * GET /api/folders — list endpoint.
@@ -87,6 +88,29 @@ export const createFolder: ApiEntry<GrafanaFolder> = {
     };
 
     return { status: 200, json: newFolder };
+  },
+};
+
+export interface SearchHit {
+  resource: string;
+  name: string;
+  title: string;
+}
+
+// GET .../search — only simulates the folder=sharedwithme case; empty otherwise.
+export const searchFolders: ApiEntry<{ totalHits: number; hits: SearchHit[] }> = {
+  route: /\/search$/,
+  method: `get`,
+  result: async (req: Request) => {
+    const url = new URL(req.url);
+    if (url.searchParams.get('folder') !== FOLDER_SHARED_WITH_ME.uid || url.searchParams.get('type') !== 'folder') {
+      return { json: { totalHits: 0, hits: [] } };
+    }
+
+    const children = LISTABLE_FOLDERS.filter((f) => f.parentUid === FOLDER_SHARED_WITH_ME.uid);
+    const hits = children.map((f) => ({ resource: 'folders', name: f.uid, title: f.title }));
+
+    return { json: { totalHits: hits.length, hits } };
   },
 };
 

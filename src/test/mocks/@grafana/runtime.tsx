@@ -4,6 +4,7 @@ import { BackendSrvRequest } from '@grafana/runtime';
 import axios from 'axios';
 import { from } from 'rxjs';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
+import { FOLDER_SHARED_WITH_ME } from 'test/fixtures/folders';
 import { FULL_ADMIN_ACCESS } from 'test/fixtures/rbacPermissions';
 
 import { SMDataSource } from 'datasource/DataSource';
@@ -233,6 +234,8 @@ jest.mock('@grafana/runtime', () => {
       bootData: {
         user: { ...actual.config.user, orgRole: OrgRole.Admin, permissions: FULL_ADMIN_ACCESS },
       },
+      sharedWithMeFolderUID: FOLDER_SHARED_WITH_ME.uid,
+      namespace: 'test-namespace',
     },
     getBackendSrv: () => ({
       datasourceRequest: axios.request,
