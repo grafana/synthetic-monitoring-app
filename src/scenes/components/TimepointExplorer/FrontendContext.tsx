@@ -12,6 +12,7 @@ import { fetchTraceData } from 'scenes/components/LogsRenderer/LogLine.utils';
 import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
 import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import {
+  RealUserPageBaseline,
   useAppVersionChange,
   useExceptionRealSessions,
   useFaroExecutionContext,
@@ -20,11 +21,14 @@ import {
 } from 'scenes/components/TimepointExplorer/FrontendContext.hooks';
 import {
   buildFaroPageHref,
+  FaroAction,
   FaroExecutionContext,
   FaroHttpRequest,
   FaroPageVisit,
+  FidelityRating,
   formatWebVitalDelta,
   formatWebVitalValue,
+  getMedianRequestDuration,
   getPageComparisonVerdict,
   getRequestPath,
   rateWebVital,
@@ -116,12 +120,14 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
 
         {context.exceptions.length > 0 && <ExceptionsList context={context} to={to} />}
 
+        {context.actions.length > 0 && <ActionsList context={context} />}
+
         {context.requests.length > 0 && <NetworkRequestsList context={context} />}
 
         <Stack direction="column" gap={1}>
           <Text weight="medium">Pages visited</Text>
           {context.pages.map((page) => (
-            <PageVisit key={page.pageId} appId={context.appId} page={page} to={to} />
+            <PageVisit key={page.pageId} appId={context.appId} page={page} to={to} requests={context.requests} />
           ))}
         </Stack>
 
@@ -130,6 +136,32 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
     </div>
   );
 };
+
+const ActionsList = ({ context }: { context: FaroExecutionContext }) => (
+  <Stack direction="column" gap={0.5}>
+    <Stack direction="row" gap={0.5} alignItems="center">
+      <Text weight="medium">Named actions during this run ({context.actions.length})</Text>
+      <Tooltip content="Business-level actions this app tags via Faro's User Actions feature. Each one auto-correlates every network call that happened while it was in progress — a more precise unit than the page it occurred on, and it works the same whether the app uses hard or soft navigation.">
+        <Icon name="info-circle" size="sm" />
+      </Tooltip>
+    </Stack>
+    {context.actions.map((action) => (
+      <ActionRow key={action.actionName} action={action} />
+    ))}
+  </Stack>
+);
+
+const ActionRow = ({ action }: { action: FaroAction }) => (
+  <Text variant="bodySmall">
+    <Text color={action.errorCount > 0 ? 'error' : undefined} variant="bodySmall">
+      {action.actionName}
+    </Text>{' '}
+    <Text color="secondary" variant="bodySmall">
+      on {action.pageId || 'unknown page'} · {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
+      {action.errorCount > 0 && `, ${action.errorCount} failed`}
+    </Text>
+  </Text>
+);
 
 const AppVersionLine = ({ context, from, to }: { context: FaroExecutionContext; from: number; to: number }) => {
   const { data: versionChange } = useAppVersionChange({
@@ -393,8 +425,12 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
             {session.sessionId}
           </TextLink>
           <Text color="secondary" variant="bodySmall">
-            loaded {session.matchedPages.length} of {journeyPageIds.length} pages (
-            {session.matchedPages.join(', ')}) · last seen {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
+            {session.outcome?.kind === 'completed'
+              ? 'Completed the journey'
+              : session.outcome?.kind === 'stopped-at'
+                ? `Stopped at ${session.outcome.pageId}`
+                : `loaded ${session.matchedPages.length} of ${journeyPageIds.length} pages (${session.matchedPages.join(', ')})`}{' '}
+            · last seen {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
           </Text>
         </Stack>
       ))}
@@ -402,11 +438,29 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
   );
 };
 
-const PageVisit = ({ appId, page, to }: { appId: string; page: FaroPageVisit; to: number }) => {
+const FIDELITY_COLOR: Record<FidelityRating, 'info' | 'secondary'> = {
+  representative: 'secondary',
+  optimistic: 'info',
+  pessimistic: 'info',
+  'insufficient-data': 'secondary',
+};
+
+const PageVisit = ({
+  appId,
+  page,
+  to,
+  requests,
+}: {
+  appId: string;
+  page: FaroPageVisit;
+  to: number;
+  requests: FaroHttpRequest[];
+}) => {
   const styles = useStyles2(getStyles);
   const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const pageHref = buildFaroPageHref({ pluginId: FARO_APP_PLUGIN_ID, appId, pageId: page.pageId });
   const hasVitals = WEB_VITALS.some((vital) => page.vitals[vital] !== undefined);
+  const hasOwnRequests = requests.some((request) => request.pageId === page.pageId);
 
   return (
     <div className={styles.page}>
@@ -432,8 +486,13 @@ const PageVisit = ({ appId, page, to }: { appId: string; page: FaroPageVisit; to
                 />
               );
             })}
+            {!hasVitals && (
+              <Text color="secondary" italic variant="bodySmall">
+                no web vitals for this page
+              </Text>
+            )}
           </Stack>
-          {hasVitals && (
+          {(hasVitals || hasOwnRequests) && (
             <PlainButton onClick={() => setIsComparisonOpen(!isComparisonOpen)}>
               <Text color="link" variant="bodySmall">
                 <Icon name={isComparisonOpen ? 'angle-up' : 'angle-down'} size="sm" /> Compare with real users
@@ -441,25 +500,49 @@ const PageVisit = ({ appId, page, to }: { appId: string; page: FaroPageVisit; to
             </PlainButton>
           )}
         </Stack>
-        {isComparisonOpen && <PageBaseline appId={appId} page={page} to={to} />}
+        {isComparisonOpen && <PageBaseline appId={appId} page={page} to={to} requests={requests} />}
       </Stack>
     </div>
   );
 };
 
-const PageBaseline = ({ appId, page, to }: { appId: string; page: FaroPageVisit; to: number }) => {
+const RealUserSummaryLine = ({ pageId, baseline }: { pageId: string; baseline: RealUserPageBaseline }) => (
+  <Text color="secondary" variant="bodySmall">
+    Real users on {pageId} in the hour before this run
+    {baseline.pageLoads !== null && `: ${baseline.pageLoads} page ${baseline.pageLoads === 1 ? 'load' : 'loads'}`}
+    {baseline.exceptions !== null && `, ${baseline.exceptions} JS exceptions`}
+    {baseline.httpErrors !== null && `, ${baseline.httpErrors} failed requests`}
+  </Text>
+);
+
+const PageBaseline = ({
+  appId,
+  page,
+  to,
+  requests,
+}: {
+  appId: string;
+  page: FaroPageVisit;
+  to: number;
+  requests: FaroHttpRequest[];
+}) => {
   const styles = useStyles2(getStyles);
   const { data: baseline, isLoading } = useRealUserPageBaseline({
     appId,
     pageId: page.pageId,
     to,
   });
+  const hasVitals = WEB_VITALS.some((vital) => page.vitals[vital] !== undefined);
+  const runLatencyMs = getMedianRequestDuration(requests, page.pageId);
 
   if (isLoading) {
     return <Spinner />;
   }
 
-  if (!baseline || baseline.pageLoads === null || baseline.pageLoads === 0) {
+  const hasRealUserVitals = Boolean(baseline?.pageLoads);
+  const hasRealUserLatency = baseline?.requestLatencyMs !== null && baseline?.requestLatencyMs !== undefined;
+
+  if (!baseline || (!hasRealUserVitals && !hasRealUserLatency)) {
     return (
       <Text color="secondary" italic variant="bodySmall">
         No real user traffic on {page.pageId} in the hour before this run.
@@ -467,86 +550,137 @@ const PageBaseline = ({ appId, page, to }: { appId: string; page: FaroPageVisit;
     );
   }
 
-  const verdict = getPageComparisonVerdict(page.vitals, baseline.vitals);
+  if (hasVitals) {
+    const verdict = getPageComparisonVerdict(page.vitals, baseline.vitals);
 
-  return (
-    <Stack direction="column" gap={0.5}>
-      {verdict && (
-        <Text color={verdict.tone} variant="bodySmall" weight="medium">
+    return (
+      <Stack direction="column" gap={0.5}>
+        <Text
+          color={FIDELITY_COLOR[verdict.rating]}
+          variant="bodySmall"
+          weight={verdict.rating === 'optimistic' ? 'medium' : undefined}
+          italic={verdict.rating === 'insufficient-data'}
+        >
           {verdict.text}
         </Text>
-      )}
-      <Text color="secondary" variant="bodySmall">
-        Real users on {page.pageId} in the hour before this run: {baseline.pageLoads} page{' '}
-        {baseline.pageLoads === 1 ? 'load' : 'loads'}
-        {baseline.exceptions !== null && `, ${baseline.exceptions} JS exceptions`}
-        {baseline.httpErrors !== null && `, ${baseline.httpErrors} failed requests`}
-      </Text>
-      <table className={styles.comparisonTable}>
-        <thead>
-          <tr>
-            <th>
-              <Text variant="bodySmall" color="secondary">
-                Web vital
-              </Text>
-            </th>
-            <th>
-              <Text variant="bodySmall" color="secondary">
-                This run
-              </Text>
-            </th>
-            <th>
-              <Text variant="bodySmall" color="secondary">
-                Real users (p75)
-              </Text>
-            </th>
-            <th>
-              <Text variant="bodySmall" color="secondary">
-                Difference
-              </Text>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {WEB_VITALS.map((vital) => {
-            const runValue = page.vitals[vital];
-            const baselineValue = baseline.vitals[vital];
+        <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
+        <table className={styles.comparisonTable}>
+          <thead>
+            <tr>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  Web vital
+                </Text>
+              </th>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  This run
+                </Text>
+              </th>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  Real users (p75)
+                </Text>
+              </th>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  Difference
+                </Text>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {WEB_VITALS.map((vital) => {
+              const runValue = page.vitals[vital];
+              const baselineValue = baseline.vitals[vital];
 
-            if (runValue === undefined && baselineValue === undefined) {
-              return null;
-            }
+              if (runValue === undefined && baselineValue === undefined) {
+                return null;
+              }
 
-            return (
-              <tr key={vital}>
-                <td>
-                  <Text variant="bodySmall">{WEB_VITAL_LABELS[vital]}</Text>
-                </td>
-                <td>
-                  <ComparisonValue vital={vital} value={runValue} />
-                </td>
-                <td>
-                  <ComparisonValue vital={vital} value={baselineValue} />
-                </td>
-                <td>
-                  {runValue !== undefined && baselineValue !== undefined ? (
-                    <Text
-                      variant="bodySmall"
-                      color={runValue > baselineValue * 1.5 ? 'warning' : 'secondary'}
-                    >
-                      {formatWebVitalDelta(vital, runValue, baselineValue)}
-                    </Text>
-                  ) : (
-                    <Text variant="bodySmall" color="secondary">
-                      -
-                    </Text>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </Stack>
+              return (
+                <tr key={vital}>
+                  <td>
+                    <Text variant="bodySmall">{WEB_VITAL_LABELS[vital]}</Text>
+                  </td>
+                  <td>
+                    <ComparisonValue vital={vital} value={runValue} />
+                  </td>
+                  <td>
+                    <ComparisonValue vital={vital} value={baselineValue} />
+                  </td>
+                  <td>
+                    {runValue !== undefined && baselineValue !== undefined ? (
+                      <Text variant="bodySmall" color={runValue > baselineValue * 1.5 ? 'warning' : 'secondary'}>
+                        {formatWebVitalDelta(vital, runValue, baselineValue)}
+                      </Text>
+                    ) : (
+                      <Text variant="bodySmall" color="secondary">
+                        -
+                      </Text>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </Stack>
+    );
+  }
+
+  if (runLatencyMs !== null || hasRealUserLatency) {
+    return (
+      <Stack direction="column" gap={0.5}>
+        <Text color="secondary" variant="bodySmall" italic>
+          No web vitals recorded for {page.pageId} — comparing request latency instead. TTFB/FCP/LCP are tied to
+          the initial document load; this app doesn&apos;t re-measure them on this page&apos;s navigation.
+        </Text>
+        <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
+        <table className={styles.comparisonTable}>
+          <thead>
+            <tr>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  Metric
+                </Text>
+              </th>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  This run
+                </Text>
+              </th>
+              <th>
+                <Text variant="bodySmall" color="secondary">
+                  Real users (p75)
+                </Text>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <Text variant="bodySmall">Request latency</Text>
+              </td>
+              <td>
+                <Text variant="bodySmall">{runLatencyMs !== null ? `${Math.round(runLatencyMs)} ms` : '-'}</Text>
+              </td>
+              <td>
+                <Text variant="bodySmall">
+                  {baseline.requestLatencyMs !== null ? `${Math.round(baseline.requestLatencyMs)} ms` : '-'}
+                </Text>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </Stack>
+    );
+  }
+
+  return (
+    <Text color="secondary" italic variant="bodySmall">
+      No comparable real-user data for {page.pageId}.
+    </Text>
   );
 };
 

@@ -13,6 +13,7 @@ import {
   buildRealUserExceptionsLogQL,
   buildRealUserHttpErrorsLogQL,
   buildRealUserPageLoadsLogQL,
+  buildRealUserRequestLatencyLogQL,
   buildRealUserVitalP75LogQL,
   buildSimilarSessionsLogQL,
   FaroExecutionContext,
@@ -75,6 +76,10 @@ export interface RealUserPageBaseline {
   pageLoads: number | null;
   exceptions: number | null;
   httpErrors: number | null;
+  // p75 request latency in ms — the fallback comparison for pages where web
+  // vitals don't exist (soft-navigated pages on some apps never get a fresh
+  // FCP/TTFB measurement, confirmed live).
+  requestLatencyMs: number | null;
 }
 
 // How far back we look for the real-user baseline, ending at the execution's
@@ -122,6 +127,7 @@ export function useRealUserPageBaseline({ appId, pageId, to, enabled = true }: U
             { ...instantQuery, refId: 'page-loads', expr: buildRealUserPageLoadsLogQL(queryParams) },
             { ...instantQuery, refId: 'exceptions', expr: buildRealUserExceptionsLogQL(queryParams) },
             { ...instantQuery, refId: 'http-errors', expr: buildRealUserHttpErrorsLogQL(queryParams) },
+            { ...instantQuery, refId: 'request-latency', expr: buildRealUserRequestLatencyLogQL(queryParams) },
           ],
           start: to - BASELINE_RANGE_MS,
           end: to,
@@ -137,11 +143,14 @@ export function useRealUserPageBaseline({ appId, pageId, to, enabled = true }: U
           }
         });
 
+        const requestLatencyNs = getInstantValue(results['request-latency']);
+
         return {
           vitals,
           pageLoads: getInstantValue(results['page-loads']),
           exceptions: getInstantValue(results['exceptions']),
           httpErrors: getInstantValue(results['http-errors']),
+          requestLatencyMs: requestLatencyNs !== null ? requestLatencyNs / 1_000_000 : null,
         };
       } catch {
         // Fail silently - the panel simply won't show a baseline.
@@ -335,7 +344,7 @@ export function useSimilarRealSessions({ appId, pageIds, to, enabled = true }: U
   });
 }
 
-function getInstantValue(frames?: DataFrame[]): number | null {
+export function getInstantValue(frames?: DataFrame[]): number | null {
   const field = frames?.[0]?.fields.find((f) => f.type === FieldType.number);
   const value = field?.values[field.values.length - 1];
 

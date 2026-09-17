@@ -76,6 +76,14 @@ export interface FaroHttpRequest {
   timestamp: number;
 }
 
+export interface FaroAction {
+  actionName: string;
+  pageId: string;
+  requestCount: number;
+  errorCount: number;
+  timestamp: number;
+}
+
 export interface FaroExecutionContext {
   appId: string;
   appName?: string;
@@ -85,6 +93,7 @@ export interface FaroExecutionContext {
   pages: FaroPageVisit[];
   exceptions: FaroException[];
   requests: FaroHttpRequest[];
+  actions: FaroAction[];
   hasSessionReplay: boolean;
 }
 
@@ -123,6 +132,7 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
   const pages = new Map<string, FaroPageVisit>();
   const exceptions: FaroException[] = [];
   const requests: FaroHttpRequest[] = [];
+  const actions = new Map<string, FaroAction>();
   let appName: string | undefined;
   let appVersion: string | undefined;
   let appEnvironment: string | undefined;
@@ -170,18 +180,45 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
       // `| logfmt` folds `event_data_http.status_code` into underscores
       const statusCode = Number(labels.event_data_http_status_code);
       const durationNs = Number(labels.event_data_duration_ns);
+      const isError = !Number.isNaN(statusCode) && isHttpErrorStatus(statusCode);
 
       if (!Number.isNaN(statusCode)) {
         requests.push({
           method: labels.event_data_http_method ?? 'GET',
           url: labels.event_data_http_url ?? '',
           statusCode,
-          isError: isHttpErrorStatus(statusCode),
+          isError,
           durationMs: !Number.isNaN(durationNs) ? durationNs / 1_000_000 : undefined,
           pageId,
           traceId: labels.traceID,
           timestamp: record.timestamp,
         });
+      }
+
+      // Faro's User Actions feature (action_name/action_parent_id) attaches
+      // as attribution metadata on existing telemetry rather than its own
+      // record kind — confirmed live, attached to exactly this event type.
+      // It auto-correlates every request that happened while a named,
+      // business-level action was in progress, which is a much better unit
+      // than page_id for step-level detail on apps with soft navigation.
+      const actionName = labels.action_name;
+
+      if (actionName) {
+        const existing = actions.get(actionName);
+
+        if (existing) {
+          existing.requestCount += 1;
+          existing.errorCount += isError ? 1 : 0;
+          existing.timestamp = Math.min(existing.timestamp, record.timestamp);
+        } else {
+          actions.set(actionName, {
+            actionName,
+            pageId,
+            requestCount: 1,
+            errorCount: isError ? 1 : 0,
+            timestamp: record.timestamp,
+          });
+        }
       }
     }
   });
@@ -195,8 +232,25 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
     pages: [...pages.values()],
     exceptions,
     requests,
+    actions: [...actions.values()].sort((a, b) => a.timestamp - b.timestamp),
     hasSessionReplay,
   };
+}
+
+/** Median request duration (ms) for a page, from this run's own requests. */
+export function getMedianRequestDuration(requests: FaroHttpRequest[], pageId: string): number | null {
+  const durations = requests
+    .filter((request) => request.pageId === pageId && request.durationMs !== undefined)
+    .map((request) => request.durationMs!)
+    .sort((a, b) => a - b);
+
+  if (!durations.length) {
+    return null;
+  }
+
+  const mid = Math.floor(durations.length / 2);
+
+  return durations.length % 2 === 0 ? (durations[mid - 1] + durations[mid]) / 2 : durations[mid];
 }
 
 /** Compact display form for a request URL: path only, full URL on hover. */
@@ -209,7 +263,7 @@ export function getRequestPath(url: string): string {
   }
 }
 
-function escapeLogQLString(value: string): string {
+export function escapeLogQLString(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
@@ -249,6 +303,24 @@ export function buildRealUserHttpErrorsLogQL({ appId, pageId, range }: RealUserQ
   return `sum(count_over_time({kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" |= "event_data_http.status_code=" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | (event_data_http_status_code >= 400 and event_data_http_status_code < 600) or event_data_http_status_code = 0 [${range}]))`;
 }
 
+/**
+ * Real-user p75 request latency on a page, in nanoseconds (matching
+ * event_data_duration_ns's own unit — convert to ms when consuming).
+ *
+ * Fallback for pages where web vitals don't exist: LCP/FCP/TTFB are tied to
+ * the initial document lifecycle, and confirmed live that soft-navigated
+ * pages on at least one app never get a fresh FCP/TTFB measurement (LCP
+ * occasionally re-fires on soft nav, FCP/TTFB structurally can't). Request
+ * latency has no such restriction — every fetch/XHR call reports it
+ * regardless of navigation type — so it's the next best "how did this page
+ * perform" signal once vitals are empty.
+ */
+export function buildRealUserRequestLatencyLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const page = escapeLogQLString(pageId);
+
+  return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap event_data_duration_ns [${range}])`;
+}
+
 export function buildFaroPageHref({ pluginId, appId, pageId }: { pluginId: string; appId: string; pageId: string }): string {
   return `/a/${encodeURIComponent(pluginId)}/apps/${encodeURIComponent(appId)}/route?var-page_performance_page_id=${encodeURIComponent(pageId)}`;
 }
@@ -272,11 +344,20 @@ export function formatWebVitalDelta(name: WebVitalName, runValue: number, baseli
   return `${sign}${Math.round(delta)} ms`;
 }
 
-export type ComparisonTone = 'success' | 'warning' | 'error' | 'secondary';
+/**
+ * Fidelity is a separate axis from check pass/fail, not a rename of it.
+ * Divergence in either direction means the check isn't representative, and
+ * "optimistic" is the more dangerous direction: a check running faster than
+ * real users will keep passing straight through a real degradation, while a
+ * "pessimistic" check just produces a false alarm someone investigates and
+ * dismisses. Render this on its own hue — never reuse success/error, which
+ * are reserved for check pass/fail.
+ */
+export type FidelityRating = 'representative' | 'optimistic' | 'pessimistic' | 'insufficient-data';
 
 export interface PageComparisonVerdict {
   text: string;
-  tone: ComparisonTone;
+  rating: FidelityRating;
 }
 
 // A vital has to be this much bigger than its counterpart before we call the
@@ -285,16 +366,16 @@ const VERDICT_RATIO = 1.5;
 
 /**
  * Turns the vitals comparison into a one-line, plain-English verdict so users
- * don't have to interpret the table themselves. The most valuable outcome for
- * a failed check is "real users are degraded too" (site problem) vs "real
- * users are fine" (probably the script or the probe's vantage point).
+ * don't have to interpret the table themselves.
  */
 export function getPageComparisonVerdict(
   runVitals: Partial<Record<WebVitalName, number>>,
   baselineVitals: Partial<Record<WebVitalName, number>>
-): PageComparisonVerdict | null {
-  let worstRunOffender: { vital: WebVitalName; ratio: number } | null = null;
-  let worstUserOffender: { vital: WebVitalName; ratio: number } | null = null;
+): PageComparisonVerdict {
+  // Real users worse off than this run suggests — the dangerous direction.
+  let worstOptimistic: { vital: WebVitalName; ratio: number } | null = null;
+  // This run worse off than real users — a false alarm, self-correcting.
+  let worstPessimistic: { vital: WebVitalName; ratio: number } | null = null;
   let compared = 0;
 
   WEB_VITALS.forEach((vital) => {
@@ -307,50 +388,49 @@ export function getPageComparisonVerdict(
 
     compared++;
 
-    if (runValue > baselineValue * VERDICT_RATIO && rateWebVital(vital, runValue) !== 'good') {
-      const ratio = baselineValue > 0 ? runValue / baselineValue : Infinity;
-
-      if (!worstRunOffender || ratio > worstRunOffender.ratio) {
-        worstRunOffender = { vital, ratio };
-      }
-    }
-
     if (baselineValue > runValue * VERDICT_RATIO && rateWebVital(vital, baselineValue) !== 'good') {
       const ratio = runValue > 0 ? baselineValue / runValue : Infinity;
 
-      if (!worstUserOffender || ratio > worstUserOffender.ratio) {
-        worstUserOffender = { vital, ratio };
+      if (!worstOptimistic || ratio > worstOptimistic.ratio) {
+        worstOptimistic = { vital, ratio };
+      }
+    }
+
+    if (runValue > baselineValue * VERDICT_RATIO && rateWebVital(vital, runValue) !== 'good') {
+      const ratio = baselineValue > 0 ? runValue / baselineValue : Infinity;
+
+      if (!worstPessimistic || ratio > worstPessimistic.ratio) {
+        worstPessimistic = { vital, ratio };
       }
     }
   });
 
   if (compared === 0) {
-    return null;
+    return { text: 'Not enough comparable web vitals to judge this page', rating: 'insufficient-data' };
   }
 
-  if (worstRunOffender !== null) {
-    const { vital } = worstRunOffender as { vital: WebVitalName; ratio: number };
-    const rating = rateWebVital(vital, runVitals[vital]!);
+  if (worstOptimistic !== null) {
+    const { vital } = worstOptimistic as { vital: WebVitalName; ratio: number };
+
+    return {
+      text: `Real users are having a worse time than this run suggests: ${WEB_VITAL_LABELS[vital]} p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} vs ${formatWebVitalValue(vital, runVitals[vital]!)} for this run — this check could pass straight through a real degradation`,
+      rating: 'optimistic',
+    };
+  }
+
+  if (worstPessimistic !== null) {
+    const { vital } = worstPessimistic as { vital: WebVitalName; ratio: number };
 
     return {
       text: `This run was slower than real users: ${WEB_VITAL_LABELS[vital]} ${formatWebVitalValue(vital, runVitals[vital]!)} vs ${formatWebVitalValue(vital, baselineVitals[vital]!)} p75`,
-      tone: rating === 'poor' ? 'error' : 'warning',
+      rating: 'pessimistic',
     };
   }
 
-  if (worstUserOffender !== null) {
-    const { vital } = worstUserOffender as { vital: WebVitalName; ratio: number };
-
-    return {
-      text: `Real users are having a worse experience than this run: ${WEB_VITAL_LABELS[vital]} p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} vs ${formatWebVitalValue(vital, runVitals[vital]!)} for this run`,
-      tone: 'warning',
-    };
-  }
-
-  return { text: `In line with what real users experienced`, tone: 'success' };
+  return { text: 'In line with what real users experienced', rating: 'representative' };
 }
 
-function escapeRegExp(value: string): string {
+export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
@@ -369,11 +449,18 @@ export function buildSimilarSessionsLogQL({ appId, pageIds }: { appId: string; p
   return `{kind="measurement", app_id="${appId}"} |= " ttfb=" | logfmt | k6_isK6Browser=~"" | page_id=~"${pagePattern}"`;
 }
 
+export type SimilarSessionOutcome = { kind: 'completed' } | { kind: 'stopped-at'; pageId: string };
+
 export interface SimilarSession {
   sessionId: string;
-  // pages from the synthetic journey this session also loaded
+  // pages from the synthetic journey this session also loaded, in journey order
   matchedPages: string[];
   lastSeen: number;
+  // Only set when matchedPages is an exact, in-order prefix of the journey —
+  // real users aren't guaranteed to follow the check's exact page sequence
+  // (they can revisit pages or skip around), so this stays undefined rather
+  // than claim a "stopped at X" story the data doesn't actually support.
+  outcome?: SimilarSessionOutcome;
 }
 
 /**
@@ -472,10 +559,16 @@ export function parseSimilarSessions(logs: FaroRecord[], journeyPageIds: string[
   });
 
   return [...sessions.entries()]
-    .map(([sessionId, { pages, lastSeen }]) => ({
-      sessionId,
-      matchedPages: journeyPageIds.filter((pageId) => pages.has(pageId)),
-      lastSeen,
-    }))
+    .map(([sessionId, { pages, lastSeen }]) => {
+      const matchedPages = journeyPageIds.filter((pageId) => pages.has(pageId));
+      const isPrefix = matchedPages.every((pageId, index) => pageId === journeyPageIds[index]);
+      const outcome: SimilarSessionOutcome | undefined = isPrefix
+        ? matchedPages.length === journeyPageIds.length
+          ? { kind: 'completed' }
+          : { kind: 'stopped-at', pageId: matchedPages[matchedPages.length - 1] }
+        : undefined;
+
+      return { sessionId, matchedPages, lastSeen, outcome };
+    })
     .sort((a, b) => b.matchedPages.length - a.matchedPages.length || b.lastSeen - a.lastSeen);
 }
