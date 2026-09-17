@@ -11,11 +11,7 @@ import { Check, CheckType, Probe } from 'types';
 import { checkHasAlerting, getCheckType } from 'utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
-/**
- * Milestone 1 findings, all derived from check configuration alone so the tab needs nothing
- * from Mimir or Loki. Order is the order they are presented in: gaps that let failures go
- * unnoticed, then things that are not doing their job, then redundancy.
- */
+// Presentation order. All derived from check config alone, nothing from Mimir or Loki.
 const FINDERS: Array<(inputs: RecommendationInputs) => Recommendation | undefined> = [
   findAlertingGaps,
   findMissingCostLabels,
@@ -28,16 +24,13 @@ export function computeRecommendations(inputs: RecommendationInputs): Recommenda
   return FINDERS.map((finder) => finder(inputs)).filter((finding): finding is Recommendation => finding !== undefined);
 }
 
-/** A. Running checks whose failures would go unnoticed. */
 function findAlertingGaps({ checks }: RecommendationInputs): Recommendation | undefined {
-  // Paused checks cannot fire an alert whatever their configuration, so they belong to the
-  // paused finding rather than counting twice here.
+  // A paused check cannot alert whatever its config; it belongs to the paused finding, not here too.
   const affected = checks.filter((check) => check.enabled && !checkHasAlerting(check));
 
   return toRecommendation(RecommendationId.AlertingGaps, affected);
 }
 
-/** B. Checks that cannot be attributed to a team because they are missing a cost label. */
 function findMissingCostLabels({ checks, calNames }: RecommendationInputs): Recommendation | undefined {
   if (calNames.length === 0) {
     return undefined;
@@ -48,7 +41,6 @@ function findMissingCostLabels({ checks, calNames }: RecommendationInputs): Reco
   return toRecommendation(RecommendationId.MissingCostLabels, affected);
 }
 
-/** C(i). Several checks of the same type pointed at the same target. */
 function findDuplicateChecks({ checks }: RecommendationInputs): Recommendation | undefined {
   const byTypeAndTarget = groupBy(checks, (check) => `${getCheckType(check.settings)}\u0000${check.target}`);
 
@@ -63,7 +55,6 @@ function findDuplicateChecks({ checks }: RecommendationInputs): Recommendation |
   return toGroupedRecommendation(RecommendationId.DuplicateChecks, groups);
 }
 
-/** C(ii). One target monitored by more than one kind of check. */
 function findOverlappingTargets({ checks }: RecommendationInputs): Recommendation | undefined {
   const byTarget = groupBy(checks, (check) => check.target);
 
@@ -83,40 +74,28 @@ function findOverlappingTargets({ checks }: RecommendationInputs): Recommendatio
   return toGroupedRecommendation(RecommendationId.OverlappingTargets, groups);
 }
 
-/**
- * D. Checks that were paused and never turned back on. The ones untouched for longest are the
- * most likely to have been forgotten, so they come first rather than sorting by name.
- */
+// Longest untouched first: those are the most likely forgotten.
 function findPausedChecks({ checks }: RecommendationInputs): Recommendation | undefined {
   const affected = checks.filter((check) => !check.enabled).sort(byLeastRecentlyModified);
 
   return affected.length > 0 ? { id: RecommendationId.PausedChecks, checks: affected } : undefined;
 }
 
-/**
- * The configuration only records when a check was last modified, and pausing is a modification,
- * so for a check that has not been touched since this is when it was paused. Undefined when the
- * API did not send a timestamp.
- */
+// Pausing is a modification, so `modified` is when it was paused unless it was edited since.
 export function getPausedSince(check: Check): Date | undefined {
   return check.modified ? new Date(check.modified * 1000) : undefined;
 }
 
-/** The check ids hidden from one finding, or none; tolerates a hand-edited or stale stored value. */
+// Tolerates a hand-edited stored value.
 export function getDismissedCheckIds(map: DismissedChecks | null | undefined, finding: RecommendationId): number[] {
   const ids = map?.[finding];
 
   return Array.isArray(ids) ? ids : [];
 }
 
-/** How many probe names to spell out before collapsing the rest into a count. */
 const MAX_LISTED_PROBES = 3;
 
-/**
- * The names of a check's probes, sorted, with a long list cut to `Atlanta, London, Paris +4`.
- * Probes the tenant can no longer see (deleted, or a public one since removed) are counted
- * but not named, so the total still matches the check's configuration.
- */
+// `Atlanta, London, Paris +4`. Probes the tenant can no longer see are counted but not named.
 export function describeProbes(check: Check, probes: Probe[]): string {
   const names = check.probes
     .map((id) => probes.find((probe) => probe.id === id)?.name)
@@ -136,7 +115,7 @@ export function describeProbes(check: Check, probes: Probe[]): string {
 }
 
 function byLeastRecentlyModified(a: Check, b: Check) {
-  // Checks without a timestamp cannot be ranked, so they go last.
+  // No timestamp sorts last.
   return (
     (a.modified ?? Number.POSITIVE_INFINITY) - (b.modified ?? Number.POSITIVE_INFINITY) || a.job.localeCompare(b.job)
   );

@@ -41,10 +41,7 @@ interface RailProps {
   onSelect: (view: RecommendationsView) => void;
 }
 
-/**
- * The category rail. Counts are checks rather than findings, so Redundancy with two findings
- * over thirteen checks reads 13, and a category with nothing left to show is not listed.
- */
+// Counts are distinct checks, not findings: Redundancy's two findings over 13 checks reads 13.
 export function CategoryRail({ categories, view, onSelect }: RailProps) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
@@ -83,12 +80,10 @@ export function CategoryRail({ categories, view, onSelect }: RailProps) {
 interface AttentionRowProps {
   summary: CategorySummary;
   totalCheckCount: number;
-  /** Per-check dismissals, so the action promised here counts the same rows the panel will. */
   dismissedChecks: DismissedChecks;
   onSelect: () => void;
 }
 
-/** One category on the landing view: what is wrong, how much of it, and what the category offers. */
 export function AttentionRow({ summary, totalCheckCount, dismissedChecks, onSelect }: AttentionRowProps) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
@@ -118,7 +113,6 @@ interface LegendProps {
   findings: Parameters<typeof getLegend>[0];
 }
 
-/** Severity legend: a bar the shape of a panel's left edge, and how many checks sit behind it. */
 export function SeverityLegend({ findings }: LegendProps) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
@@ -146,28 +140,18 @@ export function SeverityLegend({ findings }: LegendProps) {
 
 interface SectionProps {
   title: string;
-  /** Under the title. Omitted on a category with one finding, where the title already is the summary. */
   summary?: string;
-  /** Only shown where a category holds several findings and they need telling apart. */
   tooltip?: string;
   severity: RecommendationSeverity;
-  /**
-   * The finding's primary control, rendered in the header. Kept to one button (plus a clear
-   * control when rows are selected) so the header stays one line whatever the title.
-   */
+  /** One button at most, so the header stays one line and the title is what gives way. */
   actions?: ReactNode;
-  /** Sits under the rows: the secondary link out and the dismissed-checks restore. */
   footer?: ReactNode;
-  /** The URL pointed at this finding; it is highlighted and scrolled into view. */
+  /** Deep-linked to from the URL: highlighted and scrolled into view. */
   isFocused?: boolean;
   onDismiss: () => void;
   children: ReactNode;
 }
 
-/**
- * A finding as a collapsible panel. The severity colour sits on the panel's left edge, and the
- * summary lives in the header so a collapsed finding still states the problem.
- */
 export function RecommendationSection({
   title,
   summary,
@@ -185,7 +169,7 @@ export function RecommendationSection({
 
   useEffect(() => {
     if (isFocused) {
-      // Optional call: jsdom has no scrollIntoView.
+      // jsdom has no scrollIntoView.
       panelRef.current?.scrollIntoView?.({ block: 'start' });
     }
   }, [isFocused]);
@@ -240,7 +224,6 @@ export function RecommendationSection({
 }
 
 interface HeaderActionProps {
-  /** The button's label; carries the count when rows are selected ("Set up alerts for 3 checks"). */
   label?: string;
   selectedCount: number;
   isBusy?: boolean;
@@ -248,12 +231,8 @@ interface HeaderActionProps {
   onClearSelection: () => void;
 }
 
-/**
- * The header's one button, meaning "act on everything" with nothing selected and "act on the
- * selection" otherwise, with a compact clear beside it in the latter case. One slot for both
- * keeps findings with and without a bulk action laid out identically. No select-all: the
- * all-variant of the button covers it; no "N selected": the count is in the label.
- */
+// One slot means "for all" with nothing ticked and "for the selection" otherwise, so findings
+// with and without a bulk action lay out the same. No select-all: the all-variant covers it.
 export function HeaderAction({ label, selectedCount, isBusy = false, onAction, onClearSelection }: HeaderActionProps) {
   if (!label) {
     return null;
@@ -262,8 +241,7 @@ export function HeaderAction({ label, selectedCount, isBusy = false, onAction, o
   return (
     <>
       {selectedCount > 0 && (
-        // A worded button, not a ✕: the finding's dismiss is a ✕ two buttons along, and the two
-        // must not read as the same control.
+        // Not a ✕: the finding's dismiss is one, two buttons along.
         <Button size="sm" variant="secondary" fill="text" disabled={isBusy} onClick={onClearSelection}>
           <Trans i18nKey="recommendations.selection.clear">Clear selection</Trans>
         </Button>
@@ -278,15 +256,10 @@ export function HeaderAction({ label, selectedCount, isBusy = false, onAction, o
 interface PanelFooterProps {
   dismissedCount?: number;
   onRestore?: () => void;
-  /** The finding's link out, e.g. "View in check list". */
   secondaryAction?: ReactNode;
 }
 
-/**
- * Under a finding's rows, right-aligned: how many of its checks are hidden and the way to
- * bring them back, then the secondary action. The link out lives here rather than in the
- * header so the header can stay one line.
- */
+// The link out lives here rather than in the header so the header can stay one line.
 export function PanelFooter({ dismissedCount = 0, onRestore, secondaryAction }: PanelFooterProps) {
   const styles = useStyles2(getStyles);
 
@@ -318,11 +291,10 @@ interface PaginatedRowsProps<T> {
   renderItem: (item: T) => ReactNode;
 }
 
-/** Large tenants can have hundreds of affected checks, so rows are paged rather than dumped. */
 export function PaginatedRows<T>({ items, renderItem }: PaginatedRowsProps<T>) {
   const [page, setPage] = useState(1);
   const totalPages = Math.ceil(items.length / ROWS_PER_PAGE);
-  // Acting on a row can shrink the list; keep the page in range rather than showing an empty one.
+  // Acting on a row can shrink the list out from under the current page.
   const currentPage = Math.min(page, Math.max(totalPages, 1));
   const visible = items.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
 
@@ -340,28 +312,22 @@ export function PaginatedRows<T>({ items, renderItem }: PaginatedRowsProps<T>) {
 
 interface CheckRowProps {
   check: Check;
-  /** Text after the name, e.g. why this check was flagged. */
   detail?: ReactNode;
-  /** Shown in place of the controls once the row has been acted on, e.g. "Alerts added". */
+  /** Replaces the controls once the row has been acted on, e.g. "Alerts added". */
   doneLabel?: string;
-  /** Ticked state; the checkbox only renders when `onSelectChange` is given. */
   isSelected?: boolean;
+  /** The checkbox only renders when given. */
   onSelectChange?: (check: Check) => void;
-  /** A control for acting on this check in place, rendered after the edit button. */
   action?: ReactNode;
-  /** Content shown underneath the row, e.g. a preview of what `action` will do. */
+  /** Rendered under the row, e.g. a preview of what `action` will do. */
   expansion?: ReactNode;
-  /** Off where editing is itself the row's `action`, so the row does not offer it twice. */
+  /** Off where editing is itself the row's `action`. */
   showEditButton?: boolean;
   onEditClick?: () => void;
-  /** Hides this row; the dismiss button only renders when given. */
+  /** The dismiss button only renders when given. */
   onDismiss?: (check: Check) => void;
 }
 
-/**
- * One affected check. Left to right: checkbox, name, type, detail; then on the right the edit
- * button, the row's action and its dismiss. Once acted on, the controls give way to `doneLabel`.
- */
 export function CheckRow({
   check,
   detail,
@@ -431,14 +397,12 @@ interface GroupRowProps {
   label: string;
   detail: string;
   checks: Check[];
-  /** Where to see this group in the check list, e.g. to bulk-select and delete from there. */
+  /** The check list filtered to this group, where bulk delete lives. */
   href: string;
   onLinkClick?: () => void;
-  /** How to render each check once the group is expanded; a plain `CheckRow` by default. */
   renderCheck?: (check: Check) => ReactNode;
 }
 
-/** A cluster of checks that share something, expandable to the checks inside it. */
 export function GroupRow({
   label,
   detail,
@@ -452,8 +416,7 @@ export function GroupRow({
 
   return (
     <div>
-      {/* The toggle and the link are siblings rather than nested: a link inside a button is not
-          reachable by assistive tech, and the row itself is not interactive for the same reason. */}
+      {/* Siblings, not nested: a link inside a button is unreachable by assistive tech. */}
       <div className={styles.row}>
         <button className={styles.groupToggle} onClick={() => setIsExpanded(!isExpanded)} aria-expanded={isExpanded}>
           <Icon name={isExpanded ? 'angle-down' : 'angle-right'} size="sm" />

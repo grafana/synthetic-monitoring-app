@@ -3,10 +3,7 @@ import { Badge } from '@grafana/ui';
 
 import { CheckStatus } from 'types';
 
-/**
- * The app's "NEW" marker. Use this directly for anything that isn't a check — a page tab,
- * a section — and `NewStatusBadge` when the marker is driven by a check's status.
- */
+// For anything that isn't a check; `NewStatusBadge` when driven by a check's status.
 export const NewBadge = ({ className }: { className?: string }) => (
   <Badge text={'NEW'} color={'orange'} className={className} />
 );

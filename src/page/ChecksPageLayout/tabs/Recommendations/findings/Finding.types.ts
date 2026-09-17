@@ -3,12 +3,9 @@ import { Recommendation } from '../Recommendations.types';
 export interface FindingProps {
   recommendation: Recommendation;
   totalCheckCount: number;
-  /**
-   * The only finding in its category. The category name is then already the pane heading, so
-   * the panel leads with its summary instead of repeating the name, and needs no tooltip.
-   */
+  /** The only finding in its category, so the panel leads with its summary and skips the tooltip. */
   isSolo: boolean;
-  /** The URL deep-linked to this finding. */
+  /** Deep-linked to from the URL. */
   isFocused?: boolean;
   onDismiss: () => void;
 }

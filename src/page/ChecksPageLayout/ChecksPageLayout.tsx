@@ -10,17 +10,14 @@ import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { NewBadge } from 'components/NewStatusBadge';
 
-/**
- * Wraps the check list and its sibling tabs. Only the tabbed routes sit under this layout:
- * the check editor and dashboard pages stay outside it so they keep their own page chrome.
- */
+// Only the tabbed routes sit under this; the editor and dashboards keep their own page chrome.
 export function ChecksPageLayout() {
   const getChecksTabUrl = useTabUrl(AppRoutes.Checks);
   const activeTab = useActiveTab(AppRoutes.Checks);
   const { isEnabled: isRecommendationsEnabled } = useFeatureFlag(FeatureName.Recommendations);
 
   const pageNav: NavModelItem | undefined = useMemo(() => {
-    // Recommendations is the only sibling tab; without it there is nothing to switch between.
+    // With the only sibling tab off there is nothing to switch between.
     if (!isRecommendationsEnabled) {
       return undefined;
     }
@@ -41,8 +38,7 @@ export function ChecksPageLayout() {
           text: t('checksPageLayout.tabs.recommendations', 'Recommendations'),
           url: getChecksTabUrl('recommendations'),
           active: activeTab('recommendations'),
-          // `tabSuffix` is the extension point Grafana's PageTabs forwards to a Tab; the
-          // `isNew` flag on a NavModelItem is read by the mega menu, not by page tabs.
+          // `isNew` is read by the mega menu, not by page tabs.
           tabSuffix: NewBadge,
         },
       ],
