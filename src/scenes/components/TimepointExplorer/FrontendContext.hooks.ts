@@ -10,6 +10,8 @@ import {
   buildAppVersionHistoryLogQL,
   buildExceptionRealSessionsLogQL,
   buildFaroExecutionContextLogQL,
+  buildRealUserActionCountLogQL,
+  buildRealUserActionDurationLogQL,
   buildRealUserExceptionsLogQL,
   buildRealUserHttpErrorsLogQL,
   buildRealUserPageLoadsLogQL,
@@ -154,6 +156,66 @@ export function useRealUserPageBaseline({ appId, pageId, to, enabled = true }: U
         };
       } catch {
         // Fail silently - the panel simply won't show a baseline.
+        return null;
+      }
+    },
+    enabled: canQuery,
+    staleTime: 60_000,
+    retry: false,
+    throwOnError: false,
+  });
+}
+
+export interface RealUserActionBaseline {
+  durationMs: number | null;
+  occurrences: number | null;
+}
+
+interface UseRealUserActionBaselineProps {
+  appId: string;
+  actionName: string;
+  to: number;
+  enabled?: boolean;
+}
+
+export function useRealUserActionBaseline({ appId, actionName, to, enabled = true }: UseRealUserActionBaselineProps) {
+  const logsDS = useLogsDS();
+  const canQuery = Boolean(logsDS && appId && actionName && to && enabled);
+
+  return useQuery<RealUserActionBaseline | null>({
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- logsDS.uid is a stable identifier
+    queryKey: ['faro-action-baseline', logsDS?.uid, appId, actionName, to],
+    queryFn: async () => {
+      if (!logsDS) {
+        return null;
+      }
+
+      const queryParams = { appId, actionName, range: BASELINE_RANGE };
+      const instantQuery = {
+        range: false,
+        instant: true,
+        queryType: 'instant',
+        datasource: logsDS,
+        maxDataPoints: 100,
+        intervalMs: 20_000,
+      };
+
+      try {
+        const results = await queryDS({
+          queries: [
+            { ...instantQuery, refId: 'duration', expr: buildRealUserActionDurationLogQL(queryParams) },
+            { ...instantQuery, refId: 'occurrences', expr: buildRealUserActionCountLogQL(queryParams) },
+          ],
+          start: to - BASELINE_RANGE_MS,
+          end: to,
+        });
+
+        return {
+          durationMs: getInstantValue(results['duration']),
+          occurrences: getInstantValue(results['occurrences']),
+        };
+      } catch {
+        // Fail silently - the panel simply won't show an action baseline.
         return null;
       }
     },

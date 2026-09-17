@@ -77,10 +77,19 @@ export interface FaroHttpRequest {
 }
 
 export interface FaroAction {
+  // Correlation id: the faro.user.action marker carries it as `action_id`,
+  // every request that happened while the action was in progress carries the
+  // same value as `action_parent_id`. Grouping by name alone would silently
+  // merge separate instances of the same named action within one run.
+  actionId: string;
   actionName: string;
   pageId: string;
   requestCount: number;
   errorCount: number;
+  // From the SDK's own `event_data_userActionDuration` on the marker event —
+  // authoritative (start-to-settle), not a derived approximation. Undefined
+  // if the marker record didn't make it into this query's result.
+  durationMs?: number;
   timestamp: number;
 }
 
@@ -106,6 +115,7 @@ export function buildFaroExecutionContextLogQL(executionId: string): string {
 }
 
 const HTTP_EVENT_NAMES = ['faro.tracing.fetch', 'faro.tracing.xml-http-request'];
+const USER_ACTION_EVENT_NAME = 'faro.user.action';
 
 function isHttpErrorStatus(statusCode: number): boolean {
   return statusCode === 0 || (statusCode >= 400 && statusCode < 600);
@@ -176,6 +186,38 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
       hasSessionReplay = true;
     }
 
+    // The marker event for one action instance. Its own page_id is
+    // authoritative (it reflects wherever the action actually settled — the
+    // ecommerce order-complete example landed on `/cart/checkout/*`, not a
+    // stale page_id from the last hard navigation), so it always overwrites;
+    // child request events below only seed pageId as a fallback in case this
+    // marker line didn't make it into the query result.
+    if (labels.kind === 'event' && labels.event_name === USER_ACTION_EVENT_NAME) {
+      const actionId = labels.action_id;
+      const actionName = labels.action_name;
+      const durationMs = Number(labels.event_data_userActionDuration);
+
+      if (actionId && actionName) {
+        const entry = actions.get(actionId) ?? {
+          actionId,
+          actionName,
+          pageId,
+          requestCount: 0,
+          errorCount: 0,
+          timestamp: record.timestamp,
+        };
+
+        entry.pageId = pageId;
+
+        if (!Number.isNaN(durationMs)) {
+          entry.durationMs = durationMs;
+        }
+
+        entry.timestamp = Math.min(entry.timestamp, record.timestamp);
+        actions.set(actionId, entry);
+      }
+    }
+
     if (labels.kind === 'event' && HTTP_EVENT_NAMES.includes(labels.event_name ?? '')) {
       // `| logfmt` folds `event_data_http.status_code` into underscores
       const statusCode = Number(labels.event_data_http_status_code);
@@ -195,30 +237,30 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
         });
       }
 
-      // Faro's User Actions feature (action_name/action_parent_id) attaches
-      // as attribution metadata on existing telemetry rather than its own
-      // record kind — confirmed live, attached to exactly this event type.
-      // It auto-correlates every request that happened while a named,
-      // business-level action was in progress, which is a much better unit
-      // than page_id for step-level detail on apps with soft navigation.
+      // Faro's User Actions feature: every request that happened while a
+      // named, business-level action was in progress carries the action's
+      // id back as `action_parent_id` — the same value the marker event
+      // above carries as its own `action_id`. Correlating on that id (not
+      // action_name, which repeats across separate instances of the same
+      // named action) auto-groups a much better unit than page_id for
+      // step-level detail on apps with soft navigation.
+      const actionId = labels.action_parent_id;
       const actionName = labels.action_name;
 
-      if (actionName) {
-        const existing = actions.get(actionName);
+      if (actionId && actionName) {
+        const entry = actions.get(actionId) ?? {
+          actionId,
+          actionName,
+          pageId, // fallback only — overwritten if the marker event is seen
+          requestCount: 0,
+          errorCount: 0,
+          timestamp: record.timestamp,
+        };
 
-        if (existing) {
-          existing.requestCount += 1;
-          existing.errorCount += isError ? 1 : 0;
-          existing.timestamp = Math.min(existing.timestamp, record.timestamp);
-        } else {
-          actions.set(actionName, {
-            actionName,
-            pageId,
-            requestCount: 1,
-            errorCount: isError ? 1 : 0,
-            timestamp: record.timestamp,
-          });
-        }
+        entry.requestCount += 1;
+        entry.errorCount += isError ? 1 : 0;
+        entry.timestamp = Math.min(entry.timestamp, record.timestamp);
+        actions.set(actionId, entry);
       }
     }
   });
@@ -235,6 +277,14 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
     actions: [...actions.values()].sort((a, b) => a.timestamp - b.timestamp),
     hasSessionReplay,
   };
+}
+
+export function formatDurationMs(ms: number): string {
+  if (ms >= 1000) {
+    return `${(ms / 1000).toFixed(2)} s`;
+  }
+
+  return `${Math.round(ms)} ms`;
 }
 
 /** Median request duration (ms) for a page, from this run's own requests. */
@@ -319,6 +369,30 @@ export function buildRealUserRequestLatencyLogQL({ appId, pageId, range }: RealU
   const page = escapeLogQLString(pageId);
 
   return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap event_data_duration_ns [${range}])`;
+}
+
+interface RealUserActionQueryParams {
+  appId: string;
+  actionName: string;
+  range: string;
+}
+
+/**
+ * Real-user p75 duration for a named action, straight from the SDK's own
+ * `event_data_userActionDuration` on the faro.user.action marker — confirmed
+ * live (order-complete: 360.4ms, matching userActionEndTime - userActionStartTime).
+ * Directly comparable to this run's own FaroAction.durationMs.
+ */
+export function buildRealUserActionDurationLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
+  const name = escapeLogQLString(actionName);
+
+  return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |= "event_name=faro.user.action" | logfmt | k6_isK6Browser=~"" | action_name="${name}" | unwrap event_data_userActionDuration [${range}])`;
+}
+
+export function buildRealUserActionCountLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
+  const name = escapeLogQLString(actionName);
+
+  return `sum(count_over_time({kind="event", app_id="${appId}"} |= "event_name=faro.user.action" | logfmt | k6_isK6Browser=~"" | action_name="${name}" [${range}]))`;
 }
 
 export function buildFaroPageHref({ pluginId, appId, pageId }: { pluginId: string; appId: string; pageId: string }): string {

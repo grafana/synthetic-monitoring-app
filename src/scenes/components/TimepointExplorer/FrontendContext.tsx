@@ -16,6 +16,7 @@ import {
   useAppVersionChange,
   useExceptionRealSessions,
   useFaroExecutionContext,
+  useRealUserActionBaseline,
   useRealUserPageBaseline,
   useSimilarRealSessions,
 } from 'scenes/components/TimepointExplorer/FrontendContext.hooks';
@@ -26,6 +27,7 @@ import {
   FaroHttpRequest,
   FaroPageVisit,
   FidelityRating,
+  formatDurationMs,
   formatWebVitalDelta,
   formatWebVitalValue,
   getMedianRequestDuration,
@@ -123,7 +125,7 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
 
         {context.actions.length > 0 && (
           <div className={styles.section}>
-            <ActionsList context={context} />
+            <ActionsList context={context} to={to} />
           </div>
         )}
 
@@ -148,21 +150,21 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
   );
 };
 
-const ActionsList = ({ context }: { context: FaroExecutionContext }) => {
+const ActionsList = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
   const styles = useStyles2(getStyles);
 
   return (
     <Stack direction="column" gap={1}>
       <Stack direction="row" gap={0.5} alignItems="center">
         <Text weight="medium">Named actions during this run ({context.actions.length})</Text>
-        <Tooltip content="Business-level actions this app tags via Faro's User Actions feature. Each one auto-correlates every network call that happened while it was in progress — a more precise unit than the page it occurred on, and it works the same whether the app uses hard or soft navigation.">
+        <Tooltip content="Business-level actions this app tags via Faro's User Actions feature. Each one auto-correlates every network call that happened while it was in progress — a more precise unit than the page it occurred on, and it works the same whether the app uses hard or soft navigation. Duration comes from the SDK's own userActionDuration measurement.">
           <Icon name="info-circle" size="sm" />
         </Tooltip>
       </Stack>
       <Stack direction="column" gap={0.5}>
         {context.actions.map((action) => (
-          <div key={action.actionName} className={styles.indent}>
-            <ActionRow action={action} />
+          <div key={action.actionId} className={styles.indent}>
+            <ActionRow appId={context.appId} action={action} to={to} />
           </div>
         ))}
       </Stack>
@@ -170,14 +172,24 @@ const ActionsList = ({ context }: { context: FaroExecutionContext }) => {
   );
 };
 
-const ActionRow = ({ action }: { action: FaroAction }) => {
+const ActionRow = ({ appId, action, to }: { appId: string; action: FaroAction; to: number }) => {
   const styles = useStyles2(getStyles);
+  const { data: baseline } = useRealUserActionBaseline({
+    appId,
+    actionName: action.actionName,
+    to,
+    enabled: action.durationMs !== undefined,
+  });
 
   return (
     <Text variant="bodySmall">
       <span className={cx(styles.mono, styles.actionName)}>{action.actionName}</span>{' '}
       <Text color={action.errorCount > 0 ? 'error' : 'secondary'} variant="bodySmall">
-        on {action.pageId || 'unknown page'} · {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
+        on {action.pageId || 'unknown page'}
+        {action.durationMs !== undefined && ` · ${formatDurationMs(action.durationMs)}`}
+        {baseline?.durationMs != null && ` (real users p75: ${formatDurationMs(baseline.durationMs)})`}
+        {' · '}
+        {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
         {action.errorCount > 0 && `, ${action.errorCount} failed`}
       </Text>
     </Text>
