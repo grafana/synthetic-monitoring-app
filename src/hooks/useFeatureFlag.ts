@@ -19,8 +19,7 @@ export function useFeatureFlag(featureFlag: FeatureName) {
 
   const isMapped = openFeatureKey !== undefined;
 
-  // TEMPORARY: force Recommendations on so reviewers can try the tab before the GOFF flag
-  // exists. Remove before merging. Skipped under test so the flag-off cases stay real.
+  // TEMPORARY: forced on for PR review until the GOFF flag exists. Remove before merging.
   if (featureFlag === FeatureName.Recommendations && process.env.NODE_ENV !== 'test') {
     return { isEnabled: true, isReady: true };
   }

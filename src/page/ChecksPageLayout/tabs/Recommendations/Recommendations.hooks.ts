@@ -22,14 +22,9 @@ import {
 } from './Recommendations.constants';
 import { getDismissedCheckIds } from './Recommendations.utils';
 
-/**
- * Findings the user has hidden. M1 keeps no server-side state, so this lives in the browser
- * like the other dismissible prompts in the app; the point of recording it at all is the
- * dismissal signal, which says a finding was seen and judged not worth acting on.
- */
+// Browser-local like the app's other dismissible prompts; M1 has no server-side state.
 export function useDismissedRecommendations() {
   const [stored, setStored] = useLocalStorage<RecommendationId[]>(DISMISSED_FINDINGS_STORAGE_KEY, []);
-  // Guard against a hand-edited or stale value: only known ids count.
   const dismissed = useMemo(() => stored.filter(isRecommendationId), [stored]);
 
   const dismiss = useCallback(
@@ -50,22 +45,14 @@ export function useDismissedRecommendations() {
 
 const NO_DISMISSED_CHECKS: DismissedChecks = {};
 
-/**
- * Every per-check dismissal, by finding. The landing view reads this so what it promises for a
- * finding ("Set up alerts for all 2") matches what the finding's own panel will offer.
- */
+// Read by the landing view so its action label counts the same rows the panel will.
 export function useDismissedCheckMap(): DismissedChecks {
   const [stored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
 
-  // Guard against a hand-edited value: anything that is not an object of arrays reads as empty.
   return useMemo(() => (stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}), [stored]);
 }
 
-/**
- * Individual rows the user has hidden within a finding, keyed by finding then check id, so
- * "not this one" can be said without dismissing the whole finding. Kept separately from finding
- * dismissals so either can be restored on its own.
- */
+// Separate from finding dismissals so either can be restored on its own.
 export function useDismissedChecks(finding: RecommendationId) {
   const [stored, setStored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
   const dismissedIds = useMemo(() => getDismissedCheckIds(stored, finding), [stored, finding]);
@@ -90,14 +77,10 @@ export function useDismissedChecks(finding: RecommendationId) {
   return { dismissedIds, dismissCheck, restoreChecks };
 }
 
-/**
- * Which rows of a finding are ticked. Selection is per finding and per visit: it is a means to
- * a bulk action, not something to remember.
- */
 export function useRowSelection(checks: Check[]) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
-  // Rows can leave the list (acted on, dismissed, refetched); a selection must not outlive its row.
+  // Rows leave the list when acted on, dismissed or refetched; the selection follows them out.
   const selected = useMemo(() => checks.filter((check) => selectedIds.includes(check.id!)), [checks, selectedIds]);
 
   const toggle = useCallback((check: Check) => {
@@ -108,7 +91,6 @@ export function useRowSelection(checks: Check[]) {
 
   const clear = useCallback(() => setSelectedIds([]), []);
 
-  /** Untick just these, e.g. the ones an action succeeded on, leaving the rest ticked for a retry. */
   const deselect = useCallback((checks: Check[]) => {
     const ids = checks.map((check) => check.id);
     setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
@@ -120,20 +102,15 @@ export function useRowSelection(checks: Check[]) {
 }
 
 interface ImpressionContext {
-  /** Every finding the tenant has that is not dismissed, whichever view is showing. */
   visible: Recommendation[];
-  /** The findings whose panels are on screen right now: the active category's, or none on the landing view. */
+  /** Panels on screen right now: the active category's, or none on the landing view. */
   shown: Recommendation[];
   checkCount: number;
   dismissedCount: number;
   focusedId?: RecommendationId;
 }
 
-/**
- * Engagement is what decides which findings survive past this experiment, so impressions are
- * reported alongside clicks. The visit is reported once; a finding is reported the first time its
- * panel is actually rendered, so a category the user never opens does not count as seen.
- */
+// A finding counts as shown the first time its panel renders, so an unopened category is not "seen".
 export function useRecommendationImpressions({
   visible,
   shown,
@@ -168,17 +145,11 @@ export function useRecommendationImpressions({
   }, [shown]);
 }
 
-/** The landing view: one row per category, no findings rendered. */
 export const ATTENTION_VIEW = 'attention';
 
 export type RecommendationsView = typeof ATTENTION_VIEW | RecommendationCategoryId;
 
-/**
- * Which view the tab shows, held in the URL so it survives a reload and can be linked to.
- * `?finding=<RecommendationId>` (a deep link from a banner or the Reliability Inbox) wins over
- * `?category=`: it selects the category holding that finding and marks the finding focused.
- * Anything unrecognised falls back to the landing view.
- */
+// `?category=<id>`, or `?finding=<RecommendationId>` which wins and selects the finding's category.
 export function useRecommendationsView() {
   const { pathname, search } = useLocation();
   const params = useURLSearchParams();
@@ -195,8 +166,7 @@ export function useRecommendationsView() {
   const setView = useCallback(
     (next: RecommendationsView) => {
       const nextParams = new URLSearchParams(search);
-      // Moving on from a deep link ends the focus; otherwise the finding would keep pulling
-      // the view back to its category.
+      // Otherwise the focused finding keeps pulling the view back to its category.
       nextParams.delete(FOCUS_PARAM);
 
       if (next === ATTENTION_VIEW) {
@@ -205,7 +175,7 @@ export function useRecommendationsView() {
         nextParams.set(CATEGORY_PARAM, next);
       }
 
-      // Pushed, not replaced: Back from a category should return to the landing view, not leave the tab.
+      // Pushed so Back returns to the landing view rather than leaving the tab.
       const nextSearch = nextParams.toString();
       locationService.push(nextSearch ? `${pathname}?${nextSearch}` : pathname);
     },

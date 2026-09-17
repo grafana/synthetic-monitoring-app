@@ -16,11 +16,7 @@ interface MissingCostLabelsFindingProps extends FindingProps {
   calNames: string[];
 }
 
-/**
- * B. Checks missing a cost attribution label. A label needs a value we cannot guess, so the
- * action is the check editor and there is nothing to do in bulk; rows therefore have no
- * checkbox. Each row says which labels it lacks so the visit is a short one.
- */
+// No checkboxes: a label needs a value we cannot guess, so there is nothing to do in bulk.
 export function MissingCostLabelsFinding({
   recommendation,
   totalCheckCount,

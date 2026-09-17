@@ -38,12 +38,6 @@ interface AlertPlan {
   alerts: RecommendedAlert[];
 }
 
-/**
- * A. Checks running without alerting. The action is the check editor's own default alerts,
- * applied from here so the gap closes without leaving the page: one check at a time after a
- * preview, the ticked checks at once, or every check at once after confirming. The header
- * button means whichever of the last two applies.
- */
 export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
@@ -57,7 +51,7 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   const [isConfirmingAll, setIsConfirmingAll] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
-  // A check that runs less often than the longest alert period has nothing we can safely apply.
+  // A check slower than the longest alert period has no valid default alert.
   const plans = useMemo<AlertPlan[]>(
     () =>
       rows.map((check) => ({ check, alerts: getRecommendedAlerts(check) })).filter((plan) => plan.alerts.length > 0),
@@ -65,7 +59,7 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   );
   const totalAlertCount = plans.reduce((sum, plan) => sum + plan.alerts.length, 0);
 
-  /** Applies each plan and returns the checks it succeeded on. Failures toast via the mutation's meta. */
+  // Returns the checks it succeeded on. Failures toast via the mutation's meta.
   const applyTo = async (targets: AlertPlan[], scope: 'finding' | 'selection'): Promise<Check[]> => {
     setIsApplying(true);
 
@@ -86,7 +80,7 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
       );
     }
 
-    // The check list carries each check's alerts, so refetching it drops the done rows from the finding.
+    // The check list carries the alerts, so refetching it drops the done rows.
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
     setIsApplying(false);
 
@@ -104,12 +98,12 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
       plans.filter((plan) => selectedIds.includes(plan.check.id)),
       'selection'
     );
-    // Only the done rows leave the selection; anything that failed stays ticked for a retry.
+    // Failed rows stay ticked for a retry.
     selection.deselect(succeeded);
   };
 
   const selectedCount = selection.selected.length;
-  // Ticked rows were chosen one by one, so they go straight through; "all" still confirms.
+  // Ticked rows go straight through; "all" still confirms.
   const headerLabel =
     selectedCount === 1
       ? t('recommendations.alertingGaps.setUpSelectedSingle', 'Set up alerts for 1 check')
@@ -202,7 +196,6 @@ interface AlertSetupRowProps {
   onApplied: () => void;
 }
 
-/** One unalerted check with a "Set up" control that previews the default alerts before adding them. */
 function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditClick, onApplied }: AlertSetupRowProps) {
   const styles = useStyles2(getStyles);
   const queryClient = useQueryClient();
@@ -215,15 +208,14 @@ function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditCli
     try {
       await updateAlerts({ alerts: alerts.map((alert) => alert.draft), checkId: check.id! });
     } catch {
-      // The mutation's meta already raises the error toast; the row stays open to retry.
+      // The mutation's meta raises the error toast; the row stays open to retry.
       return;
     }
 
     setIsDone(true);
     setIsExpanded(false);
     onApplied();
-    // Same confirmation the rest of the app gives after a mutation. The hook has no successAlert
-    // of its own because the check editor calls it straight after updateCheck, which already toasts.
+    // The hook has no successAlert of its own: the editor calls it right after updateCheck, which toasts.
     showAlert(
       'success',
       alerts.length === 1
@@ -233,7 +225,7 @@ function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditCli
             job: check.job,
           })
     );
-    // The check list carries each check's alerts, so refetching it drops this row from the finding.
+    // The check list carries the alerts, so refetching it drops this row.
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
   };
 

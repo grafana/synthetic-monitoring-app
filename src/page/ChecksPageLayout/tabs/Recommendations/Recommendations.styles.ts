@@ -5,25 +5,18 @@ import { RecommendationSeverity } from './Recommendations.types';
 
 export const getSeverityColor = (theme: GrafanaTheme2, severity: RecommendationSeverity) => theme.colors[severity].main;
 
-/**
- * A rail of categories on the left and one category's findings on the right, so the tab keeps
- * a bounded height as findings are added. Each finding is a panel whose left edge carries the
- * severity colour, so severity reads once per finding and the rows themselves can stay quiet.
- * Descends from the AI sprint Insights POC (app PR #1674) so the two surfaces still read as
- * the same feature.
- */
+// Descends from the AI sprint Insights POC (app PR #1674) so the two surfaces read as one feature.
 export const getStyles = (theme: GrafanaTheme2) => ({
   mutedText: css({
     color: theme.colors.text.secondary,
     fontSize: theme.typography.bodySmall.fontSize,
   }),
 
-  // Layout
   layout: css({
     display: 'flex',
     alignItems: 'stretch',
     gap: theme.spacing(3),
-    // Tall enough that the rail reads as a rail on the short landing view.
+    // So the rail still reads as a rail on the short landing view.
     minHeight: '60vh',
   }),
   content: css({
@@ -33,16 +26,13 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     flex: 1,
     minWidth: 0,
   }),
-  // The overview line can run long; the feedback control gives way to it by wrapping, not shrinking.
   feedback: css({
     flexShrink: 0,
   }),
-  /** Pushes the dismissed-findings footer to the bottom of the content column. */
   footer: css({
     marginTop: 'auto',
   }),
 
-  // Left rail
   rail: css({
     display: 'flex',
     flexDirection: 'column',
@@ -96,7 +86,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.secondary,
   }),
 
-  // Landing view
   attentionRow: css({
     display: 'flex',
     alignItems: 'center',
@@ -128,7 +117,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     fontSize: theme.typography.bodySmall.fontSize,
   }),
 
-  // Legend
   legend: css({
     display: 'inline-flex',
     alignItems: 'center',
@@ -141,14 +129,13 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     gap: theme.spacing(0.75),
   }),
-  // The same shape as a panel's left border, so the legend explains the panels.
+  // Same shape as a panel's left border.
   legendBar: css({
     width: 14,
     height: 4,
     borderRadius: 2,
   }),
 
-  // Finding panel
   panel: css({
     display: 'flex',
     flexDirection: 'column',
@@ -169,13 +156,11 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   panelInfo: css({
     borderLeftColor: theme.colors.info.main,
   }),
-  /** Deep-link target: the panel the URL pointed at. */
   panelFocused: css({
     borderColor: theme.colors.primary.border,
   }),
 
-  // Panel header: one line. The title is the only thing allowed to give way, so the actions
-  // beside it have to stay narrow or they eat the heading.
+  // One line; the title is the only thing that gives way.
   panelHeader: css({
     display: 'flex',
     alignItems: 'flex-start',
@@ -195,7 +180,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     textAlign: 'left',
   }),
   caret: css({
-    // Optically centre the caret on the first line of the title.
+    // Optically centred on the title's first line.
     marginTop: 3,
     flexShrink: 0,
   }),
@@ -218,8 +203,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     color: theme.colors.text.disabled,
     cursor: 'help',
   }),
-  // `marginLeft: auto` rather than a growing spacer, so the group stays right-aligned when the
-  // header wraps onto two lines.
   panelActions: css({
     display: 'flex',
     alignItems: 'center',
@@ -228,7 +211,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     flexShrink: 0,
   }),
 
-  // Rows
   rows: css({
     display: 'flex',
     flexDirection: 'column',
@@ -271,7 +253,6 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     color: 'inherit',
     textAlign: 'left',
   }),
-  // The name gives way before anything else on the row does.
   rowName: css({
     fontWeight: theme.typography.fontWeightMedium,
     fontSize: theme.typography.body.fontSize,
@@ -279,7 +260,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   }),
-  // text.secondary rather than text.disabled: the latter fails contrast at this size.
+  // text.disabled fails contrast at this size.
   rowType: css({
     fontFamily: theme.typography.fontFamilyMonospace,
     fontSize: theme.typography.bodySmall.fontSize,
@@ -306,8 +287,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     '&:hover': { color: theme.colors.text.primary },
   }),
 
-  // Inline panel that opens under a row to preview an action before it runs. It sits inside a
-  // background.primary panel, so it steps darker rather than lighter to stay distinct.
+  // Inside a background.primary panel, so it steps darker rather than lighter.
   inlinePanel: css({
     padding: theme.spacing(2, 3),
     margin: theme.spacing(0.5, 0, 1),

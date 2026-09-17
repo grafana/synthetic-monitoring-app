@@ -60,7 +60,6 @@ export const CheckList = () => {
     setViewType(value);
   };
 
-  // The page chrome lives in ChecksPageLayout so the list can sit beside its sibling tabs.
   return (
     <QueryErrorBoundary>
       <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />

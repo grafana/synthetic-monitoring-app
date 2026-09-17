@@ -41,8 +41,7 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
     case RecommendationId.DuplicateChecks:
       return {
         title: t('recommendations.duplicateChecks.title', 'Duplicate checks'),
-        // The tooltip's job is to tell this finding from its sibling, so it says what was
-        // matched on. Matching ignores probes and frequency, and the copy has to be honest about that.
+        // Matching ignores probes and frequency; the copy has to say so.
         tooltip: t(
           'recommendations.duplicateChecks.description',
           'Same target, same check type, more than one check. Matched on target and type only, so compare the frequency and probes shown on each row before deciding. Each duplicate bills at full rate. Safe to delete down to one unless you are deliberately running from different probe sets.'
@@ -94,7 +93,7 @@ export function getRecommendationSummary({ id, checks, groups }: Recommendation,
         counts
       );
 
-    // Each says what kind of redundancy it is, since either can stand alone as a panel's title.
+    // Either can stand alone as a panel title, so each names its kind of redundancy.
     case RecommendationId.DuplicateChecks:
       return t(
         'recommendations.summary.duplicates',
@@ -111,15 +110,10 @@ export function getRecommendationSummary({ id, checks, groups }: Recommendation,
   }
 }
 
-/**
- * The finding's headline action as it reads on its panel, so the landing view can promise the
- * same thing the panel then offers. Mirrors the buttons each finding component renders, so it
- * has to leave out the same rows the panel does: `dismissedCheckIds` are the per-check dismissals.
- */
+// Mirrors each finding's header button, so the landing view promises what the panel offers.
 export function getRecommendationActionLabel({ id, checks }: Recommendation, dismissedCheckIds: number[]): string {
   switch (id) {
     case RecommendationId.AlertingGaps: {
-      // Only rows still showing, with an applicable default alert, take part in the bulk action.
       const applicableCount = checks.filter(
         (check) => !dismissedCheckIds.includes(check.id!) && getRecommendedAlerts(check).length > 0
       ).length;
@@ -145,7 +139,6 @@ export function getRecommendationActionLabel({ id, checks }: Recommendation, dis
 
 export interface CategoryCopy {
   label: string;
-  /** One line under the pane heading saying what the category is about. */
   caption: string;
 }
 
@@ -180,10 +173,7 @@ export function getCategoryCopy(id: RecommendationCategoryId): CategoryCopy {
   }
 }
 
-/**
- * What a category's row on the landing view says. A category with one finding borrows that
- * finding's own summary and action; one with several rolls them up.
- */
+// One finding borrows its own summary and action; several roll up.
 export function getCategoryRowCopy(
   { findings, checkCount }: CategorySummary,
   totalCheckCount: number,

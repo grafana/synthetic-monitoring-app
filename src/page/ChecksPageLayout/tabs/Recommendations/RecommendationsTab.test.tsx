@@ -57,10 +57,7 @@ function mockReportInteraction() {
   return reportInteraction;
 }
 
-/**
- * A finding's panel, found by its heading. A category with one finding leads with the summary
- * ("1 of 2 checks have no alerts"); one with several leads with each finding's name.
- */
+// A solo finding's heading is its summary ("1 of 2 checks have no alerts"); siblings use their names.
 async function findSection(name: RegExp) {
   const heading = await screen.findByRole('heading', { name });
 
@@ -104,7 +101,6 @@ describe('Recommendations tab', () => {
 
     it('rolls up a category that holds several findings', async () => {
       await renderTab([
-        // The same target once by type (duplicates) and across types (overlap): three checks, two findings.
         ...DUPLICATES(),
         buildCheck(
           { job: 'ping', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High },
@@ -119,7 +115,7 @@ describe('Recommendations tab', () => {
 
     it('sums up how much of the fleet needs attention and what to tackle first', async () => {
       await renderTab([
-        // Unalerted and a duplicate: counted once.
+        // In two findings; counted once.
         buildCheck({ job: 'primary', target: 'https://grafana.com' }),
         buildCheck({ job: 'copy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
         buildCheck({ job: 'healthy', target: 'https://b.com', alertSensitivity: AlertSensitivity.High }),
@@ -138,7 +134,6 @@ describe('Recommendations tab', () => {
       expect(await findSection(/checks are paused/)).toBeInTheDocument();
       expect(screen.getByTestId(ROUTER_TEST_ID.search)).toHaveTextContent('?category=paused');
       expect(activeRailItem()).toBe('Paused checks1');
-      // A history entry, so Back returns to the landing view rather than leaving the tab.
       expect(locationService.push).toHaveBeenCalledWith(expect.stringContaining('?category=paused'));
       expect(locationService.replace).not.toHaveBeenCalled();
     });
@@ -154,7 +149,6 @@ describe('Recommendations tab', () => {
 
       const [row] = await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
 
-      // The summary still counts every check (hiding a row is not fixing it); the action does not.
       expect(row).toHaveTextContent('Alerting3 of 3 checks have no alertsSet up alerts for all 2');
     });
   });
@@ -163,7 +157,7 @@ describe('Recommendations tab', () => {
     it('counts checks rather than findings, each check once', async () => {
       await renderTab([
         UNALERTED(),
-        // In both redundancy findings; counted once for the category.
+        // In both redundancy findings; counted once.
         ...DUPLICATES(),
         buildCheck(
           { job: 'ping', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High },
@@ -202,7 +196,6 @@ describe('Recommendations tab', () => {
         within(await findSection(/have no alerts/)).getByRole('button', { name: 'Dismiss this finding' })
       );
 
-      // The URL still says alerting, but there is nothing to show there: land instead.
       expect(await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow)).toHaveLength(1);
       expect(within(rail()).queryByRole('button', { name: /^Alerting/ })).not.toBeInTheDocument();
       expect(activeRailItem()).toBe('Needs attention');
@@ -215,7 +208,6 @@ describe('Recommendations tab', () => {
       const { user } = await renderTab([UNALERTED(), PAUSED()]);
       await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
 
-      // The landing view lists categories, not findings: nothing has been seen yet.
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_tab_viewed',
         expect.anything()
@@ -244,7 +236,7 @@ describe('Recommendations tab', () => {
   describe('legend', () => {
     it('counts checks per severity across everything on the landing view', async () => {
       await renderTab([
-        // Unalerted and paused would be two findings; as one check it is counted once per severity.
+        // One check in two findings; counted once per severity.
         UNALERTED(),
         PAUSED(),
         buildCheck({ job: 'also-paused', enabled: false, alertSensitivity: AlertSensitivity.High }),
@@ -277,7 +269,6 @@ describe('Recommendations tab', () => {
       expect(within(section).getByText('unalerted')).toBeInTheDocument();
       expect(within(section).queryByText('alerted')).not.toBeInTheDocument();
       expect(within(section).queryByRole('heading', { name: 'Alerting' })).not.toBeInTheDocument();
-      // The tooltip tells sibling findings apart; a category with one finding has none to tell apart.
       expect(section.querySelector('[name="info-circle"]')).toBeNull();
       expect(within(section).getByRole('link', { name: /view in check list/i })).toHaveAttribute(
         'href',
@@ -344,7 +335,7 @@ describe('Recommendations tab', () => {
             return { json: null };
           },
         }),
-        // Once alerts are saved, the list reflects them, which is what removes the row.
+        // Saving alerts is what makes the list drop the row.
         apiRoute('listChecks', {
           result: () => ({
             json: savedAlerts.length
@@ -407,7 +398,7 @@ describe('Recommendations tab', () => {
       await user.click(within(section).getByRole('button', { name: 'Set up alerts for all 2' }));
 
       const dialog = await screen.findByRole('dialog');
-      // Three for the HTTP check and the failed-executions alert for the scripted one.
+      // Three for HTTP, one for scripted.
       expect(within(dialog).getByText(/adds 4 alerts across 2 checks/i)).toBeInTheDocument();
 
       await user.click(within(dialog).getByRole('button', { name: 'Add alerts' }));
@@ -443,7 +434,6 @@ describe('Recommendations tab', () => {
       );
       const section = await findSection(/have no alerts/);
 
-      // One header button: for everything until something is ticked, then for the selection.
       expect(within(section).getByRole('button', { name: 'Set up alerts for all 3' })).toBeInTheDocument();
 
       await user.click(within(section).getByRole('checkbox', { name: 'Select one' }));
@@ -453,7 +443,6 @@ describe('Recommendations tab', () => {
       await user.click(within(section).getByRole('checkbox', { name: 'Select three' }));
       await user.click(within(section).getByRole('button', { name: 'Set up alerts for 2 checks' }));
 
-      // Ticked rows were chosen one by one, so no confirmation stands between them and the action.
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
       await waitFor(() => expect(updatedCheckIds.sort()).toEqual(['1', '3']));
     });
@@ -481,7 +470,6 @@ describe('Recommendations tab', () => {
       await user.click(within(section).getByRole('checkbox', { name: 'Select two' }));
       await user.click(within(section).getByRole('button', { name: 'Set up alerts for 2 checks' }));
 
-      // The one that went through leaves the selection; the one that failed is still ticked.
       await waitFor(() =>
         expect(within(section).getByRole('button', { name: 'Set up alerts for 1 check' })).toBeInTheDocument()
       );
@@ -630,7 +618,6 @@ describe('Recommendations tab', () => {
       );
       const section = await findSection(/checks are paused/);
 
-      // Nothing to resume everything with: some checks are paused on purpose.
       expect(within(section).queryByRole('button', { name: /^Resume .*checks?$/ })).not.toBeInTheDocument();
 
       await user.click(within(section).getByRole('checkbox', { name: 'Select one' }));
@@ -674,7 +661,6 @@ describe('Recommendations tab', () => {
     it('hides the checks inside a duplicate group until it is expanded', async () => {
       const { user } = await renderCategory(DUPLICATES(), RecommendationCategoryId.Redundancy);
 
-      // Alone in its category, so it leads with its summary like any other solo finding.
       const section = await findSection(/2 of 2 checks are duplicates across 1 targets/);
 
       expect(within(section).getByText('https://grafana.com')).toBeInTheDocument();
@@ -726,7 +712,6 @@ describe('Recommendations tab', () => {
 
       const editLink = within(section).getByRole('link', { name: 'Open copy in the check editor' });
       expect(editLink).toHaveAttribute('href', expect.stringContaining('/checks/11/edit'));
-      // Editing is the action, so the row does not also carry the small edit button.
       expect(within(section).queryByRole('link', { name: 'Edit copy' })).not.toBeInTheDocument();
 
       await user.click(editLink);
@@ -799,7 +784,6 @@ describe('Recommendations tab', () => {
         'href',
         expect.stringContaining('__unattributed__')
       );
-      // A label needs a value we cannot supply, so there is nothing to do to several rows at once.
       expect(within(section).queryByRole('checkbox')).not.toBeInTheDocument();
     });
 
@@ -834,7 +818,6 @@ describe('Recommendations tab', () => {
 
       await user.click(screen.getByRole('button', { name: /show dismissed findings/i }));
 
-      // Restored, and the URL's category is showable again.
       expect(await findSection(/have no alerts/)).toBeInTheDocument();
       expect(screen.getByText('No findings dismissed')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /show dismissed findings/i })).toBeDisabled();
@@ -892,7 +875,6 @@ describe('Recommendations tab', () => {
 
       expect(within(section).queryByText('one')).not.toBeInTheDocument();
       expect(within(section).getByText('two')).toBeInTheDocument();
-      // The finding still states the problem in full; hiding a row is not fixing it.
       expect(within(section).getByRole('heading', { name: /2 of 2 checks have no alerts/ })).toBeInTheDocument();
       expect(within(section).getByText('1 check dismissed')).toBeInTheDocument();
       expect(JSON.parse(localStorage.getItem(DISMISSED_CHECKS_STORAGE_KEY)!)).toEqual({ 'alerting-gaps': [1] });
@@ -997,7 +979,7 @@ describe('Recommendations tab', () => {
     await renderCategory(buildMany(26), RecommendationCategoryId.Alerting);
     section = await findSection(/have no alerts/);
 
-    // Rows sort by name, so it is the lexically last one that falls onto the second page.
+    // Rows sort by name, so -9 is what falls onto page two.
     expect(within(section).getByText('unalerted-0')).toBeInTheDocument();
     expect(within(section).queryByText('unalerted-9')).not.toBeInTheDocument();
     expect(within(section).getByRole('navigation')).toBeInTheDocument();
@@ -1030,7 +1012,6 @@ describe('Recommendations tab', () => {
       );
     });
 
-    // Finding nothing worth showing is as useful a signal as a finding being wrong.
     it('is available even when there is nothing to report', async () => {
       await renderTab([
         buildCheck({ job: 'healthy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
