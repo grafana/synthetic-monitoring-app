@@ -748,6 +748,7 @@ interface ActionBaselineLike {
   durationMs: number | null;
   occurrences: number | null;
   httpErrors: number | null;
+  exceptions: number | null;
 }
 
 // A real-user failure rate above this on a named action is worth leading
@@ -793,19 +794,35 @@ export function getSummaryVerdict({
   }
 
   // Worst named action by real-user failure rate, above threshold.
+  //
+  // The faro.user.action marker has no native success/failure field at all
+  // (confirmed against the one raw payload captured this session — it's
+  // purely a timing capture: start/end/duration/trigger/importance plus
+  // whatever custom business attributes the app attached). "Failure" is
+  // something we infer by correlating whatever else happened during the
+  // action's window via action_parent_id — so it has to combine every
+  // failure-shaped signal available, not just HTTP errors: an action that
+  // fails via a thrown JS exception with no failed network call at all
+  // would otherwise never trip this.
   let worstFailingAction: { name: string; rate: number; failed: number; occurrences: number } | null = null;
 
   actions.forEach((action) => {
     const baseline = actionBaselines[action.actionName];
 
-    if (!baseline?.occurrences || !baseline.httpErrors) {
+    if (!baseline?.occurrences) {
       return;
     }
 
-    const rate = baseline.httpErrors / baseline.occurrences;
+    const failed = (baseline.httpErrors ?? 0) + (baseline.exceptions ?? 0);
+
+    if (!failed) {
+      return;
+    }
+
+    const rate = failed / baseline.occurrences;
 
     if (rate > ACTION_FAILURE_RATE_THRESHOLD && (!worstFailingAction || rate > worstFailingAction.rate)) {
-      worstFailingAction = { name: action.actionName, rate, failed: baseline.httpErrors, occurrences: baseline.occurrences };
+      worstFailingAction = { name: action.actionName, rate, failed, occurrences: baseline.occurrences };
     }
   });
 

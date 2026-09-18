@@ -308,8 +308,13 @@ const ActionRow = ({
   maxDurationMs: number;
 }) => {
   const styles = useStyles2(getStyles);
-  const failureRate =
-    baseline?.httpErrors && baseline?.occurrences ? (baseline.httpErrors / baseline.occurrences) * 100 : null;
+  // The action marker has no native success/failure field (it's purely a
+  // timing capture) — "failure" is inferred by combining every
+  // failure-shaped signal correlated to it, not just HTTP errors, or an
+  // action that fails via a thrown exception with no failed request at all
+  // would never show as failing.
+  const failedTotal = (baseline?.httpErrors ?? 0) + (baseline?.exceptions ?? 0);
+  const failureRate = baseline?.occurrences && failedTotal > 0 ? (failedTotal / baseline.occurrences) * 100 : null;
 
   return (
     <Stack direction="column" gap={0.5}>
@@ -336,8 +341,9 @@ const ActionRow = ({
         {action.errorCount > 0 && `, ${action.errorCount} failed this run`}
         {baseline?.occurrences != null &&
           ` · ${baseline.occurrences} real-user occurrence${baseline.occurrences === 1 ? '' : 's'}/hr`}
-        {failureRate !== null && ` · ${failureRate.toFixed(1)}% real-user failure rate`}
-        {baseline?.exceptions ? ` · ${baseline.exceptions} JS exceptions` : ''}
+        {baseline?.httpErrors ? `, ${baseline.httpErrors} failed requests` : ''}
+        {baseline?.exceptions ? `, ${baseline.exceptions} JS exceptions` : ''}
+        {failureRate !== null && ` (${failureRate.toFixed(1)}% combined real-user failure rate)`}
       </Text>
     </Stack>
   );
