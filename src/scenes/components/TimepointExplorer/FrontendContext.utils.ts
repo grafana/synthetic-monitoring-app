@@ -673,3 +673,172 @@ export function parseSimilarSessions(logs: FaroRecord[], journeyPageIds: string[
     })
     .sort((a, b) => b.matchedPages.length - a.matchedPages.length || b.lastSeen - a.lastSeen);
 }
+
+export type SummaryTone = 'error' | 'warning' | 'info' | 'success' | 'secondary';
+
+export interface SummaryChip {
+  text: string;
+  tone: SummaryTone;
+}
+
+export interface SummaryVerdict {
+  text: string;
+  tone: SummaryTone;
+  chips: SummaryChip[];
+}
+
+// Structural shape rather than importing RealUserActionBaseline from hooks —
+// utils shouldn't depend on hooks (wrong direction; hooks already imports
+// from here).
+interface ActionBaselineLike {
+  durationMs: number | null;
+  occurrences: number | null;
+  httpErrors: number | null;
+}
+
+// A real-user failure rate above this on a named action is worth leading
+// the summary with — below it, it's noise a rules pass shouldn't surface.
+const ACTION_FAILURE_RATE_THRESHOLD = 0.02;
+// Same 1.5x asymmetry threshold as the per-page fidelity verdict, applied to
+// one metric (duration) instead of five (vitals).
+const ACTION_FIDELITY_RATIO = 1.5;
+
+/**
+ * One-sentence, rules-based synthesis over data the panel already fetched —
+ * cowork's "summary band" proposal. Priority order: is a real user hitting
+ * the same failure as this run (only asked when the check itself failed);
+ * otherwise, does anything about this run diverge from what real users
+ * experience (deploy, fidelity) worth a passing check knowing about.
+ */
+export function getSummaryVerdict({
+  probeSuccess,
+  versionChange,
+  exceptions,
+  exceptionRealSessionCounts,
+  actions,
+  actionBaselines,
+}: {
+  probeSuccess?: boolean;
+  versionChange?: AppVersionChange | null;
+  exceptions: FaroException[];
+  exceptionRealSessionCounts: Record<string, number> | null | undefined;
+  actions: FaroAction[];
+  actionBaselines: Record<string, ActionBaselineLike | null | undefined>;
+}): SummaryVerdict {
+  const chips: SummaryChip[] = [];
+  const deployedRecently = Boolean(versionChange?.previousVersion && versionChange.firstSeen);
+
+  if (versionChange) {
+    chips.push(
+      deployedRecently
+        ? { text: 'Deploy landed before this run', tone: 'warning' }
+        : { text: 'No deploy in the last 6h', tone: 'success' }
+    );
+  }
+
+  // Worst named action by real-user failure rate, above threshold.
+  let worstFailingAction: { name: string; rate: number; failed: number; occurrences: number } | null = null;
+
+  actions.forEach((action) => {
+    const baseline = actionBaselines[action.actionName];
+
+    if (!baseline?.occurrences || !baseline.httpErrors) {
+      return;
+    }
+
+    const rate = baseline.httpErrors / baseline.occurrences;
+
+    if (rate > ACTION_FAILURE_RATE_THRESHOLD && (!worstFailingAction || rate > worstFailingAction.rate)) {
+      worstFailingAction = { name: action.actionName, rate, failed: baseline.httpErrors, occurrences: baseline.occurrences };
+    }
+  });
+
+  // Any of this run's exceptions also hitting real users?
+  const sharedException = exceptions.find((exception) => (exceptionRealSessionCounts?.[exception.message] ?? 0) > 0);
+  const sharedExceptionCount = sharedException ? exceptionRealSessionCounts![sharedException.message] : 0;
+
+  // Worst action where the check ran meaningfully faster than real users —
+  // the dangerous fidelity direction, same asymmetry as the page verdict.
+  let worstOptimisticAction: { name: string; ratio: number } | null = null;
+
+  actions.forEach((action) => {
+    const baseline = actionBaselines[action.actionName];
+
+    if (action.durationMs === undefined || baseline?.durationMs == null) {
+      return;
+    }
+
+    if (baseline.durationMs > action.durationMs * ACTION_FIDELITY_RATIO) {
+      const ratio = baseline.durationMs / action.durationMs;
+
+      if (!worstOptimisticAction || ratio > worstOptimisticAction.ratio) {
+        worstOptimisticAction = { name: action.actionName, ratio };
+      }
+    }
+  });
+
+  if (probeSuccess === false) {
+    if (worstFailingAction !== null) {
+      const { name, failed, occurrences } = worstFailingAction as { name: string; failed: number; occurrences: number; rate: number };
+
+      return {
+        text: `Real users are also failing on ${name}: ${failed} of ${occurrences} occurrences in the past hour.`,
+        tone: 'error',
+        chips,
+      };
+    }
+
+    if (sharedException) {
+      return {
+        text: `This run's error is also hitting real users — seen in ${sharedExceptionCount} real session${sharedExceptionCount === 1 ? '' : 's'} in the past hour.`,
+        tone: 'error',
+        chips,
+      };
+    }
+
+    return {
+      text: "Real users don't appear to be seeing this failure. Start with the check, not the app.",
+      tone: 'success',
+      chips,
+    };
+  }
+
+  if (worstFailingAction !== null) {
+    const { name, rate } = worstFailingAction as { name: string; rate: number; failed: number; occurrences: number };
+    chips.push({ text: `${name}: ${(rate * 100).toFixed(1)}% real-user failure rate`, tone: 'error' });
+  }
+
+  if (worstOptimisticAction !== null) {
+    const { name, ratio } = worstOptimisticAction as { name: string; ratio: number };
+
+    return {
+      text: `This check runs ${ratio.toFixed(1)}x faster than real users on ${name} — it could keep passing through a real degradation.`,
+      tone: 'info',
+      chips,
+    };
+  }
+
+  if (worstFailingAction !== null) {
+    const { name } = worstFailingAction as { name: string; rate: number; failed: number; occurrences: number };
+
+    return {
+      text: `This run passed, but real users are failing on ${name}.`,
+      tone: 'error',
+      chips,
+    };
+  }
+
+  if (deployedRecently) {
+    return {
+      text: 'A new version shipped before this run. No other divergence from real users detected.',
+      tone: 'warning',
+      chips,
+    };
+  }
+
+  return {
+    text: 'Nothing notable diverges from real users.',
+    tone: 'secondary',
+    chips,
+  };
+}

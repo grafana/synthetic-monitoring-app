@@ -12,11 +12,12 @@ import { fetchTraceData } from 'scenes/components/LogsRenderer/LogLine.utils';
 import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
 import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import {
+  RealUserActionBaseline,
   RealUserPageBaseline,
   useAppVersionChange,
   useExceptionRealSessions,
   useFaroExecutionContext,
-  useRealUserActionBaseline,
+  useRealUserActionBaselines,
   useRealUserPageBaseline,
   useSimilarRealSessions,
 } from 'scenes/components/TimepointExplorer/FrontendContext.hooks';
@@ -33,7 +34,9 @@ import {
   getMedianRequestDuration,
   getPageComparisonVerdict,
   getRequestPath,
+  getSummaryVerdict,
   rateWebVital,
+  SummaryTone,
   WEB_VITAL_LABELS,
   WEB_VITALS,
   WebVitalName,
@@ -75,11 +78,24 @@ export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }
     return null;
   }
 
-  return <FrontendContextPanel context={context} from={timepoint.adjustedTime} to={to} />;
+  const probeSuccess = selectedExecution?.labels.probe_success === '1';
+
+  return <FrontendContextPanel context={context} from={timepoint.adjustedTime} to={to} probeSuccess={probeSuccess} />;
 };
 
-const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionContext; from: number; to: number }) => {
+const FrontendContextPanel = ({
+  context,
+  from,
+  to,
+  probeSuccess,
+}: {
+  context: FaroExecutionContext;
+  from: number;
+  to: number;
+  probeSuccess: boolean;
+}) => {
   const styles = useStyles2(getStyles);
+  const [expanded, setExpanded] = useState(false);
   const sessionHref = buildFaroSessionHref({
     pluginId: FARO_APP_PLUGIN_ID,
     appId: context.appId,
@@ -91,15 +107,12 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
       <div className={styles.header}>
         <Stack direction="row" gap={1} alignItems="center">
           <Icon name="frontend-observability" />
-          <Text variant="h6">Frontend Observability</Text>
+          <Text variant="h6">Real user context</Text>
           {context.appName && (
             <Text color="secondary" variant="bodySmall">
               <span className={styles.mono}>{context.appName}</span>
             </Text>
           )}
-          <Tooltip content="What your check's browser session looked like from inside your application, as recorded by the Faro SDK. Faro measures web vitals at a different point than k6 does, so these values can differ slightly from the k6-reported vitals elsewhere on this page.">
-            <Icon name="info-circle" size="sm" />
-          </Tooltip>
         </Stack>
         <Stack direction="row" gap={1} alignItems="center">
           {context.hasSessionReplay ? (
@@ -114,8 +127,24 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
         </Stack>
       </div>
 
-      <div className={styles.body}>
-        <AppVersionLine context={context} from={from} to={to} />
+      <div className={styles.provenance}>
+        <Text color="secondary" variant="bodySmall" italic>
+          Read from the Faro session this check created — including the check&apos;s own actions, requests and
+          exceptions. Action names come from the app, not from your check configuration.
+        </Text>
+      </div>
+
+      <SummaryBand
+        context={context}
+        to={to}
+        probeSuccess={probeSuccess}
+        expanded={expanded}
+        onToggle={() => setExpanded(!expanded)}
+      />
+
+      {expanded && (
+        <div className={styles.body}>
+          <AppVersionLine context={context} from={from} to={to} />
 
         {context.exceptions.length > 0 && (
           <div className={styles.section}>
@@ -144,14 +173,98 @@ const FrontendContextPanel = ({ context, from, to }: { context: FaroExecutionCon
           </Stack>
         </div>
 
-        <SimilarSessions context={context} to={to} />
-      </div>
+          <SimilarSessions context={context} to={to} />
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CHIP_COLOR: Record<SummaryTone, BadgeColor> = {
+  error: 'red',
+  warning: 'orange',
+  info: 'blue',
+  success: 'green',
+  secondary: 'blue',
+};
+
+const SummaryBand = ({
+  context,
+  to,
+  probeSuccess,
+  expanded,
+  onToggle,
+}: {
+  context: FaroExecutionContext;
+  to: number;
+  probeSuccess: boolean;
+  expanded: boolean;
+  onToggle: () => void;
+}) => {
+  const styles = useStyles2(getStyles);
+  const { data: versionChange } = useAppVersionChange({
+    appId: context.appId,
+    runVersion: context.appVersion ?? '',
+    to,
+    enabled: Boolean(context.appVersion),
+  });
+  const { data: exceptionRealSessionCounts } = useExceptionRealSessions({
+    appId: context.appId,
+    messages: context.exceptions.map((exception) => exception.message),
+    to,
+  });
+  const { data: actionBaselines } = useRealUserActionBaselines({
+    appId: context.appId,
+    actionNames: context.actions.map((action) => action.actionName),
+    to,
+  });
+
+  const verdict = getSummaryVerdict({
+    probeSuccess,
+    versionChange,
+    exceptions: context.exceptions,
+    exceptionRealSessionCounts,
+    actions: context.actions,
+    actionBaselines,
+  });
+
+  return (
+    <div className={styles.summaryBand}>
+      <Text variant="h5" color={verdict.tone === 'secondary' ? undefined : verdict.tone}>
+        {verdict.text}
+      </Text>
+      {verdict.chips.length > 0 && (
+        <Stack direction="row" gap={1} wrap="wrap">
+          {verdict.chips.map((chip, index) => (
+            <Badge key={index} text={chip.text} color={CHIP_COLOR[chip.tone]} />
+          ))}
+        </Stack>
+      )}
+      <PlainButton onClick={onToggle}>
+        <Text color="link" variant="bodySmall">
+          <Icon name={expanded ? 'angle-up' : 'angle-down'} size="sm" /> {expanded ? 'Hide detail' : 'Show detail'}
+        </Text>
+      </PlainButton>
     </div>
   );
 };
 
 const ActionsList = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
   const styles = useStyles2(getStyles);
+  const actionNames = context.actions.map((action) => action.actionName);
+  const { data: baselines } = useRealUserActionBaselines({ appId: context.appId, actionNames, to });
+
+  // One shared scale across every action's bars — lets "which action is
+  // slowest" and "where do run and p75 disagree most" both read at a
+  // glance, without anyone parsing a number. Per-row scaling would show
+  // divergence but destroy cross-action comparison.
+  const maxDurationMs = Math.max(
+    1,
+    ...context.actions.flatMap((action) => {
+      const baseline = baselines[action.actionName];
+      return [action.durationMs, baseline?.durationMs].filter((value): value is number => value != null);
+    })
+  );
 
   return (
     <Stack direction="column" gap={1}>
@@ -161,10 +274,10 @@ const ActionsList = ({ context, to }: { context: FaroExecutionContext; to: numbe
           <Icon name="info-circle" size="sm" />
         </Tooltip>
       </Stack>
-      <Stack direction="column" gap={0.5}>
+      <Stack direction="column" gap={1}>
         {context.actions.map((action) => (
           <div key={action.actionId} className={styles.indent}>
-            <ActionRow appId={context.appId} action={action} to={to} />
+            <ActionRow action={action} baseline={baselines[action.actionName]} maxDurationMs={maxDurationMs} />
           </div>
         ))}
       </Stack>
@@ -172,36 +285,76 @@ const ActionsList = ({ context, to }: { context: FaroExecutionContext; to: numbe
   );
 };
 
-const ActionRow = ({ appId, action, to }: { appId: string; action: FaroAction; to: number }) => {
+const ActionRow = ({
+  action,
+  baseline,
+  maxDurationMs,
+}: {
+  action: FaroAction;
+  baseline: RealUserActionBaseline | null | undefined;
+  maxDurationMs: number;
+}) => {
   const styles = useStyles2(getStyles);
-  const { data: baseline } = useRealUserActionBaseline({
-    appId,
-    actionName: action.actionName,
-    to,
-    enabled: action.durationMs !== undefined,
-  });
+  const failureRate =
+    baseline?.httpErrors && baseline?.occurrences ? (baseline.httpErrors / baseline.occurrences) * 100 : null;
 
   return (
-    <Stack direction="column" gap={0.25}>
+    <Stack direction="column" gap={0.5}>
       <Text variant="bodySmall">
         <span className={cx(styles.mono, styles.actionName)}>{action.actionName}</span>{' '}
-        <Text color={action.errorCount > 0 ? 'error' : 'secondary'} variant="bodySmall">
+        <Text color="secondary" variant="bodySmall">
           on {action.pageId || 'unknown page'}
-          {action.durationMs !== undefined && ` · ${formatDurationMs(action.durationMs)}`}
-          {baseline?.durationMs != null && ` (real users p75: ${formatDurationMs(baseline.durationMs)})`}
-          {' · '}
-          {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
-          {action.errorCount > 0 && `, ${action.errorCount} failed`}
         </Text>
       </Text>
-      {baseline?.occurrences != null && (
-        <Text color={baseline.httpErrors || baseline.exceptions ? 'error' : 'secondary'} variant="bodySmall">
-          Real users: {baseline.occurrences} occurrence{baseline.occurrences === 1 ? '' : 's'} in the past hour
-          {baseline.httpErrors ? `, ${baseline.httpErrors} failed requests` : ''}
-          {baseline.exceptions ? `, ${baseline.exceptions} JS exceptions` : ''}
-        </Text>
+
+      {(action.durationMs !== undefined || baseline?.durationMs != null) && (
+        <Stack direction="column" gap={0.25}>
+          {action.durationMs !== undefined && (
+            <BarRow label="this run" valueMs={action.durationMs} maxMs={maxDurationMs} tone="run" />
+          )}
+          {baseline?.durationMs != null && (
+            <BarRow label="users p75" valueMs={baseline.durationMs} maxMs={maxDurationMs} tone="p75" />
+          )}
+        </Stack>
       )}
+
+      <Text color={action.errorCount > 0 || failureRate !== null ? 'error' : 'secondary'} variant="bodySmall">
+        {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
+        {action.errorCount > 0 && `, ${action.errorCount} failed this run`}
+        {baseline?.occurrences != null &&
+          ` · ${baseline.occurrences} real-user occurrence${baseline.occurrences === 1 ? '' : 's'}/hr`}
+        {failureRate !== null && ` · ${failureRate.toFixed(1)}% real-user failure rate`}
+        {baseline?.exceptions ? ` · ${baseline.exceptions} JS exceptions` : ''}
+      </Text>
     </Stack>
+  );
+};
+
+const BarRow = ({
+  label,
+  valueMs,
+  maxMs,
+  tone,
+}: {
+  label: string;
+  valueMs: number;
+  maxMs: number;
+  tone: 'run' | 'p75';
+}) => {
+  const styles = useStyles2(getStyles);
+  const widthPct = Math.min(100, (valueMs / maxMs) * 100);
+
+  return (
+    <div className={styles.barRow}>
+      <span className={cx(styles.mono, styles.barLabel)}>{label}</span>
+      <div className={styles.barTrack}>
+        <div
+          className={cx(styles.barFill, tone === 'run' ? styles.barFillRun : styles.barFillP75)}
+          style={{ width: `${widthPct}%` }}
+        />
+      </div>
+      <Text variant="bodySmall">{formatDurationMs(valueMs)}</Text>
+    </div>
   );
 };
 
@@ -542,11 +695,6 @@ const PageVisit = ({
                 />
               );
             })}
-            {!hasVitals && (
-              <Text color="secondary" italic variant="bodySmall">
-                no web vitals for this page
-              </Text>
-            )}
           </Stack>
           {(hasVitals || hasOwnRequests) && (
             <PlainButton onClick={() => setIsComparisonOpen(!isComparisonOpen)}>
@@ -776,6 +924,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
     background: ${theme.colors.background.secondary};
     border-bottom: 1px solid ${theme.colors.border.medium};
   `,
+  provenance: css`
+    padding: ${theme.spacing(1, 2)};
+    background: ${theme.colors.background.secondary};
+    border-bottom: 1px solid ${theme.colors.border.medium};
+  `,
+  summaryBand: css`
+    display: flex;
+    flex-direction: column;
+    gap: ${theme.spacing(1)};
+    padding: ${theme.spacing(2)};
+    border-bottom: 1px solid ${theme.colors.border.medium};
+  `,
   body: css`
     display: flex;
     flex-direction: column;
@@ -824,6 +984,32 @@ const getStyles = (theme: GrafanaTheme2) => ({
   `,
   resultCardFidelity: css`
     border-left-color: ${theme.colors.info.border};
+  `,
+  barRow: css`
+    display: grid;
+    grid-template-columns: 64px 1fr 64px;
+    gap: ${theme.spacing(1)};
+    align-items: center;
+  `,
+  barLabel: css`
+    font-size: ${theme.typography.bodySmall.fontSize};
+    color: ${theme.colors.text.secondary};
+  `,
+  barTrack: css`
+    height: 8px;
+    background: ${theme.colors.background.secondary};
+    border-radius: 2px;
+    overflow: hidden;
+  `,
+  barFill: css`
+    display: block;
+    height: 100%;
+  `,
+  barFillRun: css`
+    background: ${theme.colors.info.border};
+  `,
+  barFillP75: css`
+    background: ${theme.colors.border.strong};
   `,
   comparisonTable: css`
     border-collapse: collapse;

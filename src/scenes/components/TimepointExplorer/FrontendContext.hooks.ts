@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery } from '@tanstack/react-query';
 import { DataFrame, FieldType } from '@grafana/data';
 import { parseLokiLogs } from 'features/parseLokiLogs/parseLokiLogs';
 import { queryDS } from 'features/queryDatasources/queryDS';
@@ -182,6 +182,50 @@ interface UseRealUserActionBaselineProps {
   enabled?: boolean;
 }
 
+async function fetchRealUserActionBaseline(
+  logsDS: ReturnType<typeof useLogsDS>,
+  appId: string,
+  actionName: string,
+  to: number
+): Promise<RealUserActionBaseline | null> {
+  if (!logsDS) {
+    return null;
+  }
+
+  const queryParams = { appId, actionName, range: BASELINE_RANGE };
+  const instantQuery = {
+    range: false,
+    instant: true,
+    queryType: 'instant',
+    datasource: logsDS,
+    maxDataPoints: 100,
+    intervalMs: 20_000,
+  };
+
+  try {
+    const results = await queryDS({
+      queries: [
+        { ...instantQuery, refId: 'duration', expr: buildRealUserActionDurationLogQL(queryParams) },
+        { ...instantQuery, refId: 'occurrences', expr: buildRealUserActionCountLogQL(queryParams) },
+        { ...instantQuery, refId: 'http-errors', expr: buildRealUserActionHttpErrorsLogQL(queryParams) },
+        { ...instantQuery, refId: 'exceptions', expr: buildRealUserActionExceptionsLogQL(queryParams) },
+      ],
+      start: to - BASELINE_RANGE_MS,
+      end: to,
+    });
+
+    return {
+      durationMs: getInstantValue(results['duration']),
+      occurrences: getInstantValue(results['occurrences']),
+      httpErrors: getInstantValue(results['http-errors']),
+      exceptions: getInstantValue(results['exceptions']),
+    };
+  } catch {
+    // Fail silently - the panel simply won't show an action baseline.
+    return null;
+  }
+}
+
 export function useRealUserActionBaseline({ appId, actionName, to, enabled = true }: UseRealUserActionBaselineProps) {
   const logsDS = useLogsDS();
   const canQuery = Boolean(logsDS && appId && actionName && to && enabled);
@@ -189,49 +233,54 @@ export function useRealUserActionBaseline({ appId, actionName, to, enabled = tru
   return useQuery<RealUserActionBaseline | null>({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- logsDS.uid is a stable identifier
     queryKey: ['faro-action-baseline', logsDS?.uid, appId, actionName, to],
-    queryFn: async () => {
-      if (!logsDS) {
-        return null;
-      }
-
-      const queryParams = { appId, actionName, range: BASELINE_RANGE };
-      const instantQuery = {
-        range: false,
-        instant: true,
-        queryType: 'instant',
-        datasource: logsDS,
-        maxDataPoints: 100,
-        intervalMs: 20_000,
-      };
-
-      try {
-        const results = await queryDS({
-          queries: [
-            { ...instantQuery, refId: 'duration', expr: buildRealUserActionDurationLogQL(queryParams) },
-            { ...instantQuery, refId: 'occurrences', expr: buildRealUserActionCountLogQL(queryParams) },
-            { ...instantQuery, refId: 'http-errors', expr: buildRealUserActionHttpErrorsLogQL(queryParams) },
-            { ...instantQuery, refId: 'exceptions', expr: buildRealUserActionExceptionsLogQL(queryParams) },
-          ],
-          start: to - BASELINE_RANGE_MS,
-          end: to,
-        });
-
-        return {
-          durationMs: getInstantValue(results['duration']),
-          occurrences: getInstantValue(results['occurrences']),
-          httpErrors: getInstantValue(results['http-errors']),
-          exceptions: getInstantValue(results['exceptions']),
-        };
-      } catch {
-        // Fail silently - the panel simply won't show an action baseline.
-        return null;
-      }
-    },
+    queryFn: () => fetchRealUserActionBaseline(logsDS, appId, actionName, to),
     enabled: canQuery,
     staleTime: 60_000,
     retry: false,
     throwOnError: false,
   });
+}
+
+interface UseRealUserActionBaselinesProps {
+  appId: string;
+  actionNames: string[];
+  to: number;
+  enabled?: boolean;
+}
+
+/**
+ * Same data as useRealUserActionBaseline, batched for all of a run's named
+ * actions at once — the summary band needs every action's baseline to pick
+ * its headline finding, not just one row's. Query keys match the per-row
+ * hook's exactly, so react-query dedupes the underlying fetches rather than
+ * doubling network calls.
+ */
+export function useRealUserActionBaselines({ appId, actionNames, to, enabled = true }: UseRealUserActionBaselinesProps) {
+  const logsDS = useLogsDS();
+  const canQuery = Boolean(logsDS && appId && actionNames.length && to && enabled);
+
+  const queries = useQueries({
+    queries: actionNames.map((actionName) => ({
+      // eslint-disable-next-line @tanstack/query/exhaustive-deps -- logsDS.uid is a stable identifier
+      queryKey: ['faro-action-baseline', logsDS?.uid, appId, actionName, to],
+      queryFn: () => fetchRealUserActionBaseline(logsDS, appId, actionName, to),
+      enabled: canQuery,
+      staleTime: 60_000,
+      retry: false,
+      throwOnError: false,
+    })),
+  });
+
+  // Cheap enough (a handful of actions per run) to build plainly each
+  // render rather than memoize — useQueries' return isn't referentially
+  // stable, so memoizing on it would be a no-op anyway.
+  const data: Record<string, RealUserActionBaseline | null> = {};
+
+  actionNames.forEach((name, index) => {
+    data[name] = queries[index]?.data ?? null;
+  });
+
+  return { data, isLoading: queries.some((query) => query.isLoading) };
 }
 
 // Deploys are only useful context if they happened recently — look back far
