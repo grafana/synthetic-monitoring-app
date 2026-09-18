@@ -1,0 +1,98 @@
+import React, { useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Drawer, LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+
+import { Check } from 'types';
+
+import { ConnectedServicesZeroState } from './ConnectedServices';
+import { CONNECTED_SERVICES_SUBTITLE, CONNECTED_SERVICES_TEST_ID, CONNECTED_SERVICES_TITLE } from './ConnectedServices.constants';
+import { getCheckGraphUrl } from './ConnectedServices.utils';
+import { ConnectedServicesEntityGraph, useExposedEntityGraph } from './ConnectedServicesEntityGraph';
+import { findLabelValue, getSyntheticCheckEntityName, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
+
+interface ConnectedServicesMiniGraphProps {
+  check: Check;
+}
+
+/**
+ * A "Mini graph" toolbar button next to the check's Knowledge Graph insights, opening the
+ * check's service neighbourhood in a tall side drawer — the same shape as the KG workbench's
+ * minigraph panel. A ranked (dagre) graph wants vertical space; the wide, short inline section
+ * miniaturizes it, while the drawer gives it a full column on demand.
+ *
+ * Renders nothing when the KG doesn't expose the entity graph component (asserts app predating
+ * the exposure): the inline Connected services section already shows the SM-owned graph, so a
+ * drawer falling back to the same renderer would only duplicate it.
+ */
+export function ConnectedServicesMiniGraph({ check }: ConnectedServicesMiniGraphProps) {
+  const kgEnabled = useKnowledgeGraphEnabled();
+  const { component: EntityGraph, isLoading } = useExposedEntityGraph();
+  const styles = useStyles2(getStyles);
+  const [open, setOpen] = useState(false);
+
+  if (!kgEnabled || isLoading || !EntityGraph) {
+    return null;
+  }
+
+  const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
+
+  return (
+    <>
+      {/* Same anatomy as its header neighbours (SLOs, Edit check). */}
+      <Button
+        variant="secondary"
+        icon="sitemap"
+        onClick={() => setOpen(true)}
+        data-testid={CONNECTED_SERVICES_TEST_ID.miniGraphButton}
+      >
+        Mini graph
+      </Button>
+      {open && (
+        <Drawer title={CONNECTED_SERVICES_TITLE} subtitle={CONNECTED_SERVICES_SUBTITLE} size="md" onClose={() => setOpen(false)}>
+          <div className={styles.drawerBody} data-testid={CONNECTED_SERVICES_TEST_ID.miniGraphDrawer}>
+            <Stack direction="column" gap={1} height="100%">
+              {serviceName && (
+                <div className={styles.openLink}>
+                  <LinkButton
+                    variant="secondary"
+                    size="sm"
+                    icon="external-link-alt"
+                    href={getCheckGraphUrl(getSyntheticCheckEntityName(check))}
+                    target="_blank"
+                  >
+                    Open in Knowledge Graph
+                  </LinkButton>
+                </div>
+              )}
+              <div className={styles.graph}>
+                {serviceName ? (
+                  <ConnectedServicesEntityGraph check={check} EntityGraph={EntityGraph} height="100%" />
+                ) : (
+                  <ConnectedServicesZeroState checkId={check.id} />
+                )}
+              </div>
+            </Stack>
+          </div>
+        </Drawer>
+      )}
+    </>
+  );
+}
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  drawerBody: css({
+    height: '100%',
+  }),
+  openLink: css({
+    display: 'flex',
+    justifyContent: 'flex-end',
+  }),
+  graph: css({
+    flex: 1,
+    minHeight: 0,
+    // The exposed graph and the fallback SVG both center themselves; give them the column.
+    height: '100%',
+  }),
+});

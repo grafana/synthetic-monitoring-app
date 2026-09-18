@@ -1,6 +1,6 @@
 import React from 'react';
 import { DataSourceInstanceSettings, LoadingState } from '@grafana/data';
-import { config, useAppPluginInstalled } from '@grafana/runtime';
+import { config, useAppPluginInstalled, usePluginComponent } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { of, throwError } from 'rxjs';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
@@ -17,7 +17,9 @@ import { SMDataSource } from 'datasource/DataSource';
 import { ConnectedServices } from './ConnectedServices';
 import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
 import { parseGraphFrames } from './ConnectedServices.utils';
+import { ExposedEntityGraphProps } from './ConnectedServicesEntityGraph';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
+import { KG_ENTITY_GRAPH_COMPONENT_ID } from './knowledgeGraph';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
 
@@ -416,4 +418,29 @@ it.each([
   expect(
     await screen.findByText(`Linked to otel-demo/frontend in 2 environments: ${[label, 'prod'].sort().join(', ')}`)
   ).toBeInTheDocument();
+});
+
+describe('with the KG-exposed Entity Graph component available', () => {
+  /** Serves the exposed component for its ID only; everything else keeps the null default. */
+  function setExposedEntityGraph(Stub: React.ComponentType<ExposedEntityGraphProps>) {
+    jest.mocked(usePluginComponent).mockImplementation((id: string) =>
+      id === KG_ENTITY_GRAPH_COMPONENT_ID
+        ? { component: Stub as React.ComponentType, isLoading: false }
+        : { component: null, isLoading: false }
+    );
+  }
+
+  afterEach(() => {
+    jest.mocked(usePluginComponent).mockImplementation(() => ({ component: null, isLoading: false }));
+  });
+
+  it('keeps the SM-owned renderer inline — the exposed graph belongs to the mini-graph drawer', async () => {
+    setKgInstalled(true);
+    setExposedEntityGraph(() => <div>exposed entity graph</div>);
+
+    await renderGraph();
+
+    expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.graph)).toBeInTheDocument();
+    expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.exposedGraph)).not.toBeInTheDocument();
+  });
 });

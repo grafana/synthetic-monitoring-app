@@ -95,6 +95,7 @@ describe('buildServiceNeighbourhoodQuery', () => {
 
     expect(query).toContain('{name: "evil\\"} DETACH DELETE n //"}');
   });
+
 });
 
 describe('getCheckGraphUrl', () => {

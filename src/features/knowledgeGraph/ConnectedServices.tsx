@@ -97,7 +97,14 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
       {isOpen && (
         <div className={styles.body}>
-          {serviceName ? <ServiceNeighbourhoodGraph check={check} /> : <ConnectedServicesZeroState checkId={check.id} />}
+          {serviceName ? (
+            // Always the SM-owned renderer inline: its compact fixed layout is made for the wide,
+            // short section. The exposed KG entity graph renders in the mini-graph drawer, where a
+            // ranked layout gets the vertical space it needs.
+            <FallbackNeighbourhoodGraph check={check} />
+          ) : (
+            <ConnectedServicesZeroState checkId={check.id} />
+          )}
         </div>
       )}
     </section>
@@ -108,7 +115,12 @@ interface ServiceNeighbourhoodGraphProps {
   check: Check;
 }
 
-function ServiceNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
+/**
+ * The SM-owned neighbourhood renderer: Cypher via the KG datasource, drawn by
+ * ConnectedServicesGraph. The exposed KG entity graph renders only in the mini-graph drawer —
+ * a drawer falling back to this same renderer would just duplicate the section.
+ */
+function FallbackNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);
   const { data, isLoading, isError, refetch } = useServiceNeighbourhood(check);
 
@@ -153,7 +165,8 @@ interface ConnectedServicesZeroStateProps {
   checkId: Check['id'];
 }
 
-function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
+/** Exported for the mini-graph drawer, which shows the same CTA for an unlinked check. */
+export function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
   const styles = useStyles2(getStyles);
   // Deep link straight to the Labels section of the edit form, where the KG service link lives.
   const editHref =
