@@ -678,6 +678,11 @@ const PageVisit = ({
           <TextLink href={pageHref} inline={false}>
             {page.pageId}
           </TextLink>
+          {page.pageLoadTimeMs !== undefined && (
+            <Tooltip content="Total page load time from faro.performance.navigation — the headline outcome; the vitals alongside it are the diagnostic breakdown. Not a Core Web Vital, no good/poor threshold.">
+              <Text weight="medium">{formatDurationMs(page.pageLoadTimeMs)} page load</Text>
+            </Tooltip>
+          )}
           <Stack direction="row" gap={0.5} alignItems="center">
             {WEB_VITALS.map((vital) => {
               const value = page.vitals[vital];
@@ -695,13 +700,6 @@ const PageVisit = ({
                 />
               );
             })}
-            {page.pageLoadTimeMs !== undefined && (
-              <Badge
-                text={`Page load ${formatDurationMs(page.pageLoadTimeMs)}`}
-                color="darkgrey"
-                tooltip="Total page load time from faro.performance.navigation — not a Core Web Vital, no good/poor threshold"
-              />
-            )}
           </Stack>
           {(hasVitals || hasOwnRequests) && (
             <PlainButton onClick={() => setIsComparisonOpen(!isComparisonOpen)}>
