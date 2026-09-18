@@ -43,13 +43,18 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
       disabled,
     });
 
+  const showScannerPanel = secretsEnabled && scanner.findings.length > 0;
+
   return (
     <Column grow>
-      <Box padding={2} paddingBottom={0}>
-        <SecretScannerPanel scanner={scanner} readOnly={disabled} hidden={!secretsEnabled} />
-      </Box>
+      {showScannerPanel && (
+        <Box padding={2} paddingBottom={0}>
+          <SecretScannerPanel scanner={scanner} readOnly={disabled} />
+        </Box>
+      )}
       {activeFinding && (
         <SecretEditModal
+          key={activeFinding.id}
           open
           name={SECRETS_EDIT_MODE_ADD}
           source="check_editor_feature_secret_scanner"

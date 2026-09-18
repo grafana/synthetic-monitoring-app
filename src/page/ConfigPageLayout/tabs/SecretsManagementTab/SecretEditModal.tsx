@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { useController, useFieldArray, useForm } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Field, IconButton, Input, Modal, TextLink, useStyles2 } from '@grafana/ui';
@@ -88,9 +88,13 @@ export function SecretEditModal({
   const [saveError, setSaveError] = useState<unknown>(null);
   const hasError = hasFetchError || !!saveError;
   const styles = useStyles2(getStyles);
+  // Capture prefill on mount. Callers that need a new suggestion (e.g. a
+  // different finding) should remount — `initialValues` identity must not
+  // reset in-progress edits if the parent re-renders.
+  const initialPrefill = useRef(initialValues);
   const defaultValues = useMemo(() => {
-    return secretToFormValues(secret) ?? { ...getDefaultValues(isNewSecret), ...initialValues };
-  }, [secret, isNewSecret, initialValues]);
+    return secretToFormValues(secret) ?? { ...getDefaultValues(isNewSecret), ...initialPrefill.current };
+  }, [secret, isNewSecret]);
 
   const schema = secretSchemaFactory(isNewSecret, existingNames);
 
@@ -113,8 +117,8 @@ export function SecretEditModal({
   // works. Fresh/reset secrets get '', unless a prefilled value was provided
   // (e.g. migrating a detected secret), in which case we keep it.
   useEffect(() => {
-    setValue('plaintext', isConfigured ? undefined : (initialValues?.plaintext ?? ''));
-  }, [setValue, isConfigured, initialValues?.plaintext]);
+    setValue('plaintext', isConfigured ? undefined : (initialPrefill.current?.plaintext ?? ''));
+  }, [setValue, isConfigured]);
 
   const fieldError = createGetFieldError(errors as FormErrorMap);
 

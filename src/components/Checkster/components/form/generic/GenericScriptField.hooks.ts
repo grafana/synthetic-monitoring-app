@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { suggestSecretName, useMonacoSecretScanner } from '@grafana/plugin-ui/secret-scanner';
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 
@@ -39,20 +39,24 @@ export function useScriptSecretScanner({ field, script, onChange, disabled }: Us
 
   // When the user picks a finding to migrate (panel button or Monaco quick fix),
   // the hook exposes it as `migration.finding`; the caller renders its own
-  // SecretEditModal prefilled from it. Memoized so that modal's form isn't reset
-  // on every render.
+  // SecretEditModal prefilled from it.
+  //
+  // Snapshot existing names at request time so a later secrets-list update
+  // cannot rebuild this object and reset the open modal.
   const { finding: activeFinding } = scanner.migration;
+  const namesWhenRequested = useRef(existingSecretNames);
+  namesWhenRequested.current = existingSecretNames;
   const secretInitialValues = useMemo<Partial<SecretFormValues & { plaintext?: string }> | undefined>(
     () =>
       activeFinding
         ? {
-            name: suggestSecretName(activeFinding, existingSecretNames),
+            name: suggestSecretName(activeFinding, namesWhenRequested.current),
             description: `Migrated from script (${activeFinding.label})`,
             plaintext: activeFinding.secret,
             labels: [{ name: 'auto-secret', value: activeFinding.type }],
           }
         : undefined,
-    [activeFinding, existingSecretNames]
+    [activeFinding]
   );
 
   return {
