@@ -98,7 +98,14 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
       {isOpen && (
         <div className={styles.body}>
-          {serviceName ? <ServiceNeighbourhoodGraph check={check} /> : <ConnectedServicesZeroState checkId={check.id} />}
+          {serviceName ? (
+            // Always the SM-owned renderer inline: its compact fixed layout is made for the wide,
+            // short section. The exposed KG entity graph renders in the mini-graph drawer, where a
+            // ranked layout gets the vertical space it needs.
+            <FallbackNeighbourhoodGraph check={check} />
+          ) : (
+            <ConnectedServicesZeroState checkId={check.id} />
+          )}
         </div>
       )}
     </section>
@@ -114,8 +121,8 @@ interface ServiceNeighbourhoodGraphProps {
 /**
  * Prefers the Knowledge Graph's own exposed Entity Graph component (visual consistency with the
  * KG app, maintained by the KG team); falls back to the SM-owned renderer on stacks whose
- * asserts app doesn't expose it yet. Exported for the mini-graph drawer, which renders the same
- * body in a tall side panel.
+ * asserts app doesn't expose it yet. Used by the mini-graph drawer, which renders it in a tall
+ * side panel — the inline section renders the SM-owned graph directly.
  */
 export function ServiceNeighbourhoodGraph({ check, height }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);
@@ -136,7 +143,10 @@ export function ServiceNeighbourhoodGraph({ check, height }: ServiceNeighbourhoo
   return <FallbackNeighbourhoodGraph check={check} />;
 }
 
-/** The SM-owned neighbourhood renderer: Cypher via the KG datasource, drawn by ConnectedServicesGraph. */
+/**
+ * The SM-owned neighbourhood renderer: Cypher via the KG datasource, drawn by
+ * ConnectedServicesGraph. Renders the inline section and the drawer's fallback.
+ */
 function FallbackNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);
   const { data, isLoading, isError, refetch } = useServiceNeighbourhood(check);

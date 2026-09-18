@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Drawer, LinkButton, Stack, ToolbarButton, useStyles2 } from '@grafana/ui';
+import { Button, Drawer, LinkButton, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Check } from 'types';
@@ -34,19 +34,21 @@ export function ConnectedServicesMiniGraph({ check }: ConnectedServicesMiniGraph
 
   return (
     <>
-      <ToolbarButton
+      {/* Same anatomy as its header neighbours (SLOs, Edit check). */}
+      <Button
+        variant="secondary"
         icon="sitemap"
         onClick={() => setOpen(true)}
         data-testid={CONNECTED_SERVICES_TEST_ID.miniGraphButton}
       >
         Mini graph
-      </ToolbarButton>
+      </Button>
       {open && (
         <Drawer title={CONNECTED_SERVICES_TITLE} subtitle={CONNECTED_SERVICES_SUBTITLE} size="md" onClose={() => setOpen(false)}>
           <div className={styles.drawerBody} data-testid={CONNECTED_SERVICES_TEST_ID.miniGraphDrawer}>
             <Stack direction="column" gap={1} height="100%">
               {serviceName && (
-                <div>
+                <div className={styles.openLink}>
                   <LinkButton
                     variant="secondary"
                     size="sm"
@@ -76,6 +78,10 @@ export function ConnectedServicesMiniGraph({ check }: ConnectedServicesMiniGraph
 const getStyles = (theme: GrafanaTheme2) => ({
   drawerBody: css({
     height: '100%',
+  }),
+  openLink: css({
+    display: 'flex',
+    justifyContent: 'flex-end',
   }),
   graph: css({
     flex: 1,

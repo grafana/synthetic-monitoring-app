@@ -96,13 +96,6 @@ describe('buildServiceNeighbourhoodQuery', () => {
     expect(query).toContain('{name: "evil\\"} DETACH DELETE n //"}');
   });
 
-  it('walks a second undirected CALLS hop when asked for two hops', () => {
-    const query = buildServiceNeighbourhoodQuery('check__https://grafana.com/', 2);
-
-    expect(query).toContain('OPTIONAL MATCH (s1)-[:CALLS]-(n1:Service)');
-    expect(query).toContain('OPTIONAL MATCH (n1)-[:CALLS]-(n2:Service)');
-    expect(query).toContain('RETURN sy, s1, n1, n2');
-  });
 });
 
 describe('getCheckGraphUrl', () => {

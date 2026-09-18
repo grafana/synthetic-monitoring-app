@@ -80,9 +80,7 @@ export function ConnectedServicesEntityGraph({ check, EntityGraph, height }: Con
   return (
     <div data-testid={CONNECTED_SERVICES_TEST_ID.exposedGraph} style={{ height: height ?? 'auto' }}>
       <EntityGraph
-        // Two hops of CALLS (vs the fallback's one): the dagre layout scales with depth, and the
-        // component's node limit caps dense graphs.
-        cypherQuery={buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check), 2)}
+        cypherQuery={buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check))}
         start={timeRange.from.valueOf()}
         end={timeRange.to.valueOf()}
         height={height ?? GRAPH_HEIGHT}

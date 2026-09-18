@@ -407,65 +407,13 @@ describe('with the KG-exposed Entity Graph component available', () => {
     jest.mocked(usePluginComponent).mockImplementation(() => ({ component: null, isLoading: false }));
   });
 
-  it('prefers the exposed component over the SM-owned renderer, passing query and range', async () => {
+  it('keeps the SM-owned renderer inline — the exposed graph belongs to the mini-graph drawer', async () => {
     setKgInstalled(true);
-    const received: ExposedEntityGraphProps[] = [];
-    setExposedEntityGraph((props) => {
-      received.push(props);
-      return <div>exposed entity graph</div>;
-    });
+    setExposedEntityGraph(() => <div>exposed entity graph</div>);
 
-    await renderSection(LINKED_CHECK);
+    await renderGraph();
 
-    expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.exposedGraph)).toBeInTheDocument();
-    expect(screen.getByText('exposed entity graph')).toBeInTheDocument();
-    // The SM-owned renderer (and its Cypher fetch) stays unmounted.
-    expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.graph)).not.toBeInTheDocument();
-
-    const props = received.at(-1)!;
-    expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
-    // The exposed graph asks for the deeper two-hop neighbourhood; the fallback stays at one.
-    expect(props.cypherQuery).toContain('(n1)-[:CALLS]-(n2:Service)');
-    expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
-    expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
-    expect(props.height).toBe(280);
-    // Layered layout like the KG workbench's minigraph — the bounded neighbourhood reads as
-    // ranked rows, not a force-simulation cluster.
-    expect(props.layout).toEqual({ type: 'dagre', rankdir: 'TB' });
-  });
-
-  it('deep-links a node click into the KG entity drawer in a new tab', async () => {
-    setKgInstalled(true);
-    // A dependency's global types shadow `window.open`'s signature; the cast keeps the spy typed.
-    const openSpy = jest.spyOn(window, 'open').mockImplementation((() => null) as never);
-    setExposedEntityGraph(({ onNodeClick }) => (
-      <button
-        onClick={() =>
-          onNodeClick?.({
-            id: 'Service:frontend:prod::otel-demo',
-            name: 'frontend',
-            type: 'Service',
-            scope: { env: 'prod', namespace: 'otel-demo' },
-            properties: {},
-          })
-        }
-      >
-        frontend node
-      </button>
-    ));
-    const { user } = await renderSection(LINKED_CHECK);
-
-    await user.click(await screen.findByRole('button', { name: 'frontend node' }));
-
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('ed%5Bname%5D=frontend'),
-      '_blank',
-      'noopener'
-    );
-    expect(openSpy).toHaveBeenCalledWith(
-      expect.stringContaining('ed%5Bscope%5D%5Benv%5D=prod'),
-      '_blank',
-      'noopener'
-    );
+    expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.graph)).toBeInTheDocument();
+    expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.exposedGraph)).not.toBeInTheDocument();
   });
 });
