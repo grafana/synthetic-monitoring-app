@@ -318,9 +318,15 @@ export function getNodeDisplayName(node: NeighbourhoodNode): string {
   return `${node.scope.namespace}/${node.name}`;
 }
 
-/** Display-only normalization; retain the original scope for queries and entity links. */
+/**
+ * Display-only normalization; retain the original scope for queries and entity links.
+ * The KG app displays scope values verbatim (`unknown · otel-demo` in the service header), so the
+ * sentinel values `none`/`unknown` pass through untouched for cross-surface consistency — someone
+ * hopping to the KG drawer sees the same word. Only a truly empty value gets a readable
+ * placeholder, since a blank label would look broken.
+ */
 export function getEnvironmentDisplayName(env: string): string {
-  return !env || env === 'none' || env === 'unknown' ? 'not specified' : env;
+  return env || 'not specified';
 }
 
 /**

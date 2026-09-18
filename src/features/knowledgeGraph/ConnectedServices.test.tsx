@@ -391,30 +391,34 @@ it('keeps graph insights and the KG link available when origin lookup fails', as
   expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ })).toBeInTheDocument();
 });
 
-it.each(['', 'none', 'unknown'])(
-  'uses consistent missing-environment copy for %j across the graph and cards',
-  async (env) => {
-    const { nodes, edges } = buildNeighbourhoodFrames();
-    const graph = parseGraphFrames([nodes, edges]);
-    const service = graph.nodes[1];
-    graph.nodes.push({ ...service, id: 'frontend-missing-env', scope: { ...service.scope, env } });
-    graph.edges.push({ id: 'missing-env-check', source: 'frontend-missing-env', target: graph.nodes[0].id });
-    const { user } = render(<ConnectedServicesGraph neighbourhood={graph} />);
-    const node = await screen.findByRole('button', { name: 'otel-demo/frontend · Env: not specified (Service)' });
-    expect(node).toHaveTextContent('Env: not specified');
-    const titles = screen
-      .getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge)
-      .map((edge) => edge.querySelector('title')?.textContent);
-    expect(titles).toContain('otel-demo/frontend (not specified) → my check__https://grafana.com');
-    await user.click(node);
-    expect(await screen.findByText('Service · Env: not specified')).toBeInTheDocument();
-    await user.keyboard('{Escape}');
-    await user.click(screen.getByRole('button', { name: 'my check__https://grafana.com (SyntheticCheck)' }));
-    expect(
-      await screen.findByText('Linked to otel-demo/frontend in 2 environments: not specified, prod')
-    ).toBeInTheDocument();
-  }
-);
+// Sentinel scope values display verbatim like the KG app does (`unknown · otel-demo` in its
+// service header), so both surfaces use the same word; only a truly empty value gets a
+// readable placeholder.
+it.each([
+  ['', 'not specified'],
+  ['none', 'none'],
+  ['unknown', 'unknown'],
+])('displays the %j environment as %j consistently across the graph and cards', async (env, label) => {
+  const { nodes, edges } = buildNeighbourhoodFrames();
+  const graph = parseGraphFrames([nodes, edges]);
+  const service = graph.nodes[1];
+  graph.nodes.push({ ...service, id: 'frontend-missing-env', scope: { ...service.scope, env } });
+  graph.edges.push({ id: 'missing-env-check', source: 'frontend-missing-env', target: graph.nodes[0].id });
+  const { user } = render(<ConnectedServicesGraph neighbourhood={graph} />);
+  const node = await screen.findByRole('button', { name: `otel-demo/frontend · Env: ${label} (Service)` });
+  expect(node).toHaveTextContent(`Env: ${label}`);
+  const titles = screen
+    .getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge)
+    .map((edge) => edge.querySelector('title')?.textContent);
+  expect(titles).toContain(`otel-demo/frontend (${label}) → my check__https://grafana.com`);
+  await user.click(node);
+  expect(await screen.findByText(`Service · Env: ${label}`)).toBeInTheDocument();
+  await user.keyboard('{Escape}');
+  await user.click(screen.getByRole('button', { name: 'my check__https://grafana.com (SyntheticCheck)' }));
+  expect(
+    await screen.findByText(`Linked to otel-demo/frontend in 2 environments: ${[label, 'prod'].sort().join(', ')}`)
+  ).toBeInTheDocument();
+});
 
 describe('with the KG-exposed Entity Graph component available', () => {
   /** Serves the exposed component for its ID only; everything else keeps the null default. */
