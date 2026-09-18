@@ -238,6 +238,7 @@ const SummaryBand = ({
     exceptionRealSessionCounts,
     actions: context.actions,
     actionBaselines,
+    pages: context.pages,
   });
 
   return (
@@ -625,6 +626,22 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
     : sessions;
   const visibleSessions = showAll ? filtered : filtered.slice(0, COLLAPSED_SIMILAR_SESSION_COUNT);
 
+  // Aggregate before sample — a dozen rows all reading "Completed the
+  // journey" (or a mix of outcomes) is slower to parse than one sentence
+  // summarizing them. Always computed over the full set, not just what's
+  // currently visible/filtered.
+  const completedCount = sessions.filter((session) => session.outcome?.kind === 'completed').length;
+  const stoppedSessions = sessions.filter((session) => session.outcome?.kind === 'stopped-at');
+  const otherCount = sessions.length - completedCount - stoppedSessions.length;
+  const stopPageCounts = new Map<string, number>();
+
+  stoppedSessions.forEach((session) => {
+    const pageId = (session.outcome as { kind: 'stopped-at'; pageId: string }).pageId;
+    stopPageCounts.set(pageId, (stopPageCounts.get(pageId) ?? 0) + 1);
+  });
+
+  const topStopPage = [...stopPageCounts.entries()].sort((a, b) => b[1] - a[1])[0];
+
   return (
     <div className={styles.section}>
       <Stack direction="column" gap={1}>
@@ -642,6 +659,15 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
             />
           )}
         </Stack>
+        <Text color="secondary" variant="bodySmall">
+          {completedCount} of {sessions.length} completed the journey
+          {stoppedSessions.length > 0 &&
+            topStopPage &&
+            `, ${stoppedSessions.length} stopped at ${topStopPage[0]}${
+              topStopPage[1] < stoppedSessions.length ? ' or elsewhere' : ''
+            }`}
+          {otherCount > 0 && `, ${otherCount} took a different path`}
+        </Text>
         <Stack direction="column" gap={1}>
           {visibleSessions.map((session) => {
             const location = [session.city, session.countryIso].filter(Boolean).join(', ');

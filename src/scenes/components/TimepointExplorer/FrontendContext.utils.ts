@@ -771,6 +771,7 @@ export function getSummaryVerdict({
   exceptionRealSessionCounts,
   actions,
   actionBaselines,
+  pages,
 }: {
   probeSuccess?: boolean;
   versionChange?: AppVersionChange | null;
@@ -778,6 +779,7 @@ export function getSummaryVerdict({
   exceptionRealSessionCounts: Record<string, number> | null | undefined;
   actions: FaroAction[];
   actionBaselines: Record<string, ActionBaselineLike | null | undefined>;
+  pages: FaroPageVisit[];
 }): SummaryVerdict {
   const chips: SummaryChip[] = [];
   const deployedRecently = Boolean(versionChange?.previousVersion && versionChange.firstSeen);
@@ -856,10 +858,15 @@ export function getSummaryVerdict({
     // throws outside the browser, invisible to Faro — confirmed on a real
     // failure earlier this session) and an app with no named actions gives
     // the action-failure-rate check nothing to compare against either. Say
-    // so plainly rather than imply a clean bill of health we didn't earn.
+    // so plainly rather than imply a clean bill of health we didn't earn —
+    // and name the page the run was on, since that's the closest thing to
+    // "where it failed" we have without action instrumentation.
     if (actions.length === 0 && exceptions.length === 0) {
+      const lastPageId = pages[pages.length - 1]?.pageId;
+      const pageClause = lastPageId ? ` on ${lastPageId}` : '';
+
       return {
-        text: "Couldn't tell whether real users are affected — this run produced no JS exception, and this app has no named action to check a real-user failure rate against.",
+        text: `Couldn't tell whether real users are affected — this run produced no JS exception${pageClause}, and this app has no named action there to check a real-user failure rate against.`,
         tone: 'secondary',
         chips,
       };
@@ -872,23 +879,12 @@ export function getSummaryVerdict({
     };
   }
 
+  // Real failures outrank a pure fidelity observation, always — a check
+  // that's technically passing while real users fail on the matching action
+  // is a more urgent thing to say than "this check runs fast."
   if (worstFailingAction !== null) {
     const { name, rate } = worstFailingAction as { name: string; rate: number; failed: number; occurrences: number };
     chips.push({ text: `${name}: ${(rate * 100).toFixed(1)}% real-user failure rate`, tone: 'error' });
-  }
-
-  if (worstOptimisticAction !== null) {
-    const { name, ratio } = worstOptimisticAction as { name: string; ratio: number };
-
-    return {
-      text: `This check runs ${ratio.toFixed(1)}x faster than real users on ${name}. A pass here doesn't mean real users are having a good experience — the check isn't representative of what they see.`,
-      tone: 'info',
-      chips,
-    };
-  }
-
-  if (worstFailingAction !== null) {
-    const { name } = worstFailingAction as { name: string; rate: number; failed: number; occurrences: number };
 
     return {
       text: `This run passed, but real users are failing on ${name}.`,
@@ -901,6 +897,22 @@ export function getSummaryVerdict({
     return {
       text: 'A new version shipped before this run. No other divergence from real users detected.',
       tone: 'warning',
+      chips,
+    };
+  }
+
+  // Fidelity comes last among the "passed" branches, deliberately — it's
+  // only worth leading with when nothing more concrete is going on. And the
+  // claim itself is narrower than "this check is pointless": most checks
+  // verify a functional path, not raw performance parity, so a speed gap is
+  // expected, not a problem with the check's setup. State what it *does*
+  // confirm alongside what it doesn't.
+  if (worstOptimisticAction !== null) {
+    const { name, ratio } = worstOptimisticAction as { name: string; ratio: number };
+
+    return {
+      text: `This check runs ${ratio.toFixed(1)}x faster than real users on ${name} — expected if it's checking that the flow works rather than how fast it is. It confirms ${name} functions correctly; it doesn't confirm real users get this speed.`,
+      tone: 'info',
       chips,
     };
   }
