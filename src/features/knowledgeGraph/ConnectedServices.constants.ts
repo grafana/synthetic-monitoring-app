@@ -8,6 +8,8 @@ export const CONNECTED_SERVICES_TEST_ID = {
   nodeCard: 'connected-services-node-card',
   nodeConnectedRing: 'connected-services-node-connected-ring',
   exposedGraph: 'connected-services-exposed-graph',
+  miniGraphButton: 'connected-services-mini-graph-button',
+  miniGraphDrawer: 'connected-services-mini-graph-drawer',
   edge: 'connected-services-edge',
   loading: 'connected-services-loading',
   error: 'connected-services-error',

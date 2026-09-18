@@ -3,6 +3,7 @@ import { AnnotationQuery, GrafanaTheme2 } from '@grafana/data';
 import { RefreshPicker, TimeRangePicker, VariableControl } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { ConnectedServicesMiniGraph } from 'features/knowledgeGraph/ConnectedServicesMiniGraph';
 import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGraphInsights';
 
 import { Check } from 'types';
@@ -27,6 +28,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
         </div>
         <div className={styles.actions}>
           <CheckKnowledgeGraphInsights check={check} />
+          <ConnectedServicesMiniGraph check={check} />
           <SLOIntegration check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>

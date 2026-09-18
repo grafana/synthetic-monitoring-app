@@ -58,6 +58,8 @@ export function useExposedEntityGraph() {
 interface ConnectedServicesEntityGraphProps {
   check: Check;
   EntityGraph: React.ComponentType<ExposedEntityGraphProps>;
+  /** Overrides the inline section's fixed height (e.g. `100%` inside the mini-graph drawer). */
+  height?: number | string;
 }
 
 /**
@@ -68,7 +70,7 @@ interface ConnectedServicesEntityGraphProps {
  * entity drawer in a new tab; richer in-place cards remain with the fallback renderer until the
  * exposed component grows a tooltip/card of its own.
  */
-export function ConnectedServicesEntityGraph({ check, EntityGraph }: ConnectedServicesEntityGraphProps) {
+export function ConnectedServicesEntityGraph({ check, EntityGraph, height }: ConnectedServicesEntityGraphProps) {
   const [timeRange] = useTimeRange();
 
   const handleNodeClick = useCallback((node: ExposedEntityGraphNode) => {
@@ -76,14 +78,14 @@ export function ConnectedServicesEntityGraph({ check, EntityGraph }: ConnectedSe
   }, []);
 
   return (
-    <div data-testid={CONNECTED_SERVICES_TEST_ID.exposedGraph}>
+    <div data-testid={CONNECTED_SERVICES_TEST_ID.exposedGraph} style={{ height: height ?? 'auto' }}>
       <EntityGraph
         // Two hops of CALLS (vs the fallback's one): the dagre layout scales with depth, and the
         // component's node limit caps dense graphs.
         cypherQuery={buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check), 2)}
         start={timeRange.from.valueOf()}
         end={timeRange.to.valueOf()}
-        height={GRAPH_HEIGHT}
+        height={height ?? GRAPH_HEIGHT}
         layout={GRAPH_LAYOUT}
         onNodeClick={handleNodeClick}
       />

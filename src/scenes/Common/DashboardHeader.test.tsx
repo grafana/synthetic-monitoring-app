@@ -15,6 +15,10 @@ jest.mock('features/knowledgeGraph/KnowledgeGraphInsights', () => ({
   CheckKnowledgeGraphInsights: () => null,
 }));
 
+jest.mock('features/knowledgeGraph/ConnectedServicesMiniGraph', () => ({
+  ConnectedServicesMiniGraph: () => null,
+}));
+
 jest.mock('./DashboardAnnotationControls', () => ({
   DashboardAnnotationControls: () => <div data-testid="annotation-controls" />,
 }));

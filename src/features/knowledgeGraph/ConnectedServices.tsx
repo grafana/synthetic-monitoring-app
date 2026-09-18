@@ -107,14 +107,17 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
 interface ServiceNeighbourhoodGraphProps {
   check: Check;
+  /** Overrides the section's fixed graph height (e.g. `100%` inside the mini-graph drawer). */
+  height?: number | string;
 }
 
 /**
  * Prefers the Knowledge Graph's own exposed Entity Graph component (visual consistency with the
  * KG app, maintained by the KG team); falls back to the SM-owned renderer on stacks whose
- * asserts app doesn't expose it yet.
+ * asserts app doesn't expose it yet. Exported for the mini-graph drawer, which renders the same
+ * body in a tall side panel.
  */
-function ServiceNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
+export function ServiceNeighbourhoodGraph({ check, height }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);
   const { component: EntityGraph, isLoading } = useExposedEntityGraph();
 
@@ -127,7 +130,7 @@ function ServiceNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
   }
 
   if (EntityGraph) {
-    return <ConnectedServicesEntityGraph check={check} EntityGraph={EntityGraph} />;
+    return <ConnectedServicesEntityGraph check={check} EntityGraph={EntityGraph} height={height} />;
   }
 
   return <FallbackNeighbourhoodGraph check={check} />;
@@ -179,7 +182,8 @@ interface ConnectedServicesZeroStateProps {
   checkId: Check['id'];
 }
 
-function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
+/** Exported for the mini-graph drawer, which shows the same CTA for an unlinked check. */
+export function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
   const styles = useStyles2(getStyles);
   // Deep link straight to the Labels section of the edit form, where the KG service link lives.
   const editHref =
