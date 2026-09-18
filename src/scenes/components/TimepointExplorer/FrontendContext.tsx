@@ -786,7 +786,7 @@ const PageVisit = ({
               );
             })}
           </Stack>
-          {(hasVitals || hasOwnRequests) && (
+          {(hasVitals || hasOwnRequests || page.pageLoadTimeMs !== undefined) && (
             <PlainButton onClick={() => setIsComparisonOpen(!isComparisonOpen)}>
               <Text color="link" variant="bodySmall">
                 <Icon name={isComparisonOpen ? 'angle-up' : 'angle-down'} size="sm" /> Compare with real users
@@ -835,14 +835,22 @@ const PageBaseline = ({
 
   const hasRealUserVitals = Boolean(baseline?.pageLoads);
   const hasRealUserLatency = baseline?.requestLatencyMs !== null && baseline?.requestLatencyMs !== undefined;
+  const hasRealUserPageLoadTime = baseline?.pageLoadTimeMs !== null && baseline?.pageLoadTimeMs !== undefined;
 
-  if (!baseline || (!hasRealUserVitals && !hasRealUserLatency)) {
+  if (!baseline || (!hasRealUserVitals && !hasRealUserLatency && !hasRealUserPageLoadTime)) {
     return (
       <Text color="secondary" italic variant="bodySmall">
         No real user traffic on {page.pageId} in the hour before this run.
       </Text>
     );
   }
+
+  const pageLoadLine = (page.pageLoadTimeMs !== undefined || baseline.pageLoadTimeMs !== null) && (
+    <Text variant="bodySmall">
+      Page load: this run {page.pageLoadTimeMs !== undefined ? formatDurationMs(page.pageLoadTimeMs) : '-'} vs real
+      users&apos; p75 {baseline.pageLoadTimeMs !== null ? formatDurationMs(baseline.pageLoadTimeMs) : '-'}
+    </Text>
+  );
 
   if (hasVitals) {
     const verdict = getPageComparisonVerdict(page.vitals, baseline.vitals);
@@ -859,6 +867,7 @@ const PageBaseline = ({
           {verdict.text}
         </Text>
         <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
+        {pageLoadLine}
         <table className={styles.comparisonTable}>
           <thead>
             <tr>
@@ -918,44 +927,8 @@ const PageBaseline = ({
                 </tr>
               );
             })}
-            {(page.pageLoadTimeMs !== undefined || baseline.pageLoadTimeMs !== null) && (
-              <tr>
-                <td>
-                  <Text variant="bodySmall">Page load</Text>
-                </td>
-                <td>
-                  <Text variant="bodySmall">
-                    {page.pageLoadTimeMs !== undefined ? formatDurationMs(page.pageLoadTimeMs) : '-'}
-                  </Text>
-                </td>
-                <td>
-                  <Text variant="bodySmall">
-                    {baseline.pageLoadTimeMs !== null ? formatDurationMs(baseline.pageLoadTimeMs) : '-'}
-                  </Text>
-                </td>
-                <td>
-                  {page.pageLoadTimeMs !== undefined && baseline.pageLoadTimeMs !== null ? (
-                    <Text
-                      variant="bodySmall"
-                      color={page.pageLoadTimeMs > baseline.pageLoadTimeMs * 1.5 ? 'warning' : 'secondary'}
-                    >
-                      {page.pageLoadTimeMs > baseline.pageLoadTimeMs ? '+' : ''}
-                      {formatDurationMs(page.pageLoadTimeMs - baseline.pageLoadTimeMs)}
-                    </Text>
-                  ) : (
-                    <Text variant="bodySmall" color="secondary">
-                      -
-                    </Text>
-                  )}
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
-        <Text variant="bodySmall" color="secondary" italic>
-          Page load isn&apos;t a Core Web Vital — no good/poor rating, shown for reference alongside the vitals
-          above.
-        </Text>
       </div>
     );
   }
@@ -968,6 +941,7 @@ const PageBaseline = ({
           the initial document load; this app doesn&apos;t re-measure them on this page&apos;s navigation.
         </Text>
         <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
+        {pageLoadLine}
         <table className={styles.comparisonTable}>
           <thead>
             <tr>
@@ -1004,6 +978,18 @@ const PageBaseline = ({
             </tr>
           </tbody>
         </table>
+      </div>
+    );
+  }
+
+  if (pageLoadLine) {
+    return (
+      <div className={styles.resultCard}>
+        <Text color="secondary" variant="bodySmall" italic>
+          No web vitals or request timing recorded for {page.pageId} — comparing page load time only.
+        </Text>
+        <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
+        {pageLoadLine}
       </div>
     );
   }
