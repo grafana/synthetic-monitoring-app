@@ -3,6 +3,7 @@ import { RefinementCtx } from 'zod';
 import {
   collectObjectDeclarations,
   containsUnresolvableSpread,
+  countScenarios,
   extractImportStatement,
   extractOptionsExport,
   getProperty,
@@ -14,6 +15,9 @@ const MAX_SCRIPT_IN_KB = 128;
 
 export const UNRESOLVABLE_SPREAD_MESSAGE =
   'Script options contain a spread that can not be verified. Define the browser options inline, e.g. options: { browser: { type: "chromium" } }.';
+
+export const MULTIPLE_SCENARIOS_MESSAGE =
+  'Script must define at most one scenario. Synthetic Monitoring only supports a single k6 scenario.';
 
 function validateScriptPragmasAndExtensions(script: string, context: RefinementCtx): void {
   const validation = validateK6Restrictions(script, parseScript);
@@ -70,6 +74,16 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   // spreads of locally declared objects (e.g. `{ ...defaultOptions }`) are resolved so their
   // properties are validated too
   const declarations = collectObjectDeclarations(program);
+
+  // SM only supports a single VU / scenario; reject multi-scenario scripts up front so extra
+  // scenarios are not silently left unvalidated (grafana/synthetic-monitoring-app#1741).
+  if (countScenarios(options, declarations) > 1) {
+    return context.addIssue({
+      code: 'custom',
+      message: MULTIPLE_SCENARIOS_MESSAGE,
+    });
+  }
+
   const hasChromium = getProperty(options, ['options', 'browser', 'type'], declarations) === 'chromium';
   if (!hasChromium) {
     // spreads we can't resolve statically (e.g. imported values) hide the browser options
@@ -134,6 +148,18 @@ export function validateNonBrowserScript(script: string, context: RefinementCtx)
       message: 'Script contains syntax errors.',
     });
   }
+
+  const options = extractOptionsExport(program);
+  if (options !== null) {
+    const declarations = collectObjectDeclarations(program);
+    if (countScenarios(options, declarations) > 1) {
+      return context.addIssue({
+        code: 'custom',
+        message: MULTIPLE_SCENARIOS_MESSAGE,
+      });
+    }
+  }
+
   const browserImport = extractImportStatement(program);
 
   if (browserImport !== null) {
