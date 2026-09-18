@@ -695,6 +695,13 @@ const PageVisit = ({
                 />
               );
             })}
+            {page.pageLoadTimeMs !== undefined && (
+              <Badge
+                text={`Page load ${formatDurationMs(page.pageLoadTimeMs)}`}
+                color="darkgrey"
+                tooltip="Total page load time from faro.performance.navigation — not a Core Web Vital, no good/poor threshold"
+              />
+            )}
           </Stack>
           {(hasVitals || hasOwnRequests) && (
             <PlainButton onClick={() => setIsComparisonOpen(!isComparisonOpen)}>
@@ -828,8 +835,44 @@ const PageBaseline = ({
                 </tr>
               );
             })}
+            {(page.pageLoadTimeMs !== undefined || baseline.pageLoadTimeMs !== null) && (
+              <tr>
+                <td>
+                  <Text variant="bodySmall">Page load</Text>
+                </td>
+                <td>
+                  <Text variant="bodySmall">
+                    {page.pageLoadTimeMs !== undefined ? formatDurationMs(page.pageLoadTimeMs) : '-'}
+                  </Text>
+                </td>
+                <td>
+                  <Text variant="bodySmall">
+                    {baseline.pageLoadTimeMs !== null ? formatDurationMs(baseline.pageLoadTimeMs) : '-'}
+                  </Text>
+                </td>
+                <td>
+                  {page.pageLoadTimeMs !== undefined && baseline.pageLoadTimeMs !== null ? (
+                    <Text
+                      variant="bodySmall"
+                      color={page.pageLoadTimeMs > baseline.pageLoadTimeMs * 1.5 ? 'warning' : 'secondary'}
+                    >
+                      {page.pageLoadTimeMs > baseline.pageLoadTimeMs ? '+' : ''}
+                      {formatDurationMs(page.pageLoadTimeMs - baseline.pageLoadTimeMs)}
+                    </Text>
+                  ) : (
+                    <Text variant="bodySmall" color="secondary">
+                      -
+                    </Text>
+                  )}
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
+        <Text variant="bodySmall" color="secondary" italic>
+          Page load isn&apos;t a Core Web Vital — no good/poor rating, shown for reference alongside the vitals
+          above.
+        </Text>
       </div>
     );
   }

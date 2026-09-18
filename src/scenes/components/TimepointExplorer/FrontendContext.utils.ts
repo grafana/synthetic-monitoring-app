@@ -55,6 +55,12 @@ export function formatWebVitalValue(name: WebVitalName, value: number): string {
 export interface FaroPageVisit {
   pageId: string;
   vitals: Partial<Record<WebVitalName, number>>;
+  // From faro.performance.navigation's event_data_pageLoadTime — a
+  // PerformanceNavigationTiming entry, so (like TTFB/FCP) this only exists
+  // for a hard document navigation, never a soft one. Richer than the Core
+  // Web Vitals set: closes the "k6-browser dropped page-load-timing
+  // metrics" gap without needing a k6 change, since Faro already reports it.
+  pageLoadTimeMs?: number;
 }
 
 export interface FaroException {
@@ -184,6 +190,14 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
 
     if (labels.kind === 'event' && labels.event_name?.includes('session_recording')) {
       hasSessionReplay = true;
+    }
+
+    if (labels.kind === 'event' && labels.event_name === 'faro.performance.navigation' && pageId) {
+      const pageLoadTime = Number(labels.event_data_pageLoadTime);
+
+      if (!Number.isNaN(pageLoadTime)) {
+        pages.get(pageId)!.pageLoadTimeMs = pageLoadTime;
+      }
     }
 
     // The marker event for one action instance. Its own page_id is
@@ -333,6 +347,19 @@ export function buildRealUserVitalP75LogQL({ appId, pageId, range, vital }: Real
   const page = escapeLogQLString(pageId);
 
   return `quantile_over_time(0.75, {kind="measurement", app_id="${appId}"} |= " ${vital}=" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap ${vital} [${range}])`;
+}
+
+/**
+ * Real-user p75 page load time — from faro.performance.navigation's
+ * event_data_pageLoadTime, confirmed live (ecommerce hard nav on /:
+ * pageLoadTime 1072ms alongside a full DNS/TCP/TLS/request/response
+ * breakdown). A PerformanceNavigationTiming entry, so — same restriction as
+ * TTFB/FCP — only exists for a hard document navigation, never a soft one.
+ */
+export function buildRealUserPageLoadTimeLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const page = escapeLogQLString(pageId);
+
+  return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |= "event_name=faro.performance.navigation" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap event_data_pageLoadTime [${range}])`;
 }
 
 export function buildRealUserPageLoadsLogQL({ appId, pageId, range }: RealUserQueryParams): string {

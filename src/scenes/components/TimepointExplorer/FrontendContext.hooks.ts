@@ -17,6 +17,7 @@ import {
   buildRealUserExceptionsLogQL,
   buildRealUserHttpErrorsLogQL,
   buildRealUserPageLoadsLogQL,
+  buildRealUserPageLoadTimeLogQL,
   buildRealUserRequestLatencyLogQL,
   buildRealUserVitalP75LogQL,
   buildSimilarSessionsLogQL,
@@ -84,6 +85,9 @@ export interface RealUserPageBaseline {
   // vitals don't exist (soft-navigated pages on some apps never get a fresh
   // FCP/TTFB measurement, confirmed live).
   requestLatencyMs: number | null;
+  // p75 total page load time in ms, from faro.performance.navigation — same
+  // hard-nav-only restriction as the vitals above.
+  pageLoadTimeMs: number | null;
 }
 
 // How far back we look for the real-user baseline, ending at the execution's
@@ -132,6 +136,7 @@ export function useRealUserPageBaseline({ appId, pageId, to, enabled = true }: U
             { ...instantQuery, refId: 'exceptions', expr: buildRealUserExceptionsLogQL(queryParams) },
             { ...instantQuery, refId: 'http-errors', expr: buildRealUserHttpErrorsLogQL(queryParams) },
             { ...instantQuery, refId: 'request-latency', expr: buildRealUserRequestLatencyLogQL(queryParams) },
+            { ...instantQuery, refId: 'page-load-time', expr: buildRealUserPageLoadTimeLogQL(queryParams) },
           ],
           start: to - BASELINE_RANGE_MS,
           end: to,
@@ -155,6 +160,7 @@ export function useRealUserPageBaseline({ appId, pageId, to, enabled = true }: U
           exceptions: getInstantValue(results['exceptions']),
           httpErrors: getInstantValue(results['http-errors']),
           requestLatencyMs: requestLatencyNs !== null ? requestLatencyNs / 1_000_000 : null,
+          pageLoadTimeMs: getInstantValue(results['page-load-time']),
         };
       } catch {
         // Fail silently - the panel simply won't show a baseline.
