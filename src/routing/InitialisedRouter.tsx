@@ -15,7 +15,7 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
-import { CheckList } from 'page/CheckList';
+import { CheckList, CheckListLayout, CheckRecommendationsTab } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
@@ -30,6 +30,8 @@ import { CheckNotFound } from 'page/NotFound/CheckNotFound';
 import { PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
+import { SyntheticsTab } from 'page/SyntheticsPageNav';
+import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
 // Alpha (requires `synthetic-monitoring-check-editor=true`)
@@ -63,6 +65,7 @@ export const InitialisedRouter = () => {
   return (
     <Routes>
       <Route index element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
+      <Route path="overview" element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
 
       <Route
         path={AppRoutes.Home}
@@ -75,8 +78,9 @@ export const InitialisedRouter = () => {
         }
       />
 
-      <Route path={AppRoutes.Checks}>
+      <Route path={AppRoutes.Checks} element={<CheckListLayout />}>
         <Route index element={<CheckList />} />
+        <Route path="recommendations" element={<CheckRecommendationsTab />} />
         <Route path=":id">
           <Route
             index
@@ -116,7 +120,18 @@ export const InitialisedRouter = () => {
       </Route>
 
       <Route path={AppRoutes.Probes}>
-        <Route index element={<Probes />} />
+        <Route
+          index
+          element={
+            canReadProbes ? (
+              <SyntheticsPluginPage activeTab={SyntheticsTab.Probes}>
+                <Probes />
+              </SyntheticsPluginPage>
+            ) : (
+              <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.probes:read']} />
+            )
+          }
+        />
         <Route path="new" element={<NewProbe />} />
         <Route path=":id">
           <Route
@@ -135,7 +150,8 @@ export const InitialisedRouter = () => {
         <Route path="edit/:id" element={<LegacyEditRedirect entity="probe" />} />
       </Route>
 
-      <Route path={AppRoutes.Alerts} element={<AlertingPage />} />
+      <Route path={AppRoutes.Alerts} element={<Navigate to={`${getRoute(AppRoutes.Config)}/alerts`} replace />} />
+      <Route path={`${AppRoutes.Config}/probes`} element={<Navigate to={getRoute(AppRoutes.Probes)} replace />} />
 
       <Route
         path={AppRoutes.ReliabilityInbox}
@@ -163,6 +179,7 @@ export const InitialisedRouter = () => {
           <Route path="label-migration" element={<LabelMigrationTab />} />
         )}
         {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
+        <Route path="alerts" element={<AlertingPage />} />
       </Route>
 
       <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />
