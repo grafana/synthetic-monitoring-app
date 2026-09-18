@@ -108,6 +108,20 @@ export function getTimepointStatus(probeResults: ProbeResults): TimepointStatus 
   return executions.every((execution) => execution === '0') ? 'failure' : 'success';
 }
 
+export function getFailureRatio(probeResults: ProbeResults): number {
+  const executions = Object.values(probeResults).flat();
+
+  if (executions.length === 0) {
+    return 0;
+  }
+
+  const failedExecutions = executions.filter(
+    (execution) => execution[LokiFieldNames.Labels].probe_success === '0'
+  );
+
+  return failedExecutions.length / executions.length;
+}
+
 export function getMaxProbeDuration(probeResults: ProbeResults) {
   const executionDurations = Object.values(probeResults)
     .flat()
