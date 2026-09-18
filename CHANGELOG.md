@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.62.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61.0...v1.62.0) (2026-09-18)
+
+
+### Features
+
+* add affordance for checks impacted by label migration ([#1846](https://github.com/grafana/synthetic-monitoring-app/issues/1846)) ([ee3ff2f](https://github.com/grafana/synthetic-monitoring-app/commit/ee3ff2f65bc1e607caa1d8970b47f340a9374207))
+* add graft manifest file ([#1868](https://github.com/grafana/synthetic-monitoring-app/issues/1868)) ([4fc586f](https://github.com/grafana/synthetic-monitoring-app/commit/4fc586f3b29119599c8f6eedd949ce2f3bb0c861))
+* add secret scanner to SM checks page ([#1815](https://github.com/grafana/synthetic-monitoring-app/issues/1815)) ([74ead8d](https://github.com/grafana/synthetic-monitoring-app/commit/74ead8d91a8c838f9e7243ddab79a03f7760a5a4))
+* implement grafana datasource querying for backend component ([#1843](https://github.com/grafana/synthetic-monitoring-app/issues/1843)) ([87df929](https://github.com/grafana/synthetic-monitoring-app/commit/87df9293a8244211463b532da69d906f9280f9c4))
+* **reliability-inbox:** filter suggestions by namespace ([#1853](https://github.com/grafana/synthetic-monitoring-app/issues/1853)) ([e44773e](https://github.com/grafana/synthetic-monitoring-app/commit/e44773ef26ab703c97d39c77139a98fa0e14dd81))
+* render invalidLabels from the label-mode 409 collision response ([#1837](https://github.com/grafana/synthetic-monitoring-app/issues/1837)) ([c974f02](https://github.com/grafana/synthetic-monitoring-app/commit/c974f022fe0415f7759fb0df4c588887b55c7572))
+* select a probe by default ([#1856](https://github.com/grafana/synthetic-monitoring-app/issues/1856)) ([a6e845a](https://github.com/grafana/synthetic-monitoring-app/commit/a6e845ad2d18063dbf739f295ecbe075aec7fa42))
+* SLO integration drawer with create, link, delete, and query-match banners ([#1669](https://github.com/grafana/synthetic-monitoring-app/issues/1669)) ([f36e341](https://github.com/grafana/synthetic-monitoring-app/commit/f36e341311a96431874125473a87d01bca321d4b))
+
+
+### Fixes
+
+* add create_manually_clicked reliability inbox event ([#1850](https://github.com/grafana/synthetic-monitoring-app/issues/1850)) ([092ca58](https://github.com/grafana/synthetic-monitoring-app/commit/092ca5803734082bb24f4650ee2dba62cc8c6a46))
+* **alerts:** respect tenant label mode in alert routing preview ([#1847](https://github.com/grafana/synthetic-monitoring-app/issues/1847)) ([b5bc5b3](https://github.com/grafana/synthetic-monitoring-app/commit/b5bc5b3025f4775d6ec716b17b60402ef34a5d9a))
+* allow precise probe coordinates ([#1832](https://github.com/grafana/synthetic-monitoring-app/issues/1832)) ([be5dc53](https://github.com/grafana/synthetic-monitoring-app/commit/be5dc537fb583a32c32df575d9ef5e9b4867e504))
+* guard bulk check deletion behind a typed confirmation ([#1851](https://github.com/grafana/synthetic-monitoring-app/issues/1851)) ([290e6ab](https://github.com/grafana/synthetic-monitoring-app/commit/290e6abc9ea836bc9f9d19b0ef4ba05b0e393988))
+* hide version number in probe picker ([#1858](https://github.com/grafana/synthetic-monitoring-app/issues/1858)) ([4c48376](https://github.com/grafana/synthetic-monitoring-app/commit/4c4837672e0fbf6b71711ef1719b581df9a90997))
+* make validate-backend work without webpack output ([#1813](https://github.com/grafana/synthetic-monitoring-app/issues/1813)) ([d829cfb](https://github.com/grafana/synthetic-monitoring-app/commit/d829cfb55cc91e0e845cfc7cea103cea0365200b))
+* reject multiple k6 scenarios in script validation ([#1795](https://github.com/grafana/synthetic-monitoring-app/issues/1795)) ([0cfff72](https://github.com/grafana/synthetic-monitoring-app/commit/0cfff72ffff2da09906fca829b3399753aa25c70))
+* remove changes warning if nothing changed in k6-powered checks ([#1859](https://github.com/grafana/synthetic-monitoring-app/issues/1859)) ([a833b5c](https://github.com/grafana/synthetic-monitoring-app/commit/a833b5c86c985bfc223701b7ede5d523c8e091a1))
+* **security/high/:** update dependency @faker-js/faker to v10.5.0 [security] ([#1842](https://github.com/grafana/synthetic-monitoring-app/issues/1842)) ([c66d801](https://github.com/grafana/synthetic-monitoring-app/commit/c66d801bf63a710764214b30933cf2ae3b48b9b2))
+* **security/high/:** update module google.golang.org/grpc to v1.83.1 [security] ([#1841](https://github.com/grafana/synthetic-monitoring-app/issues/1841)) ([211a804](https://github.com/grafana/synthetic-monitoring-app/commit/211a80449f7c2e4654a49419f023489c8a9e4eb0))
+* **security/high/:** update module google.golang.org/grpc to v1.83.2 [security] ([#1845](https://github.com/grafana/synthetic-monitoring-app/issues/1845)) ([5c6ebcc](https://github.com/grafana/synthetic-monitoring-app/commit/5c6ebcc300318382723f3112aa079e82389967ed))
+* **security/low/:** update module go.opentelemetry.io/otel/exporters/otlp/otlptrace to v1.45.0 [security] ([#1865](https://github.com/grafana/synthetic-monitoring-app/issues/1865)) ([ee598a7](https://github.com/grafana/synthetic-monitoring-app/commit/ee598a79273e3da779d35b810ee2c98d3c55ad94))
+* **security/low/:** update module go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc to v1.45.0 [security] ([#1866](https://github.com/grafana/synthetic-monitoring-app/issues/1866)) ([4cbbebc](https://github.com/grafana/synthetic-monitoring-app/commit/4cbbebcda13fa111c0a0e6c0092c6354f4bfb0b0))
+
+
+### Miscellaneous Chores
+
+* add security section to AGENTS.md ([#1848](https://github.com/grafana/synthetic-monitoring-app/issues/1848)) ([e550712](https://github.com/grafana/synthetic-monitoring-app/commit/e550712525f15d210ab014aece37696ee07010a4))
+
 ## [1.61.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.60.0...v1.61.0) (2026-08-28)
 
 
