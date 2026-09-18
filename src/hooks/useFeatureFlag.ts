@@ -1,6 +1,7 @@
 import { useBooleanFlagValue, useOpenFeatureClientStatus } from '@openfeature/react-sdk';
 import { ProviderStatus } from '@openfeature/web-sdk';
 import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
+import { isFeatureEnabledThroughUrl } from 'services/featureFlagUrlOverride';
 
 import { FeatureName } from 'types';
 
@@ -18,6 +19,11 @@ export function useFeatureFlag(featureFlag: FeatureName) {
   const providerStatus = useOpenFeatureClientStatus();
 
   const isMapped = openFeatureKey !== undefined;
+
+  // The OpenFeature key is the name used in deployment_tools.
+  if (isFeatureEnabledThroughUrl(featureFlag, ...(isMapped ? [openFeatureKey] : []))) {
+    return { isEnabled: true, isReady: true };
+  }
 
   return {
     isEnabled: isMapped ? openFeatureValue : isFeatureEnabled(featureFlag),

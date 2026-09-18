@@ -15,7 +15,11 @@ Tracking issue: [#1717](https://github.com/grafana/synthetic-monitoring-app/issu
 - Consumers always use `useFeatureFlag(FeatureName.X)` (or the `<FeatureFlag>` component).
   The hook routes each flag based on `OPEN_FEATURE_KEYS`:
   - **Mapped** -> evaluated through OpenFeature (render-cycle aware, picks up runtime changes).
-  - **Not mapped** -> legacy `config.featureToggles` (plus the `?features=` URL override).
+  - **Not mapped** -> legacy `config.featureToggles`.
+  - Either way, `?features=<FeatureName>` force-enables a flag for that page load. Mapped flags
+    also answer to their OpenFeature key (`?features=synthetic-monitoring.foo`). The override is
+    a client-side short-circuit: the provider never sees it, so GOFF-side tracking records the
+    real value.
 - OSS/on-prem Grafana (>= 12.x) serves the same OFREP endpoint backed by a static provider
   seeded from `[feature_toggles]` in grafana.ini, so operators set migrated flags via ini +
   restart, like legacy toggles. GOFF (runtime changes, rollout targeting) is Cloud-only;
@@ -74,8 +78,6 @@ therefore two independent steps — switch the read path first, move the definit
    `mockFeatureToggles({ [FeatureName.X]: true })` test calls keep working unchanged.
 3. Smoke test in dev/staging: the flag should resolve with the same value as before
    (`reason: TARGETING_MATCH` from the mirrored definition).
-
-Note: the `?features=<flag>` URL override no longer applies once a flag is routed.
 
 ### Step B — move the definition to the new pattern (deployment_tools PRs)
 

@@ -34,14 +34,23 @@ const Wrapped = ({ name }: WrappedProps) => {
   );
 };
 
-const renderFeatureFlag = (name: FeatureName, flagValueMap: Record<string, boolean> = getTestFlagValues()) => {
+const renderFeatureFlag = (
+  name: FeatureName,
+  flagValueMap: Record<string, boolean> = getTestFlagValues(),
+  { delayMs }: { delayMs?: number } = {}
+) => {
   return render(
-    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={flagValueMap}>
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} flagValueMap={flagValueMap} delayMs={delayMs}>
       <FeatureFlagProvider>
         <Wrapped name={name} />
       </FeatureFlagProvider>
     </OpenFeatureTestProvider>
   );
+};
+
+const setUrlFeatures = (...features: string[]) => {
+  const search = features.map((feature) => `features=${encodeURIComponent(feature)}`).join('&');
+  window.history.replaceState({}, '', `/a/grafana-synthetic-monitoring-app/checks${search ? `?${search}` : ''}`);
 };
 
 describe('legacy flags (not mapped in OPEN_FEATURE_KEYS)', () => {
@@ -97,5 +106,40 @@ describe('OpenFeature-routed flags (mapped in OPEN_FEATURE_KEYS)', () => {
   test('reports ready once the provider settles', async () => {
     renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: true });
     expect(await screen.findByText('ready')).toBeInTheDocument();
+  });
+});
+
+describe('?features= URL override', () => {
+  afterEach(() => setUrlFeatures());
+
+  test('enables a legacy flag by its FeatureName', async () => {
+    setUrlFeatures(FeatureName.Folders);
+    renderFeatureFlag(FeatureName.Folders);
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('enables an OpenFeature-routed flag by its FeatureName, even when OpenFeature says off', async () => {
+    setUrlFeatures(OPEN_FEATURE_ROUTED_FLAG);
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: false });
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('enables an OpenFeature-routed flag by its OpenFeature key', async () => {
+    setUrlFeatures(OPEN_FEATURE_KEY);
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: false });
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('is ready immediately, without waiting for the provider', async () => {
+    setUrlFeatures(OPEN_FEATURE_ROUTED_FLAG);
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: false }, { delayMs: 60_000 });
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+    expect(screen.getByText('ready')).toBeInTheDocument();
+  });
+
+  test('ignores names that do not match the flag', async () => {
+    setUrlFeatures(FeatureName.Folders, 'synthetic-monitoring.something-else');
+    renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG);
+    expect(await screen.findByText('not enabled')).toBeInTheDocument();
   });
 });
