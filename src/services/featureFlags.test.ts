@@ -11,7 +11,7 @@ describe('Feature control overrides', () => {
   let sdk: typeof OpenFeature;
   let service: typeof import('./featureFlags');
 
-  async function initialize(withOverrides = true) {
+  async function initialize() {
     jest.resetModules();
     const { TypedInMemoryProvider, OpenFeature } = await import('@openfeature/web-sdk');
     sdk = OpenFeature;
@@ -19,7 +19,7 @@ describe('Feature control overrides', () => {
     remoteProvider = new TypedInMemoryProvider(flagConfig(false));
     jest.doMock('@grafana/runtime', () => ({
       config: { appSubUrl: '', namespace: 'test-stack' },
-      ...(withOverrides ? { createOpenFeatureLocalStorageProvider: () => localProvider } : {}),
+      createOpenFeatureLocalStorageProvider: () => localProvider,
     }));
     jest.doMock('@openfeature/ofrep-web-provider', () => ({
       OFREPWebProvider: jest.fn(() => remoteProvider),
@@ -64,13 +64,6 @@ describe('Feature control overrides', () => {
     await localProvider.putConfiguration(flagConfig(true));
 
     expect(changed).toHaveBeenCalled();
-    expect(service.getBooleanFlag(FLAG)).toBe(true);
-  });
-
-  it('keeps server evaluation working on hosts without the override helper', async () => {
-    await initialize(false);
-    await remoteProvider.putConfiguration(flagConfig(true));
-
     expect(service.getBooleanFlag(FLAG)).toBe(true);
   });
 

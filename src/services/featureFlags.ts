@@ -1,16 +1,9 @@
-// eslint-disable-next-line no-restricted-imports -- Namespace import allows capability detection on older Grafana hosts.
-import * as grafanaRuntime from '@grafana/runtime';
+import { config, createOpenFeatureLocalStorageProvider } from '@grafana/runtime';
 import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
-import { type Client, type EvaluationContext, MultiProvider, OpenFeature, type Provider } from '@openfeature/web-sdk';
+import { type Client, type EvaluationContext, MultiProvider, OpenFeature } from '@openfeature/web-sdk';
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
-
-const { config } = grafanaRuntime;
-// Grafana 13.0 does not expose this helper; keep server evaluation on older hosts.
-const { createOpenFeatureLocalStorageProvider } = grafanaRuntime as typeof grafanaRuntime & {
-  createOpenFeatureLocalStorageProvider?: () => Provider;
-};
 
 export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 
@@ -47,9 +40,10 @@ async function doInit(): Promise<void> {
     cacheMode: 'disabled',
     timeoutMs: 10_000,
   });
-  const provider = createOpenFeatureLocalStorageProvider
-    ? new MultiProvider([{ provider: createOpenFeatureLocalStorageProvider() }, { provider: remoteProvider }])
-    : remoteProvider;
+  const provider = new MultiProvider([
+    { provider: createOpenFeatureLocalStorageProvider() },
+    { provider: remoteProvider },
+  ]);
 
   await OpenFeature.setProviderAndWait(SM_OPEN_FEATURE_DOMAIN, provider, {
     targetingKey: config.namespace, // evaluate consistently per stack

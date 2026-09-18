@@ -44,16 +44,15 @@ stale bundle can silently keep running — use DevTools "Clear site data" + "Dis
 
 ### Grafana Feature control
 
-On hosts that expose `createOpenFeatureLocalStorageProvider` from `@grafana/runtime`,
 Feature control overrides take precedence over server evaluations for mapped OpenFeature
-flags. Open Feature control with `?featureControl=true` and add the exact key from
+flags through `createOpenFeatureLocalStorageProvider` from `@grafana/runtime`. Open Feature
+control with `?featureControl=true` and add the exact key from
 `OPEN_FEATURE_KEYS` (for example, `synthetic-monitoring.check-suggestions`). Both `true`
 and `false` overrides are supported. Changes apply without reloading; deleting an override
 restores the server value.
 
 Overrides are local to the browser and Grafana origin. They also apply when Graft serves
-the plugin. Legacy flags that still read `config.featureToggles` are unaffected. Older
-Grafana hosts without the helper retain server-only evaluation.
+the plugin. Legacy flags that still read `config.featureToggles` are unaffected.
 
 ## Migrating one flag
 

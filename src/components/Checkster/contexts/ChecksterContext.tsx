@@ -92,7 +92,7 @@ function getDefaultProbeId(probes: ProbeWithMetadata[], checkType: CheckType) {
 // this from live online status on every poll would silently swap the preselected probe out
 // from under the user while they're still filling in the form.
 function useDefaultProbeId(probesWithMetadata: ProbeWithMetadata[], checkType: CheckType) {
-  const lockedRef = useRef<{ checkType: CheckType; probeId: number | undefined }>();
+  const lockedRef = useRef<{ checkType: CheckType; probeId: number | undefined } | undefined>(undefined);
 
   if (!lockedRef.current || lockedRef.current.checkType !== checkType) {
     lockedRef.current = { checkType, probeId: getDefaultProbeId(probesWithMetadata, checkType) };
