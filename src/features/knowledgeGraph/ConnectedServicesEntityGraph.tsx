@@ -13,6 +13,15 @@ import { getSyntheticCheckEntityName, KG_ENTITY_GRAPH_COMPONENT_ID } from './kno
 const GRAPH_HEIGHT = 280;
 
 /**
+ * Layered layout instead of the component's default force simulation: the neighbourhood is a
+ * small bounded graph (check → monitored service → one hop of CALLS), which reads as ranked
+ * rows rather than a free-floating cluster. Same algorithm the KG's RCA Workbench minigraph
+ * uses (`MINI_GRAPH_LAYOUT` in asserts-app-plugin), top-to-bottom to match the SM fallback
+ * renderer's row order.
+ */
+const GRAPH_LAYOUT = { type: 'dagre', rankdir: 'TB' };
+
+/**
  * A node as emitted by the exposed Entity Graph's `onNodeClick` (see `EntityGraphProps` in
  * asserts-app-plugin's `externalComponents/types.ts`). Declared locally, like the assertions
  * widget's props in `KnowledgeGraphInsights.tsx` — the SM app doesn't depend on asserts types.
@@ -34,6 +43,8 @@ export interface ExposedEntityGraphProps {
   nodeLimit?: number;
   nodeFilter?: (node: ExposedEntityGraphNode) => boolean;
   onNodeClick?: (node: ExposedEntityGraphNode) => void;
+  /** G6 layout override; the component defaults to a force simulation. */
+  layout?: { type?: string; rankdir?: string; [option: string]: unknown };
 }
 
 /**
@@ -71,6 +82,7 @@ export function ConnectedServicesEntityGraph({ check, EntityGraph }: ConnectedSe
         start={timeRange.from.valueOf()}
         end={timeRange.to.valueOf()}
         height={GRAPH_HEIGHT}
+        layout={GRAPH_LAYOUT}
         onNodeClick={handleNodeClick}
       />
     </div>

@@ -427,6 +427,9 @@ describe('with the KG-exposed Entity Graph component available', () => {
     expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
     expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
     expect(props.height).toBe(280);
+    // Layered layout like the KG workbench's minigraph — the bounded neighbourhood reads as
+    // ranked rows, not a force-simulation cluster.
+    expect(props.layout).toEqual({ type: 'dagre', rankdir: 'TB' });
   });
 
   it('deep-links a node click into the KG entity drawer in a new tab', async () => {
