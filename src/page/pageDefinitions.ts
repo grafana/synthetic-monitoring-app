@@ -14,7 +14,7 @@ export type PageDefinition = {
 
 const PAGES: NavModelItem[] = [
   {
-    text: 'Home',
+    text: 'Synthetics',
     id: 'home',
     url: `${PLUGIN_URL_PATH}home`,
   },
@@ -22,16 +22,6 @@ const PAGES: NavModelItem[] = [
     text: 'Checks',
     id: 'checks',
     url: `${PLUGIN_URL_PATH}checks`,
-  },
-  {
-    text: 'Probes',
-    id: 'probes',
-    url: `${PLUGIN_URL_PATH}probes`,
-  },
-  {
-    text: 'Alerts (Legacy)',
-    id: 'alerts',
-    url: `${PLUGIN_URL_PATH}alerts`,
   },
   {
     text: 'Config',
