@@ -146,11 +146,15 @@ describe('getNodeQualifiedName', () => {
   it('qualifies a service with its environment, but leaves checks and env-less nodes bare', () => {
     expect(getNodeQualifiedName(buildNode())).toBe('otel-demo/frontend (prod)');
     expect(getNodeQualifiedName(buildNode({ scope: { env: '', site: '', namespace: 'otel-demo' } }))).toBe(
-      'otel-demo/frontend'
+      'otel-demo/frontend (not specified)'
     );
     expect(
       getNodeQualifiedName(
-        buildNode({ name: 'check__x', entityType: 'SyntheticCheck', scope: { env: 'unknown', site: '', namespace: '' } })
+        buildNode({
+          name: 'check__x',
+          entityType: 'SyntheticCheck',
+          scope: { env: 'unknown', site: '', namespace: '' },
+        })
       )
     ).toBe('check__x');
   });
