@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { screen, waitFor } from '@testing-library/react';
+import { trackCheckCreated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { render } from 'test/render';
@@ -58,6 +59,29 @@ async function renderNewCheck(options?: any) {
 
 // The <NewCheck /> acts as a safe-guard for the check form, ensuring that the check type group is valid before rendering
 describe('<NewCheckV2 />', () => {
+  it.each(['broken_links', 'ssl_certificate', 'unknown-template'])(
+    'attributes creation only to a known template (%s) and clears attribution on exit',
+    async (checkTemplateId) => {
+      const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
+      (useLocation as jest.Mock).mockReturnValue({
+        state: { prefilledCheck: { settings: { browser: { script: '' } } }, checkTemplateId },
+      });
+      const { unmount } = await renderNewCheck({ route: ':checkTypeGroup', path: 'browser' });
+
+      trackCheckCreated({ checkType: CheckType.Browser });
+      const props = reportInteraction.mock.calls.at(-1)?.[1];
+      if (checkTemplateId !== 'unknown-template') {
+        expect(props).toMatchObject({ check_template_id: checkTemplateId });
+      } else {
+        expect(props).not.toHaveProperty('check_template_id');
+      }
+
+      unmount();
+      trackCheckCreated({ checkType: CheckType.Browser });
+      expect(reportInteraction.mock.calls.at(-1)?.[1]).not.toHaveProperty('check_template_id');
+    }
+  );
+
   it(`should render without props`, async () => {
     const { container } = await renderNewCheck();
     expect(container).toBeInTheDocument();
