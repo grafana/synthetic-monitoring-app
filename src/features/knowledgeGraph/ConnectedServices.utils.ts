@@ -318,6 +318,11 @@ export function getNodeDisplayName(node: NeighbourhoodNode): string {
   return `${node.scope.namespace}/${node.name}`;
 }
 
+/** Display-only normalization; retain the original scope for queries and entity links. */
+export function getEnvironmentDisplayName(env: string): string {
+  return !env || env === 'none' || env === 'unknown' ? 'not specified' : env;
+}
+
 /**
  * Display name qualified with the environment for service entities. Same-named services exist in
  * several environments at once (the env-less check fans out to all of them), so surfaces naming
@@ -325,8 +330,8 @@ export function getNodeDisplayName(node: NeighbourhoodNode): string {
  */
 export function getNodeQualifiedName(node: NeighbourhoodNode): string {
   const displayName = getNodeDisplayName(node);
-  if (node.entityType === KG_SERVICE_ENTITY_TYPE && node.scope.env && node.scope.env !== 'unknown') {
-    return `${displayName} (${node.scope.env})`;
+  if (node.entityType === KG_SERVICE_ENTITY_TYPE) {
+    return `${displayName} (${getEnvironmentDisplayName(node.scope.env)})`;
   }
   return displayName;
 }
@@ -365,12 +370,12 @@ export function getCheckLinkFanOut(graph: ServiceNeighbourhood, checkNode: Neigh
 
   const environmentsByName = new Map<string, Set<string>>();
   for (const node of graph.nodes) {
-    if (!adjacentIds.has(node.id) || node.entityType !== KG_SERVICE_ENTITY_TYPE || !node.scope.env) {
+    if (!adjacentIds.has(node.id) || node.entityType !== KG_SERVICE_ENTITY_TYPE) {
       continue;
     }
     const name = getNodeDisplayName(node);
     const environments = environmentsByName.get(name) ?? new Set<string>();
-    environments.add(node.scope.env);
+    environments.add(getEnvironmentDisplayName(node.scope.env));
     environmentsByName.set(name, environments);
   }
 
@@ -488,9 +493,7 @@ export function layoutNeighbourhood(graph: ServiceNeighbourhood): NeighbourhoodL
 
   const topRow = nodes.filter((n) => checkIds.has(n.id) || upstreamIds.has(n.id));
   const middleRow = nodes.filter((n) => serviceIds.has(n.id));
-  const bottomRow = nodes.filter(
-    (n) => !checkIds.has(n.id) && !upstreamIds.has(n.id) && !serviceIds.has(n.id)
-  );
+  const bottomRow = nodes.filter((n) => !checkIds.has(n.id) && !upstreamIds.has(n.id) && !serviceIds.has(n.id));
 
   const rows = [topRow, middleRow, bottomRow].filter((row) => row.length > 0);
 

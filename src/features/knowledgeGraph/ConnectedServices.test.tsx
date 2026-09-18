@@ -332,9 +332,7 @@ it('states the environment fan-out on the check card when the link matches sever
   await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
 
   await user.click(screen.getByRole('button', { name: 'my check__https://grafana.com (SyntheticCheck)' }));
-  expect(
-    await screen.findByText('Linked to otel-demo/frontend in 2 environments: prod, staging')
-  ).toBeInTheDocument();
+  expect(await screen.findByText('Linked to otel-demo/frontend in 2 environments: prod, staging')).toBeInTheDocument();
 
   // A service card carries no fan-out note — it belongs to exactly one environment.
   await user.keyboard('{Escape}');
@@ -392,6 +390,31 @@ it('keeps graph insights and the KG link available when origin lookup fails', as
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.nodeConnectedRing)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ })).toBeInTheDocument();
 });
+
+it.each(['', 'none', 'unknown'])(
+  'uses consistent missing-environment copy for %j across the graph and cards',
+  async (env) => {
+    const { nodes, edges } = buildNeighbourhoodFrames();
+    const graph = parseGraphFrames([nodes, edges]);
+    const service = graph.nodes[1];
+    graph.nodes.push({ ...service, id: 'frontend-missing-env', scope: { ...service.scope, env } });
+    graph.edges.push({ id: 'missing-env-check', source: 'frontend-missing-env', target: graph.nodes[0].id });
+    const { user } = render(<ConnectedServicesGraph neighbourhood={graph} />);
+    const node = await screen.findByRole('button', { name: 'otel-demo/frontend · Env: not specified (Service)' });
+    expect(node).toHaveTextContent('Env: not specified');
+    const titles = screen
+      .getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge)
+      .map((edge) => edge.querySelector('title')?.textContent);
+    expect(titles).toContain('otel-demo/frontend (not specified) → my check__https://grafana.com');
+    await user.click(node);
+    expect(await screen.findByText('Service · Env: not specified')).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'my check__https://grafana.com (SyntheticCheck)' }));
+    expect(
+      await screen.findByText('Linked to otel-demo/frontend in 2 environments: not specified, prod')
+    ).toBeInTheDocument();
+  }
+);
 
 describe('with the KG-exposed Entity Graph component available', () => {
   /** Serves the exposed component for its ID only; everything else keeps the null default. */

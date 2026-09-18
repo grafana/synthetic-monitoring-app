@@ -14,6 +14,7 @@ import {
   CheckLinkFanOut,
   getCheckLinkFanOut,
   getEntityDrawerUrl,
+  getEnvironmentDisplayName,
   getNodeDisplayName,
   getRepeatedServiceNames,
   getRingSegmentsFromSeverities,
@@ -194,7 +195,7 @@ function NodeGlyph({ positioned, theme, showEnvironment, classification, origins
   const { node, x, y } = positioned;
   const displayName = getNodeDisplayName(node);
   const labelLines = wrapLabel(displayName, LABEL_MAX_CHARS, LABEL_MAX_LINES);
-  const environment = node.scope.env && node.scope.env !== 'none' ? node.scope.env : 'not specified';
+  const environment = getEnvironmentDisplayName(node.scope.env);
   const accessibleName = showEnvironment ? `${displayName} · Env: ${environment}` : displayName;
 
   // With the split known, the outer ring narrows to the node's own insights and the propagated
@@ -288,7 +289,9 @@ function NodeInsightsCard({ node, classification, originsError, fanOut }: NodeIn
   // in the scope line for the ones it isn't (a check keeps its bare composite name). Scope values
   // are labelled — a bare `deaf98` doesn't say it's the environment.
   const scopeParts = [
-    node.scope.env && node.scope.env !== 'unknown' ? `Env: ${node.scope.env}` : '',
+    node.entityType === KG_SERVICE_ENTITY_TYPE || node.scope.env
+      ? `Env: ${getEnvironmentDisplayName(node.scope.env)}`
+      : '',
     displayName === node.name && node.scope.namespace ? `Namespace: ${node.scope.namespace}` : '',
   ]
     .filter(Boolean)
