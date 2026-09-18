@@ -1,8 +1,8 @@
 import { SelectableValue } from '@grafana/data';
 
 import { CheckAlertsFilter, CheckFiltersType, CheckTypeFilter } from 'page/CheckList/CheckList.types';
-import { AlertSensitivity, Check, CheckEnabledStatus, Label } from 'types';
-import { getCheckType, matchStrings } from 'utils';
+import { Check, CheckEnabledStatus, Label } from 'types';
+import { checkHasAlerting, getCheckType, matchStrings } from 'utils';
 import { CHECK_LIST_STATUS_OPTIONS, UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
 const matchesFilterType = (check: Check, typeFilter: CheckTypeFilter) => {
@@ -74,11 +74,7 @@ const matchesAlertsFilter = (check: Check, alertsFilter: CheckAlertsFilter) => {
     return true;
   }
 
-  // Mirror `AlertStatus` behavior: any per-check alerts OR any legacy alert sensitivity (including custom strings),
-  // treating `AlertSensitivity.None` as "no alerts configured".
-  const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
-  const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
-  const hasAlerts = hasPerCheckAlerts || hasAlertSensitivity;
+  const hasAlerts = checkHasAlerting(check);
 
   if (alertsFilter === 'with') {
     return hasAlerts;

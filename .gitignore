@@ -48,3 +48,8 @@ temp/
 .DS_Store
 
 dev/license.jwt
+
+# Personal local compose scratchpad -- auto-loaded by a bare `docker compose`
+# (see docker-compose.yaml comments). Anything needed by everyone belongs in
+# docker-compose.yaml or .config/docker-compose-base.yaml instead.
+docker-compose.override.yaml

@@ -3,16 +3,29 @@ import { emitCheckCreatedEvent } from 'features/tracking/appEvents';
 import { trackCheckCreated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { DEFAULT_FOLDER, FOLDER_PRODUCTION } from 'test/fixtures/folders';
 import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { probeToMetadataProbe, runTestAsHGFreeUserOverLimit, runTestWithoutLogsAccess } from 'test/utils';
+import {
+  mockFeatureToggles,
+  probeToMetadataProbe,
+  runTestAsHGFreeUserOverLimit,
+  runTestWithNoEditableFolders,
+  runTestWithoutLogsAccess,
+  runTestWithReadOnlyDefaultFolder,
+} from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
-import { CheckAlertType, CheckType } from 'types';
+import { CheckAlertType, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import {
+  deselectAllProbes,
+  gotoSection,
+  selectOnlyProbe,
+  submitForm,
+} from 'components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 
 import { fillMandatoryFields } from '../../../__testHelpers__/v2.utils';
@@ -30,6 +43,55 @@ jest.mock('features/tracking/appEvents', () => ({
 }));
 
 describe(`<NewCheckV2 /> journey`, () => {
+  it(`should save the check into the default folder when the user can edit it`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    const { user, read } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.folderUid).toBe(DEFAULT_FOLDER.uid);
+  });
+
+  it(`should require picking an editable folder when the user cannot edit the default folder`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    // A user holding View on the default SM folder and folder Edit
+    // elsewhere (the support escalation setup). Nothing is preselected (the
+    // choice is theirs), and saving without a pick is blocked instead of
+    // silently stranding the check in the read-only default folder.
+    runTestWithReadOnlyDefaultFolder();
+    const { user, read } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    expect(await screen.findByText(/Select a folder to store this check in/)).toBeInTheDocument();
+
+    const picker = screen.getByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_PRODUCTION.title });
+    await user.selectOptions(picker, FOLDER_PRODUCTION.uid);
+    await submitForm(user);
+
+    const { body } = await read();
+    expect(body.folderUid).toBe(FOLDER_PRODUCTION.uid);
+  });
+
+  it(`should block saving with a folder error when the user cannot edit any folder`, async () => {
+    mockFeatureToggles({ [FeatureName.Folders]: true });
+    // With no editable folder anywhere the picker lists nothing (server-side
+    // permission filtering) and submission stays blocked on the folder
+    // requirement, so a check can never land where its creator cannot
+    // manage it.
+    runTestWithNoEditableFolders();
+    const { user } = await renderNewForm(CheckType.Http);
+
+    await fillMandatoryFields({ user, checkType: CheckType.Http });
+    await submitForm(user);
+
+    expect(await screen.findByText(/Select a folder to store this check in/)).toBeInTheDocument();
+  });
+
   it(`should show an error message when it fails to save a check`, async () => {
     const { user } = await renderNewForm(CheckType.Http);
 
@@ -129,6 +191,9 @@ describe(`<NewCheckV2 /> journey`, () => {
     const { user } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['probes'] });
+    // Clear the default-preselected probe to hit the "no probes" error.
+    await gotoSection(user, FormSectionName.Execution);
+    await deselectAllProbes(user);
     await submitForm(user);
 
     const probesFilter = await screen.findByLabelText(/Probe locations/);
@@ -252,8 +317,7 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     await selectBasicFrequency(user, '2m');
 
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName));
 
     await submitForm(user);
 
@@ -266,8 +330,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     const { user } = await renderNewForm(CheckType.Http);
     await fillMandatoryFields({ user, checkType: CheckType.Http, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
     await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));

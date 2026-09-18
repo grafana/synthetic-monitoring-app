@@ -24,6 +24,8 @@ import { formatK6VersionsInline } from 'components/ProbeCard/ProbeCard.utils';
 import { ProbeMetaPillsRow } from 'components/ProbeCard/ProbeMetaPillsRow';
 import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
 import { ProbeUsageLink } from '../ProbeUsageLink';
 
 interface ProbeStatusProps {
@@ -97,7 +99,14 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
         </div>
         {canWriteProbes && (
           <Container>
-            <Button variant="destructive" disabled={!writeMode} onClick={() => setShowResetModal(true)}>
+            <Button
+              variant="destructive"
+              disabled={!writeMode}
+              onClick={() => {
+                trackFaroUserAction(FaroUserAction.ResetAccessTokenClicked);
+                setShowResetModal(true);
+              }}
+            >
               Reset Access Token
             </Button>
             <ConfirmModal
@@ -105,8 +114,14 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
               title="Reset Probe Access Token"
               body="Are you sure you want to reset the access token for this Probe?"
               confirmText="Reset Token"
-              onConfirm={() => onResetToken(probe)}
-              onDismiss={() => setShowResetModal(false)}
+              onConfirm={() => {
+                trackFaroUserAction(FaroUserAction.ResetAccessTokenConfirmationClicked);
+                onResetToken(probe);
+              }}
+              onDismiss={() => {
+                trackFaroUserAction(FaroUserAction.ResetAccessTokenCancellationClicked);
+                setShowResetModal(false);
+              }}
             />
           </Container>
         )}

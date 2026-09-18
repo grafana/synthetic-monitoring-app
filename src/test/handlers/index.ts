@@ -6,6 +6,7 @@ import {
   checkInfo,
   deleteCheck,
   listChecks,
+  renameCheckLabels,
   testCheck,
   updateCheck,
 } from 'test/handlers/checks';
@@ -24,14 +25,15 @@ import {
   setLabelMode,
   updateTenantSettings,
 } from 'test/handlers/tenants';
-import { createAccessToken } from 'test/handlers/tokens';
+import { createAccessToken, listAccessTokens, revokeAccessToken } from 'test/handlers/tokens';
 
 import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
-import { createFolder, deleteFolder, getFolder, listFolders } from './folders';
+import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
 import { listK6Channels } from './k6Channels';
 import { evaluateFeatureFlags } from './openfeature';
+import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const API_ROUTES = {
@@ -43,6 +45,8 @@ const API_ROUTES = {
   createDatasource,
   createFolder,
   createSecret,
+  listAccessTokens,
+  revokeAccessToken,
   deleteCheck,
   deleteFolder,
   deleteProbe,
@@ -71,6 +75,8 @@ const API_ROUTES = {
   listFolders,
   listProbes,
   listSecrets,
+  moveFolder,
+  renameCheckLabels,
   setLabelMode,
   testCheck,
   updateAlertsForCheck,
@@ -79,6 +85,8 @@ const API_ROUTES = {
   updateSecret,
   updateTenantSettings,
   listK6Channels,
+  reliabilityInboxHealth,
+  reliabilityInboxSuggestions,
 };
 
 export type ApiRoutes = typeof API_ROUTES;
@@ -127,14 +135,17 @@ export function getServerRequests() {
 
   const record = (request: Request) => {
     requests.push(request);
-    
+
     // In MSW 2.x, request bodies can only be read once
     // Clone and cache the body promise immediately, before the handler consumes it
     const method = request.method.toUpperCase();
     if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
       try {
         // Clone and parse JSON, catching both sync and async errors
-        const bodyPromise = request.clone().json().catch(() => null);
+        const bodyPromise = request
+          .clone()
+          .json()
+          .catch(() => null);
         bodies.set(request, bodyPromise);
       } catch (e) {
         // If cloning fails, store a resolved null promise
@@ -142,7 +153,7 @@ export function getServerRequests() {
       }
     }
   };
-  
+
   const read = async (index = 0, readBody = true) => {
     const request = requests[index];
     let body;

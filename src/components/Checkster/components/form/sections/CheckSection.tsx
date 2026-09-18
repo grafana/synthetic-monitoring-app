@@ -15,7 +15,7 @@ import { SCRIPTED_CHECK_FIELDS,ScriptedCheckContent } from '../layouts/ScriptedC
 import { TCP_REQUEST_OPTIONS_FIELDS,TcpCheckContent } from '../layouts/TcpCheckContent';
 import { TRACEROUTE_CHECK_FIELDS,TracerouteCheckContent } from '../layouts/TracerouteCheckContent';
 
-const DEFAULT_CHECK_FIELDS = ['job', 'target'];
+const DEFAULT_CHECK_FIELDS = ['job', 'target', 'folderUid'];
 
 function getCheckTypeFields(checkType: CheckType) {
   switch (checkType) {

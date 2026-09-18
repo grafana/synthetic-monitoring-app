@@ -1,4 +1,34 @@
-import { formatDuration, formatSmallDurations, getRandomProbes, pascalCaseToSentence } from 'utils';
+import { BASIC_CHECK_ALERTS } from 'test/fixtures/checkAlerts';
+import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+
+import { AlertSensitivity, Check } from 'types';
+import { checkHasAlerting, formatDuration, formatSmallDurations, getRandomProbes, pascalCaseToSentence } from 'utils';
+
+describe('checkHasAlerting', () => {
+  function buildCheck(overrides: Partial<Check>): Check {
+    return { ...BASIC_HTTP_CHECK, alertSensitivity: AlertSensitivity.None, alerts: [], ...overrides } as Check;
+  }
+
+  it('returns false when there are no per-check alerts and sensitivity is none', () => {
+    expect(checkHasAlerting(buildCheck({}))).toBe(false);
+  });
+
+  it('returns false when the alert sensitivity is missing entirely', () => {
+    expect(checkHasAlerting(buildCheck({ alertSensitivity: undefined }))).toBe(false);
+  });
+
+  it('returns true when a legacy alert sensitivity is set', () => {
+    expect(checkHasAlerting(buildCheck({ alertSensitivity: AlertSensitivity.High }))).toBe(true);
+  });
+
+  it('returns true for custom alert sensitivity strings', () => {
+    expect(checkHasAlerting(buildCheck({ alertSensitivity: 'my-custom-sensitivity' }))).toBe(true);
+  });
+
+  it('returns true when the check has per-check alerts', () => {
+    expect(checkHasAlerting(buildCheck({ alerts: BASIC_CHECK_ALERTS.alerts.slice(0, 1) }))).toBe(true);
+  });
+});
 
 it('gets random probes', async () => {
   const probes = [11, 23, 5, 5212, 43, 3, 4, 6];

@@ -10,8 +10,17 @@ services:
       - ./dev/custom.ini:/etc/grafana/grafana.ini
       - ./dev/license.jwt:/var/lib/grafana/license.jwt
       - grafana-storage:/var/lib/grafana
+    # Reach the API and agent running on the host. Plain Docker Engine on Linux
+    # does not resolve host.docker.internal without this; Docker Desktop does.
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     environment:
-      GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins
+      # The datasource backend gets its service account from the `iam` block in
+      # src/datasource/plugin.json. Without both of these Grafana issues no
+      # credential and every named query is refused -- it fails closed rather
+      # than querying as itself. See pkg/plugin/authz.go.
+      GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins externalServiceAccounts
+      GF_AUTH_MANAGED_SERVICE_ACCOUNTS_ENABLED: 'true'
 
 volumes:
   grafana-storage:

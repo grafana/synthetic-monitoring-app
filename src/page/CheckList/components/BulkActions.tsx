@@ -36,17 +36,17 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
     disableChecks,
     deleteChecks,
     deleteModalProps,
-  } = useBulkActions({ checks, onResolved, isFoldersAvailable });
+  } = useBulkActions({ checks, onResolved });
 
   return (
     <>
-      <div>
-        {checks.length} check{checks.length !== 1 ? `s are` : ` is`} selected.
-      </div>
       <div className={styles.buttonGroup}>
         {checks.length > 0 && (
           <ButtonCascader
             variant="secondary"
+            icon="map-marker"
+            // Matches the plain-text styling of the sibling bulk actions.
+            buttonProps={{ fill: 'text' }}
             options={[
               {
                 label: 'Add probes',
@@ -82,6 +82,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           type="button"
           variant="secondary"
           fill="text"
+          icon="check-circle"
           onClick={enableChecks}
           disabled={!canWriteAll}
         >
@@ -91,6 +92,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           type="button"
           variant="secondary"
           fill="text"
+          icon="pause-circle"
           onClick={disableChecks}
           disabled={!canWriteAll}
         >
@@ -101,6 +103,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
           type="button"
           variant="destructive"
           fill="text"
+          icon="trash-alt"
           onClick={() => setShowDeleteModal(true)}
           disabled={!canDeleteAll}
         >

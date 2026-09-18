@@ -12,6 +12,8 @@ import { DeprecationNotice } from 'components/DeprecationNotice/DeprecationNotic
 import { FeatureFlag } from 'components/FeatureFlag';
 import { ProbeCheckExecutionStats } from 'components/ProbeCheckExecutionStats';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
 import { ProbeUsageLink } from '../ProbeUsageLink';
 import { formatK6VersionsInline } from './ProbeCard.utils';
 import { ProbeDisabledCapabilities } from './ProbeDisabledCapabilities';
@@ -92,6 +94,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
               href={probeEditHref}
               aria-label={`Edit probe ${probe.displayName}`}
               tooltip="Edit probe"
+              onClick={() => trackFaroUserAction(FaroUserAction.EditPrivateProbeClicked)}
             >
               Edit
             </LinkButton>

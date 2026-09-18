@@ -9,6 +9,13 @@
   "internalChecksFilter": "strict", // https://docs.renovatebot.com/configuration-options/#await-x-time-duration-before-automerging
   "semanticCommitScope": null,
   "packageRules": [
+    // Backend Go dependencies. The SDK carries the plugin protocol, so review
+    // its updates together rather than one PR per transitive module.
+    {
+      "matchManagers": ["gomod"],
+      "matchPackageNames": ["github.com/grafana/grafana-plugin-sdk-go"],
+      "groupName": "grafana-plugin-sdk-go"
+    },
     // @grafana/scenes and @grafana/scenes-react must be updated together
     {
       "matchPackageNames": ["@grafana/scenes", "@grafana/scenes-react"],

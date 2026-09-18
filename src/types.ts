@@ -753,8 +753,10 @@ export enum HTTPCompressionAlgo {
 
 export enum FeatureName {
   CALs = 'synthetic-monitoring-cost-attribution',
+  CheckSuggestions = 'synthetic-monitoring-check-suggestions',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
+  KnowledgeGraph = 'synthetic-monitoring-knowledge-graph',
   LabelMigration = 'synthetic-monitoring-label-migration',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
@@ -912,7 +914,7 @@ export type PluginPermissions =
   | `${PermissionBase}.probes:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.alerts:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.thresholds:${'read' | 'write' | 'delete'}`
-  | `${PermissionBase}.access-tokens:${'write'}`
+  | `${PermissionBase}.access-tokens:${'read' | 'write' | 'delete'}`
   | `${PermissionBase}.plugin:${'write'}`;
 
 export type FixedSecretPermission = `secret.securevalues:${'create' | 'read' | 'write' | 'delete'}`;

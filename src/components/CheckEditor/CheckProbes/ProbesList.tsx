@@ -92,6 +92,14 @@ export const ProbesList = ({
           onClick={handleToggleAll}
           checked={allProbesSelected}
           indeterminate={someProbesSelected}
+          // Grafana's Checkbox sets the native indeterminate property when it is
+          // enabled, but does not clear it when the prop changes back to false.
+          // Clear it here so the header can transition from partial to checked.
+          ref={(element) => {
+            if (element) {
+              element.indeterminate = someProbesSelected;
+            }
+          }}
           disabled={disabled}
         />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>

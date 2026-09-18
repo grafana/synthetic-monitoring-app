@@ -15,6 +15,8 @@ import { ProbeSetupModal } from 'components/ProbeSetupModal';
 import { ProbeStatus } from 'components/ProbeStatus';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
 import { PluginPageNotFound } from '../NotFound/NotFound';
 import { getErrorInfo, getTitle } from './EditProbe.utils';
 
@@ -143,7 +145,10 @@ const EditProbeContent = ({ probe, forceViewMode }: { forceViewMode?: boolean; p
       <ProbeSetupModal
         actionText="Close"
         isOpen={showTokenModal}
-        onDismiss={() => setShowTokenModal(false)}
+        onDismiss={() => {
+          trackFaroUserAction(FaroUserAction.EditProbeSetupModalDismissClicked);
+          setShowTokenModal(false);
+        }}
         token={probeToken}
       />
     </>

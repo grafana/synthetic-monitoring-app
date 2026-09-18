@@ -11,7 +11,7 @@ services:
         development: ${DEVELOPMENT:-false}
         anonymous_auth_enabled: ${ANONYMOUS_AUTH_ENABLED:-true}
     ports:
-      - 3000:3000/tcp
+      - ${GRAFANA_HOST_PORT:-3000}:3000/tcp
     volumes:
       - ../dist:/var/lib/grafana/plugins/grafana-synthetic-monitoring-app
       - ../provisioning:/etc/grafana/provisioning

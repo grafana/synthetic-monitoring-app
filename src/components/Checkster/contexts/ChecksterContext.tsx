@@ -12,6 +12,7 @@ import React, {
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { isEqual } from 'lodash';
 import { addRefinements } from 'schemas/forms/BaseCheckSchema';
 import { createCheckSchema } from 'schemas/forms/utils/createCheckSchema';
@@ -23,10 +24,15 @@ import { getCheckType } from 'utils';
 import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useDOMId } from 'hooks/useDOMId';
+import { CenteredSpinner } from 'components/CenteredSpinner';
+import { getAvailableProbes } from 'components/CheckEditor/ProbeOptions';
+import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
+import { useHydrateCalLabels } from '../hooks/useHydrateCalLabels';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
 import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
@@ -74,16 +80,51 @@ interface StashedValues {
   settings: Record<string, unknown> | undefined;
 }
 
-function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probesWithMetadata: ProbeWithMetadata[], defaultFolderUid?: string) {
+function getDefaultProbeId(probes: ProbeWithMetadata[], checkType: CheckType) {
+  const availableProbes = getAvailableProbes(probes, checkType).filter((probe) => !probe.deprecated);
+  const onlineProbes = availableProbes.filter((probe) => probe.online);
+  const defaultProbe = onlineProbes.find((probe) => probe.public) ?? onlineProbes[0] ?? availableProbes[0];
+
+  return defaultProbe?.id;
+}
+
+// Picked once per checkType and then left alone: probes refetch every 10s, and re-deriving
+// this from live online status on every poll would silently swap the preselected probe out
+// from under the user while they're still filling in the form.
+function useDefaultProbeId(probesWithMetadata: ProbeWithMetadata[], checkType: CheckType) {
+  const lockedRef = useRef<{ checkType: CheckType; probeId: number | undefined }>();
+
+  if (!lockedRef.current || lockedRef.current.checkType !== checkType) {
+    lockedRef.current = { checkType, probeId: getDefaultProbeId(probesWithMetadata, checkType) };
+  } else if (lockedRef.current.probeId === undefined) {
+    lockedRef.current.probeId = getDefaultProbeId(probesWithMetadata, checkType);
+  }
+
+  return lockedRef.current.probeId;
+}
+
+function useFormValuesMeta(
+  checkType: CheckType,
+  check: Check | undefined,
+  probesWithMetadata: ProbeWithMetadata[],
+  defaultFolderUid?: string,
+  requiresFolder = false
+) {
   const probeCompatibilityKey = useProbeCompatibilityKey(probesWithMetadata);
+  const defaultProbeId = useDefaultProbeId(probesWithMetadata, checkType);
 
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
-    const refinedSchema = addRefinements<CheckFormValues>(schema);
+    const refinedSchema = addRefinements<CheckFormValues>(schema, { requiresFolder });
     const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
 
     if (defaultFolderUid && !formValues.folderUid) {
       formValues.folderUid = defaultFolderUid;
+    }
+
+    // One default probe, not none (invalid) or all of them (expensive).
+    if (!formValues.probes.length && defaultProbeId !== undefined) {
+      formValues.probes = [defaultProbeId];
     }
 
     return {
@@ -93,7 +134,7 @@ function useFormValuesMeta(checkType: CheckType, check: Check | undefined, probe
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder, defaultProbeId]);
 }
 
 export function ChecksterProvider({
@@ -109,8 +150,21 @@ export function ChecksterProvider({
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const { defaultFolderUid, isLoading: isFolderLoading, isError: isFolderError } = useDefaultFolder(isFoldersEnabled);
-  const isFolderReady = !isFoldersEnabled || !isFolderLoading || isFolderError;
+  const { status: defaultFolderStatus } = useDefaultFolder(isFoldersEnabled);
+  // Pre-fill the default folder through the form defaults (only when the
+  // user can edit it) so a new form stays pristine. Everyone else picks a
+  // folder themselves from the org-wide picker.
+  const { preselectUid: seedFolderUid, isPreselectReady } = useFolderSelection({ enabled: isFoldersEnabled });
+  // A folder-less check effectively lives in the default folder, which the
+  // user may not be able to edit — so a folder is required when folder data
+  // is available. When it isn't, checks save without one, as before.
+  const requiresFolder = isFoldersEnabled && defaultFolderStatus === 'available';
+
+  // Cost attribution labels are stored alongside custom ones. Rather than block the form on the
+  // CALs query, defaults load with labels unsplit and useHydrateCalLabels repartitions once the
+  // tenant's CAL names arrive — without touching unrelated fields via the global reset effect.
+  const { data: calData } = useTenantCostAttributionLabels();
+  const calNames = useMemo(() => calData?.names ?? [], [calData]);
 
   const [checkType, setCheckType] = useState<CheckType>(
     isCheck(externalCheck) ? getCheckType(externalCheck.settings) : (externalCheckType ?? DEFAULT_CHECK_TYPE)
@@ -121,7 +175,20 @@ export function ChecksterProvider({
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
 
-  const { schema, defaultFormValues } = useFormValuesMeta(checkType, check, probesWithMetadata, defaultFolderUid);
+  useTrackingScope({
+    check_type: checkType,
+    check_state: isNew ? 'new' : 'existing',
+    check_id: check?.id,
+    check_is_duplicate: isDuplicate,
+  });
+
+  const { schema, defaultFormValues } = useFormValuesMeta(
+    checkType,
+    check,
+    probesWithMetadata,
+    seedFolderUid,
+    requiresFolder
+  );
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});
 
@@ -182,6 +249,8 @@ export function ChecksterProvider({
       formMethods.trigger(dirtyFields as any);
     }
   }, [defaultFormValues, formMethodRef, formMethods, values]);
+
+  useHydrateCalLabels(formMethods, calNames, defaultFormValues);
 
   const formNavigation = useFormNavigationState(checkType, formMethods, initialSection);
 
@@ -269,8 +338,10 @@ export function ChecksterProvider({
     canChangeCheckType,
   ]);
 
-  if (!isFolderReady) {
-    return null;
+  // Don't mount the form until we know which folder to pre-fill. Checks that
+  // already have a folder don't need the pre-fill, so they don't wait.
+  if (!isPreselectReady && !check?.folderUid) {
+    return <CenteredSpinner aria-label="Loading check form" />;
   }
 
   return (

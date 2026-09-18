@@ -73,23 +73,25 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
         return true;
       }
       // Folders outside the default subtree: `accessible` means the folder
-      // exists and the user can read it (e.g. a check assigned to an external
-      // folder via the API, or a folder stranded by a default-folder UID
-      // mismatch), so its checks must stay visible. `orphaned` (404) checks
-      // are shown too. Only `forbidden` (403) hides a check.
+      // exists and the user can read it (a first-class location under open
+      // folder assignment), so its checks must stay visible. `orphaned` (404)
+      // checks are shown too. Only `forbidden` (403) hides a check.
       const folderState = folderDetailsByUid.get(effectiveUid);
       return folderState?.type === 'orphaned' || folderState?.type === 'accessible';
     });
   }, [checks, isFoldersAvailable, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
 
   // Readable folders referenced by checks but living outside the default
-  // folder's subtree, so the folder view can show them instead of hiding
-  // their checks.
+  // folder's subtree (at the Grafana root level, inside a team folder, etc.).
+  // Under open folder assignment these are first-class locations: the folder
+  // view shows them, their checks can be filtered, and the folders can be
+  // moved. They only surface when a check references them, so the view is not
+  // flooded with the org's unrelated dashboard folders.
   //
   // We can only trust this once the subtree has loaded successfully: while
   // loading (or if the child-folder fetch failed) we don't know the full
-  // subtree, so we'd wrongly flag in-subtree folders as external.
-  const externalFolders = useMemo(() => {
+  // subtree, so we'd wrongly flag in-subtree folders as outside.
+  const outsideFolders = useMemo(() => {
     if (isFoldersLoading || isFoldersError) {
       return [];
     }
@@ -118,7 +120,7 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
 
   return {
     visibleChecks,
-    externalFolders,
+    outsideFolders,
     getPermissions,
     getFolderStatus,
     isFoldersAvailable,

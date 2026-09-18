@@ -48,6 +48,10 @@ import { MAX_BASE_TIMEOUT, MIN_BASE_TIMEOUT } from '../../schemas/general/Timeou
 import { ONE_MINUTE_IN_MS, THREE_SECONDS_IN_MS } from '../../utils.constants';
 import { EXAMPLE_SCRIPT_BROWSER, EXAMPLE_SCRIPT_SCRIPTED } from '../constants';
 
+// Query param on the edit-check route used to open the form on a specific section, e.g.
+// `?section=labels`. Values are `FormSectionName`. See EditCheckV2.
+export const FORM_SECTION_QUERY_PARAM = 'section';
+
 /*
  * When adding a new check type or group, make sure to update:
  * - CHECK_TYPE_GROUP_MAP

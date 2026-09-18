@@ -11,6 +11,9 @@ import { ProbeAPIServer } from 'components/ProbeAPIServer';
 import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeSetupModal } from 'components/ProbeSetupModal';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
+
 export const TEMPLATE_PROBE: ExtendedProbe = {
   name: '',
   public: false,
@@ -74,6 +77,7 @@ export const NewProbe = () => {
         isOpen={showTokenModal}
         actionText="Go back to probes list"
         onDismiss={() => {
+          trackFaroUserAction(FaroUserAction.NewProbeCreateModalDismissClicked);
           navigate(AppRoutes.Probes);
           setShowTokenModal(false);
         }}

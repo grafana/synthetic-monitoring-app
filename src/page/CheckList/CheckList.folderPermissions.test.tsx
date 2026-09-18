@@ -82,7 +82,10 @@ describe('CheckList - Folder Permissions', () => {
     describe('visibility', () => {
       it('shows checks in accessible folders', async () => {
         await renderCheckList();
-        expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
+        // Wait for the default folder group: once it renders, the tree has
+        // settled and folder nodes will not remount into it anymore.
+        expect(await screen.findByText(/\(default\)/)).toBeInTheDocument();
+        await waitFor(() => expect(screen.getByText('Production HTTP check')).toBeInTheDocument());
         expect(screen.getByText('Staging DNS check')).toBeInTheDocument();
       });
 
@@ -227,6 +230,11 @@ describe('CheckList - Folder Permissions', () => {
         }),
         apiRoute(`listFolders`, {
           result: () => ({ json: [] }),
+        }),
+        // The RBAC flag alone is not enough: the server denies the creation,
+        // which surfaces the same "not provisioned" banner.
+        apiRoute(`createFolder`, {
+          result: () => ({ status: 403, json: { message: 'Access denied' } }),
         })
       );
 
@@ -396,7 +404,7 @@ describe('CheckList - Folder Permissions', () => {
       });
 
       expect(await screen.findByText('Production HTTP check')).toBeInTheDocument();
-      expect(screen.queryByText('Outside default folder')).not.toBeInTheDocument();
+      expect(screen.queryByText('Root')).not.toBeInTheDocument();
     });
   });
 

@@ -56,6 +56,20 @@ describe('validation', () => {
     const errorMessage = await screen.findByText('Longitude must be less than 180');
     expect(errorMessage).toBeInTheDocument();
   });
+
+  it('accepts coordinates with Google Maps precision', async () => {
+    const { user } = await renderProbeEditor();
+    const latitudeInput = await screen.findByLabelText('Latitude', { exact: false });
+    const longitudeInput = await screen.findByLabelText('Longitude', { exact: false });
+
+    await user.type(latitudeInput, '34.697135');
+    await user.type(longitudeInput, '-84.383184');
+
+    expect(latitudeInput).toHaveAttribute('step', '0.000001');
+    expect(longitudeInput).toHaveAttribute('step', '0.000001');
+    expect(latitudeInput).toBeValid();
+    expect(longitudeInput).toBeValid();
+  });
 });
 
 it('renders the back button', async () => {

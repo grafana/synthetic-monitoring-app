@@ -37,6 +37,9 @@ export const CHECKS_TEST_ID = {
     selectAll: 'checks header select-all',
     sortBy: 'checks header sort-by',
   },
+  folderView: {
+    sectionHeader: 'checks folder-view section-header',
+  },
   listItem: {
     editButton: 'checks list-item edit-button',
   },
@@ -132,6 +135,9 @@ export const CONFIG_TEST_ID = {
   contentLoading: 'config content-loading',
   layout: {
     activeTab: 'config layout active-tab',
+  },
+  labelMigration: {
+    invalidList: 'config label-migration invalid-list',
   },
   secretEditModal: 'config secret-edit-modal',
 } as const;

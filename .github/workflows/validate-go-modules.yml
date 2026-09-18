@@ -1,0 +1,41 @@
+name: Validate Go modules
+
+# The shared plugin CI workflow builds, tests and lints the backend, but it does
+# not check that go.mod/go.sum are tidy or that the Go version is consistent, and
+# it exposes no hook to add those. This workflow covers that gap.
+#
+# Run the same checks locally with `mage go:verifyVersion`, `mage go:tidy` and
+# `mage go:enforceClean`.
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  validate-go-modules:
+    name: Validate Go modules
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+
+      # mage is a module dependency, so `go run` uses the pinned version and
+      # needs no separate install step.
+      - name: Verify Go version
+        run: go run github.com/magefile/mage -v go:verifyVersion
+
+      - name: Tidy Go dependencies
+        run: go run github.com/magefile/mage -v go:tidy
+
+      - name: Check for uncommitted changes
+        run: go run github.com/magefile/mage go:enforceClean

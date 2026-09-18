@@ -28,6 +28,7 @@ import { useDemAssistantContext } from 'hooks/useDemAssistantContext';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { useQueryParametersState } from 'hooks/useQueryParametersState';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
+import { CostAttributionBanner } from 'components/CostAttribution/CostAttributionBanner';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
 import {
   CHECK_LIST_STATUS_OPTIONS,
@@ -36,6 +37,7 @@ import {
 } from 'page/CheckList/CheckList.constants';
 import { useCheckFilters } from 'page/CheckList/CheckList.hooks';
 import { matchesAllFilters } from 'page/CheckList/CheckList.utils';
+import { BulkActions } from 'page/CheckList/components/BulkActions';
 import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
@@ -82,7 +84,6 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
   const {
     folders: allFolders,
-    foldersMap,
     defaultFolderUid,
     isLoading: isFoldersLoading,
     isError: isFoldersError,
@@ -109,6 +110,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   // (so folder view returns automatically if folders become available again).
   const effectiveViewType =
     viewType === CheckListViewType.Folder && !isFoldersAvailable ? CheckListViewType.Card : viewType;
+  const isFolderView = effectiveViewType === CheckListViewType.Folder;
 
   // Animate the initial alert-based reorder only once, when alert states first arrive.
   // Subsequent refetches re-sort silently to avoid distracting repeated animations.
@@ -166,10 +168,29 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const filteredChecks = filterChecks(checks, checkFiltersWithStatus, defaultFolderUid);
   const sortedChecks = sortChecks(filteredChecks, sortType, reachabilitySuccessRates, checkAlertStates, applyAlertSort);
   const folderAccess = useCheckFolderAccess(sortedChecks);
-  const { visibleChecks, externalFolders } = folderAccess;
+  const { visibleChecks, outsideFolders } = folderAccess;
+
+  // The folder filter options must not churn as filters are applied, so
+  // outside folders for the filter are derived from the unfiltered check
+  // list (folderAccess only covers the currently filtered checks). The
+  // per-folder details are cached, so this issues no extra requests.
+  const unfilteredOutsideAccess = useCheckFolderAccess(checks);
+  const filterFolders = useMemo(
+    () => [...allFolders, ...unfilteredOutsideAccess.outsideFolders],
+    [allFolders, unfilteredOutsideAccess.outsideFolders]
+  );
+  const outsideFolderUids = useMemo(
+    () => new Set(unfilteredOutsideAccess.outsideFolders.map((folder) => folder.uid)),
+    [unfilteredOutsideAccess.outsideFolders]
+  );
 
   const currentPageChecks = visibleChecks.slice((currentPage - 1) * CHECKS_PER_PAGE, currentPage * CHECKS_PER_PAGE);
   const totalPages = Math.ceil(visibleChecks.length / CHECKS_PER_PAGE);
+
+  // What the select-all checkbox acts on: never more than the user can see.
+  // Folder view is not paginated and renders the whole list, so there that is
+  // every check.
+  const pageChecks = isFolderView ? visibleChecks : currentPageChecks;
 
   const handleFilterChange = (filters: CheckFiltersType, type: FilterType) => {
     setCurrentPage(1);
@@ -243,14 +264,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     }
   };
 
-  const isAllSelected = selectedCheckIds.size === visibleChecks.length;
+  const isPageSelected = pageChecks.length > 0 && pageChecks.every((check) => selectedCheckIds.has(check.id!));
 
-  const handleSelectAll = () => {
-    if (isAllSelected) {
+  const handleSelectPage = () => {
+    if (isPageSelected) {
       return handleUnselectAll();
     }
-    const allCheckIds = visibleChecks.map((check) => check.id!);
-    setSelectedChecksIds(new Set(allCheckIds));
+    setSelectedChecksIds(new Set(pageChecks.map((check) => check.id!)));
   };
 
   const handleChangeViewType = (value: CheckListViewType) => {
@@ -284,21 +304,32 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   const foldersUnavailable = isFoldersEnabled && !isFoldersLoading && !isFoldersAvailable;
 
+  // Rendered here so the folder view can place it on its folders row while
+  // the flat views keep it in the list header.
+  const bulkActions =
+    selectedCheckIds.size > 0 ? (
+      <BulkActions
+        checks={visibleChecks.filter((check) => selectedCheckIds.has(check.id!))}
+        onResolved={handleUnselectAll}
+      />
+    ) : undefined;
+
   return (
     <CheckFolderAccessValueProvider value={folderAccess}>
       <CheckListHeader
         checks={visibleChecks}
         checkFilters={checkFiltersWithStatus}
-        currentPageChecks={currentPageChecks}
-        folders={allFolders}
+        folders={filterFolders}
         defaultFolderUid={defaultFolderUid}
+        outsideFolderUids={outsideFolderUids}
         isFoldersAvailable={isFoldersAvailable}
         onChangeView={handleChangeViewType}
         onFilterChange={handleFilterChange}
-        onSelectAll={handleSelectAll}
+        onSelectPage={handleSelectPage}
         onSort={updateSortMethod}
         onResetFilters={handleResetFilters}
-        onDelete={handleUnselectAll}
+        bulkActions={isFolderView ? undefined : bulkActions}
+        pageChecks={pageChecks}
         selectedCheckIds={selectedCheckIds}
         sortType={sortType}
         viewType={effectiveViewType}
@@ -320,12 +351,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
             <FolderPermissionBanner onDismiss={() => setFolderBannerDismissed(true)} />
           ))
         ))}
-      {effectiveViewType === CheckListViewType.Folder ? (
+      <CostAttributionBanner checkCount={checks.length} />
+      {isFolderView ? (
         <CheckListFolderView
+          bulkActions={bulkActions}
           checks={visibleChecks}
           folders={allFolders}
-          externalFolders={externalFolders}
-          foldersMap={foldersMap}
+          outsideFolders={outsideFolders}
           foldersLoading={isFoldersLoading}
           foldersError={isFoldersError}
           onRetryFolders={refetchFolders}

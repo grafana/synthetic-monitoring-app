@@ -8,6 +8,7 @@ import { css } from '@emotion/css';
 import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
+import { useLabelMode } from 'data/useLabelMode';
 
 import { AlertLabelsDisplay } from './AlertLabelsDisplay';
 import {
@@ -33,10 +34,18 @@ const AlertRoutingPreviewContent: React.FC<AlertRoutingPreviewProps> = ({ alertT
   const customLabels = getValues().labels;
   const job = getValues().job;
   const instance = getValues().target;
+  const { data: labelModeState } = useLabelMode();
 
   const alertLabels = useMemo(() => {
-    return generateAlertLabels(alertType, { checkType, frequency, customLabels, job, instance });
-  }, [alertType, checkType, frequency, customLabels, job, instance]);
+    return generateAlertLabels(alertType, {
+      checkType,
+      frequency,
+      customLabels,
+      job,
+      instance,
+      labelMode: labelModeState?.mode,
+    });
+  }, [alertType, checkType, frequency, customLabels, job, instance, labelModeState]);
 
   const { isLoading, isError, currentData: routingTreeData } = useMatchInstancesToRouteTrees();
 

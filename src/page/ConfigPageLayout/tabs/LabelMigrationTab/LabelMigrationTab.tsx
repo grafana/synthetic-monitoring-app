@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
 import { Alert, Button, Collapse, Space, Stack, Text } from '@grafana/ui';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { LabelMode } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
+import { useChecks } from 'data/useChecks';
 import { useLabelMode, useSetLabelMode } from 'data/useLabelMode';
+import { useTenant } from 'data/useTenant';
 import { ConfirmModal } from 'components/ConfirmModal';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../../ConfigContent';
+import { CollidingLabelRename } from './CollidingLabelRename';
+import { ImpactedChecksWarning } from './ImpactedChecksWarning';
+import { getMigrationCooldown } from './migrationCooldown';
 import { SeriesPreview } from './SeriesPreview';
 import { useCheckInfoLabels } from './useCheckInfoLabels';
 
 interface CollisionError {
   msg: string;
-  collidingLabels: string[];
+  collidingLabels?: string[];
+  invalidLabels?: string[];
 }
 
 function modeLabel(mode: LabelMode): string {
@@ -42,6 +49,9 @@ export function LabelMigrationTab() {
 
   const { data: state, isLoading, error: loadError, refetch, isRefetching } = useLabelMode();
   const setLabelModeMutation = useSetLabelMode();
+  const { data: checks, isError: checksError } = useChecks();
+  const { data: tenant } = useTenant();
+  const cooldown = getMigrationCooldown(tenant?.modified, Date.now());
 
   const [updateError, setUpdateError] = useState<string | undefined>(undefined);
   const [collisionError, setCollisionError] = useState<CollisionError | undefined>(undefined);
@@ -63,7 +73,10 @@ export function LabelMigrationTab() {
       await setLabelModeMutation.mutateAsync(targetMode);
     } catch (err: unknown) {
       const e = err as { status?: number; data?: CollisionError };
-      if (e?.status === 409 && e?.data?.collidingLabels) {
+      // A 409 can carry reserved-name collisions, invalid-once-unprefixed names,
+      // or both — any non-empty list means "rename these labels first".
+      const labelIssues = (e?.data?.collidingLabels?.length ?? 0) > 0 || (e?.data?.invalidLabels?.length ?? 0) > 0;
+      if (e?.status === 409 && e.data && labelIssues) {
         setCollisionError(e.data);
       } else {
         setUpdateError(getErrorMessage(err, 'Failed to update label migration mode'));
@@ -112,7 +125,16 @@ export function LabelMigrationTab() {
                   labels. Enabling dual-write is permanent: you cannot return to prefixed-only labels afterwards.
                 </Text>
                 <Space v={2} />
-                {isAdmin && (
+                {!collisionError && (
+                  <ImpactedChecksWarning
+                    checks={checks ?? []}
+                    systemLabels={state.systemLabels}
+                    checksError={checksError}
+                  />
+                )}
+                {/* While the conflicts alert is up, its "Retry enabling dual-write"
+                    button is the only sanctioned path into dual-write. */}
+                {isAdmin && !collisionError && (
                   <Button
                     onClick={() =>
                       openConfirm(
@@ -143,6 +165,13 @@ export function LabelMigrationTab() {
                   metrics and log streams.
                 </Alert>
                 <Space v={2} />
+                {!collisionError && (
+                  <ImpactedChecksWarning
+                    checks={checks ?? []}
+                    systemLabels={state.systemLabels}
+                    checksError={checksError}
+                  />
+                )}
                 {isAdmin && (
                   <Button
                     onClick={() =>
@@ -156,7 +185,8 @@ export function LabelMigrationTab() {
                         'Finalize'
                       )
                     }
-                    disabled={busy}
+                    disabled={busy || cooldown.isCoolingDown}
+                    tooltip={cooldown.isCoolingDown ? cooldown.message : undefined}
                   >
                     Finalize migration
                   </Button>
@@ -198,6 +228,15 @@ export function LabelMigrationTab() {
               </>
             )}
 
+            {isAdmin && state.mode === LabelMode.DualWrite && cooldown.isCoolingDown && (
+              <>
+                <Space v={1} />
+                <Text color="secondary" variant="bodySmall">
+                  {cooldown.message}
+                </Text>
+              </>
+            )}
+
             {updateError && (
               <>
                 <Space v={2} />
@@ -219,18 +258,44 @@ export function LabelMigrationTab() {
                   title="Label name conflicts — cannot enable dual-write"
                   onRemove={() => setCollisionError(undefined)}
                 >
-                  <Text>
-                    The following labels conflict with reserved system names. Rename or remove them from your checks and
-                    probes, then try again:
-                  </Text>
-                  <Space v={1} />
-                  <ul>
-                    {collisionError.collidingLabels.map((name) => (
-                      <li key={name}>
-                        <code>{name}</code>
-                      </li>
-                    ))}
-                  </ul>
+                  {!!collisionError.invalidLabels?.length && (
+                    <>
+                      <Text>
+                        The following labels would not be valid label names once the <code>label_</code> prefix is
+                        removed. Rename them on the checks and probes that carry them before enabling dual-write:
+                      </Text>
+                      <Space v={1} />
+                      <ul data-testid={CONFIG_TEST_ID.labelMigration.invalidList}>
+                        {collisionError.invalidLabels.map((name) => (
+                          <li key={name}>
+                            <code>{name}</code>
+                          </li>
+                        ))}
+                      </ul>
+                      <Space v={1} />
+                    </>
+                  )}
+                  {!!collisionError.collidingLabels?.length && (
+                    <>
+                      <Text>
+                        The following labels conflict with reserved system names. Rename them across your checks below,
+                        then retry. Labels set on probes are not covered by the rename and must be edited on the probe
+                        itself.
+                      </Text>
+                      <Space v={1} />
+                    </>
+                  )}
+                  {/* Rendered even with no colliding labels so the in-alert retry
+                      stays available once invalid labels are fixed externally. */}
+                  <CollidingLabelRename
+                    labels={collisionError.collidingLabels ?? []}
+                    systemLabels={state.systemLabels}
+                    checks={checks ?? []}
+                    checksError={checksError}
+                    disabled={!isAdmin}
+                    retrying={busy}
+                    onRetry={() => applyMode(LabelMode.DualWrite)}
+                  />
                 </Alert>
               </>
             )}

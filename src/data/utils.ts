@@ -31,6 +31,25 @@ export function constructError(desc: string, error: unknown) {
   return desc;
 }
 
+/**
+ * Reason a backendSrv request failed, for display to the user.
+ *
+ * Grafana rejects with a FetchError, which is a plain object rather than an
+ * Error subclass and carries the server's explanation in `data.message`. An
+ * `instanceof Error` check therefore never matches and silently discards it.
+ */
+export function getFetchErrorMessage(error: unknown, fallback: string): string {
+  if (isFetchError(error)) {
+    return error.data?.message ?? error.message ?? error.statusText ?? fallback;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 interface InstantMetricQueryOptions {
   url: string;
   query: string;

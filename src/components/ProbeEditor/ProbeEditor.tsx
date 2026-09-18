@@ -15,6 +15,9 @@ import { LabelField } from 'components/LabelField';
 import { ProbeRegionsSelect } from 'components/ProbeRegionsSelect';
 import { SimpleMap } from 'components/SimpleMap';
 
+import { FaroUserAction } from '../../faro';
+import { trackFaroUserAction } from '../../features/tracking/userAction';
+
 type ProbeEditorProps = {
   actions?: ReactNode;
   errorInfo?: { title: string; message: string };
@@ -109,7 +112,7 @@ export const ProbeEditor = ({
                       })}
                       aria-label="Latitude"
                       placeholder="0.0"
-                      step={0.00001}
+                      step={0.000001}
                       type="number"
                     />
                   </Field>
@@ -126,7 +129,7 @@ export const ProbeEditor = ({
                         valueAsNumber: true,
                       })}
                       aria-label="Longitude"
-                      step={0.00001}
+                      step={0.000001}
                       type="number"
                       placeholder="0.0"
                     />
@@ -185,6 +188,7 @@ export const ProbeEditor = ({
                         icon={loading ? 'fa fa-spinner' : undefined}
                         type="submit"
                         disabled={!writeMode || isSubmitting || Object.keys(errors ?? {}).length > 0}
+                        onClick={() => trackFaroUserAction(FaroUserAction.ProbeEditorSubmitClicked)}
                       >
                         {submitText}
                       </Button>

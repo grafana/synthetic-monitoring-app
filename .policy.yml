@@ -10,6 +10,7 @@ policy:
         - and:
             - Workflow .github/workflows/auto-label_pr.yml succeeded or skipped
             - Workflow .github/workflows/dangerJS.yml succeeded or skipped
+            - Workflow .github/workflows/validate-go-modules.yml succeeded or skipped
             - Workflow .github/workflows/validate-grafana-compat.yml succeeded or skipped
             - Workflow .github/workflows/validate-i18n.yml succeeded or skipped
             - Workflow .github/workflows/validate-policy-bot.yml succeeded or skipped
@@ -46,6 +47,19 @@ approval_rules:
             - success
           workflows:
             - .github/workflows/dangerJS.yml
+  - name: Workflow .github/workflows/validate-go-modules.yml succeeded or skipped
+    if:
+      file_not_deleted:
+        paths:
+          - ^\.github\/workflows\/validate-go-modules\.yml$
+    requires:
+      conditions:
+        has_workflow_result:
+          conclusions:
+            - skipped
+            - success
+          workflows:
+            - .github/workflows/validate-go-modules.yml
   - name: Workflow .github/workflows/validate-grafana-compat.yml succeeded or skipped
     if:
       file_not_deleted:

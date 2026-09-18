@@ -12,6 +12,7 @@ import { TimeRange } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { useTheme2 } from '@grafana/ui';
 import { trackTimepointVizLegendToggled, trackViewToggle } from 'features/tracking/timepointExplorerEvents';
+import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
@@ -235,6 +236,14 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     isLogsRetentionLoading || isCheckConfigsLoading || isExecutionDurationLogsLoading || isMaxProbeDurationLoading;
   const isFetching = isCheckConfigsFetching || isExecutionDurationLogsFetching || isMaxProbeDurationFetching;
   const isError = isCheckConfigsError || isExecutionDurationLogsError || isMaxProbeDurationError;
+
+  useTrackingScope({
+    tpe_view_mode: viewMode,
+    tpe_visible_timepoints: timepointsDisplayCount,
+    tpe_total_timepoints: timepoints.length,
+    tpe_page: miniMapCurrentPage,
+    tpe_section: miniMapCurrentSectionIndex,
+  });
 
   const [viewerState, setViewerState] = useState<ViewerState>([]);
   const [shouldScrollToViewer, setShouldScrollToViewer] = useState(false);

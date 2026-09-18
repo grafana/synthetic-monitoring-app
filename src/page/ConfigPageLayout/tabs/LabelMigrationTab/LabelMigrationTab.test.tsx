@@ -1,12 +1,16 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { TENANT_LABEL_MODE } from 'test/fixtures/tenants';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
+import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from 'test/fixtures/checks';
+import { TENANT, TENANT_LABEL_MODE } from 'test/fixtures/tenants';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { runTestAsSMAdmin, runTestAsSMViewer } from 'test/utils';
 
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { queryInstantMetric } from 'data/utils';
 
 import { LabelMigrationTab } from './LabelMigrationTab';
@@ -43,6 +47,92 @@ describe('LabelMigrationTab', () => {
     runTestAsSMAdmin();
     await renderTab();
     await waitFor(() => expect(screen.getByRole('button', { name: /Enable dual-write/i })).toBeInTheDocument());
+  });
+
+  it('shows no pre-flight warning when no checks use reserved label names', async () => {
+    runTestAsSMAdmin();
+    await renderTab();
+    await screen.findByRole('button', { name: /Enable dual-write/i });
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+  });
+
+  it('shows a pre-flight warning with the impacted check count before Enable dual-write is clicked', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_HTTP_CHECK, id: 201, job: 'checkout-http', labels: [{ name: 'instance', value: 'x' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) }));
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning');
+    expect(warning).toHaveTextContent(/1 check/i);
+
+    await userEvent.click(within(warning).getByText(/Impacted label \(1\)/i));
+
+    // The offending label name itself is shown, not just the checks carrying it.
+    expect(within(warning).getByText('instance')).toBeInTheDocument();
+    expect(within(warning).getByRole('link', { name: 'checkout-http' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.EditCheck, { id: 201 })
+    );
+    // The action to actually attempt the transition is still available.
+    expect(screen.getByRole('button', { name: /Enable dual-write/i })).toBeInTheDocument();
+  });
+
+  it('shows a pre-flight warning before Finalize migration is clicked', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_PING_CHECK, id: 202, job: 'checkout-ping', labels: [{ name: 'job', value: 'x' }] };
+    server.use(
+      apiRoute('getLabelMode', {
+        result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+      }),
+      apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) })
+    );
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning');
+    await userEvent.click(within(warning).getByText(/Impacted label \(1\)/i));
+    expect(within(warning).getByRole('link', { name: 'checkout-ping' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Finalize migration/i })).toBeInTheDocument();
+  });
+
+  it('hides the pre-flight warning while the reactive collision alert is shown', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_HTTP_CHECK, id: 203, job: 'checkout-http', labels: [{ name: 'instance', value: 'x' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) }));
+
+    await triggerCollision(['instance']);
+
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
+  });
+
+  // A failed checks fetch leaves the checks list empty, which is
+  // indistinguishable from "confirmed zero collisions" unless the failure is
+  // surfaced explicitly — otherwise a real 500/permissions gap silently reads
+  // as an all-clear.
+  it('surfaces a failed check fetch instead of silently reporting no impacted checks', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+
+    await renderTab();
+
+    const warning = await screen.findByTestId('impacted-checks-warning-error');
+    expect(warning).toHaveTextContent(/couldn't verify/i);
+    // The confident "no collisions" state must not also render.
+    expect(screen.queryByTestId('impacted-checks-warning')).not.toBeInTheDocument();
+  });
+
+  it('surfaces a failed check fetch in the reactive collision alert instead of a false "no checks" hint', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+
+    await triggerCollision(['instance']);
+
+    expect(await screen.findByTestId('blocking-checks-error-instance')).toHaveTextContent(/couldn't load checks/i);
+    // The unconditional "no checks carry this label" hint is misleading here — a
+    // failed fetch is not evidence the label lives on a probe.
+    expect(screen.queryByTestId('blocking-checks-empty-instance')).not.toBeInTheDocument();
   });
 
   it('shows a confirmation modal with contextual confirmText when Enable dual-write is clicked', async () => {
@@ -144,6 +234,95 @@ describe('LabelMigrationTab', () => {
       expect(screen.getByText('probe', { selector: 'code' })).toBeInTheDocument();
       expect(screen.getByText('instance', { selector: 'code' })).toBeInTheDocument();
     });
+    // A colliding-only 409 must not render the invalid-names explanation.
+    expect(screen.queryByText(/would not be valid label names/i)).not.toBeInTheDocument();
+  });
+
+  it('shows invalid label names when API returns 409 with only invalidLabels', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: { msg: 'labels would be invalid without the label_ prefix', invalidLabels: ['9foo', '__bar'] },
+        }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
+    await userEvent.click(confirmButton);
+    // The invalid-only 409 must land in the collision alert, not the generic error path.
+    await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
+    expect(screen.getByText(/would not be valid label names/i)).toBeInTheDocument();
+    expect(screen.getByText('9foo', { selector: 'code' })).toBeInTheDocument();
+    expect(screen.getByText('__bar', { selector: 'code' })).toBeInTheDocument();
+    expect(screen.queryByText(/Failed to update label migration mode/i)).not.toBeInTheDocument();
+    // No reserved-name collisions were reported, so that explanation stays hidden
+    // and there are no rename rows — but the in-alert retry stays available for
+    // after the labels are fixed in the check editor.
+    expect(screen.queryByText(/conflict with reserved system names/i)).not.toBeInTheDocument();
+    expect(screen.queryByTestId('rename-input-9foo')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeEnabled();
+  });
+
+  it('renders colliding and invalid label lists distinctly on a mixed 409', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: {
+            msg: 'labels conflict or would be invalid',
+            collidingLabels: ['probe'],
+            invalidLabels: ['9foo'],
+          },
+        }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
+    await userEvent.click(confirmButton);
+    await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
+    // Both explanations render; colliding names get rename rows, invalid names
+    // sit in their own list without a rename affordance.
+    expect(screen.getByText(/conflict with reserved system names/i)).toBeInTheDocument();
+    expect(screen.getByText(/would not be valid label names/i)).toBeInTheDocument();
+    const invalidList = screen.getByTestId(CONFIG_TEST_ID.labelMigration.invalidList);
+    expect(within(invalidList).getByText('9foo', { selector: 'code' })).toBeInTheDocument();
+    expect(within(invalidList).queryByText('probe', { selector: 'code' })).not.toBeInTheDocument();
+    expect(screen.getByTestId('rename-input-probe')).toBeInTheDocument();
+    expect(screen.queryByTestId('rename-input-9foo')).not.toBeInTheDocument();
+    // The retry stays gated until the colliding label is renamed.
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
+  });
+
+  it('routes a 409 with empty label arrays to the generic error path', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => ({
+          status: 409,
+          json: { msg: 'conflicting concurrent update', collidingLabels: [], invalidLabels: [] },
+        }),
+      })
+    );
+    await renderTab();
+    const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+    await userEvent.click(trigger);
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    const confirmButton = within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i });
+    await userEvent.click(confirmButton);
+    // With no label names to act on, the collision alert would be an empty
+    // shell — the generic update error carrying the API's msg is shown instead.
+    await waitFor(() => expect(screen.getByText(/Failed to update label migration mode/i)).toBeInTheDocument());
+    expect(screen.getByText(/conflicting concurrent update/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Label name conflicts/i)).not.toBeInTheDocument();
   });
 
   it('shows an update error without Retry when setLabelMode fails without collisions', async () => {
@@ -274,7 +453,7 @@ describe('LabelMigrationTab', () => {
     expect(putCount).toBe(0);
   });
 
-  it('keeps the collision list through reopen and cancel, clearing it on the next attempt', async () => {
+  it('clears the collision state when a fresh attempt after dismissal succeeds', async () => {
     runTestAsSMAdmin();
     let calls = 0;
     server.use(
@@ -296,15 +475,11 @@ describe('LabelMigrationTab', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
     await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
-    // Reopening and cancelling must not discard the rename guidance.
-    await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
-    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
-    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /Cancel/i }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-    expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument();
-    // A new attempt replaces the outcome: this one succeeds and the alert clears.
-    await userEvent.click(screen.getByRole('button', { name: /Enable dual-write/i }));
+    // The original Enable button is hidden while the alert is up; dismissing
+    // the alert restores it, and a fresh successful attempt replaces the
+    // collision outcome.
+    await userEvent.click(screen.getByLabelText('Close alert'));
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
     await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
     await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
     await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
@@ -366,5 +541,412 @@ describe('LabelMigrationTab', () => {
     await renderTab();
     // Reserved labels section is now shown in UNPREFIXED mode for auditing
     await waitFor(() => expect(screen.getByText(/Show reserved label names/i)).toBeInTheDocument());
+  });
+
+  describe('transition cooldown', () => {
+    const NOW = TENANT.modified * 1000 + 6 * 60 * 60 * 1000; // arbitrary fixed "now", well after the fixture's modified time
+
+    afterEach(() => {
+      jest.restoreAllMocks();
+    });
+
+    function mockTenantModifiedAgo(msAgo: number) {
+      server.use(
+        apiRoute('getTenant', {
+          result: () => ({ json: { ...TENANT, modified: (NOW - msAgo) / 1000 } }),
+        })
+      );
+    }
+
+    // The button keeps a tooltip prop while cooling down, so @grafana/ui renders
+    // it as aria-disabled (to stay hoverable) rather than natively disabled —
+    // onClick is still nulled out either way, so clicking it is a no-op.
+    async function expectCoolingDown(button: HTMLElement) {
+      await waitFor(() => expect(button).toHaveAttribute('aria-disabled', 'true'));
+      await userEvent.click(button);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    }
+
+    it('disables Finalize migration and shows the cooldown message when the tenant changed less than 70 minutes ago', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000); // 30 minutes ago
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Finalize migration/i });
+      await expectCoolingDown(button);
+      // The message appears twice: once as the persistent notice, once as the button's tooltip content.
+      expect(screen.getAllByText('You can change your label mode in 40 minutes').length).toBeGreaterThan(0);
+    });
+
+    it('leaves Finalize migration clickable when the tenant changed more than 70 minutes ago', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(80 * 60 * 1000); // 80 minutes ago
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 1, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Finalize migration/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves Enable dual-write clickable during the cooldown (only finalizing is gated)', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000);
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Enable dual-write/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('leaves Revert to dual-write clickable during the cooldown (only finalizing is gated)', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      mockTenantModifiedAgo(30 * 60 * 1000);
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode: 2, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+      await renderTab();
+      const button = await screen.findByRole('button', { name: /Revert to dual-write/i });
+      await waitFor(() => expect(button).not.toBeDisabled());
+      expect(screen.queryByText(/You can change your label mode/i)).not.toBeInTheDocument();
+    });
+
+    it('disables Finalize migration immediately after a successful transition refreshes tenant.modified', async () => {
+      jest.spyOn(Date, 'now').mockReturnValue(NOW);
+      runTestAsSMAdmin();
+      // Starts outside the cooldown window...
+      mockTenantModifiedAgo(3 * 60 * 60 * 1000);
+      let getTenantCalls = 0;
+      server.use(
+        apiRoute('getTenant', {
+          result: () => {
+            getTenantCalls++;
+            // ...and the transition itself bumps modified to "now", refetched via invalidation.
+            const modified = getTenantCalls === 1 ? (NOW - 3 * 60 * 60 * 1000) / 1000 : NOW / 1000;
+            return { json: { ...TENANT, modified } };
+          },
+        })
+      );
+      await renderTab();
+      const trigger = await screen.findByRole('button', { name: /Enable dual-write/i });
+      await waitFor(() => expect(trigger).not.toBeDisabled());
+      await userEvent.click(trigger);
+      await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+      await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+      await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
+      const finalizeButton = screen.getByRole('button', { name: /Finalize migration/i });
+      // The mutation awaits the tenant invalidation, so the instant the
+      // DualWrite UI appears the button must already be inert — first via the
+      // still-pending mutation (busy), then via the cooldown once the refetch
+      // lands. Clicking must never open the confirm dialog in between.
+      await userEvent.click(finalizeButton);
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      await waitFor(() => expect(finalizeButton).toHaveAttribute('aria-disabled', 'true'));
+      expect(screen.getAllByText('You can change your label mode in 1 hour 10 minutes').length).toBeGreaterThan(0);
+    });
+  });
+
+  // triggerCollision drives the PREFIXED → DUAL_WRITE attempt into the 409
+  // collision state with the given labels; setLabelMode succeeds on the retry.
+  async function triggerCollision(collidingLabels: string[]) {
+    let attempts = 0;
+    const putBodies: Array<{ mode: number }> = [];
+
+    server.use(
+      apiRoute(
+        'setLabelMode',
+        {
+          result: () => {
+            attempts++;
+            if (attempts === 1) {
+              return { status: 409, json: { msg: 'labels conflict', collidingLabels } };
+            }
+            return { json: { ...TENANT_LABEL_MODE, mode: 1 } };
+          },
+        },
+        async (req) => {
+          putBodies.push((await req.clone().json()) as { mode: number });
+        }
+      )
+    );
+
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+    await waitFor(() => expect(screen.getByText(/Label name conflicts/i)).toBeInTheDocument());
+
+    return putBodies;
+  }
+
+  it('renames colliding labels and retries the transition end to end', async () => {
+    runTestAsSMAdmin();
+    const renameRequests: Array<{ url: string; body: { name: string } }> = [];
+    server.use(
+      apiRoute('renameCheckLabels', {}, async (req) => {
+        renameRequests.push({ url: req.url, body: (await req.clone().json()) as { name: string } });
+      })
+    );
+
+    const putBodies = await triggerCollision(['probe', 'instance']);
+
+    // The retry is gated until every colliding label has been renamed.
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getAllByRole('button', { name: /^Rename$/i })[0]);
+    await waitFor(() => expect(screen.getByText(/renamed on 2 checks/i)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
+
+    await userEvent.type(screen.getByTestId('rename-input-instance'), 'instance_alias');
+    await userEvent.click(screen.getAllByRole('button', { name: /^Rename$/i })[1]);
+    await waitFor(() => expect(screen.getAllByText(/renamed on 2 checks/i)).toHaveLength(2));
+
+    expect(renameRequests).toHaveLength(2);
+    expect(renameRequests[0].url).toContain('/sm/check/labels/probe');
+    expect(renameRequests[0].body).toEqual({ name: 'probe_alias' });
+    expect(renameRequests[1].url).toContain('/sm/check/labels/instance');
+    expect(renameRequests[1].body).toEqual({ name: 'instance_alias' });
+
+    const retry = screen.getByRole('button', { name: /Retry enabling dual-write/i });
+    await waitFor(() => expect(retry).toBeEnabled());
+    await userEvent.click(retry);
+
+    await waitFor(() => expect(screen.getByText(/Dual-write is active/i)).toBeInTheDocument());
+    expect(putBodies).toEqual([{ mode: 1 }, { mode: 1 }]);
+  });
+
+  it('rejects reserved, duplicate, and invalid rename targets client-side', async () => {
+    runTestAsSMAdmin();
+    const renameRequests: string[] = [];
+    server.use(
+      apiRoute('renameCheckLabels', {}, async (req) => {
+        renameRequests.push(req.url);
+      })
+    );
+
+    await triggerCollision(['probe', 'instance']);
+
+    // Reserved: "geohash" is in the fixture's systemLabels.
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'geohash');
+    await userEvent.click(screen.getAllByRole('button', { name: /^Rename$/i })[0]);
+    await waitFor(() => expect(screen.getByText(/"geohash" is also a reserved system name/i)).toBeInTheDocument());
+
+    // Invalid label syntax.
+    await userEvent.clear(screen.getByTestId('rename-input-probe'));
+    await userEvent.type(screen.getByTestId('rename-input-probe'), '0bad-name');
+    await userEvent.click(screen.getAllByRole('button', { name: /^Rename$/i })[0]);
+    await waitFor(() => expect(screen.getByText(/Invalid label name/i)).toBeInTheDocument());
+
+    // Duplicate target across rows.
+    await userEvent.clear(screen.getByTestId('rename-input-probe'));
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'same_target');
+    await userEvent.type(screen.getByTestId('rename-input-instance'), 'same_target');
+    await userEvent.click(screen.getAllByRole('button', { name: /^Rename$/i })[1]);
+    await waitFor(() =>
+      expect(screen.getByText(/"same_target" is already the target of another rename/i)).toBeInTheDocument()
+    );
+
+    // None of the rejected attempts reached the API.
+    expect(renameRequests).toHaveLength(0);
+  });
+
+  it('surfaces the API conflict when a check already carries both label keys', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('renameCheckLabels', {
+        result: () => ({
+          status: 409,
+          json: { msg: 'cannot rename "probe" to "probe_alias": one or more checks already carry both label keys' },
+        }),
+      })
+    );
+
+    await triggerCollision(['probe']);
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+    await waitFor(() => expect(screen.getByText(/already carry both label keys/i)).toBeInTheDocument());
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
+  });
+
+  it('hints at probe labels when a rename matches no checks', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('renameCheckLabels', {
+        result: () => ({ json: { updated_ids: [] } }),
+      })
+    );
+
+    await triggerCollision(['probe']);
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+    await waitFor(() => expect(screen.getByText(/it may be set on a probe/i)).toBeInTheDocument());
+    // The gate opens even though nothing was fixed: the retry will 409 again
+    // and remount the flow — deliberate, since only the API knows the truth.
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeEnabled();
+  });
+
+  it('lists checks that carry a colliding label, linking to each check\'s edit page', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck1 = { ...BASIC_HTTP_CHECK, id: 101, job: 'checkout-http', labels: [{ name: 'probe', value: 'x' }] };
+    const blockingCheck2 = { ...BASIC_PING_CHECK, id: 102, job: 'checkout-ping', labels: [{ name: 'probe', value: 'y' }] };
+    const unrelatedCheck = { ...BASIC_TCP_CHECK, id: 103, job: 'unrelated-tcp', labels: [{ name: 'env', value: 'prod' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck1, blockingCheck2, unrelatedCheck] }) }));
+
+    await triggerCollision(['probe']);
+
+    const blockingList = await screen.findByTestId('blocking-checks-probe');
+    expect(within(blockingList).getByRole('link', { name: 'checkout-http' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.EditCheck, { id: 101 })
+    );
+    expect(within(blockingList).getByRole('link', { name: 'checkout-ping' })).toHaveAttribute(
+      'href',
+      generateRoutePath(AppRoutes.EditCheck, { id: 102 })
+    );
+    expect(within(blockingList).queryByRole('link', { name: 'unrelated-tcp' })).not.toBeInTheDocument();
+  });
+
+  it('links to a Checks list filtered to the colliding label', async () => {
+    runTestAsSMAdmin();
+    const blockingCheck = { ...BASIC_HTTP_CHECK, id: 101, job: 'checkout-http', labels: [{ name: 'probe', value: 'x' }] };
+    server.use(apiRoute('listChecks', { result: () => ({ json: [blockingCheck] }) }));
+
+    await triggerCollision(['probe']);
+
+    const viewAll = await screen.findByTestId('blocking-checks-view-all-probe');
+    expect(viewAll).toHaveAttribute('href', `${getRoute(AppRoutes.Checks)}?search=probe`);
+  });
+
+  it('shows a hint instead of a check list when no check carries the colliding label', async () => {
+    runTestAsSMAdmin();
+    server.use(apiRoute('listChecks', { result: () => ({ json: [] }) }));
+
+    await triggerCollision(['probe']);
+
+    expect(await screen.findByTestId('blocking-checks-empty-probe')).toHaveTextContent(/may be set on a probe/i);
+    expect(screen.queryByTestId('blocking-checks-view-all-probe')).not.toBeInTheDocument();
+  });
+
+  it('locks a row after a successful rename', async () => {
+    runTestAsSMAdmin();
+    await triggerCollision(['probe']);
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+    await waitFor(() => expect(screen.getByText(/renamed on 2 checks/i)).toBeInTheDocument());
+
+    expect(screen.getByTestId('rename-input-probe')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Rename$/i })).toBeDisabled();
+  });
+
+  it('hides the original Enable dual-write button while the conflicts alert is shown', async () => {
+    runTestAsSMAdmin();
+    await triggerCollision(['probe']);
+
+    // The alert's "Retry enabling dual-write" is the only path into dual-write
+    // while conflicts are unresolved.
+    expect(screen.queryByRole('button', { name: /^Enable dual-write$/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeInTheDocument();
+
+    // Dismissing the alert restores the original button.
+    await userEvent.click(screen.getByLabelText('Close alert'));
+    expect(await screen.findByRole('button', { name: /Enable dual-write/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Retry enabling dual-write/i })).not.toBeInTheDocument();
+  });
+
+  it('freezes a row while its rename request is in flight', async () => {
+    runTestAsSMAdmin();
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    server.use(
+      apiRoute('renameCheckLabels', {
+        result: async () => {
+          await gate;
+          return { json: { updated_ids: [1, 2] } };
+        },
+      })
+    );
+
+    await triggerCollision(['probe']);
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+
+    // The input locks for the duration of the request, so the value shown on
+    // the locked row is exactly the name that was sent.
+    await waitFor(() => expect(screen.getByTestId('rename-input-probe')).toBeDisabled());
+    expect(screen.getByRole('button', { name: /^Rename$/i })).toBeDisabled();
+
+    release();
+    await waitFor(() => expect(screen.getByText(/renamed on 2 checks/i)).toBeInTheDocument());
+    expect(screen.getByTestId('rename-input-probe')).toHaveValue('probe_alias');
+  });
+
+  it('falls back to a generic error when a rename failure carries no message', async () => {
+    runTestAsSMAdmin();
+    server.use(
+      apiRoute('renameCheckLabels', {
+        result: () => ({ status: 500, json: {} }),
+      })
+    );
+
+    await triggerCollision(['probe']);
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+    await waitFor(() => expect(screen.getByText(/Failed to rename label/i)).toBeInTheDocument());
+  });
+
+  it('mounts a fresh rename flow when the retry collides again', async () => {
+    runTestAsSMAdmin();
+
+    // First attempt collides on "probe"; the retry collides on "instance"
+    // (e.g. a probe-borne label surfaced after the check rename).
+    let attempts = 0;
+    server.use(
+      apiRoute('setLabelMode', {
+        result: () => {
+          attempts++;
+          if (attempts === 1) {
+            return { status: 409, json: { msg: 'labels conflict', collidingLabels: ['probe'] } };
+          }
+          return { status: 409, json: { msg: 'labels conflict', collidingLabels: ['instance'] } };
+        },
+      })
+    );
+
+    await renderTab();
+    await userEvent.click(await screen.findByRole('button', { name: /Enable dual-write/i }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    await userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^Enable dual-write$/i }));
+    await waitFor(() => expect(screen.getByTestId('rename-input-probe')).toBeInTheDocument());
+
+    await userEvent.type(screen.getByTestId('rename-input-probe'), 'probe_alias');
+    await userEvent.click(screen.getByRole('button', { name: /^Rename$/i }));
+    await waitFor(() => expect(screen.getByText(/renamed on 2 checks/i)).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: /Retry enabling dual-write/i }));
+
+    // The second 409 remounts the flow against the new label list: no stale
+    // renamed markers, empty input, gate closed again.
+    await waitFor(() => expect(screen.getByTestId('rename-input-instance')).toBeInTheDocument());
+    expect(screen.queryByTestId('rename-input-probe')).not.toBeInTheDocument();
+    expect(screen.queryByText(/renamed on 2 checks/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId('rename-input-instance')).toHaveValue('');
+    expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
   });
 });

@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: Branch to publish from (can be used to deploy PRs to dev)
+        description: Branch or tag to publish from.
         default: main
       environment:
         description: Environment to publish to
@@ -23,9 +23,30 @@ on:
 permissions: {}
 
 jobs:
+  # GitHub expressions cannot regex-match, and startsWith(branch, 'v') would
+  # also match feature branches like "validate-x". Do an exact match instead:
+  # only `main` and vX.Y.Z release tags count as release refs. Keep this
+  # pattern in sync with the `release-reference-regex` input below.
+  check-ref:
+    name: Check ref type
+    runs-on: ubuntu-latest
+    outputs:
+      is-release-ref: ${{ steps.check.outputs.is-release-ref }}
+    env:
+      REF: ${{ github.event.inputs.branch }}
+    steps:
+      - id: check
+        run: |
+          if [[ "$REF" =~ ^(main|v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "is-release-ref=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is-release-ref=false" >> "$GITHUB_OUTPUT"
+          fi
+
   cd:
     name: CD
-    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v8.0.1
+    needs: check-ref
+    uses: grafana/plugin-ci-workflows/.github/workflows/cd.yml@ci-cd-workflows/v11.1.0
     #  About permissions below.
     #
     # - attestations: write: publish attestations.
@@ -44,6 +65,14 @@ jobs:
     with:
       branch: ${{ github.event.inputs.branch }}
 
+      # Treat release tags (vX.Y.Z) like main: publish the clean version from plugin.json
+      # without the "+<commit SHA>" suffix. Everything else (PR branches) still gets the
+      # suffix, keeping dev preview deploys unique. Dev auto-deploys are unaffected: they
+      # run via validate_main.yml, which sets plugin-version-suffix explicitly.
+      # Anchored (^...$) because cd.yml substring-matches with RegExp.test(); must stay
+      # in sync with the check-ref job above so trigger-argo and versioning agree.
+      release-reference-regex: ^(main|v\d+\.\d+\.\d+)$
+
       environment: ${{ github.event.inputs.environment }}
 
       docs-only: false
@@ -52,7 +81,10 @@ jobs:
 
       # Argo CD inputs
       grafana-cloud-deployment-type: provisioned
-      trigger-argo: ${{ github.event.inputs.branch == 'main' }}
+      # Trigger the Grafana Cloud rollout for main, release tags, and any deploy to
+      # dev. Without this, a deploy publishes to the catalog but never reaches
+      # instances
+      trigger-argo: ${{ needs.check-ref.outputs.is-release-ref == 'true' || github.event.inputs.environment == 'dev' }}
       argo-workflow-slack-channel: '#sm-ops-deploys'
 
       auto-merge-environments: dev,ops,prod-canary,prod

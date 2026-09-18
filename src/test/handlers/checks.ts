@@ -8,6 +8,7 @@ import {
   CheckInfoResult,
   DeleteCheckResult,
   ListCheckResult,
+  RenameCheckLabelsResponse,
   UpdateCheckResult,
 } from 'datasource/responses.types';
 
@@ -85,6 +86,16 @@ export const testCheck: ApiEntry<AdHocCheckResponse> = {
   result: () => {
     return {
       json: ADHOC_CHECK_RESULT,
+    };
+  },
+};
+
+export const renameCheckLabels: ApiEntry<RenameCheckLabelsResponse> = {
+  route: `/sm/check/labels/([^/]+)`,
+  method: `post`,
+  result: () => {
+    return {
+      json: { updated_ids: [1, 2] },
     };
   },
 };

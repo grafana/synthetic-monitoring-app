@@ -31,7 +31,6 @@
   },
   "checkList": {
     "header": {
-      "currentlyShowing": "Currently showing {{currentPageChecksLength}} of {{checksLength}} total checks",
       "deselectAll": "Deselect all",
       "selectAll": "Select all",
       "selectAllAriaLabel": "Select all",

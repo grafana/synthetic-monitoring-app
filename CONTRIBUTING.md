@@ -8,6 +8,7 @@ There are two different "modes" for developing this plugin. You can either work 
 
 - Set up a Grafana Cloud account
 - Make sure you have Docker installed
+- Make sure you have Go installed (see the `go` directive in [`go.mod`](./go.mod) for the version). The plugin has a Go backend, and Grafana will not load the plugin at all without its binary — so Go is required even for frontend-only work.
 - Clone this repo to your local machine
 
 ### Package manager
@@ -70,9 +71,36 @@ Grafana configuration can be adjusted using the `custom.ini` file located in `/d
 ### Run
 
 - Run `yarn dev`
-- In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable
-- Go to `localhost:3000`
+- In a separate terminal window, run `yarn server`. You can pick a specific version of Grafana to run by setting the `GRAFANA_VERSION` environment variable. If port 3000 is already in use (e.g. a local Grafana instance), set `GRAFANA_HOST_PORT` to bind elsewhere, e.g. `GRAFANA_HOST_PORT=3001 yarn server`
+- Go to `localhost:3000` (or the port set via `GRAFANA_HOST_PORT`)
 - Changes to the plugin code will hot reload. Changes to provisioning require restarting Grafana (which will happen if you just rerun the `yarn server` command).
+
+`yarn server` runs `yarn build:backend` before starting Grafana, which compiles
+the Go backend into `dist/` alongside the webpack output. The backend belongs to
+the nested `synthetic-monitoring-datasource` plugin, not to the app, so it builds
+to `dist/datasource/gpx_sm_datasource_<os>_<arch>`. If the binary for the
+container's platform is missing, the app still loads but the datasource is
+dropped, and the Grafana logs will show `Could not start plugin backend
+pluginId=synthetic-monitoring-datasource`.
+
+Changes to Go code under `pkg/` do **not** hot reload. Rerun `yarn server` (or
+`yarn build:backend` followed by `docker compose restart`) to pick them up.
+
+To check the backend is running, health-check a configured SM datasource
+(substitute its UID):
+
+```bash
+curl -u admin:admin localhost:3000/api/datasources/uid/<uid>/health
+# {"message":"ok","status":"OK"}
+```
+
+If you would rather not run the full dev setup — for example when reviewing a
+change that touches `pkg/` — `./scripts/validate-backend` checks the backend on
+its own. It builds the binary, starts a throwaway Grafana on port 3199 in an
+isolated compose project, provisions a throwaway SM datasource, asserts that the
+app and the nested datasource both registered and that the datasource's health
+check responds, and then removes everything it created. It needs no Grafana Cloud
+credentials, and it will not disturb a `yarn server` you already have running.
 
 To start using the app:
 
@@ -87,6 +115,46 @@ During the initialization process, the Synthetic Monitoring backend will:
 4. Finally, the Synthetic Monitoring backend will be notified that the service is ready.
 
 Users can then create checks to monitor their remote targets. Metrics and logs will flow into the selected Cloud stack.
+
+### Query the datasource backend directly
+
+The nested `synthetic-monitoring-datasource` plugin resolves *named queries* -- the app asks for a query by name (e.g. `probe_execution_rate`) instead of sending PromQL or LogQL itself. See [`pkg/plugin/namedqueries.go`](./pkg/plugin/namedqueries.go) for the registry.
+
+Two things have to be true before a named query works:
+
+1. **The plugin needs its own service-account credential.** It queries the configured metrics/logs datasources via Grafana's own `/api/ds/query`, authenticating as itself with a token Grafana issues from the `iam` block in [`src/datasource/plugin.json`](./src/datasource/plugin.json). That requires two settings, already present in [`docker-compose.yaml`](./docker-compose.yaml):
+
+   ```yaml
+   environment:
+     GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins externalServiceAccounts
+     GF_AUTH_MANAGED_SERVICE_ACCOUNTS_ENABLED: 'true'
+   ```
+
+   Without both, the plugin receives no credential and every named query is refused -- it fails closed rather than falling back to querying as itself.
+
+2. **The caller has to be a real identity, not anonymous.** Before running anything, the backend checks whether the calling user (or service account) is allowed to query the target datasource -- see [`pkg/plugin/authz.go`](./pkg/plugin/authz.go). It resolves the caller from `PluginContext.User`, which Grafana only populates for a real logged-in session or a service-account bearer token. A plain `curl -u admin:admin` request carries no such identity and is denied with `"no user on the request"`, even though basic auth succeeds at the HTTP layer.
+
+To exercise a named query by hand, log in first to get a session cookie, then call `/api/ds/query` directly (substitute the SM datasource's UID):
+
+```bash
+curl -c /tmp/cookies.txt -X POST localhost:3000/login \
+  -H 'Content-Type: application/json' \
+  -d '{"user":"admin","password":"admin"}'
+
+curl -b /tmp/cookies.txt -X POST localhost:3000/api/ds/query \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "from": "now-1h",
+    "to": "now",
+    "queries": [{
+      "refId": "A",
+      "queryType": "probe_execution_rate",
+      "datasource": { "uid": "<sm-datasource-uid>", "type": "synthetic-monitoring-datasource" }
+    }]
+  }'
+```
+
+A service-account bearer token (`Authorization: Bearer <token>`) works the same way and is usually easier to script with than a cookie jar.
 
 ### Run the entire stack locally
 
@@ -108,6 +176,16 @@ We make no distinction of what IDE you should be using, however we do have some 
 #### Format on save
 
 We use both [prettier](https://prettier.io/) and [eslint](https://eslint.org/) with the [@grafana/eslint-config package](https://www.npmjs.com/package/@grafana/eslint-config) which [we have chosen to extend](./.eslintrc.js). Our CI/CD pipelines expect these rules to be adherred to and will fail any submitted PRs if not. We recommend you enable format on save to ensure you are always adhering to these rules with as little friction as possible.
+
+### Testing
+
+We use Jest with React Testing Library and MSW. Our suite behaves like a pseudo e2e framework — real UI journeys against mocked APIs.
+
+See [docs/development/testing.md](./docs/development/testing.md) for expectations, examples, and how to use `src/test/` (custom render, handlers, fixtures, journey helpers).
+
+For agent-assisted test writing, the project skill lives at [`.agents/skills/write-tests/`](./.agents/skills/write-tests/) (with a [`.claude/skills/write-tests`](./.claude/skills/write-tests) symlink for Claude Code).
+
+Run tests with `yarn test` or a single file: `yarn test EditProbe.test.tsx`.
 
 #### File nesting
 
@@ -148,8 +226,8 @@ const buttonLabel = t('componentName.buttonLabel', 'Default text');
 **Example:**
 
 ```tsx
-const activeFiltersText = t('checkFilterGroup.activeFiltersText', '({{activeFilters}} active)', { 
-  activeFilters: activeFilters.length 
+const activeFiltersText = t('checkFilterGroup.activeFiltersText', '({{activeFilters}} active)', {
+  activeFilters: activeFilters.length,
 });
 ```
 
@@ -162,9 +240,7 @@ import { Trans } from '@grafana/i18n';
 
 return (
   <button>
-    <Trans i18nKey="componentName.buttonText">
-      Default button text
-    </Trans>
+    <Trans i18nKey="componentName.buttonText">Default button text</Trans>
   </button>
 );
 ```
@@ -173,9 +249,7 @@ return (
 
 ```tsx
 <LinkButton>
-  <Trans i18nKey="checks.numberOfChecks">
-    Number of checks: {{ numOfChecks: checks.length }}
-  </Trans>
+  <Trans i18nKey="checks.numberOfChecks">Number of checks: {{ numOfChecks: checks.length }}</Trans>
 </LinkButton>
 ```
 
@@ -268,4 +342,3 @@ The i18next configuration is defined in `i18next.config.ts`:
 - Keep translation keys focused and specific to avoid reuse conflicts
 - For text with variables, use clear variable names (e.g., `{{activeFilters}}` not `{{count}}`)
 - Test your changes with different languages enabled in Grafana
-

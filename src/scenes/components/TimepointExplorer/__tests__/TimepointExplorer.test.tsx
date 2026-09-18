@@ -133,4 +133,28 @@ describe('TimepointExplorer', () => {
       block: 'start',
     });
   });
+
+  it(`should attach the explorer's tracking scope to feedback events fired inside it`, async () => {
+    const reportInteraction = jest.fn();
+    jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+    const { user } = render(renderTimepointExplorer());
+    await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.list));
+
+    await user.click(screen.getByRole('button', { name: 'I love this feature' }));
+
+    expect(reportInteraction).toHaveBeenCalledWith(
+      'synthetic-monitoring_feature_feedback_feature_feedback_submitted',
+      expect.objectContaining({
+        feature: 'timepoint-explorer',
+        reaction: 'good',
+        tpe_view_mode: 'uptime',
+        tpe_visible_timepoints: expect.any(Number),
+        tpe_total_timepoints: expect.any(Number),
+        tpe_page: 0,
+        tpe_section: 0,
+      })
+    );
+  });
 });

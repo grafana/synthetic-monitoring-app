@@ -81,7 +81,8 @@ export function resolveCheckFolderStatus(
  *
  * This decision is the same regardless of how the user reaches the check
  * (list, direct URL, dashboard link). What "hidden" looks like varies by
- * context: filtered out in the list, AccessDeniedModal on a direct URL.
+ * context: filtered out in the list, redirect back to the list on a
+ * direct URL.
  */
 export function isCheckVisible(folderStatus: CheckFolderStatus): boolean {
   switch (folderStatus.type) {

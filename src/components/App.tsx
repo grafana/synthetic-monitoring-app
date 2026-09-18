@@ -11,6 +11,7 @@ import { ProvisioningJsonData } from 'types';
 import { getFaroConfig } from 'faro';
 import { registerFaroInteractionEchoBackend } from 'faroEchoBackend';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
+import { ExternalDependenciesProvider } from 'contexts/ExternalDependenciesContext';
 import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
@@ -25,6 +26,7 @@ import { SMOpenFeatureProvider } from './SMOpenFeatureProvider';
 const { env, url, name } = getFaroConfig();
 
 // faro was filling up the console with error logs, and it annoyed me, so I disabled it for localhost
+// To test Faro events while developing, either comment out this check
 if (window.location.hostname !== 'localhost') {
   getAppPluginVersion('grafana-synthetic-monitoring-app').then((version) => {
     const faro = initializeFaro({
@@ -72,21 +74,23 @@ const App = (props: AppRootProps<ProvisioningJsonData>) => {
   return (
     <QueryClientProvider client={queryClient}>
       <MetaContextProvider meta={meta}>
-        <SMOpenFeatureProvider>
-          <FeatureFlagProvider>
-            <GlobalStyles />
-            <SMDatasourceProvider>
-              <PermissionsContextProvider>
-                <AssistantContext />
-                <TrackingIdentity />
-                <DevTools>
-                  <InitialisedRouter />
-                </DevTools>
-              </PermissionsContextProvider>
-              <ReactQueryDevtools />
-            </SMDatasourceProvider>
-          </FeatureFlagProvider>
-        </SMOpenFeatureProvider>
+        <ExternalDependenciesProvider>
+          <SMOpenFeatureProvider>
+            <FeatureFlagProvider>
+              <GlobalStyles />
+              <SMDatasourceProvider>
+                <PermissionsContextProvider>
+                  <AssistantContext />
+                  <TrackingIdentity />
+                  <DevTools>
+                    <InitialisedRouter />
+                  </DevTools>
+                </PermissionsContextProvider>
+                <ReactQueryDevtools />
+              </SMDatasourceProvider>
+            </FeatureFlagProvider>
+          </SMOpenFeatureProvider>
+        </ExternalDependenciesProvider>
       </MetaContextProvider>
     </QueryClientProvider>
   );

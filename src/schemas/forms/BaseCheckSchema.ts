@@ -28,8 +28,29 @@ export const baseCheckSchema = z.object({
   folderUid: z.string().optional(),
 });
 
-export function addRefinements<T extends CheckFormValuesBase>(schema: ZodType<T, any, any>) {
+export interface CheckSchemaRefinementOptions {
+  /**
+   * Whether a folder must be assigned to the check. The base schema keeps
+   * `folderUid` optional because folder availability is runtime state (feature
+   * flag + folder API/permissions), which the form layer resolves and passes in.
+   */
+  requiresFolder?: boolean;
+}
+
+export function addRefinements<T extends CheckFormValuesBase>(
+  schema: ZodType<T, any, any>,
+  { requiresFolder = false }: CheckSchemaRefinementOptions = {}
+) {
   return schema
+    .superRefine((data, ctx) => {
+      if (requiresFolder && !data.folderUid) {
+        ctx.addIssue({
+          path: ['folderUid'],
+          code: 'custom',
+          message: 'Select a folder to store this check in.',
+        });
+      }
+    })
     .superRefine((data, ctx) => {
       const { frequency, timeout } = data;
       if (frequency < timeout) {

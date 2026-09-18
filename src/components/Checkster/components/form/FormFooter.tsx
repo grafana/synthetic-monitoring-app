@@ -4,6 +4,8 @@ import { Button, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
+import { FaroUserAction } from '../../../../faro';
+import { trackFaroUserAction } from '../../../../features/tracking/userAction';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 
 export function FormFooter() {
@@ -38,7 +40,15 @@ export function FormFooter() {
     >
       <div>
         {previous && (
-          <Button type="button" icon="arrow-left" variant="secondary" onClick={() => setSectionActive(previous.name)}>
+          <Button
+            type="button"
+            icon="arrow-left"
+            variant="secondary"
+            onClick={() => {
+              trackFaroUserAction(FaroUserAction.CheckWizardPrevClicked);
+              setSectionActive(previous.name);
+            }}
+          >
             {previous.label}
           </Button>
         )}
@@ -54,7 +64,10 @@ export function FormFooter() {
           <Button
             type="button"
             variant={isStepsComplete ? 'secondary' : 'primary'}
-            onClick={() => setSectionActive(next.name)}
+            onClick={() => {
+              trackFaroUserAction(FaroUserAction.CheckWizardNextClicked);
+              setSectionActive(next.name);
+            }}
             iconPlacement="right"
             icon="arrow-right"
           >

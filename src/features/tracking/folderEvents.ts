@@ -12,3 +12,10 @@ export const trackFolderSelected = folderEvents<FolderSelectedEvent>('folder_sel
 
 /** Tracks when a new folder is created via the folder selector. */
 export const trackFolderCreated = folderEvents('folder_created');
+
+/**
+ * Tracks when "Move folder" is picked from a folder's Actions menu. Kept to
+ * measure whether the option is used at all: if this tends to zero we can
+ * remove the option and leave folder reorganisation to Dashboards > Folders.
+ */
+export const trackMoveFolderClicked = folderEvents('move_folder_clicked');

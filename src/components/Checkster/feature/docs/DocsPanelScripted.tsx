@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Stack } from '@grafana/ui';
 
+import { AgentSkillReference } from 'components/AgentSkillReference/AgentSkillReference';
 import { Aboutk6Studio } from 'components/Checkster/feature/docs/Aboutk6Studio';
 import { AboutScriptedChecks } from 'components/Checkster/feature/docs/AboutScriptedChecks';
 import {
@@ -18,6 +19,7 @@ export const DocsPanelScriptedCheck = () => {
     <Box padding={2}>
       <Stack direction="column" gap={2}>
         <AboutScriptedChecks />
+        <AgentSkillReference source="docs-panel-scripted" />
         <Aboutk6Studio source={source} />
         <DocumentationLinks
           links={[

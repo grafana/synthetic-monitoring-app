@@ -9,6 +9,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useTerraformConfig } from 'hooks/useTerraformConfig';
+import { AgentSkillReference } from 'components/AgentSkillReference/AgentSkillReference';
 import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../ConfigContent';
@@ -64,6 +65,10 @@ export function TerraformTab() {
         You can manage Synthetic monitoring checks using Terraform as well as export your current checks as
         configuration.
       </p>
+
+      <ConfigContent.Section>
+        <AgentSkillReference source="terraform-tab" collapsible />
+      </ConfigContent.Section>
 
       <ConfigContent.Section title="Prerequisites">
         <div>

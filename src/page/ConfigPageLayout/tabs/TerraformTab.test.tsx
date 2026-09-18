@@ -2,6 +2,7 @@ import React from 'react';
 import { within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
+import { AGENT_SKILL_INSTALL_COMMANDS } from '../../../components/AgentSkillReference/AgentSkillReference.constants';
 import { CONFIG_TEST_ID, UI_TEST_ID } from '../../../test/dataTestIds';
 import { BASIC_PING_CHECK } from '../../../test/fixtures/checks';
 import { PRIVATE_PROBE, UNSELECTED_PRIVATE_PROBE } from '../../../test/fixtures/probes';
@@ -33,6 +34,14 @@ async function renderTerraformTab() {
   await result.findByTestId(CONFIG_TEST_ID.content);
 
   return result;
+}
+
+// The agent skill reference at the top of the tab renders its install commands
+// as preformatted blocks too; skip them to get to the terraform content.
+const AGENT_SKILL_COMMANDS: string[] = AGENT_SKILL_INSTALL_COMMANDS.map(({ command }) => command);
+
+function getTerraformPreformatted(getAllByTestId: (id: string) => HTMLElement[]) {
+  return getAllByTestId(UI_TEST_ID.preformatted).filter((el) => !AGENT_SKILL_COMMANDS.includes(el.textContent ?? ''));
 }
 
 describe('TerraformTab', () => {
@@ -92,7 +101,7 @@ describe('TerraformTab', () => {
 
   it('should show correct terraform HCL config by default', async () => {
     const { getAllByTestId } = await renderTerraformTab();
-    const preformatted = getAllByTestId(UI_TEST_ID.preformatted);
+    const preformatted = getTerraformPreformatted(getAllByTestId);
     const content = preformatted[0].textContent ?? '';
 
     // Should contain HCL syntax elements
@@ -109,7 +118,7 @@ describe('TerraformTab', () => {
     const jsonTab = getByText('JSON');
     await user.click(jsonTab);
 
-    const preformatted = getAllByTestId(UI_TEST_ID.preformatted);
+    const preformatted = getTerraformPreformatted(getAllByTestId);
     // Since content escapes '<' and '>', we need to replace them back
     const content = JSON.parse((preformatted[0].textContent ?? '').replace('&lt;', '<').replace('&gt;', '>'));
     expect(content).toEqual(TERRAFORM_BASIC_PING_CHECK);
@@ -139,7 +148,7 @@ describe('TerraformTab', () => {
       // Should show "Import checks" subtitle
       expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
 
-      const preformatted = getAllByTestId(UI_TEST_ID.preformatted);
+      const preformatted = getTerraformPreformatted(getAllByTestId);
       expect(preformatted[1]).toHaveTextContent(
         'terraform import grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com 6'
       );
@@ -156,7 +165,7 @@ describe('TerraformTab', () => {
       // Should show "Import checks" subtitle
       expect(getByText('Import checks', { selector: 'h4' })).toBeInTheDocument();
 
-      const preformatted = getAllByTestId(UI_TEST_ID.preformatted);
+      const preformatted = getTerraformPreformatted(getAllByTestId);
       const content = preformatted[1].textContent ?? '';
       expect(content).toContain('import {');
       expect(content).toContain('to = grafana_synthetic_monitoring_check.Job_name_for_ping_grafana_com');
@@ -185,7 +194,7 @@ describe('TerraformTab', () => {
           })
         );
         const { getAllByTestId } = await renderTerraformTab();
-        const preformatted = getAllByTestId(UI_TEST_ID.preformatted);
+        const preformatted = getTerraformPreformatted(getAllByTestId);
         expect(preformatted[2]).toHaveTextContent(
           `terraform import grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name} 1:<PROBE_ACCESS_TOKEN>`
         );
@@ -208,7 +217,7 @@ describe('TerraformTab', () => {
         const importBlocksTab = getByText('Import blocks');
         await user.click(importBlocksTab);
 
-        const preformatted = getAllByTestId(UI_TEST_ID.preformatted);
+        const preformatted = getTerraformPreformatted(getAllByTestId);
         const content = preformatted[2].textContent ?? '';
         expect(content).toContain('import {');
         expect(content).toContain(`to = grafana_synthetic_monitoring_probe.${PRIVATE_PROBE.name}`);

@@ -7,6 +7,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { LinkedDatasourceInfo, LogLine, LogQueryResponse, LogStream, SMOptions } from './datasource/types';
 import {
+  AlertSensitivity,
   CalculateUsageValues,
   Check,
   CheckFormValues,
@@ -143,6 +144,18 @@ export function getCheckTypeGroup(checkType: CheckType): CheckTypeGroup {
   }
 
   return group;
+}
+
+/**
+ * Whether the check has any alerting configured: either per-check alerts or a legacy
+ * alert sensitivity (any value, including custom strings, other than
+ * `AlertSensitivity.None`).
+ */
+export function checkHasAlerting(check: Check): boolean {
+  const hasPerCheckAlerts = (check.alerts?.length ?? 0) > 0;
+  const hasAlertSensitivity = check.alertSensitivity !== undefined && check.alertSensitivity !== AlertSensitivity.None;
+
+  return hasPerCheckAlerts || hasAlertSensitivity;
 }
 
 export interface MetricQueryOptions {
@@ -452,19 +465,23 @@ export function formatSmallDurations(milliseconds: number) {
 }
 
 interface Query {
+  refId?: string;
   expr: string;
   instant?: boolean;
   format?: 'heatmap' | 'table' | 'timeseries';
+  legendFormat?: string;
 }
 
 export function getExploreUrl(datasourceUid: string, queries: Query[], { from, to }: { from: number; to: number }) {
   const left = encodeURIComponent(
     JSON.stringify({
       datasource: datasourceUid,
-      queries: queries.map((query) => ({
+      queries: queries.map((query, index) => ({
+        refId: query.refId ?? String.fromCharCode(65 + index),
         expr: query.expr,
         instant: query.instant,
         format: query.format,
+        legendFormat: query.legendFormat,
       })),
       range: {
         from: dateTime(from),

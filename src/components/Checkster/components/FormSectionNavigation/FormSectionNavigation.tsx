@@ -6,8 +6,8 @@ import { css, cx } from '@emotion/css';
 import { trackNavigateWizardForm } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { FormSectionName } from '../../types';
-
+import { FaroUserAction } from '../../../../faro';
+import { trackFaroUserAction } from '../../../../features/tracking/userAction';
 import { CSS_PRIMARY_CONTAINER_NAME } from '../../constants';
 import { useChecksterContext } from '../../contexts/ChecksterContext';
 import { useLiveErrors } from '../../hooks/useLiveErrors';
@@ -53,7 +53,12 @@ export function FormSectionNavigation() {
                     checkState: isNew ? 'new' : 'existing',
                     checkType,
                     component: 'stepper',
-                    step: FormSectionName.Check,
+                    step: sectionName,
+                  });
+                  trackFaroUserAction(FaroUserAction.CheckWizardTabClicked, {
+                    step: sectionName,
+                    checkType: checkType,
+                    checkState: isNew ? 'new' : 'existing',
                   });
                   setSectionActive(sectionName);
                 }}

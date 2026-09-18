@@ -3,11 +3,13 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Button, Modal, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
-import { FaroEvent, reportEvent } from 'faro';
+import { FaroEvent, FaroUserAction, reportEvent } from 'faro';
 import { useProbeApiServer } from 'hooks/useProbeApiServer';
 import { CopyToClipboard } from 'components/Clipboard/CopyToClipboard';
 import { DocsLink } from 'components/DocsLink';
 import { Table } from 'components/Table';
+
+import { trackFaroUserAction } from '../../features/tracking/userAction';
 
 type TokenModalProps = {
   actionText: string;
@@ -69,7 +71,15 @@ const EnvsTable = ({ token }: { token: string }) => {
           name: 'Copy',
           cell: (row) =>
             row.value && (
-              <CopyToClipboard content={row.value} buttonText="Copy" buttonTextCopied="Copied" fill="text" />
+              <CopyToClipboard
+                content={row.value}
+                buttonText="Copy"
+                buttonTextCopied="Copied"
+                fill="text"
+                onClipboardCopy={() => {
+                  trackFaroUserAction(FaroUserAction.ProbeSetupModalCopyValueClicked);
+                }}
+              />
             ),
         },
       ]}
