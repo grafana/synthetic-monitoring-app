@@ -1,6 +1,6 @@
 import React from 'react';
 import { DataSourceInstanceSettings, LoadingState } from '@grafana/data';
-import { config, useAppPluginInstalled } from '@grafana/runtime';
+import { config, useAppPluginInstalled, usePluginComponent } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { of, throwError } from 'rxjs';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
@@ -16,8 +16,10 @@ import { SMDataSource } from 'datasource/DataSource';
 
 import { ConnectedServices } from './ConnectedServices';
 import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
+import { ExposedEntityGraphProps } from './ConnectedServicesEntityGraph';
 import { parseGraphFrames } from './ConnectedServices.utils';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
+import { KG_ENTITY_GRAPH_COMPONENT_ID } from './knowledgeGraph';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
 
@@ -389,4 +391,76 @@ it('keeps graph insights and the KG link available when origin lookup fails', as
   expect(screen.getByText('ErrorRatioBreach')).toBeInTheDocument();
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.nodeConnectedRing)).not.toBeInTheDocument();
   expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ })).toBeInTheDocument();
+});
+
+describe('with the KG-exposed Entity Graph component available', () => {
+  /** Serves the exposed component for its ID only; everything else keeps the null default. */
+  function setExposedEntityGraph(Stub: React.ComponentType<ExposedEntityGraphProps>) {
+    jest.mocked(usePluginComponent).mockImplementation((id: string) =>
+      id === KG_ENTITY_GRAPH_COMPONENT_ID
+        ? { component: Stub as React.ComponentType, isLoading: false }
+        : { component: null, isLoading: false }
+    );
+  }
+
+  afterEach(() => {
+    jest.mocked(usePluginComponent).mockImplementation(() => ({ component: null, isLoading: false }));
+  });
+
+  it('prefers the exposed component over the SM-owned renderer, passing query and range', async () => {
+    setKgInstalled(true);
+    const received: ExposedEntityGraphProps[] = [];
+    setExposedEntityGraph((props) => {
+      received.push(props);
+      return <div>exposed entity graph</div>;
+    });
+
+    await renderSection(LINKED_CHECK);
+
+    expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.exposedGraph)).toBeInTheDocument();
+    expect(screen.getByText('exposed entity graph')).toBeInTheDocument();
+    // The SM-owned renderer (and its Cypher fetch) stays unmounted.
+    expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.graph)).not.toBeInTheDocument();
+
+    const props = received.at(-1)!;
+    expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
+    expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
+    expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
+    expect(props.height).toBe(280);
+  });
+
+  it('deep-links a node click into the KG entity drawer in a new tab', async () => {
+    setKgInstalled(true);
+    // A dependency's global types shadow `window.open`'s signature; the cast keeps the spy typed.
+    const openSpy = jest.spyOn(window, 'open').mockImplementation((() => null) as never);
+    setExposedEntityGraph(({ onNodeClick }) => (
+      <button
+        onClick={() =>
+          onNodeClick?.({
+            id: 'Service:frontend:prod::otel-demo',
+            name: 'frontend',
+            type: 'Service',
+            scope: { env: 'prod', namespace: 'otel-demo' },
+            properties: {},
+          })
+        }
+      >
+        frontend node
+      </button>
+    ));
+    const { user } = await renderSection(LINKED_CHECK);
+
+    await user.click(await screen.findByRole('button', { name: 'frontend node' }));
+
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('ed%5Bname%5D=frontend'),
+      '_blank',
+      'noopener'
+    );
+    expect(openSpy).toHaveBeenCalledWith(
+      expect.stringContaining('ed%5Bscope%5D%5Benv%5D=prod'),
+      '_blank',
+      'noopener'
+    );
+  });
 });

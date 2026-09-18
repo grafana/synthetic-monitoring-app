@@ -7,6 +7,7 @@ export const CONNECTED_SERVICES_TEST_ID = {
   node: 'connected-services-node',
   nodeCard: 'connected-services-node-card',
   nodeConnectedRing: 'connected-services-node-connected-ring',
+  exposedGraph: 'connected-services-exposed-graph',
   edge: 'connected-services-edge',
   loading: 'connected-services-loading',
   error: 'connected-services-error',

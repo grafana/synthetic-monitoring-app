@@ -19,6 +19,7 @@ import {
 } from './ConnectedServices.constants';
 import { useServiceNeighbourhood } from './ConnectedServices.hooks';
 import { getCheckGraphUrl } from './ConnectedServices.utils';
+import { ConnectedServicesEntityGraph, useExposedEntityGraph } from './ConnectedServicesEntityGraph';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
 import {
   findLabelValue,
@@ -108,7 +109,32 @@ interface ServiceNeighbourhoodGraphProps {
   check: Check;
 }
 
+/**
+ * Prefers the Knowledge Graph's own exposed Entity Graph component (visual consistency with the
+ * KG app, maintained by the KG team); falls back to the SM-owned renderer on stacks whose
+ * asserts app doesn't expose it yet.
+ */
 function ServiceNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
+  const styles = useStyles2(getStyles);
+  const { component: EntityGraph, isLoading } = useExposedEntityGraph();
+
+  if (isLoading) {
+    return (
+      <div className={styles.loading} data-testid={CONNECTED_SERVICES_TEST_ID.loading}>
+        <CenteredSpinner aria-label="Loading connected services" />
+      </div>
+    );
+  }
+
+  if (EntityGraph) {
+    return <ConnectedServicesEntityGraph check={check} EntityGraph={EntityGraph} />;
+  }
+
+  return <FallbackNeighbourhoodGraph check={check} />;
+}
+
+/** The SM-owned neighbourhood renderer: Cypher via the KG datasource, drawn by ConnectedServicesGraph. */
+function FallbackNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);
   const { data, isLoading, isError, refetch } = useServiceNeighbourhood(check);
 
