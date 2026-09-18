@@ -8,8 +8,8 @@ import { mockFeatureToggles } from 'test/utils';
 import { Check, FeatureName } from 'types';
 
 import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
-import { ConnectedServicesMiniGraph } from './ConnectedServicesMiniGraph';
 import { ExposedEntityGraphProps } from './ConnectedServicesEntityGraph';
+import { ConnectedServicesMiniGraph } from './ConnectedServicesMiniGraph';
 import { KG_ENTITY_GRAPH_COMPONENT_ID } from './knowledgeGraph';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;

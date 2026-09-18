@@ -16,8 +16,8 @@ import { SMDataSource } from 'datasource/DataSource';
 
 import { ConnectedServices } from './ConnectedServices';
 import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
-import { ExposedEntityGraphProps } from './ConnectedServicesEntityGraph';
 import { parseGraphFrames } from './ConnectedServices.utils';
+import { ExposedEntityGraphProps } from './ConnectedServicesEntityGraph';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
 import { KG_ENTITY_GRAPH_COMPONENT_ID } from './knowledgeGraph';
 

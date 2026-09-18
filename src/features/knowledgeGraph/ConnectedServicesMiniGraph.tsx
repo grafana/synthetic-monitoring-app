@@ -5,8 +5,8 @@ import { css } from '@emotion/css';
 
 import { Check } from 'types';
 
-import { CONNECTED_SERVICES_TEST_ID, CONNECTED_SERVICES_SUBTITLE, CONNECTED_SERVICES_TITLE } from './ConnectedServices.constants';
 import { ConnectedServicesZeroState, ServiceNeighbourhoodGraph } from './ConnectedServices';
+import { CONNECTED_SERVICES_SUBTITLE, CONNECTED_SERVICES_TEST_ID, CONNECTED_SERVICES_TITLE } from './ConnectedServices.constants';
 import { getCheckGraphUrl } from './ConnectedServices.utils';
 import { findLabelValue, getSyntheticCheckEntityName, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
