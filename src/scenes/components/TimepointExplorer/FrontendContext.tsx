@@ -214,22 +214,34 @@ const SummaryBand = ({
   onToggle: () => void;
 }) => {
   const styles = useStyles2(getStyles);
-  const { data: versionChange } = useAppVersionChange({
+  const { data: versionChange, isLoading: isVersionLoading } = useAppVersionChange({
     appId: context.appId,
     runVersion: context.appVersion ?? '',
     to,
     enabled: Boolean(context.appVersion),
   });
-  const { data: exceptionRealSessionCounts } = useExceptionRealSessions({
+  const { data: exceptionRealSessionCounts, isLoading: isExceptionsLoading } = useExceptionRealSessions({
     appId: context.appId,
     messages: context.exceptions.map((exception) => exception.message),
     to,
   });
-  const { data: actionBaselines } = useRealUserActionBaselines({
+  const { data: actionBaselines, isLoading: isActionBaselinesLoading } = useRealUserActionBaselines({
     appId: context.appId,
     actionNames: context.actions.map((action) => action.actionName),
     to,
   });
+
+  // Every hook above feeds the verdict directly - rendering before they
+  // resolve means computing on empty/undefined data, which surfaces as a
+  // misleading "Nothing notable diverges" flash before the real verdict
+  // lands a beat later.
+  if (isVersionLoading || isExceptionsLoading || isActionBaselinesLoading) {
+    return (
+      <div className={styles.summaryBand}>
+        <Spinner />
+      </div>
+    );
+  }
 
   const verdict = getSummaryVerdict({
     probeSuccess,
