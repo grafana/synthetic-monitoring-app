@@ -1,9 +1,16 @@
-import { config } from '@grafana/runtime';
+// eslint-disable-next-line no-restricted-imports -- Namespace import allows capability detection on older Grafana hosts.
+import * as grafanaRuntime from '@grafana/runtime';
 import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
-import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/web-sdk';
+import { type Client, type EvaluationContext, MultiProvider, OpenFeature, type Provider } from '@openfeature/web-sdk';
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
+
+const { config } = grafanaRuntime;
+// Grafana 13.0 does not expose this helper; keep server evaluation on older hosts.
+const { createOpenFeatureLocalStorageProvider } = grafanaRuntime as typeof grafanaRuntime & {
+  createOpenFeatureLocalStorageProvider?: () => Provider;
+};
 
 export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 
@@ -33,21 +40,22 @@ export function initOpenFeature(): Promise<void> {
 async function doInit(): Promise<void> {
   const baseUrl = `${config.appSubUrl || ''}/apis/features.grafana.app/v0alpha1/namespaces/${config.namespace}`;
 
-  await OpenFeature.setProviderAndWait(
-    SM_OPEN_FEATURE_DOMAIN,
-    new OFREPWebProvider({
-      baseUrl,
-      changeDetection: 'none', // flags only re-evaluate on page load
-      disableVisibilityRefresh: true,
-      cacheMode: 'disabled',
-      timeoutMs: 10_000,
-    }),
-    {
-      targetingKey: config.namespace, // evaluate consistently per stack
-      namespace: config.namespace, // required by the multi-tenant flag service
-      ...((config.openFeatureContext ?? {}) as EvaluationContext),
-    }
-  );
+  const remoteProvider = new OFREPWebProvider({
+    baseUrl,
+    changeDetection: 'none', // server flags only re-evaluate on page load
+    disableVisibilityRefresh: true,
+    cacheMode: 'disabled',
+    timeoutMs: 10_000,
+  });
+  const provider = createOpenFeatureLocalStorageProvider
+    ? new MultiProvider([{ provider: createOpenFeatureLocalStorageProvider() }, { provider: remoteProvider }])
+    : remoteProvider;
+
+  await OpenFeature.setProviderAndWait(SM_OPEN_FEATURE_DOMAIN, provider, {
+    targetingKey: config.namespace, // evaluate consistently per stack
+    namespace: config.namespace, // required by the multi-tenant flag service
+    ...((config.openFeatureContext ?? {}) as EvaluationContext),
+  });
 
   client = OpenFeature.getClient(SM_OPEN_FEATURE_DOMAIN);
 }
