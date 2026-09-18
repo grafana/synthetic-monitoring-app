@@ -615,32 +615,46 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
             <Icon name="info-circle" size="sm" />
           </Tooltip>
         </Stack>
-        <Stack direction="column" gap={0.5}>
-          {sessions.slice(0, MAX_SIMILAR_SESSIONS).map((session) => (
-            <div key={session.sessionId} className={styles.indent}>
-              <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
-                <TextLink
-                  href={buildFaroSessionHref({
-                    pluginId: FARO_APP_PLUGIN_ID,
-                    appId: context.appId,
-                    sessionId: session.sessionId,
-                  })}
-                  inline={false}
-                  variant="bodySmall"
-                >
-                  <span className={styles.mono}>{session.sessionId}</span>
-                </TextLink>
-                <Text color="secondary" variant="bodySmall">
-                  {session.outcome?.kind === 'completed'
-                    ? 'Completed the journey'
-                    : session.outcome?.kind === 'stopped-at'
-                      ? `Stopped at ${session.outcome.pageId}`
-                      : `loaded ${session.matchedPages.length} of ${journeyPageIds.length} pages (${session.matchedPages.join(', ')})`}{' '}
-                  · last seen {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
-                </Text>
-              </Stack>
-            </div>
-          ))}
+        <Stack direction="column" gap={1}>
+          {sessions.slice(0, MAX_SIMILAR_SESSIONS).map((session) => {
+            const location = [session.city, session.countryIso].filter(Boolean).join(', ');
+            const outcomeText =
+              session.outcome?.kind === 'completed'
+                ? 'Completed the journey'
+                : session.outcome?.kind === 'stopped-at'
+                  ? `Stopped at ${session.outcome.pageId}`
+                  : `${session.matchedPages.length} of ${journeyPageIds.length} pages in common, not in journey order`;
+
+            return (
+              <div key={session.sessionId} className={styles.indent}>
+                <Stack direction="column" gap={0.25}>
+                  <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
+                    <TextLink
+                      href={buildFaroSessionHref({
+                        pluginId: FARO_APP_PLUGIN_ID,
+                        appId: context.appId,
+                        sessionId: session.sessionId,
+                      })}
+                      inline={false}
+                      variant="bodySmall"
+                    >
+                      <span className={styles.mono}>{session.sessionId}</span>
+                    </TextLink>
+                    <Text color="secondary" variant="bodySmall">
+                      {outcomeText}
+                      {location && ` · ${location}`} · last seen{' '}
+                      {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
+                    </Text>
+                  </Stack>
+                  <Text variant="bodySmall">
+                    <span className={styles.mono}>
+                      {session.matchedPages.length > 0 ? session.matchedPages.join(' → ') : '(no matched pages)'}
+                    </span>
+                  </Text>
+                </Stack>
+              </div>
+            );
+          })}
         </Stack>
       </Stack>
     </div>

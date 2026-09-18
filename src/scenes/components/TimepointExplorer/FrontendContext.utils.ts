@@ -589,6 +589,11 @@ export interface SimilarSession {
   // (they can revisit pages or skip around), so this stays undefined rather
   // than claim a "stopped at X" story the data doesn't actually support.
   outcome?: SimilarSessionOutcome;
+  // IP-derived (MaxMind GeoLite2 reverse lookup per FEO's own docs), so
+  // reliable — same fields confirmed trustworthy in the browser_mobile
+  // investigation earlier this session.
+  city?: string;
+  countryIso?: string;
 }
 
 /**
@@ -665,7 +670,10 @@ export function buildExceptionRealSessionsLogQL({
 
 export function parseSimilarSessions(logs: FaroRecord[], journeyPageIds: string[]): SimilarSession[] {
   const journey = new Set(journeyPageIds);
-  const sessions = new Map<string, { pages: Set<string>; lastSeen: number }>();
+  const sessions = new Map<
+    string,
+    { pages: Set<string>; lastSeen: number; city?: string; countryIso?: string }
+  >();
 
   logs.forEach((record) => {
     const labels = record.labels ?? {};
@@ -682,12 +690,19 @@ export function parseSimilarSessions(logs: FaroRecord[], journeyPageIds: string[
       existing.pages.add(pageId);
       existing.lastSeen = Math.max(existing.lastSeen, record.timestamp);
     } else {
-      sessions.set(sessionId, { pages: new Set([pageId]), lastSeen: record.timestamp });
+      // Geo is stable for the life of a session — take it from whichever
+      // record we see first, no need to reconcile across records.
+      sessions.set(sessionId, {
+        pages: new Set([pageId]),
+        lastSeen: record.timestamp,
+        city: labels.geo_city,
+        countryIso: labels.geo_country_iso,
+      });
     }
   });
 
   return [...sessions.entries()]
-    .map(([sessionId, { pages, lastSeen }]) => {
+    .map(([sessionId, { pages, lastSeen, city, countryIso }]) => {
       const matchedPages = journeyPageIds.filter((pageId) => pages.has(pageId));
       const isPrefix = matchedPages.every((pageId, index) => pageId === journeyPageIds[index]);
       const outcome: SimilarSessionOutcome | undefined = isPrefix
@@ -696,7 +711,7 @@ export function parseSimilarSessions(logs: FaroRecord[], journeyPageIds: string[
           : { kind: 'stopped-at', pageId: matchedPages[matchedPages.length - 1] }
         : undefined;
 
-      return { sessionId, matchedPages, lastSeen, outcome };
+      return { sessionId, matchedPages, lastSeen, outcome, city, countryIso };
     })
     .sort((a, b) => b.matchedPages.length - a.matchedPages.length || b.lastSeen - a.lastSeen);
 }
