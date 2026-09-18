@@ -16,6 +16,7 @@
     "dev": "webpack -w -c webpack.config.ts --env development",
     "e2e:update": "yarn exec cypress install && yarn exec grafana-e2e run --update-screenshots",
     "e2e": "yarn exec cypress install && yarn exec grafana-e2e run",
+    "e2e:dem": "playwright test --config playwright.dem-dev.config.ts",
     "i18n-extract": "i18next-cli extract --sync-primary",
     "lint:dashboards": "./scripts/lint-dashboards.sh",
     "lint:fix": "yarn run lint --fix",
@@ -28,7 +29,8 @@
     "test": "jest --all",
     "verify:probe-api-mappings": "yarn ts-node scripts/probe-api-mappings/verify-probe-api-mappings.ts",
     "verify:terraform-test-config": "./scripts/terraform-validation/verify-terraform-test-config.sh",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:e2e": "tsc --noEmit --project e2e/tsconfig.json"
   },
   "author": "Grafana Labs",
   "license": "Apache-2.0",
@@ -39,6 +41,7 @@
     "@faker-js/faker": "10.5.0",
     "@grafana/eslint-config": "9.0.0",
     "@grafana/tsconfig": "2.2.0",
+    "@playwright/test": "1.61.1",
     "@stylistic/eslint-plugin-ts": "4.4.1",
     "@swc/core": "1.15.3",
     "@swc/helpers": "0.5.17",

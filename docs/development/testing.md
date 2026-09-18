@@ -6,7 +6,10 @@ We use Jest with React Testing Library and MSW for testing this application. Our
 
 Our Jest + RTL + MSW suite behaves like a **pseudo e2e framework**. Tests drive real UI through user journeys against mocked APIs — the same components, routing, and data-fetching paths users hit in production, without a live backend.
 
-Browser-based e2e is more stable than it was a few years ago, but historically we were limited to headless `jest-dom`. The existing suite is built that way, and it remains where we invest by default. Playwright is not currently run in CI.
+Browser-based e2e is more stable than it was a few years ago, but historically we were limited to headless `jest-dom`. The existing suite is built that way, and it remains where we invest by default.
+
+The [dem-dev CI smoke](dem-dev-smoke.md) runs one Playwright test against an
+isolated SM runtime to cover plugin loading, provisioning, and persisted check data.
 
 The general philosophy is the right balance of confidence in core user journeys whilst keeping tests easy to maintain and fast to run. Unit tests are too closely tied to implementation details and can create friction when changing fundamentals. True e2e tests can be slow and hard to reproduce locally. Integration tests are not perfect, but they are a good compromise.
 
