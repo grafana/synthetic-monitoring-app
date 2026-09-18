@@ -541,19 +541,19 @@ export function getPageComparisonVerdict(
   }
 
   if (worstOptimistic !== null) {
-    const { vital } = worstOptimistic as { vital: WebVitalName; ratio: number };
+    const { vital, ratio } = worstOptimistic as { vital: WebVitalName; ratio: number };
 
     return {
-      text: `Real users are having a worse time than this run suggests: ${WEB_VITAL_LABELS[vital]} p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} vs ${formatWebVitalValue(vital, runVitals[vital]!)} for this run. A pass here doesn't mean real users are having a good experience — the check isn't representative of what they see.`,
+      text: `${WEB_VITAL_LABELS[vital]}: this run ${formatWebVitalValue(vital, runVitals[vital]!)} vs real users' p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} (${ratio.toFixed(1)}x faster).`,
       rating: 'optimistic',
     };
   }
 
   if (worstPessimistic !== null) {
-    const { vital } = worstPessimistic as { vital: WebVitalName; ratio: number };
+    const { vital, ratio } = worstPessimistic as { vital: WebVitalName; ratio: number };
 
     return {
-      text: `This run was slower than real users: ${WEB_VITAL_LABELS[vital]} ${formatWebVitalValue(vital, runVitals[vital]!)} vs ${formatWebVitalValue(vital, baselineVitals[vital]!)} p75`,
+      text: `${WEB_VITAL_LABELS[vital]}: this run ${formatWebVitalValue(vital, runVitals[vital]!)} vs real users' p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} (${ratio.toFixed(1)}x slower).`,
       rating: 'pessimistic',
     };
   }
@@ -815,7 +815,12 @@ export function getSummaryVerdict({
 
   // Worst action where the check ran meaningfully faster than real users —
   // the dangerous fidelity direction, same asymmetry as the page verdict.
-  let worstOptimisticAction: { name: string; ratio: number } | null = null;
+  let worstOptimisticAction: {
+    name: string;
+    ratio: number;
+    durationMs: number;
+    baselineDurationMs: number;
+  } | null = null;
 
   actions.forEach((action) => {
     const baseline = actionBaselines[action.actionName];
@@ -828,7 +833,12 @@ export function getSummaryVerdict({
       const ratio = baseline.durationMs / action.durationMs;
 
       if (!worstOptimisticAction || ratio > worstOptimisticAction.ratio) {
-        worstOptimisticAction = { name: action.actionName, ratio };
+        worstOptimisticAction = {
+          name: action.actionName,
+          ratio,
+          durationMs: action.durationMs,
+          baselineDurationMs: baseline.durationMs,
+        };
       }
     }
   });
@@ -901,17 +911,21 @@ export function getSummaryVerdict({
     };
   }
 
-  // Fidelity comes last among the "passed" branches, deliberately — it's
-  // only worth leading with when nothing more concrete is going on. And the
-  // claim itself is narrower than "this check is pointless": most checks
-  // verify a functional path, not raw performance parity, so a speed gap is
-  // expected, not a problem with the check's setup. State what it *does*
-  // confirm alongside what it doesn't.
+  // Fidelity comes last among the "passed" branches — only worth leading
+  // with when nothing more concrete is going on. Kept purely factual on
+  // purpose (the numbers, no interpretation of what they mean or don't) —
+  // whether a speed gap matters is an eng call to make per-check, not
+  // something to argue for or against here.
   if (worstOptimisticAction !== null) {
-    const { name, ratio } = worstOptimisticAction as { name: string; ratio: number };
+    const { name, ratio, durationMs, baselineDurationMs } = worstOptimisticAction as {
+      name: string;
+      ratio: number;
+      durationMs: number;
+      baselineDurationMs: number;
+    };
 
     return {
-      text: `This check runs ${ratio.toFixed(1)}x faster than real users on ${name} — expected if it's checking that the flow works rather than how fast it is. It confirms ${name} functions correctly; it doesn't confirm real users get this speed.`,
+      text: `${name}: this run ${formatDurationMs(durationMs)} vs real users' p75 ${formatDurationMs(baselineDurationMs)} (${ratio.toFixed(1)}x faster).`,
       tone: 'info',
       chips,
     };
