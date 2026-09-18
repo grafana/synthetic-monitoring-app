@@ -473,13 +473,16 @@ export function formatWebVitalDelta(name: WebVitalName, runValue: number, baseli
 }
 
 /**
- * Fidelity is a separate axis from check pass/fail, not a rename of it.
- * Divergence in either direction means the check isn't representative, and
- * "optimistic" is the more dangerous direction: a check running faster than
- * real users will keep passing straight through a real degradation, while a
- * "pessimistic" check just produces a false alarm someone investigates and
- * dismisses. Render this on its own hue — never reuse success/error, which
- * are reserved for check pass/fail.
+ * Fidelity is a separate axis from check pass/fail, not a rename of it — and
+ * it isn't conditioned on pass/fail depending on speed at all. The claim is
+ * about representativeness, not about the check "catching" a slowdown:
+ * divergence in either direction means the check's result doesn't tell you
+ * much about what real users experience, whatever that result is.
+ * "Optimistic" is still the more useful direction to flag, because a check
+ * that's unrepresentatively fast lets its own pass read as reassurance about
+ * real users when it isn't — a "pessimistic" check just produces a false
+ * alarm someone investigates and dismisses. Render this on its own hue —
+ * never reuse success/error, which are reserved for check pass/fail.
  */
 export type FidelityRating = 'representative' | 'optimistic' | 'pessimistic' | 'insufficient-data';
 
@@ -541,7 +544,7 @@ export function getPageComparisonVerdict(
     const { vital } = worstOptimistic as { vital: WebVitalName; ratio: number };
 
     return {
-      text: `Real users are having a worse time than this run suggests: ${WEB_VITAL_LABELS[vital]} p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} vs ${formatWebVitalValue(vital, runVitals[vital]!)} for this run — this check could pass straight through a real degradation`,
+      text: `Real users are having a worse time than this run suggests: ${WEB_VITAL_LABELS[vital]} p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} vs ${formatWebVitalValue(vital, runVitals[vital]!)} for this run. A pass here doesn't mean real users are having a good experience — the check isn't representative of what they see.`,
       rating: 'optimistic',
     };
   }
@@ -563,10 +566,19 @@ export function escapeRegExp(value: string): string {
 }
 
 /**
- * Finds real-user page loads on any of the pages the synthetic run visited.
- * Every page load emits a web-vitals measurement carrying `session_id` +
- * `page_id`, so grouping the result by session tells us which real sessions
- * walked (part of) the same journey as the check.
+ * Finds real-user activity on any of the pages the synthetic run visited.
+ *
+ * Deliberately NOT gated on `kind="measurement" |= " ttfb="` (the original
+ * version was, and it undercounted real navigation depth as a result): a
+ * hard-loaded page always gets a ttfb-bearing measurement line, but a
+ * soft-navigated page confirmed earlier this session often gets *no*
+ * measurement line at all — only occasional LCP-only ones, action-marker
+ * events, or fetch/resource events. Matching any event/measurement record
+ * with a page_id in the journey, regardless of what else is on the line,
+ * catches those too — a session that only ever produced a hard-nav
+ * measurement line for the first page and nothing else for pages reached by
+ * soft navigation was invisible under the old query, not because it didn't
+ * navigate further.
  *
  * This is a log-stream query (no `[range]` selector — that's only valid on
  * metric queries); the time window comes from the request's start/end params.
@@ -574,7 +586,7 @@ export function escapeRegExp(value: string): string {
 export function buildSimilarSessionsLogQL({ appId, pageIds }: { appId: string; pageIds: string[] }): string {
   const pagePattern = escapeLogQLString(`^(${pageIds.map(escapeRegExp).join('|')})$`);
 
-  return `{kind="measurement", app_id="${appId}"} |= " ttfb=" | logfmt | k6_isK6Browser=~"" | page_id=~"${pagePattern}"`;
+  return `{kind=~"event|measurement", app_id="${appId}"} | logfmt | k6_isK6Browser=~"" | page_id=~"${pagePattern}"`;
 }
 
 export type SimilarSessionOutcome = { kind: 'completed' } | { kind: 'stopped-at'; pageId: string };
@@ -838,6 +850,21 @@ export function getSummaryVerdict({
       };
     }
 
+    // "No evidence of harm" is only worth stating as "users are fine" if we
+    // actually had a channel capable of finding harm. A check can fail with
+    // no in-page JS exception at all (a k6/Playwright assertion timeout
+    // throws outside the browser, invisible to Faro — confirmed on a real
+    // failure earlier this session) and an app with no named actions gives
+    // the action-failure-rate check nothing to compare against either. Say
+    // so plainly rather than imply a clean bill of health we didn't earn.
+    if (actions.length === 0 && exceptions.length === 0) {
+      return {
+        text: "Couldn't tell whether real users are affected — this run produced no JS exception, and this app has no named action to check a real-user failure rate against.",
+        tone: 'secondary',
+        chips,
+      };
+    }
+
     return {
       text: "Real users don't appear to be seeing this failure. Start with the check, not the app.",
       tone: 'success',
@@ -854,7 +881,7 @@ export function getSummaryVerdict({
     const { name, ratio } = worstOptimisticAction as { name: string; ratio: number };
 
     return {
-      text: `This check runs ${ratio.toFixed(1)}x faster than real users on ${name} — it could keep passing through a real degradation.`,
+      text: `This check runs ${ratio.toFixed(1)}x faster than real users on ${name}. A pass here doesn't mean real users are having a good experience — the check isn't representative of what they see.`,
       tone: 'info',
       chips,
     };
