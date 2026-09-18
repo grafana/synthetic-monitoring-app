@@ -32,11 +32,13 @@ import { ApiEntry } from 'test/handlers/types';
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
 import { listK6Channels } from './k6Channels';
+import { getKGAssertionOrigins } from './knowledgeGraph';
 import { evaluateFeatureFlags } from './openfeature';
 import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const API_ROUTES = {
+  getKGAssertionOrigins,
   addCheck,
   addProbe,
   bulkUpdateChecks,

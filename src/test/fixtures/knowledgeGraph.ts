@@ -45,3 +45,50 @@ export function buildNeighbourhoodFrames() {
 
   return { nodes, edges, ids: { checkId, serviceId, downstreamId, upstreamId } };
 }
+
+/**
+ * Assertion timelines for the fixture neighbourhood's `frontend` service, one entry per case of
+ * the own-vs-connected split: ErrorRatioBreach carries verified check provenance (critical),
+ * LatencyAverageBreach is the service's own insight (warning), and
+ * check_failures::SyntheticCheckFailedExecutionsBreach is a propagated insight the frame's
+ * `insightNames` does not list — on some KG versions the frame names the entity's own assertions
+ * only, so connected insights must surface from the timelines alone.
+ */
+export const FRONTEND_ASSERTION_TIMELINES = [
+  {
+    type: 'Service',
+    name: 'frontend',
+    scope: { env: 'prod', namespace: 'otel-demo' },
+    allAssertions: [
+      {
+        nestedTimelines: [
+          {
+            assertionName: 'ErrorRatioBreach',
+            alertName: 'ErrorRatioBreach',
+            labels: {
+              asserts_severity: 'critical',
+              asserts_origin_env: 'none',
+              asserts_source_entity_type: 'SyntheticCheck',
+              asserts_source_entity_name: 'Another check__https://example.com/',
+            },
+          },
+          {
+            assertionName: 'LatencyAverageBreach',
+            alertName: 'LatencyAverageBreach',
+            labels: { asserts_severity: 'warning' },
+          },
+          {
+            assertionName: 'check_failures::SyntheticCheckFailedExecutionsBreach',
+            alertName: 'SyntheticCheckFailedExecutionsBreach',
+            labels: {
+              asserts_severity: 'critical',
+              asserts_origin_env: 'none',
+              asserts_source_entity_type: 'SyntheticCheck',
+              asserts_source_entity_name: 'Another check__https://example.com/',
+            },
+          },
+        ],
+      },
+    ],
+  },
+];

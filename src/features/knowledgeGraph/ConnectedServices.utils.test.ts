@@ -5,9 +5,12 @@ import {
   buildServiceNeighbourhoodQuery,
   escapeCypher,
   getCheckGraphUrl,
+  getCheckLinkFanOut,
   getEntityDrawerUrl,
   getNodeDisplayName,
+  getNodeQualifiedName,
   getRingSegments,
+  getRingSegmentsFromSeverities,
   layoutNeighbourhood,
   NeighbourhoodNode,
   parseGraphFrames,
@@ -135,6 +138,73 @@ describe('getRingSegments', () => {
     expect(getRingSegments({ errors: 1, warning: 1, amend: 0 })).toEqual([
       { severity: 'critical', fraction: 0.5 },
       { severity: 'warning', fraction: 0.5 },
+    ]);
+  });
+});
+
+describe('getNodeQualifiedName', () => {
+  it('qualifies a service with its environment, but leaves checks and env-less nodes bare', () => {
+    expect(getNodeQualifiedName(buildNode())).toBe('otel-demo/frontend (prod)');
+    expect(getNodeQualifiedName(buildNode({ scope: { env: '', site: '', namespace: 'otel-demo' } }))).toBe(
+      'otel-demo/frontend (not specified)'
+    );
+    expect(
+      getNodeQualifiedName(
+        buildNode({
+          name: 'check__x',
+          entityType: 'SyntheticCheck',
+          scope: { env: 'unknown', site: '', namespace: '' },
+        })
+      )
+    ).toBe('check__x');
+  });
+});
+
+describe('getCheckLinkFanOut', () => {
+  const check = buildNode({
+    id: 'check',
+    name: 'check__x',
+    entityType: 'SyntheticCheck',
+    scope: { env: 'unknown', site: '', namespace: '' },
+  });
+  const prod = buildNode({ id: 'frontend-prod' });
+  const staging = buildNode({ id: 'frontend-staging', scope: { env: 'staging', site: '', namespace: 'otel-demo' } });
+
+  it('reports same-named services linked from several environments, envs sorted', () => {
+    const graph = {
+      nodes: [check, staging, prod],
+      edges: [
+        { id: 'e1', source: 'frontend-prod', target: 'check' },
+        { id: 'e2', source: 'frontend-staging', target: 'check' },
+      ],
+    };
+
+    expect(getCheckLinkFanOut(graph, check)).toEqual([
+      { serviceDisplayName: 'otel-demo/frontend', environments: ['prod', 'staging'] },
+    ]);
+  });
+
+  it('is empty for a single-environment link and ignores non-adjacent twins', () => {
+    const graph = {
+      nodes: [check, prod, staging],
+      // The staging twin exists in the graph but is not linked to the check.
+      edges: [{ id: 'e1', source: 'frontend-prod', target: 'check' }],
+    };
+
+    expect(getCheckLinkFanOut(graph, check)).toEqual([]);
+  });
+});
+
+describe('getRingSegmentsFromSeverities', () => {
+  it('renders the muted baseline when there are no insights', () => {
+    expect(getRingSegmentsFromSeverities([])).toEqual([{ severity: 'healthy', fraction: 1 }]);
+  });
+
+  it('shares the ring proportionally by insight count, ordered critical first', () => {
+    expect(getRingSegmentsFromSeverities(['warning', 'critical', 'warning', 'info'])).toEqual([
+      { severity: 'critical', fraction: 0.25 },
+      { severity: 'warning', fraction: 0.5 },
+      { severity: 'info', fraction: 0.25 },
     ]);
   });
 });
