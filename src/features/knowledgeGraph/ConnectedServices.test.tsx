@@ -5,8 +5,10 @@ import { screen } from '@testing-library/react';
 import { of, throwError } from 'rxjs';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { LOGS_DATASOURCE, METRICS_DATASOURCE, SM_DATASOURCE } from 'test/fixtures/datasources';
-import { buildNeighbourhoodFrames } from 'test/fixtures/knowledgeGraph';
+import { buildNeighbourhoodFrames, FRONTEND_ASSERTION_TIMELINES } from 'test/fixtures/knowledgeGraph';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 import { mockFeatureToggles } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
@@ -14,6 +16,8 @@ import { SMDataSource } from 'datasource/DataSource';
 
 import { ConnectedServices } from './ConnectedServices';
 import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
+import { parseGraphFrames } from './ConnectedServices.utils';
+import { ConnectedServicesGraph } from './ConnectedServicesGraph';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
 
@@ -255,9 +259,10 @@ it('highlights an edge on hover and names the connection', async () => {
   const edgeGroups = screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge);
   expect(edgeGroups).toHaveLength(3);
 
-  // Every edge names its endpoints for the hover tooltip, by the same name its nodes carry.
+  // Every edge names its endpoints for the hover tooltip, env-qualified for services so the
+  // parallel edges to a service's environment twins are tellable apart.
   const edgeTitles = edgeGroups.map((group) => group.querySelector('title')?.textContent);
-  expect(edgeTitles).toContain('otel-demo/frontend → otel-demo/cart');
+  expect(edgeTitles).toContain('otel-demo/frontend (prod) → otel-demo/cart (prod)');
 
   await user.hover(edgeGroups[0]);
 
@@ -290,4 +295,98 @@ it('shows the error state with a retry action when the query fails', async () =>
 
   expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.error)).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
+});
+
+it('labels environments only for repeated service names and renders edges without arrowheads', async () => {
+  const { nodes, edges } = buildNeighbourhoodFrames();
+  const graph = parseGraphFrames([nodes, edges]);
+  const service = graph.nodes[1];
+  graph.nodes.push({ ...service, id: 'frontend-staging', scope: { ...service.scope, env: 'staging' } });
+  graph.edges.push({ id: 'staging-check', source: 'frontend-staging', target: graph.nodes[0].id });
+  const { container } = render(<ConnectedServicesGraph neighbourhood={graph} />);
+  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
+
+  expect(screen.getByRole('button', { name: 'otel-demo/frontend · Env: prod (Service)' })).toHaveTextContent(
+    'Env: prod'
+  );
+  expect(screen.getByRole('button', { name: 'otel-demo/frontend · Env: staging (Service)' })).toHaveTextContent(
+    'Env: staging'
+  );
+  expect(screen.getByRole('button', { name: 'otel-demo/cart (Service)' })).not.toHaveTextContent('Env:');
+  expect(container.querySelector('marker, [marker-end]')).toBeNull();
+  const titles = screen
+    .getAllByTestId(CONNECTED_SERVICES_TEST_ID.edge)
+    .map((edge) => edge.querySelector('title')?.textContent);
+  expect(titles).toContain('otel-demo/frontend (prod) → my check__https://grafana.com');
+});
+
+it('states the environment fan-out on the check card when the link matches several env twins', async () => {
+  const { nodes, edges } = buildNeighbourhoodFrames();
+  const graph = parseGraphFrames([nodes, edges]);
+  const service = graph.nodes[1];
+  graph.nodes.push({ ...service, id: 'frontend-staging', scope: { ...service.scope, env: 'staging' } });
+  graph.edges.push({ id: 'staging-check', source: 'frontend-staging', target: graph.nodes[0].id });
+  const { user } = render(<ConnectedServicesGraph neighbourhood={graph} />);
+  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.graph);
+
+  await user.click(screen.getByRole('button', { name: 'my check__https://grafana.com (SyntheticCheck)' }));
+  expect(
+    await screen.findByText('Linked to otel-demo/frontend in 2 environments: prod, staging')
+  ).toBeInTheDocument();
+
+  // A service card carries no fan-out note — it belongs to exactly one environment.
+  await user.keyboard('{Escape}');
+  await user.click(screen.getByRole('button', { name: 'otel-demo/frontend · Env: prod (Service)' }));
+  expect(screen.queryByText(/Linked to/)).not.toBeInTheDocument();
+});
+
+it('splits own vs check-propagated insights into rings and card groups from one batched lookup', async () => {
+  const requests: Request[] = [];
+  server.use(
+    apiRoute('getKGAssertionOrigins', { result: () => ({ json: FRONTEND_ASSERTION_TIMELINES }) }, (req) =>
+      requests.push(req)
+    )
+  );
+  const { user } = await renderGraph();
+
+  // The propagated insight surfaces as the inset connected ring, on the one service carrying it.
+  expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.nodeConnectedRing)).toBeInTheDocument();
+  expect(screen.getAllByTestId(CONNECTED_SERVICES_TEST_ID.nodeConnectedRing)).toHaveLength(1);
+
+  // Fetched on render (the rings need it), batched to every service — a propagated insight can
+  // exist on a service whose frame carries no own insight names at all.
+  expect(requests).toHaveLength(1);
+  expect(await requests[0].json()).toEqual({
+    startTime: Date.parse(MOCK_TIME_RANGE_FROM),
+    endTime: Date.parse(MOCK_TIME_RANGE_TO),
+    entityKeys: [
+      { type: 'Service', name: 'frontend', scope: { env: 'prod', namespace: 'otel-demo' } },
+      { type: 'Service', name: 'cart', scope: { env: 'prod', namespace: 'otel-demo' } },
+      { type: 'Service', name: 'gateway', scope: { env: 'prod', namespace: 'otel-demo' } },
+    ],
+    includeConnectedAssertions: true,
+  });
+
+  // The card groups the split the way the KG's drawer does. The group label alone carries the
+  // provenance — the panel always renders alongside a specific check, so rows don't repeat it.
+  // The propagated group includes the timeline-only insight the frame's insightNames omitted.
+  await user.click(screen.getByRole('button', { name: 'otel-demo/frontend (Service)' }));
+  expect(await screen.findByText('Service insights')).toBeInTheDocument();
+  expect(screen.getByText('LatencyAverageBreach')).toBeInTheDocument();
+  expect(screen.getByText('Propagated from check')).toBeInTheDocument();
+  expect(screen.getByText('ErrorRatioBreach')).toBeInTheDocument();
+  expect(screen.getByText('check_failures::SyntheticCheckFailedExecutionsBreach')).toBeInTheDocument();
+  expect(screen.queryByText(/From check:/)).not.toBeInTheDocument();
+});
+
+it('keeps graph insights and the KG link available when origin lookup fails', async () => {
+  server.use(apiRoute('getKGAssertionOrigins', { result: () => ({ status: 403, json: { message: 'Forbidden' } }) }));
+  const { user } = await renderGraph();
+  await user.click(screen.getByRole('button', { name: 'otel-demo/frontend (Service)' }));
+  expect(await screen.findByText('Insight origin unavailable')).toBeInTheDocument();
+  // Without the split, the card falls back to the frame's flat insight list and no connected
+  // ring renders — the frame's mixed severity ring stands alone.
+  expect(screen.getByText('ErrorRatioBreach')).toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.nodeConnectedRing)).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ })).toBeInTheDocument();
 });

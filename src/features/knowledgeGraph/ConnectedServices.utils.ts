@@ -172,6 +172,23 @@ export function getRingSegments(arcs: { errors: number; warning: number; amend: 
   return segments.map((segment) => ({ ...segment, fraction: segment.fraction / total }));
 }
 
+/**
+ * Ring segments from per-insight severities: each severity class gets a share of the ring
+ * proportional to its insight count, ordered critical → warning → info like the KG's rings.
+ * No insights renders as the single muted healthy baseline.
+ */
+export function getRingSegmentsFromSeverities(severities: RingSeverity[]): RingSegment[] {
+  const active = severities.filter((severity) => severity !== 'healthy');
+  if (active.length === 0) {
+    return [{ severity: 'healthy', fraction: 1 }];
+  }
+
+  const order = ['critical', 'warning', 'info'] as const;
+  return order
+    .map((severity) => ({ severity, fraction: active.filter((s) => s === severity).length / active.length }))
+    .filter((segment) => segment.fraction > 0);
+}
+
 function findField(frame: DataFrame | undefined, name: string): Field | undefined {
   return frame?.fields.find((field) => field.name === name);
 }
@@ -299,6 +316,67 @@ export function getNodeDisplayName(node: NeighbourhoodNode): string {
     return node.name;
   }
   return `${node.scope.namespace}/${node.name}`;
+}
+
+/**
+ * Display name qualified with the environment for service entities. Same-named services exist in
+ * several environments at once (the env-less check fans out to all of them), so surfaces naming
+ * two endpoints — edge tooltips — need the env to tell the twins apart.
+ */
+export function getNodeQualifiedName(node: NeighbourhoodNode): string {
+  const displayName = getNodeDisplayName(node);
+  if (node.entityType === KG_SERVICE_ENTITY_TYPE && node.scope.env && node.scope.env !== 'unknown') {
+    return `${displayName} (${node.scope.env})`;
+  }
+  return displayName;
+}
+
+/**
+ * Display names shared by more than one service node — environment twins of the same workload,
+ * the product of the env-less check link matching every environment.
+ */
+export function getRepeatedServiceNames(nodes: NeighbourhoodNode[]): Set<string> {
+  const names = nodes.filter((node) => node.entityType === KG_SERVICE_ENTITY_TYPE).map(getNodeDisplayName);
+  return new Set(names.filter((name, index) => names.indexOf(name) !== index));
+}
+
+export interface CheckLinkFanOut {
+  serviceDisplayName: string;
+  environments: string[];
+}
+
+/**
+ * The same-named services a check node links to across multiple environments. Checks are
+ * env-less and the MONITORED_BY relation matches on service name + namespace only, so one check
+ * fans out to the service's twin in every environment — without telling anyone which environment
+ * the check's target actually hits. Surfacing the fan-out makes that ambiguity explicit. Empty
+ * when every linked service name resolves to a single environment (the unambiguous case).
+ */
+export function getCheckLinkFanOut(graph: ServiceNeighbourhood, checkNode: NeighbourhoodNode): CheckLinkFanOut[] {
+  const adjacentIds = new Set<string>();
+  for (const edge of graph.edges) {
+    if (edge.source === checkNode.id) {
+      adjacentIds.add(edge.target);
+    }
+    if (edge.target === checkNode.id) {
+      adjacentIds.add(edge.source);
+    }
+  }
+
+  const environmentsByName = new Map<string, Set<string>>();
+  for (const node of graph.nodes) {
+    if (!adjacentIds.has(node.id) || node.entityType !== KG_SERVICE_ENTITY_TYPE || !node.scope.env) {
+      continue;
+    }
+    const name = getNodeDisplayName(node);
+    const environments = environmentsByName.get(name) ?? new Set<string>();
+    environments.add(node.scope.env);
+    environmentsByName.set(name, environments);
+  }
+
+  return [...environmentsByName.entries()]
+    .filter(([, environments]) => environments.size > 1)
+    .map(([serviceDisplayName, environments]) => ({ serviceDisplayName, environments: [...environments].sort() }));
 }
 
 /** Characters a graph label prefers to break after, so wrapped lines split on name boundaries. */
@@ -440,8 +518,10 @@ export function layoutNeighbourhood(graph: ServiceNeighbourhood): NeighbourhoodL
     positionedEdges.push({
       id: edge.id,
       path: buildElbowPath(source, target),
-      sourceName: getNodeDisplayName(source.node),
-      targetName: getNodeDisplayName(target.node),
+      // Env-qualified: parallel edges from a check to a service's environment twins are otherwise
+      // indistinguishable in the hover tooltip.
+      sourceName: getNodeQualifiedName(source.node),
+      targetName: getNodeQualifiedName(target.node),
     });
   }
 
