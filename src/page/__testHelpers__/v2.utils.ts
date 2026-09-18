@@ -3,7 +3,7 @@ import { UserEvent } from '@testing-library/user-event';
 import { PRIVATE_PROBE } from 'test/fixtures/probes';
 
 import { CheckType } from 'types';
-import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
+import { gotoSection, selectOnlyProbe } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 
 const TARGET_MAP = {
@@ -40,7 +40,6 @@ export async function fillMandatoryFields({
   }
   if (!fieldsToOmit.includes('probes')) {
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(PRIVATE_PROBE.name) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(PRIVATE_PROBE.name));
   }
 }

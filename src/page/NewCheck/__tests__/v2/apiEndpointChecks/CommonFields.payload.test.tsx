@@ -14,7 +14,7 @@ import {
   FALLBACK_CHECK_TRACEROUTE,
 } from 'components/constants';
 
-import { gotoSection, submitForm } from '../../../../../components/Checkster/__testHelpers__/formHelpers';
+import { gotoSection, selectOnlyProbe, submitForm } from '../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm, TARGET_MAP } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/v2.utils';
 
@@ -108,8 +108,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
           await gotoSection(user, FormSectionName.Execution);
-          const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
-          await user.click(probeCheckbox);
+          await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName));
 
           await gotoSection(user, FormSectionName.Alerting);
 
