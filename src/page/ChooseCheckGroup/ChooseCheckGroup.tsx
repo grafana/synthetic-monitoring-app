@@ -7,18 +7,17 @@ import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { FeatureName } from 'types';
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { AgentSkillPicker } from 'components/AgentSkillReference/AgentSkillPicker';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
-import { BrowserCheckTemplate } from './components/BrowserCheckTemplate';
-import { BROWSER_CHECK_TEMPLATES } from './components/browserCheckTemplates';
 import { CheckGroupCard } from './components/CheckGroupCard';
+import { CheckTemplate } from './components/CheckTemplate';
+import { CHECK_TEMPLATES } from './components/checkTemplates';
 
 export const ChooseCheckGroup = () => {
   const styles = useStyles2(getStyles);
   const options = useCheckTypeGroupOptions();
-  const { isEnabled: templatesEnabled } = useFeatureFlag(FeatureName.CheckTemplates);
 
   return (
     <PluginPage layout={PageLayoutType.Standard} pageNav={{ text: 'Choose a check type' }}>
@@ -34,18 +33,20 @@ export const ChooseCheckGroup = () => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
-          {templatesEnabled && (
-            <Box marginTop={2}>
-              <Stack direction="column" gap={2}>
-                <Text element="h2" variant="h4">Start from a template</Text>
-                <div className={styles.templates}>
-                  {BROWSER_CHECK_TEMPLATES.map((template) => (
-                    <BrowserCheckTemplate key={template.id} template={template} />
-                  ))}
-                </div>
-              </Stack>
-            </Box>
-          )}
+          <FeatureFlag name={FeatureName.CheckTemplates}>
+            {({ isEnabled }) => isEnabled ? (
+              <Box marginTop={2}>
+                <Stack direction="column" gap={2}>
+                  <Text element="h2" variant="h4">Start from a template</Text>
+                  <div className={styles.templates}>
+                    {CHECK_TEMPLATES.map((template) => (
+                      <CheckTemplate key={template.id} template={template} />
+                    ))}
+                  </div>
+                </Stack>
+              </Box>
+            ) : null}
+          </FeatureFlag>
           <Box marginTop={2}>
             <AgentSkillPicker source="choose-check-type" />
           </Box>

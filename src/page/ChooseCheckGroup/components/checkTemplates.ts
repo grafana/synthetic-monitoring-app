@@ -1,25 +1,29 @@
 import { IconName } from '@grafana/ui';
+import { encode } from 'js-base64';
 
-export interface BrowserCheckTemplateDefinition {
+import { BrowserCheck, Check, CheckType } from 'types';
+import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
+
+export interface CheckTemplateDefinition {
   id: 'broken_links' | 'ssl_certificate';
   title: string;
   icon: IconName;
   description: string;
   urlDescription: string;
-  jobPrefix: string;
+  checkType: CheckType;
   httpsOnly?: boolean;
-  createScript: (url: string) => string;
+  createCheck: (url: URL) => Check;
 }
 
-export const BROWSER_CHECK_TEMPLATES: BrowserCheckTemplateDefinition[] = [
+export const CHECK_TEMPLATES: CheckTemplateDefinition[] = [
   {
     id: 'broken_links',
     title: 'Detect broken links',
     icon: 'link-broken',
     description: 'Check a page for links that no longer work.',
     urlDescription: 'Check the links on a single page.',
-    jobPrefix: 'Broken links on',
-    createScript: createBrokenLinksScript,
+    checkType: CheckType.Browser,
+    createCheck: (url) => createBrowserCheck(url, `Broken links on ${url.hostname}`, createBrokenLinksScript(url.href)),
   },
   {
     id: 'ssl_certificate',
@@ -27,11 +31,24 @@ export const BROWSER_CHECK_TEMPLATES: BrowserCheckTemplateDefinition[] = [
     icon: 'lock',
     description: 'Detect expired SSL certificates and certificates nearing expiry.',
     urlDescription: 'Enter the HTTPS URL to check.',
-    jobPrefix: 'SSL certificate for',
+    checkType: CheckType.Browser,
     httpsOnly: true,
-    createScript: createSSLCertificateScript,
+    createCheck: (url) => createBrowserCheck(url, `SSL certificate for ${url.hostname}`, createSSLCertificateScript(url.href)),
   },
 ];
+
+function createBrowserCheck(url: URL, job: string, script: string): BrowserCheck {
+  const defaults = DEFAULT_CHECK_CONFIG_MAP[CheckType.Browser] as BrowserCheck;
+  return {
+    ...defaults,
+    job,
+    target: url.href,
+    frequency: 60 * 60 * 1000,
+    settings: {
+      browser: { ...defaults.settings.browser, script: encode(script) },
+    },
+  };
+}
 
 function createBrokenLinksScript(url: string) {
   return `import { browser } from 'k6/browser';

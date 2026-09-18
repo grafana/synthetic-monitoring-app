@@ -2,24 +2,23 @@ import React, { useState } from 'react';
 import { locationService } from '@grafana/runtime';
 import { Button, Field, Input, Modal } from '@grafana/ui';
 import { trackCheckTemplateDraftCreated, trackCheckTemplateSelected } from 'features/tracking/checkTemplateEvents';
-import { encode } from 'js-base64';
 
-import { BrowserCheck, CheckType, CheckTypeGroup } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
 import { useIsOverlimit } from 'hooks/useIsOverlimit';
-import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
 
-import { BrowserCheckTemplateDefinition } from './browserCheckTemplates';
 import { CheckTemplateCard } from './CheckTemplateCard';
+import { CheckTemplateDefinition } from './checkTemplates';
 
-export function BrowserCheckTemplate({ template }: { template: BrowserCheckTemplateDefinition }) {
+export function CheckTemplate({ template }: { template: CheckTemplateDefinition }) {
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [error, setError] = useState<string>();
-  const isOverlimit = useIsOverlimit(false, CheckType.Browser);
+  const isOverlimit = useIsOverlimit(false, template.checkType);
   const { canWriteChecks } = getUserPermissions();
+  const checkTypeOption = CHECK_TYPE_OPTIONS.find((option) => option.value === template.checkType)!;
   const disabled = isOverlimit !== false || !canWriteChecks;
 
   function continueToCheck(event: React.FormEvent) {
@@ -39,23 +38,12 @@ export function BrowserCheckTemplate({ template }: { template: BrowserCheckTempl
       return;
     }
 
-    const defaults = DEFAULT_CHECK_CONFIG_MAP[CheckType.Browser] as BrowserCheck;
-    const prefilledCheck: BrowserCheck = {
-      ...defaults,
-      job: `${template.jobPrefix} ${pageUrl.hostname}`,
-      target: pageUrl.href,
-      frequency: 60 * 60 * 1000,
-      settings: {
-        browser: {
-          ...defaults.settings.browser,
-          script: encode(template.createScript(pageUrl.href)),
-        },
-      },
-    };
+    const prefilledCheck = template.createCheck(pageUrl);
 
     trackCheckTemplateDraftCreated({ check_template_id: template.id });
     locationService.push({
-      pathname: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
+      pathname: `${getRoute(AppRoutes.NewCheck)}/${checkTypeOption.group}`,
+      search: `?checkType=${template.checkType}`,
       state: { prefilledCheck, checkTemplateId: template.id },
     });
   }
@@ -66,7 +54,7 @@ export function BrowserCheckTemplate({ template }: { template: BrowserCheckTempl
         title={template.title}
         icon={template.icon}
         description={template.description}
-        checkType="Browser"
+        checkType={checkTypeOption.label}
         disabled={disabled}
         onSelect={() => {
           trackCheckTemplateSelected({ check_template_id: template.id });

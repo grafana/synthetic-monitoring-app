@@ -8,11 +8,45 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles, runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
 
-import { BrowserCheck, FeatureName } from 'types';
+import { BrowserCheck, CheckType, FeatureName } from 'types';
+import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
 
+import { CheckTemplate } from './components/CheckTemplate';
 import { ChooseCheckGroup } from './ChooseCheckGroup';
 
 jest.mock('features/tracking/checkTemplateEvents');
+
+it('uses the template check type for the badge, destination, and draft', async () => {
+  const { user } = render(
+    <CheckTemplate template={{
+      id: 'ssl_certificate',
+      title: 'HTTP template',
+      icon: 'lock',
+      description: 'An HTTP template',
+      urlDescription: 'Enter a URL.',
+      checkType: CheckType.Http,
+      createCheck: (url) => ({
+        ...DEFAULT_CHECK_CONFIG_MAP[CheckType.Http],
+        job: 'HTTP template',
+        target: url.href,
+      }),
+    }} />
+  );
+
+  await user.click(await screen.findByRole('button', { name: 'HTTP template' }));
+  expect(screen.getByText('HTTP')).toBeInTheDocument();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Continue' }));
+
+  expect(locationService.getLocation()).toMatchObject({
+    pathname: '/a/grafana-synthetic-monitoring-app/checks/new/api-endpoint',
+    search: '?checkType=http',
+    state: { prefilledCheck: {
+      target: 'https://grafana.com/',
+      settings: DEFAULT_CHECK_CONFIG_MAP[CheckType.Http].settings,
+    } },
+  });
+});
 
 async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = {}) {
   server.use(
