@@ -2,6 +2,7 @@ import { IconName } from '@grafana/ui';
 import { encode } from 'js-base64';
 
 import { BrowserCheck, Check, CheckType } from 'types';
+import { ONE_HOUR_IN_MS } from 'utils.constants';
 import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
 
 export interface CheckTemplateDefinition {
@@ -43,7 +44,7 @@ function createBrowserCheck(url: URL, job: string, script: string): BrowserCheck
     ...defaults,
     job,
     target: url.href,
-    frequency: 60 * 60 * 1000,
+    frequency: ONE_HOUR_IN_MS,
     settings: {
       browser: { ...defaults.settings.browser, script: encode(script) },
     },

@@ -9,6 +9,7 @@ import { server } from 'test/server';
 import { mockFeatureToggles, runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
 
 import { BrowserCheck, CheckType, FeatureName } from 'types';
+import { ONE_HOUR_IN_MS } from 'utils.constants';
 import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
 
 import { CheckTemplate } from './components/CheckTemplate';
@@ -115,7 +116,7 @@ it.each([
   expect(prefilledCheck.job).toBe(job);
   expect(prefilledCheck.target).toBe('https://test.k6.io/');
   const script = decode(prefilledCheck.settings.browser.script);
-  expect(prefilledCheck.frequency).toBe(60 * 60 * 1000);
+  expect(prefilledCheck.frequency).toBe(ONE_HOUR_IN_MS);
   if (id === 'ssl_certificate') {
     expect(script).toContain("import sslcheck from 'https://jslib.k6.io/sm-sslcheck/0.1.0/index.js';");
     expect(script).toContain('const res = await page.goto("https://test.k6.io/");');
