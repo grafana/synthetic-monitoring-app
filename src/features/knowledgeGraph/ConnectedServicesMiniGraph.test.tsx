@@ -52,6 +52,14 @@ it('renders nothing when the Knowledge Graph is not enabled', () => {
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.miniGraphButton)).not.toBeInTheDocument();
 });
 
+it('renders nothing when the KG does not expose the entity graph component', () => {
+  // The inline section already shows the SM-owned graph; a drawer falling back to the same
+  // renderer would only duplicate it, so without the exposed component there is no button.
+  render(<ConnectedServicesMiniGraph check={LINKED_CHECK} />);
+
+  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.miniGraphButton)).not.toBeInTheDocument();
+});
+
 /** Serves the exposed component for its ID only; everything else keeps the null default. */
 function setExposedEntityGraph(Stub: React.ComponentType<ExposedEntityGraphProps>) {
   jest.mocked(usePluginComponent).mockImplementation((id: string) =>
@@ -114,6 +122,7 @@ it('deep-links a node click into the KG entity drawer in a new tab', async () =>
 });
 
 it('shows the service-link zero state in the drawer for an unlinked check', async () => {
+  setExposedEntityGraph(() => <div>exposed entity graph</div>);
   const { user } = render(<ConnectedServicesMiniGraph check={{ ...BASIC_HTTP_CHECK, labels: [] }} />);
 
   await user.click(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.miniGraphButton));

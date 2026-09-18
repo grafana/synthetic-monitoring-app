@@ -19,7 +19,6 @@ import {
 } from './ConnectedServices.constants';
 import { useServiceNeighbourhood } from './ConnectedServices.hooks';
 import { getCheckGraphUrl } from './ConnectedServices.utils';
-import { ConnectedServicesEntityGraph, useExposedEntityGraph } from './ConnectedServicesEntityGraph';
 import { ConnectedServicesGraph } from './ConnectedServicesGraph';
 import {
   findLabelValue,
@@ -114,38 +113,12 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
 interface ServiceNeighbourhoodGraphProps {
   check: Check;
-  /** Overrides the section's fixed graph height (e.g. `100%` inside the mini-graph drawer). */
-  height?: number | string;
-}
-
-/**
- * Prefers the Knowledge Graph's own exposed Entity Graph component (visual consistency with the
- * KG app, maintained by the KG team); falls back to the SM-owned renderer on stacks whose
- * asserts app doesn't expose it yet. Used by the mini-graph drawer, which renders it in a tall
- * side panel — the inline section renders the SM-owned graph directly.
- */
-export function ServiceNeighbourhoodGraph({ check, height }: ServiceNeighbourhoodGraphProps) {
-  const styles = useStyles2(getStyles);
-  const { component: EntityGraph, isLoading } = useExposedEntityGraph();
-
-  if (isLoading) {
-    return (
-      <div className={styles.loading} data-testid={CONNECTED_SERVICES_TEST_ID.loading}>
-        <CenteredSpinner aria-label="Loading connected services" />
-      </div>
-    );
-  }
-
-  if (EntityGraph) {
-    return <ConnectedServicesEntityGraph check={check} EntityGraph={EntityGraph} height={height} />;
-  }
-
-  return <FallbackNeighbourhoodGraph check={check} />;
 }
 
 /**
  * The SM-owned neighbourhood renderer: Cypher via the KG datasource, drawn by
- * ConnectedServicesGraph. Renders the inline section and the drawer's fallback.
+ * ConnectedServicesGraph. The exposed KG entity graph renders only in the mini-graph drawer —
+ * a drawer falling back to this same renderer would just duplicate the section.
  */
 function FallbackNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
   const styles = useStyles2(getStyles);

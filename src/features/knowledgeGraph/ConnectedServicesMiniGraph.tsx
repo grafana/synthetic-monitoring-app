@@ -5,9 +5,10 @@ import { css } from '@emotion/css';
 
 import { Check } from 'types';
 
-import { ConnectedServicesZeroState, ServiceNeighbourhoodGraph } from './ConnectedServices';
+import { ConnectedServicesZeroState } from './ConnectedServices';
 import { CONNECTED_SERVICES_SUBTITLE, CONNECTED_SERVICES_TEST_ID, CONNECTED_SERVICES_TITLE } from './ConnectedServices.constants';
 import { getCheckGraphUrl } from './ConnectedServices.utils';
+import { ConnectedServicesEntityGraph, useExposedEntityGraph } from './ConnectedServicesEntityGraph';
 import { findLabelValue, getSyntheticCheckEntityName, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
@@ -20,13 +21,18 @@ interface ConnectedServicesMiniGraphProps {
  * check's service neighbourhood in a tall side drawer — the same shape as the KG workbench's
  * minigraph panel. A ranked (dagre) graph wants vertical space; the wide, short inline section
  * miniaturizes it, while the drawer gives it a full column on demand.
+ *
+ * Renders nothing when the KG doesn't expose the entity graph component (asserts app predating
+ * the exposure): the inline Connected services section already shows the SM-owned graph, so a
+ * drawer falling back to the same renderer would only duplicate it.
  */
 export function ConnectedServicesMiniGraph({ check }: ConnectedServicesMiniGraphProps) {
   const kgEnabled = useKnowledgeGraphEnabled();
+  const { component: EntityGraph, isLoading } = useExposedEntityGraph();
   const styles = useStyles2(getStyles);
   const [open, setOpen] = useState(false);
 
-  if (!kgEnabled) {
+  if (!kgEnabled || isLoading || !EntityGraph) {
     return null;
   }
 
@@ -62,7 +68,7 @@ export function ConnectedServicesMiniGraph({ check }: ConnectedServicesMiniGraph
               )}
               <div className={styles.graph}>
                 {serviceName ? (
-                  <ServiceNeighbourhoodGraph check={check} height="100%" />
+                  <ConnectedServicesEntityGraph check={check} EntityGraph={EntityGraph} height="100%" />
                 ) : (
                   <ConnectedServicesZeroState checkId={check.id} />
                 )}
