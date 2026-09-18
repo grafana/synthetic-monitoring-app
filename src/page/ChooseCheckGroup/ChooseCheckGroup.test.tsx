@@ -97,15 +97,15 @@ it('disables the template when the check limit is reached', async () => {
   mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
   await renderChooseCheckGroup({ checkLimit: 1 });
   await screen.findByText(/You have reached your check limit of /);
-  expect(screen.getByRole('button', { name: 'Detect broken links' })).toBeDisabled();
-  expect(screen.getByRole('button', { name: 'Check SSL certificate' })).toBeDisabled();
+  expect(screen.getByRole('group', { name: 'Detect broken links' })).toHaveAttribute('aria-disabled', 'true');
+  expect(screen.getByRole('group', { name: 'Check SSL certificate' })).toHaveAttribute('aria-disabled', 'true');
 });
 
 it('disables the template for viewers', async () => {
   mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
   runTestAsViewer();
   await renderChooseCheckGroup();
-  expect(await screen.findByRole('button', { name: 'Detect broken links' })).toBeDisabled();
+  expect(await screen.findByRole('group', { name: 'Detect broken links' })).toHaveAttribute('aria-disabled', 'true');
 });
 
 it(`doesn't show gRPC option by default`, async () => {
