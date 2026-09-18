@@ -87,8 +87,6 @@ function setupMSWHandlers(executionLogs: (refId: string) => object = checksLogs1
   );
 }
 
-
-
 function renderTimepointExplorer() {
   return <TimepointExplorer check={TIME_MODIFIED_HTTP_CHECK} />;
 }
@@ -168,8 +166,8 @@ describe('TimepointExplorer', () => {
 
       expect(failureSegments).toHaveLength(1);
       expect(failureSegments[0]).toHaveStyle({ height: `${(1 / 2) * 100}%` });
-      // the bar swaps its success tick for a warning icon (Icon is mocked as <svg name="..." /> in tests)
-      expect(failureSegments[0].parentElement?.querySelector('svg[name="exclamation-triangle"]')).toBeInTheDocument();
+      // Any successful execution keeps uptime UP, even when other executions fail.
+      expect(failureSegments[0].parentElement?.querySelector('svg[name="check"]')).toBeInTheDocument();
     });
 
     it(`should keep showing a partially failed bar when filtering on failures`, async () => {

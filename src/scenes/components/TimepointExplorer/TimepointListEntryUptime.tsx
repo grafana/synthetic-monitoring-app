@@ -50,15 +50,7 @@ export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps)
         />
       )}
       <span className={styles.statusIcon}>
-        {isFailure ? (
-          <Icon name={`times`} key={`times`} />
-        ) : showPartialFailure ? (
-          <Icon name={`exclamation-triangle`} key={`exclamation-triangle`} />
-        ) : isSuccess ? (
-          <Icon name={`check`} key={`check`} />
-        ) : (
-          `?`
-        )}
+        {isFailure ? <Icon name={`times`} key={`times`} /> : isSuccess ? <Icon name={`check`} key={`check`} /> : `?`}
       </span>
     </TimepointListEntryBar>
   );
@@ -70,7 +62,11 @@ const getStyles = (theme: GrafanaTheme2, failureVizOption: TimepointVizOption) =
     bottom: 0;
     left: 0;
     width: 100%;
-    background-color: ${colorManipulator.alpha(failureVizOption.statusColor, PARTIAL_FAILURE_SEGMENT_ALPHA)};
+    background-image: repeating-linear-gradient(
+      -45deg,
+      ${colorManipulator.alpha(failureVizOption.statusColor, PARTIAL_FAILURE_SEGMENT_ALPHA)} 0 2px,
+      transparent 2px 8px
+    );
     pointer-events: none;
   `,
   // positioned so the icon paints above the partial-failure overlay, which is
