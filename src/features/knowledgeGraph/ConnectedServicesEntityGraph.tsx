@@ -78,7 +78,9 @@ export function ConnectedServicesEntityGraph({ check, EntityGraph }: ConnectedSe
   return (
     <div data-testid={CONNECTED_SERVICES_TEST_ID.exposedGraph}>
       <EntityGraph
-        cypherQuery={buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check))}
+        // Two hops of CALLS (vs the fallback's one): the dagre layout scales with depth, and the
+        // component's node limit caps dense graphs.
+        cypherQuery={buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check), 2)}
         start={timeRange.from.valueOf()}
         end={timeRange.to.valueOf()}
         height={GRAPH_HEIGHT}

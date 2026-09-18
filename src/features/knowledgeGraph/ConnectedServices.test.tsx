@@ -424,6 +424,8 @@ describe('with the KG-exposed Entity Graph component available', () => {
 
     const props = received.at(-1)!;
     expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
+    // The exposed graph asks for the deeper two-hop neighbourhood; the fallback stays at one.
+    expect(props.cypherQuery).toContain('(n1)-[:CALLS]-(n2:Service)');
     expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
     expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
     expect(props.height).toBe(280);

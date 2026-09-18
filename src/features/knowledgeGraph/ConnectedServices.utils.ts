@@ -30,7 +30,18 @@ export function escapeCypher(value: string): string {
  * section then fails), while the undirected form is answered everywhere. Direction is not lost —
  * it comes from the edges frame's source/target, which parseGraphFrames reads.
  */
-export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
+export function buildServiceNeighbourhoodQuery(checkEntityName: string, hops: 1 | 2 = 1): string {
+  if (hops === 2) {
+    // Two hops for renderers whose layout scales with depth (the exposed KG entity graph).
+    // The SM-owned renderer stays at one hop: its fixed three-row layout assumes it.
+    return [
+      `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
+      `OPTIONAL MATCH (s1)-[:CALLS]-(n1:Service)`,
+      `OPTIONAL MATCH (n1)-[:CALLS]-(n2:Service)`,
+      `RETURN sy, s1, n1, n2`,
+    ].join('\n');
+  }
+
   return [
     `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
     `OPTIONAL MATCH (s1)-[:CALLS]-(neighbour:Service)`,
