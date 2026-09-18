@@ -1,5 +1,4 @@
 import React from 'react';
-import { PluginPage } from '@grafana/runtime';
 import { LinkButton, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { PROBES_TEST_ID } from 'test/dataTestIds';
@@ -13,6 +12,7 @@ import { CenteredSpinner } from 'components/CenteredSpinner';
 import { DocsLink } from 'components/DocsLink';
 import { ProbeList } from 'components/ProbeList';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+import { ConfigContent } from 'page/ConfigPageLayout';
 
 import { FaroUserAction } from '../../faro';
 import { trackFaroUserAction } from '../../features/tracking/userAction';
@@ -21,7 +21,7 @@ export const Probes = () => {
   const theme = useTheme2();
 
   return (
-    <PluginPage actions={<Actions />}>
+    <ConfigContent title="Probes" actions={<Actions />}>
       <div className={css({ maxWidth: `560px`, marginBottom: theme.spacing(4) })}>
         <p>
           Probes are the agents responsible for emulating user interactions and collecting data from your specified
@@ -37,7 +37,7 @@ export const Probes = () => {
       <QueryErrorBoundary>
         <ProbesContent />
       </QueryErrorBoundary>
-    </PluginPage>
+    </ConfigContent>
   );
 };
 

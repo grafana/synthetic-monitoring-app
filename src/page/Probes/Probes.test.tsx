@@ -37,6 +37,11 @@ it('renders add new button', async () => {
   expect(addNewButton).toBeInTheDocument();
 });
 
+it('renders the Probes heading', async () => {
+  renderProbeList();
+  expect(await screen.findByRole('heading', { name: 'Probes' })).toBeInTheDocument();
+});
+
 it(`probe statuses update automatically`, async () => {
   jest.useFakeTimers({ legacyFakeTimers: true });
   server.use(

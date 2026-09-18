@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/main/docs/sources/developers/plugins/plugin.schema.json",
   "type": "app",
-  "name": "Synthetic Monitoring",
+  "name": "Synthetics",
   "id": "grafana-synthetic-monitoring-app",
   "autoEnabled": true,
   "preload": true,
@@ -42,8 +42,8 @@
   "includes": [
     {
       "type": "page",
-      "name": "Home",
-      "path": "/a/grafana-synthetic-monitoring-app/home",
+      "name": "Synthetics",
+      "path": "/a/grafana-synthetic-monitoring-app",
       "action": "grafana-synthetic-monitoring-app:read",
       "addToNav": true,
       "defaultNav": true
@@ -53,21 +53,21 @@
       "name": "Checks",
       "path": "/a/grafana-synthetic-monitoring-app/checks",
       "action": "grafana-synthetic-monitoring-app.checks:read",
-      "addToNav": true
+      "addToNav": false
     },
     {
       "type": "page",
       "name": "Probes",
       "path": "/a/grafana-synthetic-monitoring-app/probes",
       "action": "grafana-synthetic-monitoring-app.probes:read",
-      "addToNav": true
+      "addToNav": false
     },
     {
       "type": "page",
       "name": "Alerts (Legacy)",
       "path": "/a/grafana-synthetic-monitoring-app/alerts",
       "action": "grafana-synthetic-monitoring-app.alerts:read",
-      "addToNav": true
+      "addToNav": false
     },
     {
       "type": "page",

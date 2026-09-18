@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitForElementToBeRemoved } from '@testing-library/react';
-import { UI_TEST_ID } from 'test/dataTestIds';
+import { CONFIG_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
@@ -44,20 +44,55 @@ describe('Routes to pages correctly', () => {
     const homePageText = await screen.findByText('Home page', { selector: 'h1' });
     expect(homePageText).toBeInTheDocument();
   });
+  test('Overview breadcrumb URL redirects to the home page', async () => {
+    renderInitialisedRouting({ path: `${PLUGIN_URL_PATH}overview` });
+    const homePageText = await screen.findByText('Home page', { selector: 'h1' });
+    expect(homePageText).toBeInTheDocument();
+  });
   test('Checks page renders', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Checks) });
     const checksButton = await screen.findByText('Create new check');
     expect(checksButton).toBeInTheDocument();
+    expect(await screen.findByText(BASIC_HTTP_CHECK.job)).toBeInTheDocument();
   });
-  test('Probes page renders', async () => {
+  test('Check dashboards do not use the checks list tabs', async () => {
+    renderInitialisedRouting({ path: `${getRoute(AppRoutes.Checks)}/${BASIC_HTTP_CHECK.id}` });
+    expect(await screen.findByText('Dashboard page', { selector: 'h1' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Synthetics' })).not.toBeInTheDocument();
+  });
+  test('Checks recommendations tab renders', async () => {
+    renderInitialisedRouting({ path: getRoute(AppRoutes.CheckRecommendations) });
+    const recommendations = await screen.findByText('No recommendations yet');
+    expect(recommendations).toBeInTheDocument();
+    expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
+  });
+  test('Probes page renders as a Synthetics tab', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Probes) });
+    expect(await screen.findByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Probes');
     const probeStatTexts = await screen.findAllByText('Check runs / min');
     expect(probeStatTexts.length).toBeGreaterThan(0);
   });
-  test('Alert page renders', async () => {
+  test('Probes config path redirects to the Probes tab', async () => {
+    renderInitialisedRouting({ path: `${getRoute(AppRoutes.Config)}/probes` });
+    expect(await screen.findByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Probes');
+    expect(await screen.findByText('Add Private Probe')).toBeInTheDocument();
+  });
+  test('Alert page renders as a Config tab', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Alerts) });
+    expect(await screen.findByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Configuration');
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeNavItem)).toHaveTextContent('Alerts (Legacy)');
     const alertsText = await screen.findByText('Learn more about alerting for Synthetic Monitoring');
     expect(alertsText).toBeInTheDocument();
+  });
+  test('Alerts config path renders the Alerts (Legacy) tab', async () => {
+    renderInitialisedRouting({ path: `${getRoute(AppRoutes.Config)}/alerts` });
+    expect(await screen.findByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Configuration');
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeNavItem)).toHaveTextContent('Alerts (Legacy)');
+    expect(await screen.findByRole('heading', { name: 'Alerts (Legacy)' })).toBeInTheDocument();
   });
   test('Config page renders', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Config) });
