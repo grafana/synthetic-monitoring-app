@@ -22,6 +22,7 @@ export const APP_INITIALIZER_TEST_ID = {
 export const CHECKS_TEST_ID = {
   card: 'checks card',
   emptyState: 'checks empty-state',
+  recommendations: 'checks recommendations',
   groupCard: 'checks group-card',
   usage: 'checks usage',
   form: {
@@ -135,6 +136,7 @@ export const CONFIG_TEST_ID = {
   contentLoading: 'config content-loading',
   layout: {
     activeTab: 'config layout active-tab',
+    activeNavItem: 'config layout active-nav-item',
   },
   labelMigration: {
     invalidList: 'config label-migration invalid-list',

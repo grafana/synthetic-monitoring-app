@@ -11,9 +11,12 @@ import { AppRoutes } from 'routing/types';
  */
 export const PAGE_ROUTE_PATTERNS: string[] = [
   ...Object.values(AppRoutes),
+  'checks/recommendations',
   'checks/new/:checkTypeGroup',
   'config/access-tokens',
   'config/terraform',
   'config/label-migration',
   'config/secrets',
+  'config/probes',
+  'config/alerts',
 ];
