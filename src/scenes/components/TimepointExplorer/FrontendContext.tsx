@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Badge, BadgeColor, Icon, LinkButton, Spinner, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import {
+  Badge,
+  BadgeColor,
+  Icon,
+  Input,
+  LinkButton,
+  Spinner,
+  Stack,
+  Text,
+  TextLink,
+  Tooltip,
+  useStyles2,
+} from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckType } from 'types';
@@ -596,6 +608,7 @@ const COLLAPSED_SIMILAR_SESSION_COUNT = 5;
 const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
   const styles = useStyles2(getStyles);
   const [showAll, setShowAll] = useState(false);
+  const [filter, setFilter] = useState('');
   const journeyPageIds = context.pages.map((page) => page.pageId);
   const { data: sessions } = useSimilarRealSessions({
     appId: context.appId,
@@ -607,16 +620,27 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
     return null;
   }
 
-  const visibleSessions = showAll ? sessions : sessions.slice(0, COLLAPSED_SIMILAR_SESSION_COUNT);
+  const filtered = filter
+    ? sessions.filter((session) => session.sessionId.toLowerCase().includes(filter.toLowerCase()))
+    : sessions;
+  const visibleSessions = showAll ? filtered : filtered.slice(0, COLLAPSED_SIMILAR_SESSION_COUNT);
 
   return (
     <div className={styles.section}>
       <Stack direction="column" gap={1}>
-        <Stack direction="row" gap={0.5} alignItems="center">
+        <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
           <Text weight="medium">Real user sessions with a similar journey ({sessions.length})</Text>
           <Tooltip content="Real user sessions from the hour before this run that loaded the same pages as this check, ranked by how much of the check's journey they cover.">
             <Icon name="info-circle" size="sm" />
           </Tooltip>
+          {sessions.length > COLLAPSED_SIMILAR_SESSION_COUNT && (
+            <Input
+              placeholder="Filter by session ID"
+              value={filter}
+              onChange={(event) => setFilter(event.currentTarget.value)}
+              width={24}
+            />
+          )}
         </Stack>
         <Stack direction="column" gap={1}>
           {visibleSessions.map((session) => {
@@ -659,12 +683,17 @@ const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: n
             );
           })}
         </Stack>
-        {sessions.length > COLLAPSED_SIMILAR_SESSION_COUNT && (
+        {filtered.length > COLLAPSED_SIMILAR_SESSION_COUNT && (
           <PlainButton onClick={() => setShowAll(!showAll)}>
             <Text color="link" variant="bodySmall">
-              {showAll ? 'Show fewer' : `Show all ${sessions.length} sessions`}
+              {showAll ? 'Show fewer' : `Show all ${filtered.length} sessions`}
             </Text>
           </PlainButton>
+        )}
+        {filter && filtered.length === 0 && (
+          <Text color="secondary" italic variant="bodySmall">
+            No session ID matches &quot;{filter}&quot;.
+          </Text>
         )}
       </Stack>
     </div>
