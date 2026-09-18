@@ -39,6 +39,7 @@ Every event created through `createSMEventFactory` is automatically enriched wit
    - Check dashboards: `check_id`, `check_type`, `check_frequency_seconds`, `probe_count`, `alerting_enabled`, `check_enabled`
    - Dashboards with a time range: `time_range_from`, `time_range_to`, `time_range_seconds`
    - The check form: `check_type`, `check_state` (`new`/`existing`), `check_id`, `check_is_duplicate`
+   - New checks started from a template: `check_template_id` (`broken_links` or `ssl_certificate`), including on the existing `synthetic-monitoring_check_form_check_created` success event. This identifies the starting template even if the user edits its script. It is removed when the user leaves the form and is not persisted on the check.
    - The Time Point Explorer: `tpe_view_mode`, `tpe_visible_timepoints`, `tpe_total_timepoints`, `tpe_page`, `tpe_section`
 
 To add scoped context for a new feature, call `useTrackingScope(props)` in the feature's provider/root component. Use a prop namespace that doesn't collide with other scopes (e.g. `myfeature_*`): collision order between concurrently mounted scopes is not a supported semantic.
@@ -56,7 +57,6 @@ This will generate the `analytics-events.md` file in the `docs/analytics` direct
 ## Instrumenting implicit events
 
 Our implicit event tracking is done through FullStory. It uses `data-fs-element` data attributes and the full documentation can be found [here](https://developer.fullstory.com/mobile/android/fullcapture/set-element-properties/).
-
 
 
 

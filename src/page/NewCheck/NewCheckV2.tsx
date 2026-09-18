@@ -4,6 +4,7 @@ import { GrafanaTheme2 } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
 import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { UI_TEST_ID } from 'test/dataTestIds';
 
 import { Check, CheckFormPageParams, CheckType } from 'types';
@@ -84,6 +85,15 @@ export function NewCheckV2() {
   // The Grafana Assistant can deep-link here with a pre-filled check draft in
   // router state so the user only has to review and click Create.
   const prefilledCheck = (location.state as { prefilledCheck?: Check } | null)?.prefilledCheck;
+  const checkTemplateId = (location.state as { checkTemplateId?: unknown } | null)?.checkTemplateId;
+  // Allow only known template IDs from router state. Attribute form events, including
+  // successful creation, without adding template metadata to the check API payload.
+  useTrackingScope({
+    check_template_id:
+      prefilledCheck && !duplicateId && group && (checkTemplateId === 'broken_links' || checkTemplateId === 'ssl_certificate')
+        ? checkTemplateId
+        : undefined,
+  });
   const fallbackCheckType = checkType ?? (group ? CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value] : CheckType.Http);
   const initialCheck =
     duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck, fallbackCheckType) : undefined);

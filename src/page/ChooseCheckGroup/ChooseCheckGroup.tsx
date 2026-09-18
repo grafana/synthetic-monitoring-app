@@ -1,15 +1,19 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Box, Stack, useStyles2 } from '@grafana/ui';
+import { Box, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
+import { FeatureName } from 'types';
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { AgentSkillPicker } from 'components/AgentSkillReference/AgentSkillPicker';
+import { FeatureFlag } from 'components/FeatureFlag';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { CheckGroupCard } from './components/CheckGroupCard';
+import { CheckTemplate } from './components/CheckTemplate';
+import { CHECK_TEMPLATES } from './components/checkTemplates';
 
 export const ChooseCheckGroup = () => {
   const styles = useStyles2(getStyles);
@@ -29,6 +33,20 @@ export const ChooseCheckGroup = () => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
+          <FeatureFlag name={FeatureName.CheckTemplates}>
+            {({ isEnabled }) => isEnabled ? (
+              <Box marginTop={2}>
+                <Stack direction="column" gap={2}>
+                  <Text element="h2" variant="h4">Start from a template</Text>
+                  <div className={styles.templates}>
+                    {CHECK_TEMPLATES.map((template) => (
+                      <CheckTemplate key={template.id} template={template} />
+                    ))}
+                  </div>
+                </Stack>
+              </Box>
+            ) : null}
+          </FeatureFlag>
           <Box marginTop={2}>
             <AgentSkillPicker source="choose-check-type" />
           </Box>
@@ -54,6 +72,23 @@ const getStyles = (theme: GrafanaTheme2) => {
   };
 
   return {
+    templates: css({
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: theme.spacing(2),
+      [twoColsMediaQuery]: {
+        gridTemplateColumns: containerRules.twoCols,
+      },
+      [containerTwoColsQuery]: {
+        gridTemplateColumns: containerRules.twoCols,
+      },
+      [oneColMediaQuery]: {
+        gridTemplateColumns: containerRules.oneCol,
+      },
+      [containerOneColQuery]: {
+        gridTemplateColumns: containerRules.oneCol,
+      },
+    }),
     wrapper: css({
       containerName,
       containerType: `inline-size`,
