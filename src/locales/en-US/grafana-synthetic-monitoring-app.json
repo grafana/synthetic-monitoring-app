@@ -46,8 +46,163 @@
       "missingLabels": "Missing cost attribution labels: {{labelList}}"
     }
   },
+  "checksPageLayout": {
+    "tabs": {
+      "checks": "Checks",
+      "recommendations": "Recommendations"
+    },
+    "title": "Checks"
+  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"
+  },
+  "recommendations": {
+    "alertingGaps": {
+      "bulkApplied": "Added alerts to {{checkCount}} checks",
+      "bulkAppliedSingle": "Added alerts to 1 check",
+      "confirm": {
+        "applying": "Adding alerts...",
+        "body": "This adds {{alertCount}} alerts across {{checkCount}} checks, using the default thresholds for each check type. You can tune or remove any of them from the check editor afterwards.",
+        "confirm": "Add alerts",
+        "title": "Set up alerts for all checks"
+      },
+      "description": "These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.",
+      "row": {
+        "applied": "Added {{alertCount}} alerts to {{job}}",
+        "appliedSingle": "Added an alert to {{job}}",
+        "apply": "Add {{alertCount}} alerts",
+        "applying": "Adding...",
+        "applySingle": "Add alert",
+        "cancel": "Cancel",
+        "close": "Close",
+        "done": "Alerts added",
+        "previewTitle": "Recommended alerts for {{job}}",
+        "setUp": "Set up",
+        "setUpLabel": "Set up alerts for {{job}}",
+        "thresholdWithPeriod": "{{threshold}} over {{period}}"
+      },
+      "setUpAll": "Set up alerts for all {{checkCount}}",
+      "setUpSelected": "Set up alerts for {{checkCount}} checks",
+      "setUpSelectedSingle": "Set up alerts for 1 check",
+      "title": "Alerting",
+      "viewInList": "View in check list"
+    },
+    "categories": {
+      "alerting": {
+        "caption": "Checks that are running but would fail silently.",
+        "label": "Alerting"
+      },
+      "cost": {
+        "caption": "Checks whose spend cannot be attributed to a team.",
+        "label": "Cost & attribution"
+      },
+      "paused": {
+        "caption": "Checks that exist but are not monitoring anything.",
+        "label": "Paused checks"
+      },
+      "redundancy": {
+        "caption": "Targets covered more than once. Worth a look, not always a clean-up.",
+        "label": "Redundancy"
+      },
+      "review": "Review",
+      "reviewMany": "Review {{findingCount}} findings",
+      "summary": "{{checkCount}} of {{totalCheckCount}} checks across {{findingCount}} findings"
+    },
+    "dismissed": {
+      "none": "No findings dismissed",
+      "restoreLong": "Show dismissed findings",
+      "summary": "{{dismissedCount}} findings dismissed",
+      "summarySingle": "1 finding dismissed"
+    },
+    "dismissedChecks": {
+      "restore": "Show dismissed checks",
+      "summary": "{{dismissedCount}} checks dismissed",
+      "summarySingle": "1 check dismissed"
+    },
+    "duplicateChecks": {
+      "description": "Same target, same check type, more than one check. Matched on target and type only, so compare the frequency and probes shown on each row before deciding. Each duplicate bills at full rate. Safe to delete down to one unless you are deliberately running from different probe sets.",
+      "title": "Duplicate checks"
+    },
+    "emptyState": {
+      "body": "Every check is alerting, attributed, running and pointed at something nothing else covers.",
+      "message": "Nothing needs your attention"
+    },
+    "group": {
+      "count": "{{checkCount}} checks",
+      "detail": "{{detail}} · {{checkCount}} checks",
+      "viewInList": "Show these checks in the check list"
+    },
+    "intro": "Findings derived from how your checks are configured. Act on them here, or open the checks they refer to.",
+    "legend": {
+      "critical": "{{checkCount}} critical",
+      "info": "{{checkCount}} info",
+      "warning": "{{checkCount}} warning"
+    },
+    "missingCostLabels": {
+      "action": "View in check list",
+      "description": "These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.",
+      "row": {
+        "addLabels": "Add labels",
+        "addLabelsLabel": "Add labels to {{job}}",
+        "missing": "Missing {{labels}}"
+      },
+      "title": "Cost attribution"
+    },
+    "overlappingTargets": {
+      "description": "Same target, different check types, for example an HTTP check and a browser check on the same URL. Often deliberate: HTTP for uptime, browser for the user journey. Review rather than delete, and keep the one whose failure you would actually act on.",
+      "title": "Overlapping targets"
+    },
+    "overview": {
+      "headline": "{{affectedCheckCount}} of {{totalCheckCount}} checks need attention. {{leadFinding}} is the gap to close first."
+    },
+    "pausedChecks": {
+      "action": "Review paused checks",
+      "description": "These checks are paused and are not monitoring anything. Resume the ones you still need and delete the rest.",
+      "resumeSelected": "Resume {{checkCount}} checks",
+      "resumeSelectedSingle": "Resume 1 check",
+      "row": {
+        "done": "Resumed",
+        "resume": "Resume",
+        "resumeLabel": "Resume {{job}}",
+        "since": "Paused {{timeAgo}}"
+      },
+      "title": "Paused checks"
+    },
+    "probes": {
+      "count": "{{probeCount}} probes",
+      "listWithMore": "{{probes}} +{{remainder}}"
+    },
+    "rail": {
+      "attention": "Needs attention",
+      "label": "Recommendation categories"
+    },
+    "redundancy": {
+      "row": {
+        "edit": "Edit check",
+        "editLabel": "Open {{job}} in the check editor",
+        "settings": "Every {{frequency}} · {{probes}}",
+        "settingsPaused": "Every {{frequency}} · {{probes}} · paused"
+      }
+    },
+    "row": {
+      "dismiss": "Dismiss {{job}} from this finding",
+      "editCheck": "Edit {{job}}",
+      "select": "Select {{job}}"
+    },
+    "section": {
+      "dismiss": "Dismiss this finding",
+      "openedFromLink": "Opened from a link"
+    },
+    "selection": {
+      "clear": "Clear selection"
+    },
+    "summary": {
+      "alertingGaps": "{{affectedCheckCount}} of {{totalCheckCount}} checks have no alerts",
+      "duplicates": "{{affectedCheckCount}} of {{totalCheckCount}} checks are duplicates across {{targetCount}} targets",
+      "missingCostLabels": "{{affectedCheckCount}} of {{totalCheckCount}} checks are unattributed",
+      "overlapping": "{{affectedCheckCount}} of {{totalCheckCount}} checks overlap across {{targetCount}} targets",
+      "paused": "{{affectedCheckCount}} of {{totalCheckCount}} checks are paused"
+    }
   },
   "testing-and-synthetics-landing": {
     "performance": {
