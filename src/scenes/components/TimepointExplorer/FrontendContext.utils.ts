@@ -201,11 +201,10 @@ export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionCont
     }
 
     // The marker event for one action instance. Its own page_id is
-    // authoritative (it reflects wherever the action actually settled — the
-    // ecommerce order-complete example landed on `/cart/checkout/*`, not a
-    // stale page_id from the last hard navigation), so it always overwrites;
-    // child request events below only seed pageId as a fallback in case this
-    // marker line didn't make it into the query result.
+    // authoritative — it reflects wherever the action actually settled, not
+    // a stale page_id from the last hard navigation — so it always
+    // overwrites; child request events below only seed pageId as a fallback
+    // in case this marker line didn't make it into the query result.
     if (labels.kind === 'event' && labels.event_name === USER_ACTION_EVENT_NAME) {
       const actionId = labels.action_id;
       const actionName = labels.action_name;
@@ -337,67 +336,6 @@ interface RealUserQueryParams {
   range: string;
 }
 
-/**
- * Real-user baseline queries. These mirror the exact LogQL the Frontend
- * Observability app runs for its per-route panels, including its default
- * `k6_isK6Browser=~""` filter which restricts results to records where the k6
- * field is absent — i.e. real users only, no synthetic traffic.
- */
-export function buildRealUserVitalP75LogQL({ appId, pageId, range, vital }: RealUserQueryParams & { vital: WebVitalName }): string {
-  const page = escapeLogQLString(pageId);
-
-  return `quantile_over_time(0.75, {kind="measurement", app_id="${appId}"} |= " ${vital}=" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap ${vital} [${range}])`;
-}
-
-/**
- * Real-user p75 page load time — from faro.performance.navigation's
- * event_data_pageLoadTime, confirmed live (ecommerce hard nav on /:
- * pageLoadTime 1072ms alongside a full DNS/TCP/TLS/request/response
- * breakdown). A PerformanceNavigationTiming entry, so — same restriction as
- * TTFB/FCP — only exists for a hard document navigation, never a soft one.
- */
-export function buildRealUserPageLoadTimeLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const page = escapeLogQLString(pageId);
-
-  return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |= "event_name=faro.performance.navigation" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap event_data_pageLoadTime [${range}])`;
-}
-
-export function buildRealUserPageLoadsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const page = escapeLogQLString(pageId);
-
-  return `sum(count_over_time({kind="measurement", app_id="${appId}"} |= " ttfb=" | logfmt | k6_isK6Browser=~"" | page_id="${page}" [${range}]))`;
-}
-
-export function buildRealUserExceptionsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const page = escapeLogQLString(pageId);
-
-  return `sum(count_over_time({kind="exception", app_id="${appId}"} | logfmt | k6_isK6Browser=~"" | page_id="${page}" [${range}]))`;
-}
-
-export function buildRealUserHttpErrorsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const page = escapeLogQLString(pageId);
-
-  return `sum(count_over_time({kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" |= "event_data_http.status_code=" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | (event_data_http_status_code >= 400 and event_data_http_status_code < 600) or event_data_http_status_code = 0 [${range}]))`;
-}
-
-/**
- * Real-user p75 request latency on a page, in nanoseconds (matching
- * event_data_duration_ns's own unit — convert to ms when consuming).
- *
- * Fallback for pages where web vitals don't exist: LCP/FCP/TTFB are tied to
- * the initial document lifecycle, and confirmed live that soft-navigated
- * pages on at least one app never get a fresh FCP/TTFB measurement (LCP
- * occasionally re-fires on soft nav, FCP/TTFB structurally can't). Request
- * latency has no such restriction — every fetch/XHR call reports it
- * regardless of navigation type — so it's the next best "how did this page
- * perform" signal once vitals are empty.
- */
-export function buildRealUserRequestLatencyLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const page = escapeLogQLString(pageId);
-
-  return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" | logfmt | k6_isK6Browser=~"" | page_id="${page}" | unwrap event_data_duration_ns [${range}])`;
-}
-
 interface RealUserActionQueryParams {
   appId: string;
   actionName: string;
@@ -405,48 +343,173 @@ interface RealUserActionQueryParams {
 }
 
 /**
+ * Shared scaffold for every real-user baseline query below: a Faro log
+ * stream for one `kind`, an optional line filter to narrow to a specific
+ * event type, and the scope filter (page or action) — always preceded by
+ * `k6_isK6Browser=~""`, the same filter Frontend Observability's own
+ * per-route panels use to restrict results to records where the k6 field is
+ * absent, i.e. real users only, no synthetic traffic.
+ */
+function buildRealUserLogStream({
+  kind,
+  appId,
+  lineFilter,
+  scopeFilter,
+}: {
+  kind: string;
+  appId: string;
+  lineFilter?: string;
+  scopeFilter: string;
+}): string {
+  const parts = [`{kind="${kind}", app_id="${appId}"}`];
+
+  if (lineFilter) {
+    parts.push(lineFilter);
+  }
+
+  parts.push('| logfmt', '| k6_isK6Browser=~""', `| ${scopeFilter}`);
+
+  return parts.join(' ');
+}
+
+function pageScopeFilter(pageId: string): string {
+  return `page_id="${escapeLogQLString(pageId)}"`;
+}
+
+function actionScopeFilter(actionName: string): string {
+  return `action_name="${escapeLogQLString(actionName)}"`;
+}
+
+function quantileOverTimeP75(stream: string, unwrapField: string, range: string): string {
+  return `quantile_over_time(0.75, ${stream} | unwrap ${unwrapField} [${range}])`;
+}
+
+function sumCountOverTime(stream: string, range: string): string {
+  return `sum(count_over_time(${stream} [${range}]))`;
+}
+
+// Faro's fetch/XHR event line carries the HTTP status code as
+// `event_data_http.status_code`, folded to underscores by `| logfmt`.
+const HTTP_EVENT_LINE_FILTER =
+  '|~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" |= "event_data_http.status_code="';
+const HTTP_ERROR_STATUS_FILTER =
+  '| (event_data_http_status_code >= 400 and event_data_http_status_code < 600) or event_data_http_status_code = 0';
+
+export function buildRealUserVitalP75LogQL({ appId, pageId, range, vital }: RealUserQueryParams & { vital: WebVitalName }): string {
+  const stream = buildRealUserLogStream({ kind: 'measurement', appId, lineFilter: `|= " ${vital}="`, scopeFilter: pageScopeFilter(pageId) });
+
+  return quantileOverTimeP75(stream, vital, range);
+}
+
+/**
+ * Real-user p75 page load time — from faro.performance.navigation's
+ * event_data_pageLoadTime, a PerformanceNavigationTiming entry alongside a
+ * full DNS/TCP/TLS/request/response breakdown. Same restriction as TTFB/FCP:
+ * only exists for a hard document navigation, never a soft one.
+ */
+export function buildRealUserPageLoadTimeLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const stream = buildRealUserLogStream({
+    kind: 'event',
+    appId,
+    lineFilter: '|= "event_name=faro.performance.navigation"',
+    scopeFilter: pageScopeFilter(pageId),
+  });
+
+  return quantileOverTimeP75(stream, 'event_data_pageLoadTime', range);
+}
+
+export function buildRealUserPageLoadsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const stream = buildRealUserLogStream({ kind: 'measurement', appId, lineFilter: '|= " ttfb="', scopeFilter: pageScopeFilter(pageId) });
+
+  return sumCountOverTime(stream, range);
+}
+
+export function buildRealUserExceptionsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const stream = buildRealUserLogStream({ kind: 'exception', appId, scopeFilter: pageScopeFilter(pageId) });
+
+  return sumCountOverTime(stream, range);
+}
+
+export function buildRealUserHttpErrorsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const stream = buildRealUserLogStream({ kind: 'event', appId, lineFilter: HTTP_EVENT_LINE_FILTER, scopeFilter: pageScopeFilter(pageId) });
+
+  return sumCountOverTime(`${stream} ${HTTP_ERROR_STATUS_FILTER}`, range);
+}
+
+/**
+ * Real-user p75 request latency on a page, in nanoseconds (matching
+ * event_data_duration_ns's own unit — convert to ms when consuming).
+ *
+ * Fallback for pages where web vitals don't exist: LCP/FCP/TTFB are tied to
+ * the initial document lifecycle, so a soft-navigated page never gets a
+ * fresh FCP/TTFB measurement (LCP occasionally re-fires on soft nav,
+ * FCP/TTFB structurally can't). Request latency has no such restriction —
+ * every fetch/XHR call reports it regardless of navigation type — so it's
+ * the next best "how did this page perform" signal once vitals are empty.
+ */
+export function buildRealUserRequestLatencyLogQL({ appId, pageId, range }: RealUserQueryParams): string {
+  const stream = buildRealUserLogStream({
+    kind: 'event',
+    appId,
+    lineFilter: '|~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request"',
+    scopeFilter: pageScopeFilter(pageId),
+  });
+
+  return quantileOverTimeP75(stream, 'event_data_duration_ns', range);
+}
+
+/**
  * Real-user p75 duration for a named action, straight from the SDK's own
- * `event_data_userActionDuration` on the faro.user.action marker — confirmed
- * live (order-complete: 360.4ms, matching userActionEndTime - userActionStartTime).
- * Directly comparable to this run's own FaroAction.durationMs.
+ * `event_data_userActionDuration` on the faro.user.action marker (matches
+ * userActionEndTime - userActionStartTime). Directly comparable to this
+ * run's own FaroAction.durationMs.
  */
 export function buildRealUserActionDurationLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const name = escapeLogQLString(actionName);
+  const stream = buildRealUserLogStream({
+    kind: 'event',
+    appId,
+    lineFilter: '|= "event_name=faro.user.action"',
+    scopeFilter: actionScopeFilter(actionName),
+  });
 
-  return `quantile_over_time(0.75, {kind="event", app_id="${appId}"} |= "event_name=faro.user.action" | logfmt | k6_isK6Browser=~"" | action_name="${name}" | unwrap event_data_userActionDuration [${range}])`;
+  return quantileOverTimeP75(stream, 'event_data_userActionDuration', range);
 }
 
 export function buildRealUserActionCountLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const name = escapeLogQLString(actionName);
+  const stream = buildRealUserLogStream({
+    kind: 'event',
+    appId,
+    lineFilter: '|= "event_name=faro.user.action"',
+    scopeFilter: actionScopeFilter(actionName),
+  });
 
-  return `sum(count_over_time({kind="event", app_id="${appId}"} |= "event_name=faro.user.action" | logfmt | k6_isK6Browser=~"" | action_name="${name}" [${range}]))`;
+  return sumCountOverTime(stream, range);
 }
 
 /**
  * Real-user failed requests during a named action. Not a join — the same
- * fetch/XHR event line carries both `action_name` and the HTTP status code
- * (confirmed live: the view-products sample had both on one record), so this
- * is exactly buildRealUserHttpErrorsLogQL with the filter swapped from
- * page_id to action_name.
+ * fetch/XHR event line carries both `action_name` and the HTTP status code,
+ * so this is exactly buildRealUserHttpErrorsLogQL with the filter swapped
+ * from page_id to action_name.
  */
 export function buildRealUserActionHttpErrorsLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const name = escapeLogQLString(actionName);
+  const stream = buildRealUserLogStream({ kind: 'event', appId, lineFilter: HTTP_EVENT_LINE_FILTER, scopeFilter: actionScopeFilter(actionName) });
 
-  return `sum(count_over_time({kind="event", app_id="${appId}"} |~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" |= "event_data_http.status_code=" | logfmt | k6_isK6Browser=~"" | action_name="${name}" | (event_data_http_status_code >= 400 and event_data_http_status_code < 600) or event_data_http_status_code = 0 [${range}]))`;
+  return sumCountOverTime(`${stream} ${HTTP_ERROR_STATUS_FILTER}`, range);
 }
 
 /**
  * Real-user JS exceptions during a named action — unverified whether Faro
- * actually attaches action_name to exception records (every confirmed
- * example so far has been on fetch/resource/user.action events, not
- * exceptions). Low-risk to ship anyway: if the label isn't there, this
- * matches zero lines and the UI shows nothing, same as any other
- * fail-silently query here — a nonzero result is its own confirmation.
+ * actually attaches action_name to exception records (only fetch/resource/
+ * user.action events are confirmed to carry it). Low-risk to ship anyway:
+ * if the label isn't there, this matches zero lines and the UI shows
+ * nothing, same as any other fail-silently query here — a nonzero result is
+ * its own confirmation.
  */
 export function buildRealUserActionExceptionsLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const name = escapeLogQLString(actionName);
+  const stream = buildRealUserLogStream({ kind: 'exception', appId, scopeFilter: actionScopeFilter(actionName) });
 
-  return `sum(count_over_time({kind="exception", app_id="${appId}"} | logfmt | k6_isK6Browser=~"" | action_name="${name}" [${range}]))`;
+  return sumCountOverTime(stream, range);
 }
 
 export function buildFaroPageHref({ pluginId, appId, pageId }: { pluginId: string; appId: string; pageId: string }): string {
@@ -568,17 +631,14 @@ export function escapeRegExp(value: string): string {
 /**
  * Finds real-user activity on any of the pages the synthetic run visited.
  *
- * Deliberately NOT gated on `kind="measurement" |= " ttfb="` (the original
- * version was, and it undercounted real navigation depth as a result): a
- * hard-loaded page always gets a ttfb-bearing measurement line, but a
- * soft-navigated page confirmed earlier this session often gets *no*
- * measurement line at all — only occasional LCP-only ones, action-marker
- * events, or fetch/resource events. Matching any event/measurement record
- * with a page_id in the journey, regardless of what else is on the line,
- * catches those too — a session that only ever produced a hard-nav
- * measurement line for the first page and nothing else for pages reached by
- * soft navigation was invisible under the old query, not because it didn't
- * navigate further.
+ * Deliberately NOT gated on `kind="measurement" |= " ttfb="`: a hard-loaded
+ * page always gets a ttfb-bearing measurement line, but a soft-navigated
+ * page often gets *no* measurement line at all — only occasional LCP-only
+ * ones, action-marker events, or fetch/resource events. Matching any
+ * event/measurement record with a page_id in the journey, regardless of
+ * what else is on the line, catches those too; gating on ttfb would make a
+ * session that only soft-navigated past the first page look like it never
+ * went further.
  *
  * This is a log-stream query (no `[range]` selector — that's only valid on
  * metric queries); the time window comes from the request's start/end params.
@@ -602,8 +662,7 @@ export interface SimilarSession {
   // than claim a "stopped at X" story the data doesn't actually support.
   outcome?: SimilarSessionOutcome;
   // IP-derived (MaxMind GeoLite2 reverse lookup per FEO's own docs), so
-  // reliable — same fields confirmed trustworthy in the browser_mobile
-  // investigation earlier this session.
+  // reliable regardless of which browser check type produced the session.
   city?: string;
   countryIso?: string;
 }
@@ -795,10 +854,9 @@ export function getSummaryVerdict({
 
   // Worst named action by real-user failure rate, above threshold.
   //
-  // The faro.user.action marker has no native success/failure field at all
-  // (confirmed against the one raw payload captured this session — it's
-  // purely a timing capture: start/end/duration/trigger/importance plus
-  // whatever custom business attributes the app attached). "Failure" is
+  // The faro.user.action marker has no native success/failure field at all —
+  // it's purely a timing capture: start/end/duration/trigger/importance plus
+  // whatever custom business attributes the app attached. "Failure" is
   // something we infer by correlating whatever else happened during the
   // action's window via action_parent_id — so it has to combine every
   // failure-shaped signal available, not just HTTP errors: an action that
@@ -882,12 +940,12 @@ export function getSummaryVerdict({
     // "No evidence of harm" is only worth stating as "users are fine" if we
     // actually had a channel capable of finding harm. A check can fail with
     // no in-page JS exception at all (a k6/Playwright assertion timeout
-    // throws outside the browser, invisible to Faro — confirmed on a real
-    // failure earlier this session) and an app with no named actions gives
-    // the action-failure-rate check nothing to compare against either. Say
-    // so plainly rather than imply a clean bill of health we didn't earn —
-    // and name the page the run was on, since that's the closest thing to
-    // "where it failed" we have without action instrumentation.
+    // throws outside the browser, invisible to Faro) and an app with no
+    // named actions gives the action-failure-rate check nothing to compare
+    // against either. Say so plainly rather than imply a clean bill of
+    // health we didn't earn — and name the page the run was on, since
+    // that's the closest thing to "where it failed" we have without action
+    // instrumentation.
     if (actions.length === 0 && exceptions.length === 0) {
       const lastPageId = pages[pages.length - 1]?.pageId;
       const pageClause = lastPageId ? ` on ${lastPageId}` : '';

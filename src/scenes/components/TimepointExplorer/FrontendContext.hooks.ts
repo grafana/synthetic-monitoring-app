@@ -82,8 +82,8 @@ export interface RealUserPageBaseline {
   exceptions: number | null;
   httpErrors: number | null;
   // p75 request latency in ms — the fallback comparison for pages where web
-  // vitals don't exist (soft-navigated pages on some apps never get a fresh
-  // FCP/TTFB measurement, confirmed live).
+  // vitals don't exist (soft-navigated pages never get a fresh FCP/TTFB
+  // measurement).
   requestLatencyMs: number | null;
   // p75 total page load time in ms, from faro.performance.navigation — same
   // hard-nav-only restriction as the vitals above.
