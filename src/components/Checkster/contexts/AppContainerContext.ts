@@ -1,7 +1,7 @@
 import { createContext, CSSProperties, RefObject, useContext } from 'react';
 
 interface SplitterComponentProps {
-  ref: RefObject<HTMLDivElement>;
+  ref: RefObject<HTMLDivElement | null>;
   className: string;
   style?: CSSProperties;
 }

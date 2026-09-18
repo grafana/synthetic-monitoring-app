@@ -54,7 +54,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
       await gotoSection(user, FormSectionName.Uptime);
 
       await user.click(screen.getByRole('button', { name: /Regexp validation/ }));
-      await selectComboboxOption(user, screen.getByLabelText('Match subject for validation 1'), /Authority/);
+      await selectComboboxOption(
+        user,
+        screen.getByRole('combobox', { name: 'Match subject for validation 1' }),
+        /Authority/
+      );
 
       const expressionInput = screen.getByLabelText('Expression for validation 1');
       await user.type(expressionInput, EXPRESSION);
@@ -76,7 +80,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
       await gotoSection(user, FormSectionName.Uptime);
 
       await user.click(screen.getByRole('button', { name: /Regexp validation/ }));
-      await selectComboboxOption(user, screen.getByLabelText('Match subject for validation 1'), /Authority/);
+      await selectComboboxOption(
+        user,
+        screen.getByRole('combobox', { name: 'Match subject for validation 1' }),
+        /Authority/
+      );
 
       const expressionInput = screen.getByLabelText('Expression for validation 1');
       await user.type(expressionInput, EXPRESSION);
@@ -100,7 +108,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
       await gotoSection(user, FormSectionName.Uptime);
 
       await user.click(screen.getByRole('button', { name: /Regexp validation/ }));
-      await selectComboboxOption(user, screen.getByLabelText('Match subject for validation 1'), /Answer/);
+      await selectComboboxOption(
+        user,
+        screen.getByRole('combobox', { name: 'Match subject for validation 1' }),
+        /Answer/
+      );
 
       const expressionInput = screen.getByLabelText('Expression for validation 1');
       await user.type(expressionInput, EXPRESSION);
@@ -122,7 +134,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
       await gotoSection(user, FormSectionName.Uptime);
 
       await user.click(screen.getByRole('button', { name: /Regexp validation/ }));
-      await selectComboboxOption(user, screen.getByLabelText('Match subject for validation 1'), /Answer/);
+      await selectComboboxOption(
+        user,
+        screen.getByRole('combobox', { name: 'Match subject for validation 1' }),
+        /Answer/
+      );
 
       const expressionInput = screen.getByLabelText('Expression for validation 1');
       await user.type(expressionInput, EXPRESSION);
@@ -146,7 +162,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
       await gotoSection(user, FormSectionName.Uptime);
 
       await user.click(screen.getByRole('button', { name: /Regexp validation/ }));
-      await selectComboboxOption(user, screen.getByLabelText('Match subject for validation 1'), /Additional/);
+      await selectComboboxOption(
+        user,
+        screen.getByRole('combobox', { name: 'Match subject for validation 1' }),
+        /Additional/
+      );
 
       const expressionInput = screen.getByLabelText('Expression for validation 1');
       await user.type(expressionInput, EXPRESSION);
@@ -168,7 +188,11 @@ describe(`DNSCheck - Section 2 (Define uptime) payload`, () => {
       await gotoSection(user, FormSectionName.Uptime);
 
       await user.click(screen.getByRole('button', { name: /Regexp validation/ }));
-      await selectComboboxOption(user, screen.getByLabelText('Match subject for validation 1'), /Additional/);
+      await selectComboboxOption(
+        user,
+        screen.getByRole('combobox', { name: 'Match subject for validation 1' }),
+        /Additional/
+      );
 
       const expressionInput = screen.getByLabelText('Expression for validation 1');
       await user.type(expressionInput, EXPRESSION);

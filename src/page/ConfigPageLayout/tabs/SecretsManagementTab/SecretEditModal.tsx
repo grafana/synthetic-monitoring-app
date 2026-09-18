@@ -138,7 +138,7 @@ export function SecretEditModal({
     reset(defaultValues);
   }, [reset, defaultValues]);
 
-  const handleFormSubmit = (event: React.FormEvent) => {
+  const handleFormSubmit = (event: React.SubmitEvent<HTMLFormElement>) => {
     event.stopPropagation();
     return handleSubmit(onSubmit)(event);
   };
