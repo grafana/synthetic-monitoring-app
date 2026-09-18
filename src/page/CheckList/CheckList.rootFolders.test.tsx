@@ -6,9 +6,18 @@ import {
   CHECK_IN_ROOT_FOLDER,
   CHECK_WITHOUT_FOLDER,
 } from 'test/fixtures/folderChecks';
-import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_ROOT, FOLDER_ROOT_CHILD, MOCK_FOLDERS } from 'test/fixtures/folders';
+import {
+  DEFAULT_FOLDER,
+  FOLDER_PRODUCTION,
+  FOLDER_ROOT,
+  FOLDER_ROOT_CHILD,
+  FOLDER_SHARED_DIRECTLY,
+  FOLDER_SHARED_WITH_ME,
+  MOCK_FOLDERS,
+} from 'test/fixtures/folders';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
+import { listFolders } from 'test/handlers/folders';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
@@ -179,6 +188,49 @@ describe('CheckList - Move folder', () => {
 
     const { body } = await read();
     expect(body).toEqual({ parentUid: '' });
+  });
+
+  test('hides "Shared with me" as a move destination when nothing is shared with the user', async () => {
+    const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+    expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
+
+    const modal = await screen.findByRole('dialog');
+    const picker = within(modal).getByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: 'Dashboards' });
+    expect(within(picker).queryByRole('option', { name: FOLDER_SHARED_WITH_ME.title })).not.toBeInTheDocument();
+  });
+
+  test('keeps "Shared with me" browsable as a move destination when a folder is directly shared with the user', async () => {
+    server.use(
+      apiRoute('listFolders', {
+        result: async (req) => {
+          const res = await listFolders.result(req);
+          const url = new URL(req.url);
+          if (url.searchParams.get('parentUid') !== FOLDER_SHARED_WITH_ME.uid) {
+            return res;
+          }
+          const { uid, title, url: folderUrl, parentUid } = FOLDER_SHARED_DIRECTLY;
+          return { json: [...res.json, { uid, title, url: folderUrl, parentUid }] };
+        },
+      }),
+      apiRoute('searchFolders', {
+        result: async () => ({
+          json: { totalHits: 1, hits: [{ resource: 'folders', name: FOLDER_SHARED_DIRECTLY.uid, title: FOLDER_SHARED_DIRECTLY.title }] },
+        }),
+      })
+    );
+
+    const { user } = await renderCheckList([CHECK_IN_PRODUCTION]);
+
+    expect(await screen.findByText(FOLDER_PRODUCTION.title)).toBeInTheDocument();
+    await openMoveFolderModal(user, FOLDER_PRODUCTION.title);
+
+    const modal = await screen.findByRole('dialog');
+    const picker = within(modal).getByLabelText('Folder picker');
+    expect(await within(picker).findByRole('option', { name: FOLDER_SHARED_WITH_ME.title })).toBeInTheDocument();
+    expect(within(picker).getByRole('option', { name: FOLDER_SHARED_DIRECTLY.title })).toBeInTheDocument();
   });
 
   test('tracks picking "Move folder" so its usage can be measured', async () => {

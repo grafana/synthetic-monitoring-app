@@ -1,13 +1,42 @@
 import React from 'react';
 import { renderHook, screen, waitFor, within } from '@testing-library/react';
-import { DEFAULT_FOLDER, FOLDER_READONLY, FOLDER_ROOT, FOLDER_ROOT_CHILD } from 'test/fixtures/folders';
+import {
+  DEFAULT_FOLDER,
+  FOLDER_READONLY,
+  FOLDER_ROOT,
+  FOLDER_ROOT_CHILD,
+  FOLDER_SHARED_DIRECTLY,
+  FOLDER_SHARED_WITH_ME,
+} from 'test/fixtures/folders';
 import { apiRoute, getServerRequests } from 'test/handlers';
+import { listFolders } from 'test/handlers/folders';
 import { createWrapper, render } from 'test/render';
 import { server } from 'test/server';
 import { runTestAsSMEditor, runTestWithForbiddenDefaultFolder, runTestWithReadOnlyDefaultFolder } from 'test/utils';
 
 import { FolderSelector } from './FolderSelector';
 import { useFolderSelection } from './FolderSelector.hooks';
+
+// Simulates a real folder nested under "Shared with me" (see test/handlers/folders.ts).
+const withFolderSharedDirectly = () =>
+  server.use(
+    apiRoute('listFolders', {
+      result: async (req) => {
+        const res = await listFolders.result(req);
+        const url = new URL(req.url);
+        if (url.searchParams.get('parentUid') !== FOLDER_SHARED_WITH_ME.uid) {
+          return res;
+        }
+        const { uid, title, url: folderUrl, parentUid } = FOLDER_SHARED_DIRECTLY;
+        return { json: [...res.json, { uid, title, url: folderUrl, parentUid }] };
+      },
+    }),
+    apiRoute('searchFolders', {
+      result: async () => ({
+        json: { totalHits: 1, hits: [{ resource: 'folders', name: FOLDER_SHARED_DIRECTLY.uid, title: FOLDER_SHARED_DIRECTLY.title }] },
+      }),
+    })
+  );
 
 // The folder picker itself is Grafana core's nested folder picker, mocked in
 // the runtime mock as a native select (labelled "Folder picker") backed by
@@ -52,6 +81,25 @@ describe('FolderSelector', () => {
     const picker = await screen.findByLabelText('Folder picker');
     await within(picker).findByRole('option', { name: FOLDER_ROOT.title });
     expect(within(picker).queryByRole('option', { name: FOLDER_READONLY.title })).not.toBeInTheDocument();
+  });
+
+  it('hides "Shared with me" when nothing is shared with the user', async () => {
+    const onChange = jest.fn();
+    render(<FolderSelector onChange={onChange} />);
+
+    const picker = await screen.findByLabelText('Folder picker');
+    await within(picker).findByRole('option', { name: FOLDER_ROOT.title });
+    expect(within(picker).queryByRole('option', { name: FOLDER_SHARED_WITH_ME.title })).not.toBeInTheDocument();
+  });
+
+  it('keeps "Shared with me" browsable when a folder is directly shared with the user', async () => {
+    withFolderSharedDirectly();
+    const onChange = jest.fn();
+    render(<FolderSelector onChange={onChange} />);
+
+    const picker = await screen.findByLabelText('Folder picker');
+    expect(await within(picker).findByRole('option', { name: FOLDER_SHARED_WITH_ME.title })).toBeInTheDocument();
+    expect(within(picker).getByRole('option', { name: FOLDER_SHARED_DIRECTLY.title })).toBeInTheDocument();
   });
 
   it('assigns the folder selected in the picker', async () => {
@@ -176,6 +224,17 @@ describe('FolderSelector', () => {
 
     const { body } = await read();
     expect(body).toEqual({ title: 'Nested Folder', parentUid: FOLDER_ROOT.uid });
+  });
+
+  it('hides "Shared with me" as a new folder\'s parent when nothing is shared with the user', async () => {
+    const { user } = render(<FolderSelector onChange={jest.fn()} />);
+
+    await user.click(await screen.findByRole('button', { name: /Create folder/ }));
+
+    const modal = await screen.findByRole('dialog');
+    const parentPicker = within(modal).getByLabelText('Folder picker');
+    await within(parentPicker).findByRole('option', { name: FOLDER_ROOT.title });
+    expect(within(parentPicker).queryByRole('option', { name: FOLDER_SHARED_WITH_ME.title })).not.toBeInTheDocument();
   });
 });
 

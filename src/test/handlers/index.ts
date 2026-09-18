@@ -30,7 +30,7 @@ import { createAccessToken, listAccessTokens, revokeAccessToken } from 'test/han
 import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
-import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
+import { createFolder, deleteFolder, getFolder, listFolders, moveFolder, searchFolders } from './folders';
 import { listK6Channels } from './k6Channels';
 import { evaluateFeatureFlags } from './openfeature';
 import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
@@ -77,6 +77,7 @@ const API_ROUTES = {
   listSecrets,
   moveFolder,
   renameCheckLabels,
+  searchFolders,
   setLabelMode,
   testCheck,
   updateAlertsForCheck,

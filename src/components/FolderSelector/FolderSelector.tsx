@@ -7,7 +7,7 @@ import { GrafanaFolder } from 'types';
 import { useUserPermissions } from 'data/permissions';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useFolderPermissions } from 'data/useFolderPermissions';
-import { useCreateFolder } from 'data/useFolders';
+import { useCreateFolder, useSharedWithMeExcludeUIDs } from 'data/useFolders';
 import { getFetchErrorMessage } from 'data/utils';
 
 interface FolderSelectorProps {
@@ -35,6 +35,7 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
   const { defaultFolder, defaultFolderUid, isLoading } = useDefaultFolder();
   const { canCreateFolders } = useUserPermissions();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const excludeUIDs = useSharedWithMeExcludeUIDs();
 
   // Same rule as check assignment (useFolderSelection): the default folder is
   // only preselected as the new folder's parent when the user can actually
@@ -72,7 +73,7 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
 
   return (
     <Stack gap={1.5} alignItems="center">
-      <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
+      <FolderPicker value={value} onChange={handleChange} showRootFolder={false} excludeUIDs={excludeUIDs} />
       {canCreateFolders && (
         <>
           <span>or</span>
@@ -84,6 +85,7 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
       {showCreateModal && (
         <CreateFolderModal
           defaultParentUid={createParentUid}
+          excludeUIDs={excludeUIDs}
           onCreated={handleFolderCreated}
           onDismiss={() => setShowCreateModal(false)}
         />
@@ -98,11 +100,12 @@ interface CreateFolderModalProps {
    * not writable by the user, in which case an explicit pick is required.
    */
   defaultParentUid?: string;
+  excludeUIDs: string[];
   onCreated: (folder: GrafanaFolder) => void;
   onDismiss: () => void;
 }
 
-function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFolderModalProps) {
+function CreateFolderModal({ defaultParentUid, excludeUIDs, onCreated, onDismiss }: CreateFolderModalProps) {
   const [title, setTitle] = useState('');
   // '' selects the Grafana root level (the picker's "Dashboards" item);
   // undefined means nothing is selected yet.
@@ -136,7 +139,12 @@ function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFol
       >
         {/* Root creation requires org-level folders:create, so the root item
             is only offered when the user has it. */}
-        <FolderPicker value={parentUid} onChange={(uid) => setParentUid(uid ?? '')} showRootFolder={canCreateFolders} />
+        <FolderPicker
+          value={parentUid}
+          onChange={(uid) => setParentUid(uid ?? '')}
+          showRootFolder={canCreateFolders}
+          excludeUIDs={excludeUIDs}
+        />
       </Field>
       <Field label="Folder name">
         <Input
