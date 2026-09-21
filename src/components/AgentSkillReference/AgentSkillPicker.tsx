@@ -26,12 +26,24 @@ type AgentSkillTool = (typeof AGENT_SKILL_TOOLS)[number];
 
 interface AgentSkillPickerProps {
   source: AgentSkillReferenceSource;
+  /** Heading shown above the tool cards. Defaults to phrasing that assumes this follows another option. Pass `null` to hide it (e.g. when the surrounding UI already has its own title). */
+  title?: string | null;
+  /** Shows the "what the skill does" blurb once a tool is selected. Off when the surrounding UI already explains that. */
+  showDescription?: boolean;
+  /** Shows the "Did the skill help?" feedback ask once a tool is selected. */
+  showFeedback?: boolean;
 }
 
-export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
+export const AgentSkillPicker = ({
+  source,
+  title = 'Or author checks with your coding agent',
+  showDescription = true,
+  showFeedback = true,
+}: AgentSkillPickerProps) => {
   const styles = useStyles2(getStyles);
   const [selectedId, setSelectedId] = useState<AgentSkillToolId | null>(null);
-  const { askForFeedback, markInstallCopied, markFeedbackGiven } = useAgentSkillFeedback();
+  const { askForFeedback: canAskForFeedback, markInstallCopied, markFeedbackGiven } = useAgentSkillFeedback();
+  const askForFeedback = showFeedback && canAskForFeedback;
   const trackView = useTrackAgentSkillSectionViewed(source);
 
   const selectedTool = AGENT_SKILL_TOOLS.find(({ id }) => id === selectedId);
@@ -47,18 +59,22 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
 
   return (
     <Stack direction="column" gap={1}>
-      <Stack direction="row" alignItems="center" gap={1}>
-        <Text variant="body" weight="medium" element="h3">
-          Or author checks with your coding agent
-        </Text>
-        {askForFeedback && (
-          <Feedback
-            feature={AGENT_SKILL_FEEDBACK_FEATURE}
-            about={{ text: 'Did the skill help?' }}
-            onReaction={markFeedbackGiven}
-          />
-        )}
-      </Stack>
+      {(title || askForFeedback) && (
+        <Stack direction="row" alignItems="center" gap={1}>
+          {title && (
+            <Text variant="body" weight="medium" element="h3">
+              {title}
+            </Text>
+          )}
+          {askForFeedback && (
+            <Feedback
+              feature={AGENT_SKILL_FEEDBACK_FEATURE}
+              about={{ text: 'Did the skill help?' }}
+              onReaction={markFeedbackGiven}
+            />
+          )}
+        </Stack>
+      )}
       <div className={styles.cardRow}>
         {AGENT_SKILL_TOOLS.map((tool) => (
           <div key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
@@ -76,9 +92,11 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
       </div>
       {selectedTool && (
         <Stack direction="column" gap={2}>
-          <Text element="p" color="secondary">
-            {AGENT_SKILL_DEFAULT_COPY.description}
-          </Text>
+          {showDescription && (
+            <Text element="p" color="secondary">
+              {AGENT_SKILL_DEFAULT_COPY.description}
+            </Text>
+          )}
           <Stack direction="column" gap={0.5}>
             <Text variant="h6" element="h4">
               1. Install the skill (one-time)
@@ -98,7 +116,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
           </Stack>
           <Stack direction="column" gap={0.5}>
             <Text variant="h6" element="h4">
-              2. Describe what you want monitored
+              2. Tell your agent what to build
             </Text>
             <AgentSkillPrompts source={source} tool={selectedTool.id} />
           </Stack>

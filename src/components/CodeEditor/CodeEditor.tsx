@@ -1,5 +1,6 @@
-import React, { forwardRef, useEffect, useMemo, useState } from 'react';
-import { CodeEditor as GrafanaCodeEditor, Spinner } from '@grafana/ui';
+import React, { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
+import { CodeEditor as GrafanaCodeEditor, Spinner, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { ConstrainedEditorInstance } from 'constrained-editor-plugin';
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
@@ -59,10 +60,7 @@ const containerStyles = css`
   }
 `;
 
-const MIN_EDITOR_HEIGHT = 400;
-const editorWrapperStyles = css`
-  position: relative;
-`;
+const MIN_EDITOR_HEIGHT = 640;
 
 const loadingOverlayStyles = css`
   position: absolute;
@@ -100,12 +98,16 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }: CodeEditorProps & ConstrainedEditorProps,
   ref
 ) {
+  const styles = useStyles2(getStyles);
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
 
   const isJs = language === 'javascript';
   const [prevValue, setPrevValue] = useState(value);
   const [editorHeight, setEditorHeight] = useState(600); // Initial height
+  // Set once the user manually resizes, to stop auto-resize from overriding it.
+  const manualHeightRef = useRef<number | null>(null);
+  const lastAutoHeightRef = useRef(MIN_EDITOR_HEIGHT);
 
   // Layout editor when height changes
   useEffect(() => {
@@ -186,10 +188,16 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // Wire custom red-squiggle markers for forbidden syntax
     const disposeCustomValidation = wireCustomValidation(monaco, editor);
 
-    // Auto-resize editor based on content for native scroll
+    // Auto-resize based on content, unless the user manually resized.
     const updateEditorHeight = () => {
+      if (manualHeightRef.current !== null) {
+        return;
+      }
+
       const contentHeight = editor.getContentHeight();
-      setEditorHeight(Math.max(contentHeight, MIN_EDITOR_HEIGHT));
+      const newHeight = Math.max(contentHeight, MIN_EDITOR_HEIGHT);
+      lastAutoHeightRef.current = newHeight;
+      setEditorHeight(newHeight);
     };
 
     // Update height on content changes
@@ -198,10 +206,13 @@ export const CodeEditor = forwardRef(function CodeEditor(
     // Set initial height
     updateEditorHeight();
 
-    // Observe the container for resizing changes
     const parentContainer = editor.getDomNode()?.parentElement;
     const resizeObserver = parentContainer
-      ? new ResizeObserver(() => {
+      ? new ResizeObserver(([entry]) => {
+          const observedHeight = entry.contentRect.height;
+          if (Math.abs(observedHeight - lastAutoHeightRef.current) > 2) {
+            manualHeightRef.current = observedHeight;
+          }
           editor.layout();
         })
       : null;
@@ -257,12 +268,17 @@ export const CodeEditor = forwardRef(function CodeEditor(
       ${containerStyles};
       height: ${editorHeight}px;
       min-height: ${MIN_EDITOR_HEIGHT}px;
+      resize: vertical;
+      overflow: auto !important;
+      // Outer wrapper already draws the frame; drop Grafana's default inner one.
+      border: none !important;
+      border-radius: 0 !important;
     `,
     [editorHeight]
   );
 
   return (
-    <div data-fs-element="Code editor" id={id} {...rest} className={editorWrapperStyles}>
+    <div data-fs-element="Code editor" id={id} {...rest} className={styles.editorWrapper}>
       {renderHeader && renderHeader({ scriptValue: value })}
       {shouldWaitForTypes && (
         <div className={loadingOverlayStyles}>
@@ -279,6 +295,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
           automaticLayout: false,
           fixedOverflowWidgets: false,
           scrollBeyondLastLine: false,
+          renderLineHighlight: 'gutter',
+          padding: { top: 8, bottom: 4 },
           scrollbar: {
             vertical: 'hidden',
             alwaysConsumeMouseWheel: false,
@@ -293,3 +311,14 @@ export const CodeEditor = forwardRef(function CodeEditor(
     </div>
   );
 });
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    editorWrapper: css`
+      position: relative;
+      border: 1px solid ${theme.colors.border.weak};
+      border-radius: ${theme.shape.radius.default};
+      overflow: hidden;
+    `,
+  };
+}

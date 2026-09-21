@@ -25,6 +25,7 @@ export function BrowserCheckContent() {
     <ScriptedCheckContent
       scriptField="settings.browser.script"
       examples={examples}
+      scriptDescription="Define the browser actions and assertions to run, using Grafana k6."
     />
   );
 }

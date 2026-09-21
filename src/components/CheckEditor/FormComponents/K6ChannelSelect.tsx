@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useId, useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
-import { Combobox, Field, Stack } from '@grafana/ui';
+import { Combobox } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { trackK6ChannelRetryClicked, trackK6ChannelSelected } from 'features/tracking/checkFormEvents';
 
 import { CheckFormValues, FeatureName } from 'types';
 import { useFilteredK6Channels } from 'data/useK6Channels';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-
-import { ChannelDetails } from './ChannelDetails';
 
 interface K6ChannelSelectProps {
   disabled?: boolean;
@@ -35,10 +34,11 @@ export function K6ChannelSelect({ disabled }: K6ChannelSelectProps) {
 function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   const { control, getValues } = useFormContext<CheckFormValues>();
   const id = 'k6-channel-select';
+  const labelId = useId();
 
   const checkType = getValues('checkType');
 
-  const { field, fieldState } = useController({
+  const { field } = useController({
     control,
     name: 'channels.k6',
   });
@@ -68,52 +68,76 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
 
   const channelOptions = useMemo(() => {
     return channels.map((channel) => {
+      const isDeprecated = new Date(channel.deprecatedAfter) < new Date();
       const labelSuffix = channel.default ? ' (default)' : '';
+      const description = isDeprecated
+        ? `Deprecated · k6 ${channel.manifest}`
+        : `k6 ${channel.manifest}`;
 
       return {
         label: `${channel.name}${labelSuffix}`,
         value: channel.id,
-        description: `k6 version range: ${channel.manifest}`,
+        description,
       };
     });
   }, [channels]);
 
+  const selectedChannelId = field.value?.id || defaultChannelId;
+  const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
+
+  const loadChannelOptions = useCallback(
+    async (inputValue: string) => {
+      const query = inputValue.toLowerCase();
+      return channelOptions.filter((option) => option.label.toLowerCase().includes(query));
+    },
+    [channelOptions]
+  );
+
   return (
-    <div>
-      <Field
-        label="k6 version channel"
-        description="Select the k6 version channel for this check"
-        htmlFor={id}
-        data-fs-element="k6 channel select"
-        error={fieldState.error?.message}
-        invalid={!!fieldState.error}
-      >
-        <Stack direction="column" gap={2}>
-          <Combobox
-            {...field}
-            value={field.value?.id || defaultChannelId}
-            disabled={disabled || isLoadingChannels}
-            options={channelOptions}
-            id={id}
-            createCustomValue={false}
-            onChange={(value) => {
-              const channelId = typeof value === 'string' ? value : value?.value || '';
-              const selectedChannel = channels.find((channel) => channel.id === channelId);
-              
-              if (selectedChannel) {
-                field.onChange(selectedChannel);
-                trackK6ChannelSelected({
-                  checkType,
-                  channelName: selectedChannel.name,
-                });
+    <>
+      <span className={hiddenLabelStyle} id={labelId}>
+        k6 runtime version
+      </span>
+      <Combobox
+        {...field}
+        aria-labelledby={labelId}
+        prefixIcon="k6-rounded"
+        value={
+          selectedChannel
+            ? {
+                value: selectedChannel.id,
+                label: `${selectedChannel.name}${selectedChannel.default ? ' (default)' : ''}`,
               }
-            }}
-            placeholder={isLoadingChannels ? 'Loading channels...' : 'Select k6 version channel'}
-            invalid={!!fieldState.error}
-          />
-        </Stack>
-      </Field>
-      <ChannelDetails channelId={field.value?.id || defaultChannelId || null} channels={channels} />
-    </div>
+            : selectedChannelId
+        }
+        disabled={disabled || isLoadingChannels}
+        options={loadChannelOptions}
+        id={id}
+        width={20}
+        createCustomValue={false}
+        onChange={(value) => {
+          const channelId = typeof value === 'string' ? value : value?.value || '';
+          const selectedChannel = channels.find((channel) => channel.id === channelId);
+
+          if (selectedChannel) {
+            field.onChange(selectedChannel);
+            trackK6ChannelSelected({
+              checkType,
+              channelName: selectedChannel.name,
+            });
+          }
+        }}
+        placeholder={isLoadingChannels ? 'Loading…' : 'Select version'}
+        data-fs-element="k6 channel select"
+      />
+    </>
   );
 }
+
+const hiddenLabelStyle = css`
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+`;

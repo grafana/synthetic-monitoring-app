@@ -1,5 +1,5 @@
 import React, { ComponentProps } from 'react';
-import { screen } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { UI_TEST_ID } from 'test/dataTestIds';
 
 import { formTestRenderer } from '../__test__/formTestRenderer';
@@ -26,15 +26,26 @@ jest.mock('@grafana/ui', () => ({
   FieldValidationMessage: jest.fn(({ children }) => <div data-testid="field-validation-message">{children}</div>),
 }));
 
+jest.mock('components/Checkster/contexts/ChecksterContext', () => ({
+  useChecksterContext: () => ({ checkType: 'browser' }),
+}));
+
+jest.mock('components/Checkster/contexts/FeatureTabsContext', () => ({
+  useFeatureTabsContext: () => ({ setActive: jest.fn() }),
+}));
+
 jest.mock('components/CodeEditor', () => ({
-  CodeEditor: jest.fn(({ value, onChange, readOnly }) => (
-    <textarea
-      data-testid={UI_TEST_ID.codeEditor}
-      value={value || ''}
-      onChange={(e) => onChange?.(e.target.value)}
-      readOnly={readOnly}
-      placeholder="Enter script code here..."
-    />
+  CodeEditor: jest.fn(({ value, onChange, readOnly, renderHeader }) => (
+    <>
+      {renderHeader?.({ scriptValue: value })}
+      <textarea
+        data-testid={UI_TEST_ID.codeEditor}
+        value={value || ''}
+        onChange={(e) => onChange?.(e.target.value)}
+        readOnly={readOnly}
+        placeholder="Enter script code here..."
+      />
+    </>
   )),
 }));
 
@@ -202,5 +213,65 @@ describe('GenericScriptField', () => {
 
     const codeEditor = screen.getByTestId(UI_TEST_ID.codeEditor);
     expect(codeEditor).toHaveValue(formattedScript);
+  });
+});
+
+describe('script editor toolbar', () => {
+  const examples = [
+    { label: 'Basic example', script: 'console.log("basic");', value: 'basic.js' },
+    { label: 'Advanced example', script: 'console.log("advanced");', value: 'advanced.js' },
+  ];
+
+  it('does not show a "Load example" option when no examples are provided', async () => {
+    const user = renderGenericScriptField({ field: 'settings.scripted.script' as any });
+
+    await user.click(screen.getByRole('button', { name: /need help/i }));
+
+    expect(screen.queryByRole('menuitem', { name: /load example/i })).not.toBeInTheDocument();
+  });
+
+  it('asks for confirmation before loading a template, and replaces the script on confirm', async () => {
+    const user = renderGenericScriptField(
+      { field: 'settings.scripted.script' as any, examples },
+      { 'settings.scripted.script': 'const original = true;' }
+    );
+
+    await user.click(screen.getByRole('button', { name: /need help/i }));
+    // Submenus open on hover, not click — clicking the parent item only keeps the menu open.
+    await user.hover(screen.getByRole('menuitem', { name: /load example/i }));
+    // userEvent.click does pointer-coordinate target resolution, which breaks on jsdom's
+    // zeroed-out layout for deeply nested submenu items; fireEvent dispatches directly instead.
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Basic example' }));
+
+    const dialog = await waitFor(() => screen.getByRole('dialog', { name: /load example script/i }));
+    expect(dialog).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Load example' }));
+
+    expect(screen.getByTestId(UI_TEST_ID.codeEditor)).toHaveValue('console.log("basic");');
+  });
+
+  it('keeps the existing script if the load-example confirmation is dismissed', async () => {
+    const user = renderGenericScriptField(
+      { field: 'settings.scripted.script' as any, examples },
+      { 'settings.scripted.script': 'const original = true;' }
+    );
+
+    await user.click(screen.getByRole('button', { name: /need help/i }));
+    await user.hover(screen.getByRole('menuitem', { name: /load example/i }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Basic example' }));
+
+    const dialog = await waitFor(() => screen.getByRole('dialog', { name: /load example script/i }));
+    await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.getByTestId(UI_TEST_ID.codeEditor)).toHaveValue('const original = true;');
+  });
+
+  it('opens an expanded editor when the expand control is clicked', async () => {
+    const user = renderGenericScriptField({ field: 'settings.scripted.script' as any });
+
+    await user.click(screen.getByRole('button', { name: /expand editor/i }));
+
+    expect(screen.getByRole('dialog', { name: 'Script' })).toBeInTheDocument();
   });
 });

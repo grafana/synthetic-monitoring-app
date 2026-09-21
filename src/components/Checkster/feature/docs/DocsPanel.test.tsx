@@ -49,8 +49,9 @@ describe('DocsPanel', () => {
 
     it(`should open the docs panel when clicking on the help button besides the check editor`, async () => {
       const { user } = await renderNewForm(CheckType.Scripted);
-      const helpButton = await screen.findByText('Need help writing scripts?');
+      const helpButton = await screen.findByText('Need help?');
       await user.click(helpButton);
+      await user.click(screen.getByRole('menuitem', { name: 'Open Documentation' }));
       expect(screen.getByText(SCRIPTED_CHECKS_DOCS_TEXT)).toBeInTheDocument();
     });
   });
@@ -72,8 +73,9 @@ describe('DocsPanel', () => {
 
     it(`should open the docs panel when clicking on the help button besides the check editor`, async () => {
       const { user } = await renderNewForm(CheckType.Browser);
-      const helpButton = await screen.findByText('Need help writing scripts?');
+      const helpButton = await screen.findByText('Need help?');
       await user.click(helpButton);
+      await user.click(screen.getByRole('menuitem', { name: 'Open Documentation' }));
       expect(screen.getByText(EXPECTED_BROWSER_DOCS_TEXT)).toBeInTheDocument();
     });
   });

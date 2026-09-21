@@ -56,10 +56,10 @@ export const setupFormWithChannelSelector = async (checkType: CheckType) => {
   await gotoSection(user, FormSectionName.Check);
 
   await waitFor(() => {
-    expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: /k6 runtime version/i })).toBeInTheDocument();
   });
 
-  const channelCombobox = screen.getByLabelText(/k6 version/i);
+  const channelCombobox = screen.getByRole('combobox', { name: /k6 runtime version/i });
 
   return { read, user, channelCombobox };
 };
