@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useController, useFormContext, useWatch } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { SecretReferenceModal, SecretScannerPanel } from '@grafana/plugin-ui/secret-scanner';
 import { Box, ConfirmModal, FieldValidationMessage, Icon, Modal, Text, useStyles2, useTheme2 } from '@grafana/ui';
@@ -7,7 +7,7 @@ import { css } from '@emotion/css';
 import { trackExampleScriptSelected } from 'features/tracking/checkFormEvents';
 
 import { CheckFormFieldPath } from '../../../types';
-import { CheckFormValues, K6Channel } from 'types';
+import { CheckFormValues } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
 import { SECRETS_EDIT_MODE_ADD } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/constants';
 import { SecretEditModal } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretEditModal';
@@ -22,9 +22,17 @@ interface GenericScriptFieldProps {
   field: CheckFormFieldPath;
   examples?: ExampleScript[];
   description?: string;
+  runtimeChannelId?: string;
+  warningMessage?: string;
 }
 
-export function GenericScriptField({ field, examples, description }: GenericScriptFieldProps) {
+export function GenericScriptField({
+  field,
+  examples,
+  description,
+  runtimeChannelId,
+  warningMessage,
+}: GenericScriptFieldProps) {
   const {
     control,
     formState: { errors, disabled },
@@ -34,10 +42,6 @@ export function GenericScriptField({ field, examples, description }: GenericScri
 
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
-
-  const k6Channel = useWatch({ control, name: 'channels.k6' }) as K6Channel | undefined;
-  const k6ChannelId = k6Channel?.id;
-  const isDeprecatedChannel = !!k6Channel && new Date(k6Channel.deprecatedAfter) < new Date();
 
   const { field: fieldProps } = useController({ control, name: field });
   const script = typeof fieldProps.value === 'string' ? fieldProps.value : '';
@@ -70,10 +74,10 @@ export function GenericScriptField({ field, examples, description }: GenericScri
         onRequestLoadExample={setPendingExample}
         onExpand={options?.expanded ? undefined : () => setIsExpanded(true)}
       />
-      {isDeprecatedChannel && (
-        <div className={styles.deprecatedBanner}>
+      {warningMessage && (
+        <div className={styles.warningBanner}>
           <Icon name="exclamation-triangle" size="sm" />
-          <Text variant="bodySmall">This k6 version is no longer supported. Switch to a supported channel.</Text>
+          <Text variant="bodySmall">{warningMessage}</Text>
         </div>
       )}
     </>
@@ -112,8 +116,6 @@ export function GenericScriptField({ field, examples, description }: GenericScri
           onDismiss={scanner.migration.cancel}
         />
       )}
-      {/* Shown when a created secret couldn't be inserted automatically (an
-          embedded value): lets the user copy the `secrets.get(...)` reference. */}
       <SecretReferenceModal reference={scanner.reference.pending} onDismiss={scanner.reference.dismiss} />
       {!isExpanded && (
         <CodeEditor
@@ -122,7 +124,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
           readOnly={disabled}
           data-form-name={field}
           data-form-element-selector="textarea"
-          k6Channel={k6ChannelId}
+          k6Channel={runtimeChannelId}
           onEditorDidMount={onEditorMount}
           renderHeader={() => renderScriptEditorHeader()}
         />
@@ -161,7 +163,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
             readOnly={disabled}
             data-form-name={field}
             data-form-element-selector="textarea"
-            k6Channel={k6ChannelId}
+            k6Channel={runtimeChannelId}
             onEditorDidMount={onEditorMount}
             renderHeader={() => renderScriptEditorHeader({ expanded: true })}
           />
@@ -191,7 +193,7 @@ function getStyles(theme: GrafanaTheme2) {
     expandedModalContent: css`
       padding-top: ${theme.spacing(1)};
     `,
-    deprecatedBanner: css`
+    warningBanner: css`
       display: flex;
       align-items: center;
       gap: ${theme.spacing(1)};

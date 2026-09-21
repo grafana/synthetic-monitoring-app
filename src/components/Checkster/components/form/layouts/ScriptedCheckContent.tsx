@@ -1,7 +1,8 @@
 import React from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { useTheme2 } from '@grafana/ui';
 
-import { CheckType } from '../../../../../types';
+import { CheckFormValues, CheckType, K6Channel } from '../../../../../types';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
@@ -28,6 +29,9 @@ export function ScriptedCheckContent({
   scriptDescription = 'Define the requests and assertions to run, using Grafana k6.',
 }: ScriptedCheckSectionProps) {
   const theme = useTheme2();
+  const { control } = useFormContext<CheckFormValues>();
+  const k6Channel = useWatch({ control, name: 'channels.k6' }) as K6Channel | undefined;
+  const isDeprecatedChannel = !!k6Channel && new Date(k6Channel.deprecatedAfter) < new Date();
 
   return (
     <SectionContent noWrapper>
@@ -37,7 +41,15 @@ export function ScriptedCheckContent({
         <FormFolderField />
       </Column>
       <Column fill padding={theme.spacing(0, 2)}>
-        <GenericScriptField field={scriptField} examples={examples} description={scriptDescription} />
+        <GenericScriptField
+          field={scriptField}
+          examples={examples}
+          description={scriptDescription}
+          runtimeChannelId={k6Channel?.id}
+          warningMessage={
+            isDeprecatedChannel ? 'This k6 version is no longer supported. Switch to a supported channel.' : undefined
+          }
+        />
       </Column>
     </SectionContent>
   );
