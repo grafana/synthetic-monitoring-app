@@ -19,11 +19,6 @@ export function useFeatureFlag(featureFlag: FeatureName) {
 
   const isMapped = openFeatureKey !== undefined;
 
-  // TEMPORARY: forced on for PR review until the GOFF flag exists. Remove before merging.
-  if (featureFlag === FeatureName.Recommendations && process.env.NODE_ENV !== 'test') {
-    return { isEnabled: true, isReady: true };
-  }
-
   return {
     isEnabled: isMapped ? openFeatureValue : isFeatureEnabled(featureFlag),
     // Legacy flags resolve synchronously. For mapped flags, "ready" means the provider has
