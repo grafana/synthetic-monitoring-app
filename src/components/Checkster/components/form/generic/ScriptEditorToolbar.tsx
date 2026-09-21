@@ -14,7 +14,8 @@ import { ScriptingHelpMenu } from './ScriptingHelpMenu';
 interface ScriptEditorToolbarProps {
   examples?: ExampleScript[];
   onRequestLoadExample: (example: ExampleScript) => void;
-  onExpand: () => void;
+  /** Omit when the editor is already expanded — there's nothing left to expand into. */
+  onExpand?: () => void;
 }
 
 export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }: ScriptEditorToolbarProps) {
@@ -42,16 +43,18 @@ export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }
         >
           Generate with AI
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          fill="text"
-          icon="expand-arrows-alt"
-          className={styles.expandButton}
-          aria-label="Expand editor"
-          tooltip="Expand editor"
-          onClick={onExpand}
-        />
+        {onExpand && (
+          <Button
+            type="button"
+            variant="secondary"
+            fill="text"
+            icon="expand-arrows-alt"
+            className={styles.expandButton}
+            aria-label="Expand editor"
+            tooltip="Expand editor"
+            onClick={onExpand}
+          />
+        )}
       </div>
 
       <Modal

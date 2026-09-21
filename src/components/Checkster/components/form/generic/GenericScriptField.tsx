@@ -63,12 +63,12 @@ export function GenericScriptField({ field, examples, description }: GenericScri
     setPendingExample(null);
   };
 
-  const renderScriptEditorHeader = () => (
+  const renderScriptEditorHeader = (options?: { expanded?: boolean }) => (
     <>
       <ScriptEditorToolbar
         examples={examples}
         onRequestLoadExample={setPendingExample}
-        onExpand={() => setIsExpanded(true)}
+        onExpand={options?.expanded ? undefined : () => setIsExpanded(true)}
       />
       {isDeprecatedChannel && (
         <div className={styles.deprecatedBanner}>
@@ -136,7 +136,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
           data-form-element-selector="textarea"
           k6Channel={k6ChannelId}
           onEditorDidMount={onEditorMount}
-          renderHeader={renderScriptEditorHeader}
+          renderHeader={() => renderScriptEditorHeader()}
         />
       )}
       {fieldErrorProps.error && (
@@ -175,7 +175,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
             data-form-element-selector="textarea"
             k6Channel={k6ChannelId}
             onEditorDidMount={onEditorMount}
-            renderHeader={renderScriptEditorHeader}
+            renderHeader={() => renderScriptEditorHeader({ expanded: true })}
           />
         </Modal>
       )}
