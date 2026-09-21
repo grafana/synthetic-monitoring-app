@@ -5,6 +5,7 @@ import { locationService } from '@grafana/runtime';
 import { fireEvent, screen, within } from '@testing-library/react';
 import {
   trackCreateManually,
+  trackNamespaceFilterChanged,
   trackRecommendationReviewed,
   trackSetupWithAssistant,
 } from 'features/tracking/reliabilityInboxEvents';
@@ -14,6 +15,7 @@ import { HTTP_RELIABILITY_SUGGESTION } from 'test/fixtures/reliabilityInbox';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { selectOption } from 'test/utils';
 
 import { ReliabilitySuggestion } from './types';
 import { CheckType, CheckTypeGroup, HttpMethod } from 'types';
@@ -30,6 +32,7 @@ jest.mock('./data', () => ({
 
 jest.mock('features/tracking/reliabilityInboxEvents', () => ({
   trackCreateManually: jest.fn(),
+  trackNamespaceFilterChanged: jest.fn(),
   trackRecommendationReviewed: jest.fn(),
   trackSetupWithAssistant: jest.fn(),
 }));
@@ -712,5 +715,180 @@ describe('ReliabilityInboxPage', () => {
     const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
     expect(within(suggestedCheck).queryByText('Probe selection required')).not.toBeInTheDocument();
     expect(within(suggestedCheck).getByText('Probe locations will be selected during review.')).toBeVisible();
+  });
+
+  describe('namespace filtering', () => {
+    const CHECKOUT_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      id: 'checkout-suggestion',
+      target: 'https://checkout.goagain.dev/',
+      namespace: 'checkout',
+      ownerLabels: { team: 'payments', service: 'checkout-api' },
+      relevance: 90,
+    });
+    const SHOP_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      id: 'shop-suggestion',
+      target: 'https://shop.goagain.dev/',
+      namespace: 'shop',
+      relevance: 80,
+    });
+
+    async function renderWithNamespaces() {
+      const requests = jest.fn();
+      server.use(
+        apiRoute('reliabilityInboxSuggestions', {
+          result: () => {
+            requests();
+            return { json: { suggestions: [CHECKOUT_SUGGESTION, SHOP_SUGGESTION], warnings: [] } };
+          },
+        })
+      );
+
+      const { user } = render(<ReliabilityInboxPage />, {
+        path: generateRoutePath(AppRoutes.ReliabilityInbox),
+        route: getRoute(AppRoutes.ReliabilityInbox),
+      });
+
+      await screen.findByRole('button', { name: /checkout\.goagain\.dev/ });
+
+      return { user, requests };
+    }
+
+    it('narrows the queue to the chosen namespace', async () => {
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+
+      expect(await screen.findByRole('button', { name: /shop\.goagain\.dev/ })).toBeVisible();
+      expect(screen.queryByRole('button', { name: /checkout\.goagain\.dev/ })).not.toBeInTheDocument();
+    });
+
+    // Whether teams filter at all is the question this feature exists to
+    // answer, so the count and the set/clear distinction are reported — but
+    // never the namespace itself, which is tenant-authored customer data.
+    it('reports filter use without reporting the namespace', async () => {
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+
+      expect(trackNamespaceFilterChanged).toHaveBeenCalledWith({ namespaceCount: 2, cleared: false });
+      expect(JSON.stringify(jest.mocked(trackNamespaceFilterChanged).mock.calls)).not.toContain('shop');
+    });
+
+    it('does not report a selection that changes nothing', async () => {
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+      expect(trackNamespaceFilterChanged).toHaveBeenCalledTimes(1);
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+
+      expect(trackNamespaceFilterChanged).toHaveBeenCalledTimes(1);
+    });
+
+    // Generating suggestions invokes a paid service, so the filter must work
+    // entirely on the response already held — never by asking for a new one.
+    it('filters without requesting suggestions again', async () => {
+      const { user, requests } = await renderWithNamespaces();
+
+      expect(requests).toHaveBeenCalledTimes(1);
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+
+      expect(requests).toHaveBeenCalledTimes(1);
+    });
+
+    // On screen, not in a tooltip: a tooltip is undiscoverable and unavailable
+    // on touch, and this is the evidence for the attribution the badge asserts.
+    it('shows the namespace and its ownership labels on the suggested check', async () => {
+      await renderWithNamespaces();
+
+      const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      // The badge is labelled so a bare value is never left to be guessed at,
+      // and the row repeats it so the attribution reads on its own.
+      expect(within(suggestedCheck).getByText('namespace: checkout')).toBeVisible();
+      expect(within(suggestedCheck).getByText('Reported by')).toBeVisible();
+      expect(
+        within(suggestedCheck).getByText('namespace: checkout · team: payments · service: checkout-api')
+      ).toBeVisible();
+    });
+
+    // With a namespace but no other labels the row still earns its place: it
+    // is the attribution, not a list of extras.
+    it('shows the namespace alone when the telemetry carried no other hints', async () => {
+      renderPage([SHOP_SUGGESTION]);
+
+      const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      // Twice, deliberately: the header badge and the "Reported by" row.
+      expect(within(suggestedCheck).getAllByText('namespace: shop')).toHaveLength(2);
+    });
+
+    it('omits the ownership row when the telemetry carried no attribution at all', async () => {
+      const UNATTRIBUTED: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+        ...HTTP_RELIABILITY_SUGGESTION,
+        namespace: undefined,
+        ownerLabels: undefined,
+      });
+      renderPage([UNATTRIBUTED]);
+
+      const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      expect(within(suggestedCheck).queryByText('Reported by')).not.toBeInTheDocument();
+    });
+
+    // A refresh can leave a single namespace which is the one already
+    // filtered to: the filter stays valid and keeps hiding unattributed
+    // suggestions, so unmounting the control would trap the user with no way
+    // to clear it.
+    it('keeps the filter on screen when a refresh leaves only the filtered namespace', async () => {
+      const UNATTRIBUTED_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+        ...HTTP_RELIABILITY_SUGGESTION,
+        id: 'unattributed-suggestion',
+        target: 'https://unattributed.goagain.dev/',
+        namespace: undefined,
+        relevance: 70,
+      });
+      const { user } = await renderWithNamespaces();
+
+      await selectOption(user, { label: 'Namespace', option: 'shop' });
+      await screen.findByRole('button', { name: /shop\.goagain\.dev/ });
+
+      // The refresh drops the second namespace, leaving only `shop` plus a
+      // suggestion the telemetry could not attribute.
+      server.use(
+        apiRoute('reliabilityInboxSuggestions', {
+          result: () => ({ json: { suggestions: [SHOP_SUGGESTION, UNATTRIBUTED_SUGGESTION], warnings: [] } }),
+        })
+      );
+
+      await user.click(screen.getByRole('button', { name: 'Refresh suggestions' }));
+      await user.click(
+        within(await screen.findByTestId('toggletip-content')).getByRole('button', { name: 'Refresh suggestions' })
+      );
+
+      // The control survives, still showing the active filter, so its clear
+      // affordance remains reachable — without it the user would be stuck
+      // with the unattributed suggestion permanently hidden.
+      const namespaceFilter = await screen.findByLabelText('Namespace');
+      expect(namespaceFilter).toBeVisible();
+      expect(namespaceFilter).toHaveValue('shop');
+      expect(namespaceFilter).toBeEnabled();
+      expect(screen.queryByRole('button', { name: /unattributed\.goagain\.dev/ })).not.toBeInTheDocument();
+    });
+
+    // One namespace is not a choice, so the control would only add noise.
+    it('hides the filter when every suggestion shares a namespace', async () => {
+      renderPage([CHECKOUT_SUGGESTION]);
+
+      await screen.findByRole('region', { name: 'Suggested HTTP check' });
+
+      expect(screen.queryByLabelText('Namespace')).not.toBeInTheDocument();
+    });
   });
 });

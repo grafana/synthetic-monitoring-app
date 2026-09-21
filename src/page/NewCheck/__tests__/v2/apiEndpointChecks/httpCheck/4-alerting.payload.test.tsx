@@ -4,7 +4,7 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { probeToMetadataProbe, testUsesCombobox } from 'test/utils';
 
 import { CheckAlertType, CheckType } from 'types';
-import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import { gotoSection, selectOnlyProbe, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
@@ -26,8 +26,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
 
@@ -64,8 +63,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
 
@@ -105,8 +103,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
 
@@ -144,8 +141,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     const { user, read } = await renderNewForm(checkType);
     await fillMandatoryFields({ user, checkType, fieldsToOmit: ['probes'] });
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
 
@@ -231,8 +227,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     await selectBasicFrequency(user, '10m');
 
     // Still in section 4 for probes selection
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PRIVATE_PROBE).displayName));
 
     // Now go to section 5 for alerts
     await gotoSection(user, FormSectionName.Alerting);

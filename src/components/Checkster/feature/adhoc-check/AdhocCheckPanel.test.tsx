@@ -11,7 +11,7 @@ import { CheckType } from 'types';
 import { getCheckTypeGroup } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
-import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
+import { gotoSection, selectOnlyProbe } from 'components/Checkster/__testHelpers__/formHelpers';
 import { doAdhocCheck } from 'components/Checkster/feature/adhoc-check/__testHelpers__/adhocCheck';
 import { FormSectionName } from 'components/Checkster/types';
 import { NewCheckV2 } from 'page/NewCheck/NewCheckV2';
@@ -127,8 +127,7 @@ describe('adhoc-check', () => {
     await user.paste('https://grafana.com/');
 
     await gotoSection(user, FormSectionName.Execution);
-    const probeCheckbox = await screen.findByRole('checkbox', { name: new RegExp(PRIVATE_PROBE.name) });
-    await user.click(probeCheckbox);
+    await selectOnlyProbe(user, new RegExp(PRIVATE_PROBE.name));
 
     await doAdhocCheck(user);
 

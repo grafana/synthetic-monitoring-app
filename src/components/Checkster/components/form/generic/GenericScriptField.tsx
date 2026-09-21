@@ -1,17 +1,21 @@
 import React, { useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { ConfirmModal, FieldValidationMessage, Icon, Modal, Text, useStyles2, useTheme2 } from '@grafana/ui';
+import { SecretReferenceModal, SecretScannerPanel } from '@grafana/plugin-ui/secret-scanner';
+import { Box, ConfirmModal, FieldValidationMessage, Icon, Modal, Text, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { trackExampleScriptSelected } from 'features/tracking/checkFormEvents';
 
 import { CheckFormFieldPath } from '../../../types';
 import { CheckFormValues, K6Channel } from 'types';
 import { CodeEditor } from 'components/CodeEditor';
+import { SECRETS_EDIT_MODE_ADD } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/constants';
+import { SecretEditModal } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretEditModal';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { getFieldErrorProps } from '../../../utils/form';
 import { Column } from '../../ui/Column';
+import { useScriptSecretScanner } from './GenericScriptField.hooks';
 import { ScriptEditorToolbar } from './ScriptEditorToolbar';
 
 interface GenericScriptFieldProps {
@@ -37,6 +41,17 @@ export function GenericScriptField({ field, examples, description }: GenericScri
   const isDeprecatedChannel = !!k6Channel && new Date(k6Channel.deprecatedAfter) < new Date();
 
   const { field: fieldProps } = useController({ control, name: field });
+  const script = typeof fieldProps.value === 'string' ? fieldProps.value : '';
+
+  const { scanner, secretsEnabled, existingSecretNames, activeFinding, secretInitialValues, onEditorMount } =
+    useScriptSecretScanner({
+      field,
+      script,
+      onChange: fieldProps.onChange,
+      disabled,
+    });
+
+  const showScannerPanel = secretsEnabled && scanner.findings.length > 0;
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [pendingExample, setPendingExample] = useState<ExampleScript | null>(null);
@@ -78,6 +93,26 @@ export function GenericScriptField({ field, examples, description }: GenericScri
           )}
         </div>
       </div>
+      {showScannerPanel && (
+        <Box padding={2} paddingBottom={0}>
+          <SecretScannerPanel scanner={scanner} readOnly={disabled} />
+        </Box>
+      )}
+      {activeFinding && (
+        <SecretEditModal
+          key={activeFinding.id}
+          open
+          name={SECRETS_EDIT_MODE_ADD}
+          source="check_editor_feature_secret_scanner"
+          existingNames={existingSecretNames}
+          initialValues={secretInitialValues}
+          onCreated={(secret) => scanner.migration.apply(activeFinding, secret.name)}
+          onDismiss={scanner.migration.cancel}
+        />
+      )}
+      {/* Shown when a created secret couldn't be inserted automatically (an
+          embedded value): lets the user copy the `secrets.get(...)` reference. */}
+      <SecretReferenceModal reference={scanner.reference.pending} onDismiss={scanner.reference.dismiss} />
       {!isExpanded && (
         <CodeEditor
           {...(fieldProps as any)}
@@ -85,6 +120,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
           data-form-name={field}
           data-form-element-selector="textarea"
           k6Channel={k6ChannelId}
+          onEditorDidMount={onEditorMount}
           renderHeader={() => (
             <>
               <ScriptEditorToolbar
@@ -131,6 +167,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
             data-form-name={field}
             data-form-element-selector="textarea"
             k6Channel={k6ChannelId}
+            onEditorDidMount={onEditorMount}
           />
         </Modal>
       )}

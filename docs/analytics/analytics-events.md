@@ -508,6 +508,17 @@ Tracks when a user takes a recommendation to the check form to create it themsel
 | ------------- | -------- | -------------------------------------------------------------- |
 | opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
 
+#### synthetic-monitoring_reliability_inbox_namespace_filter_changed
+
+Tracks when a user narrows the queue to a namespace, or clears that filter. The namespace itself is deliberately NOT reported: its values are tenant authored, so they are customer data, and "do teams filter at all?" — the question this feature exists to answer — needs only the count and whether the filter was set or cleared.
+
+##### Properties
+
+| name           | type            | description                                                      |
+| -------------- | --------------- | ---------------------------------------------------------------- |
+| namespaceCount | `number`        | How many namespaces the user had to choose between.              |
+| cleared        | `false \| true` | True when the filter was cleared rather than set to a namespace. |
+
 ### screenshots
 
 #### synthetic-monitoring_screenshots_expanded

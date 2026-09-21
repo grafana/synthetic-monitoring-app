@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Icon, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
+import { Badge, Combobox, Field, Icon, Stack, Tab, TabsBar, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import pluralize from 'pluralize';
 
@@ -13,8 +13,11 @@ interface RecommendationQueueProps {
   dismissedCount: number;
   view: 'active' | 'dismissed';
   selectedId?: string;
+  namespaceOptions: string[];
+  namespaceFilter?: string;
   onSelect: (id: string) => void;
   onViewChange: (view: 'active' | 'dismissed') => void;
+  onNamespaceFilterChange: (namespace?: string) => void;
 }
 
 export function RecommendationQueue({
@@ -23,8 +26,11 @@ export function RecommendationQueue({
   dismissedCount,
   view,
   selectedId,
+  namespaceOptions,
+  namespaceFilter,
   onSelect,
   onViewChange,
+  onNamespaceFilterChange,
 }: RecommendationQueueProps) {
   const styles = useStyles2(getStyles);
   const totalCount = activeCount + dismissedCount;
@@ -61,6 +67,25 @@ export function RecommendationQueue({
               </Text>
             </Stack>
           </div>
+          {/*
+            Only worth the space once there is something to choose between —
+            but never hidden while a filter is applied. A refresh can leave a
+            single namespace that is the one already filtered to: the filter
+            stays valid, so it keeps hiding unattributed suggestions, and
+            unmounting the control would leave no way to clear it.
+          */}
+          {(namespaceOptions.length > 1 || namespaceFilter) && (
+            <Field className={styles.namespaceFilter} label="Namespace">
+              <Combobox
+                id="reliability-inbox-namespace-filter"
+                placeholder="All namespaces"
+                isClearable
+                value={namespaceFilter ?? null}
+                options={namespaceOptions.map((namespace) => ({ label: namespace, value: namespace }))}
+                onChange={(option) => onNamespaceFilterChange(option?.value)}
+              />
+            </Field>
+          )}
           <TabsBar className={styles.tabs} hideBorder>
             <Tab
               className={styles.tab}
@@ -102,6 +127,11 @@ export function RecommendationQueue({
                         ? 'Dismissed in this browser'
                         : `Missing check${opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}`}
                     </Text>
+                    {opportunity.namespace && (
+                      <Text variant="bodySmall" color="secondary">
+                        {opportunity.namespace}
+                      </Text>
+                    )}
                   </Stack>
                 </button>
               </li>
@@ -162,6 +192,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     [`@container ${RELIABILITY_INBOX_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`]: {
       display: 'none',
     },
+  }),
+  namespaceFilter: css({
+    margin: theme.spacing(1, 0, 0),
   }),
   tabs: css({
     margin: theme.spacing(1, -0.5, -1.5),
