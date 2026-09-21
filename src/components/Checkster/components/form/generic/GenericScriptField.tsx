@@ -3,7 +3,7 @@ import { useController, useFormContext, useWatch } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { SecretReferenceModal, SecretScannerPanel } from '@grafana/plugin-ui/secret-scanner';
 import { Box, ConfirmModal, FieldValidationMessage, Icon, Modal, Text, useStyles2, useTheme2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { css } from '@emotion/css';
 import { trackExampleScriptSelected } from 'features/tracking/checkFormEvents';
 
 import { CheckFormFieldPath } from '../../../types';
@@ -80,20 +80,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
   );
 
   return (
-    <Column
-      grow
-      className={cx(
-        css`
-          & > div[data-fs-element='Code editor'] {
-            flex: 1 1 0;
-            overflow: visible;
-          }
-          & > div > div {
-            min-height: unset; // code editor
-          }
-        `
-      )}
-    >
+    <Column grow>
       <div className={styles.label}>
         <div className={styles.titleRow}>
           <Text variant="bodySmall" weight="medium">
@@ -131,6 +118,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
       {!isExpanded && (
         <CodeEditor
           {...(fieldProps as any)}
+          fill
           readOnly={disabled}
           data-form-name={field}
           data-form-element-selector="textarea"

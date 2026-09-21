@@ -83,6 +83,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   {
     checkJs = true,
     constrainedRanges,
+    fill,
     id,
     k6Channel,
     language = 'javascript',
@@ -99,14 +100,13 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }: CodeEditorProps & ConstrainedEditorProps,
   ref
 ) {
-  const styles = useStyles2(getStyles);
+  const styles = useStyles2(getStyles, fill);
   const [editorRef, setEditorRef] = useState<null | monacoType.editor.IStandaloneCodeEditor>(null);
   const [constrainedInstance, setConstrainedInstance] = useState<null | ConstrainedEditorInstance>(null);
 
   const isJs = language === 'javascript';
   const [prevValue, setPrevValue] = useState(value);
   const [editorHeight, setEditorHeight] = useState(600); // Initial height
-  // Set once the user manually resizes, to stop auto-resize from overriding it.
   const manualHeightRef = useRef<number | null>(null);
   const isPointerDownRef = useRef(false);
   const heightAtPointerDownRef = useRef(0);
@@ -216,8 +216,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
       resizeObserver.observe(parentContainer);
     }
 
-    // A height change is only ever a manual resize if it happens while the mouse is
-    // held down inside the editor — content/layout changes never hold the mouse down.
     const handlePointerDown = () => {
       isPointerDownRef.current = true;
       heightAtPointerDownRef.current = parentContainer?.getBoundingClientRect().height ?? 0;
@@ -283,14 +281,13 @@ export const CodeEditor = forwardRef(function CodeEditor(
     () => css`
       ${containerStyles};
       height: ${editorHeight}px;
-      min-height: ${MIN_EDITOR_HEIGHT}px;
+      ${fill ? '' : `min-height: ${MIN_EDITOR_HEIGHT}px;`}
       resize: vertical;
       overflow: auto !important;
-      // Outer wrapper already draws the frame; drop Grafana's default inner one.
       border: none !important;
       border-radius: 0 !important;
     `,
-    [editorHeight]
+    [editorHeight, fill]
   );
 
   return (
@@ -328,13 +325,13 @@ export const CodeEditor = forwardRef(function CodeEditor(
   );
 });
 
-function getStyles(theme: GrafanaTheme2) {
+function getStyles(theme: GrafanaTheme2, fill?: boolean) {
   return {
     editorWrapper: css`
       position: relative;
       border: 1px solid ${theme.colors.border.weak};
       border-radius: ${theme.shape.radius.default};
-      overflow: hidden;
+      ${fill ? 'flex: 1 1 0; overflow: visible;' : 'overflow: hidden;'}
     `,
   };
 }
