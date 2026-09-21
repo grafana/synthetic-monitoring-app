@@ -283,9 +283,9 @@ export const CodeEditor = forwardRef(function CodeEditor(
       height: ${editorHeight}px;
       ${fill ? '' : `min-height: ${MIN_EDITOR_HEIGHT}px;`}
       resize: vertical;
-      overflow: auto !important;
-      border: none !important;
-      border-radius: 0 !important;
+      overflow: auto;
+      border: none;
+      border-radius: 0;
     `,
     [editorHeight, fill]
   );
