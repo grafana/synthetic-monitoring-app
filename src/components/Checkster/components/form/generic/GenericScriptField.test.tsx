@@ -262,7 +262,7 @@ describe('script editor toolbar', () => {
     const dialog = await waitFor(() => screen.getByRole('dialog', { name: /load example script/i }));
     expect(dialog).toBeInTheDocument();
 
-    await user.click(within(dialog).getByRole('button', { name: 'Load example' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Load example and overwrite script' }));
 
     expect(screen.getByTestId(UI_TEST_ID.codeEditor)).toHaveValue('console.log("basic");');
   });

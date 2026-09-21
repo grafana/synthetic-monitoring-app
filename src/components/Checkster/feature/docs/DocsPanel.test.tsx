@@ -51,7 +51,7 @@ describe('DocsPanel', () => {
       const { user } = await renderNewForm(CheckType.Scripted);
       const helpButton = await screen.findByText('Need help?');
       await user.click(helpButton);
-      await user.click(screen.getByRole('menuitem', { name: 'Open Documentation' }));
+      await user.click(screen.getByRole('menuitem', { name: 'Open documentation' }));
       expect(screen.getByText(SCRIPTED_CHECKS_DOCS_TEXT)).toBeInTheDocument();
     });
   });
@@ -75,7 +75,7 @@ describe('DocsPanel', () => {
       const { user } = await renderNewForm(CheckType.Browser);
       const helpButton = await screen.findByText('Need help?');
       await user.click(helpButton);
-      await user.click(screen.getByRole('menuitem', { name: 'Open Documentation' }));
+      await user.click(screen.getByRole('menuitem', { name: 'Open documentation' }));
       expect(screen.getByText(EXPECTED_BROWSER_DOCS_TEXT)).toBeInTheDocument();
     });
   });

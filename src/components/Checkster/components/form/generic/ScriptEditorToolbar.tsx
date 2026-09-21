@@ -38,8 +38,6 @@ export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }
           fill="outline"
           icon="ai-sparkle"
           className={styles.agentSetupButton}
-          aria-label="Generate with AI"
-          tooltip="Generate with AI"
           onClick={() => setIsAgentSetupOpen(true)}
         >
           Generate with AI
@@ -56,10 +54,15 @@ export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }
         />
       </div>
 
-      <Modal isOpen={isAgentSetupOpen} title="Generate with AI" onDismiss={() => setIsAgentSetupOpen(false)}>
+      <Modal
+        isOpen={isAgentSetupOpen}
+        title="Generate with AI"
+        contentClassName={styles.agentSetupModalContent}
+        onDismiss={() => setIsAgentSetupOpen(false)}
+      >
         <Stack direction="column" gap={2}>
           <Text color="secondary">Use our skill in your local coding agent to generate a {scriptKind}.</Text>
-          <AgentSkillPicker source={agentSkillSource} title={null} showDescription={false} showFeedback={false} />
+          <AgentSkillPicker source={agentSkillSource} title={null} showDescription={false} />
         </Stack>
       </Modal>
     </div>
@@ -97,6 +100,9 @@ function getStyles(theme: GrafanaTheme2) {
     `,
     expandButton: css`
       margin-left: ${theme.spacing(0.5)};
+    `,
+    agentSetupModalContent: css`
+      padding-top: ${theme.spacing(1)};
     `,
   };
 }

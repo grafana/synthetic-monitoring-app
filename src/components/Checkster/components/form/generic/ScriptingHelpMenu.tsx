@@ -39,7 +39,7 @@ export function ScriptingHelpMenu({ examples, onRequestLoadExample }: ScriptingH
             />
           )}
           <Menu.Item
-            label="Open Documentation"
+            label="Open documentation"
             onClick={() => {
               setActive('Docs', true);
               document.getElementById(SECONDARY_CONTAINER_ID)?.focus();

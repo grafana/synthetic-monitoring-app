@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useMemo } from 'react';
+import React, { useEffect, useId, useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Combobox } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -84,15 +84,6 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
   }, [channels]);
 
   const selectedChannelId = field.value?.id || defaultChannelId;
-  const selectedChannel = channels.find((channel) => channel.id === selectedChannelId);
-
-  const loadChannelOptions = useCallback(
-    async (inputValue: string) => {
-      const query = inputValue.toLowerCase();
-      return channelOptions.filter((option) => option.label.toLowerCase().includes(query));
-    },
-    [channelOptions]
-  );
 
   return (
     <>
@@ -103,16 +94,9 @@ function K6ChannelSelectContent({ disabled }: K6ChannelSelectProps) {
         {...field}
         aria-labelledby={labelId}
         prefixIcon="k6-rounded"
-        value={
-          selectedChannel
-            ? {
-                value: selectedChannel.id,
-                label: `${selectedChannel.name}${selectedChannel.default ? ' (default)' : ''}`,
-              }
-            : selectedChannelId
-        }
+        value={selectedChannelId}
         disabled={disabled || isLoadingChannels}
-        options={loadChannelOptions}
+        options={channelOptions}
         id={id}
         width={20}
         createCustomValue={false}

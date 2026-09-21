@@ -59,21 +59,10 @@ export const AgentSkillPicker = ({
 
   return (
     <Stack direction="column" gap={1}>
-      {(title || askForFeedback) && (
-        <Stack direction="row" alignItems="center" gap={1}>
-          {title && (
-            <Text variant="body" weight="medium" element="h3">
-              {title}
-            </Text>
-          )}
-          {askForFeedback && (
-            <Feedback
-              feature={AGENT_SKILL_FEEDBACK_FEATURE}
-              about={{ text: 'Did the skill help?' }}
-              onReaction={markFeedbackGiven}
-            />
-          )}
-        </Stack>
+      {title && (
+        <Text variant="body" weight="medium" element="h3">
+          {title}
+        </Text>
       )}
       <div className={styles.cardRow}>
         {AGENT_SKILL_TOOLS.map((tool) => (
@@ -120,7 +109,7 @@ export const AgentSkillPicker = ({
             </Text>
             <AgentSkillPrompts source={source} tool={selectedTool.id} />
           </Stack>
-          <div>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
             <TextLink
               href={AGENT_SKILL_REPO_URL}
               external
@@ -129,7 +118,14 @@ export const AgentSkillPicker = ({
             >
               View the skill on GitHub
             </TextLink>
-          </div>
+            {askForFeedback && (
+              <Feedback
+                feature={AGENT_SKILL_FEEDBACK_FEATURE}
+                about={{ text: 'Did the skill help?' }}
+                onReaction={markFeedbackGiven}
+              />
+            )}
+          </Stack>
         </Stack>
       )}
     </Stack>

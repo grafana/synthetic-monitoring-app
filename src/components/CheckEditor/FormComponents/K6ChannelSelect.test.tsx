@@ -116,8 +116,7 @@ describe('K6ChannelSelect', () => {
 
     const combobox = screen.getByRole('combobox', { name: /k6 runtime version/i });
     await user.click(combobox);
-    // Options now load asynchronously (see K6ChannelSelect.tsx), so wait for them to resolve.
-    await user.click(await screen.findByRole('option', { name: /v1\.x/ }));
+    await user.click(screen.getByRole('option', { name: /v1\.x/ }));
 
     await waitFor(() => {
       expect(combobox).toHaveValue('v1.x');

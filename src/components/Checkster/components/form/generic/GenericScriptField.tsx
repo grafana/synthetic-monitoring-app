@@ -153,14 +153,20 @@ export function GenericScriptField({ field, examples, description }: GenericScri
       <ConfirmModal
         isOpen={!!pendingExample}
         title="Load example script?"
-        body="This replaces your current script. This can't be undone."
-        confirmText="Load example"
+        body="This overwrites your current script and can't be undone."
+        confirmText="Load example and overwrite script"
         onConfirm={handleConfirmLoadExample}
         onDismiss={() => setPendingExample(null)}
       />
 
       {isExpanded && (
-        <Modal isOpen title="Script" onDismiss={() => setIsExpanded(false)} className={styles.expandedModal}>
+        <Modal
+          isOpen
+          title="Script"
+          onDismiss={() => setIsExpanded(false)}
+          className={styles.expandedModal}
+          contentClassName={styles.expandedModalContent}
+        >
           <CodeEditor
             {...(fieldProps as any)}
             readOnly={disabled}
@@ -191,6 +197,9 @@ function getStyles(theme: GrafanaTheme2) {
     expandedModal: css`
       width: 90vw;
       max-width: 1400px;
+    `,
+    expandedModalContent: css`
+      padding-top: ${theme.spacing(1)};
     `,
     deprecatedBanner: css`
       display: flex;
