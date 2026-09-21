@@ -95,7 +95,7 @@ function getStyles(theme: GrafanaTheme2) {
     `,
     agentSetupButton: css`
       & svg {
-        color: #ff8833;
+        color: ${theme.colors.warning.text};
       }
     `,
     expandButton: css`

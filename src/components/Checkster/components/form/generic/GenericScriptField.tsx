@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useController, useFormContext } from 'react-hook-form';
+import { useController, useFormContext, useWatch } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { SecretReferenceModal, SecretScannerPanel } from '@grafana/plugin-ui/secret-scanner';
 import { Box, ConfirmModal, FieldValidationMessage, Icon, Modal, Text, useStyles2, useTheme2 } from '@grafana/ui';
@@ -27,7 +27,6 @@ interface GenericScriptFieldProps {
 export function GenericScriptField({ field, examples, description }: GenericScriptFieldProps) {
   const {
     control,
-    getValues,
     formState: { errors, disabled },
   } = useFormContext<CheckFormValues>();
 
@@ -36,7 +35,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
   const theme = useTheme2();
   const styles = useStyles2(getStyles);
 
-  const k6Channel = getValues('channels.k6') as K6Channel | undefined;
+  const k6Channel = useWatch({ control, name: 'channels.k6' }) as K6Channel | undefined;
   const k6ChannelId = k6Channel?.id;
   const isDeprecatedChannel = !!k6Channel && new Date(k6Channel.deprecatedAfter) < new Date();
 
@@ -63,6 +62,22 @@ export function GenericScriptField({ field, examples, description }: GenericScri
     }
     setPendingExample(null);
   };
+
+  const renderScriptEditorHeader = () => (
+    <>
+      <ScriptEditorToolbar
+        examples={examples}
+        onRequestLoadExample={setPendingExample}
+        onExpand={() => setIsExpanded(true)}
+      />
+      {isDeprecatedChannel && (
+        <div className={styles.deprecatedBanner}>
+          <Icon name="exclamation-triangle" size="sm" />
+          <Text variant="bodySmall">This k6 version is no longer supported. Switch to a supported channel.</Text>
+        </div>
+      )}
+    </>
+  );
 
   return (
     <Column
@@ -121,21 +136,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
           data-form-element-selector="textarea"
           k6Channel={k6ChannelId}
           onEditorDidMount={onEditorMount}
-          renderHeader={() => (
-            <>
-              <ScriptEditorToolbar
-                examples={examples}
-                onRequestLoadExample={setPendingExample}
-                onExpand={() => setIsExpanded(true)}
-              />
-              {isDeprecatedChannel && (
-                <div className={styles.deprecatedBanner}>
-                  <Icon name="exclamation-triangle" size="sm" />
-                  <Text variant="bodySmall">This k6 version is no longer supported. Switch to a supported channel.</Text>
-                </div>
-              )}
-            </>
-          )}
+          renderHeader={renderScriptEditorHeader}
         />
       )}
       {fieldErrorProps.error && (
@@ -174,6 +175,7 @@ export function GenericScriptField({ field, examples, description }: GenericScri
             data-form-element-selector="textarea"
             k6Channel={k6ChannelId}
             onEditorDidMount={onEditorMount}
+            renderHeader={renderScriptEditorHeader}
           />
         </Modal>
       )}

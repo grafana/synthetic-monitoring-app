@@ -108,7 +108,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const [editorHeight, setEditorHeight] = useState(600); // Initial height
   // Set once the user manually resizes, to stop auto-resize from overriding it.
   const manualHeightRef = useRef<number | null>(null);
-  const lastAutoHeightRef = useRef(MIN_EDITOR_HEIGHT);
+  const isPointerDownRef = useRef(false);
+  const heightAtPointerDownRef = useRef(0);
 
   // Layout editor when height changes
   useEffect(() => {
@@ -199,7 +200,6 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
       const contentHeight = editor.getContentHeight();
       const newHeight = Math.max(contentHeight, MIN_EDITOR_HEIGHT);
-      lastAutoHeightRef.current = newHeight;
       setEditorHeight(newHeight);
     };
 
@@ -210,19 +210,30 @@ export const CodeEditor = forwardRef(function CodeEditor(
     updateEditorHeight();
 
     const parentContainer = editor.getDomNode()?.parentElement;
-    const resizeObserver = parentContainer
-      ? new ResizeObserver(([entry]) => {
-          const observedHeight = entry.contentRect.height;
-          if (Math.abs(observedHeight - lastAutoHeightRef.current) > 2) {
-            manualHeightRef.current = observedHeight;
-          }
-          editor.layout();
-        })
-      : null;
+    const resizeObserver = parentContainer ? new ResizeObserver(() => editor.layout()) : null;
 
     if (resizeObserver && parentContainer) {
       resizeObserver.observe(parentContainer);
     }
+
+    // A height change is only ever a manual resize if it happens while the mouse is
+    // held down inside the editor — content/layout changes never hold the mouse down.
+    const handlePointerDown = () => {
+      isPointerDownRef.current = true;
+      heightAtPointerDownRef.current = parentContainer?.getBoundingClientRect().height ?? 0;
+    };
+    const handlePointerUp = () => {
+      if (isPointerDownRef.current && parentContainer) {
+        const heightNow = parentContainer.getBoundingClientRect().height;
+        if (Math.abs(heightNow - heightAtPointerDownRef.current) > 2) {
+          manualHeightRef.current = heightNow;
+        }
+      }
+      isPointerDownRef.current = false;
+    };
+
+    parentContainer?.addEventListener('mousedown', handlePointerDown);
+    window.addEventListener('mouseup', handlePointerUp);
 
     if (constrainedRanges) {
       const instance = initializeConstrainedInstance(monaco, editor);
@@ -242,6 +253,8 @@ export const CodeEditor = forwardRef(function CodeEditor(
       }
       disposeSizeChange.dispose();
       resizeObserver?.disconnect();
+      parentContainer?.removeEventListener('mousedown', handlePointerDown);
+      window.removeEventListener('mouseup', handlePointerUp);
     });
   };
 
