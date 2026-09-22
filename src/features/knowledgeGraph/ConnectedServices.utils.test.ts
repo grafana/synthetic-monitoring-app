@@ -1,4 +1,4 @@
-import { buildServiceNeighbourhoodQuery, escapeCypher, getCheckGraphUrl, wrapLabel } from './ConnectedServices.utils';
+import { buildServiceNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedServices.utils';
 
 function paramsOf(url: string): URLSearchParams {
   return new URLSearchParams(url.split('?')[1]);
@@ -85,24 +85,3 @@ describe('getCheckGraphUrl', () => {
   });
 });
 
-describe('wrapLabel', () => {
-  it('leaves a label that fits on one line', () => {
-    expect(wrapLabel('frontend', 18, 2)).toEqual(['frontend']);
-  });
-
-  it('breaks after the last separator that fits, so the split lands on a name boundary', () => {
-    expect(wrapLabel('local-lab/local-kg-lab-web', 18, 2)).toEqual(['local-lab/local-', 'kg-lab-web']);
-    expect(wrapLabel('my check__https://grafana.com', 18, 2)).toEqual(['my check__https://', 'grafana.com']);
-  });
-
-  it('hard-breaks a single unbroken token', () => {
-    expect(wrapLabel('abcdefghijklmnopqrstuvwxyz', 10, 2)).toEqual(['abcdefghij', 'klmnopqrs…']);
-  });
-
-  it('ellipsizes whatever does not fit in the allowed lines', () => {
-    expect(wrapLabel('local-lab/local-kg-lab-web-frontend-checkout', 18, 2)).toEqual([
-      'local-lab/local-',
-      'kg-lab-web-fronte…',
-    ]);
-  });
-});

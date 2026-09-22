@@ -12,8 +12,7 @@ import {
   KG_SYNTHETIC_CHECK_ENTITY_TYPE,
 } from './knowledgeGraph';
 
-// Minimum section height, matching the space the section reserves so the layout doesn't jump;
-// the component grows itself up to MAX_GRAPH_HEIGHT via autoHeight.
+// Minimum height; the component grows itself up to MAX_GRAPH_HEIGHT via autoHeight.
 const GRAPH_HEIGHT = 280;
 const MAX_GRAPH_HEIGHT = 560;
 
