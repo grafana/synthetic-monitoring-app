@@ -15,7 +15,12 @@ Tracking issue: [#1717](https://github.com/grafana/synthetic-monitoring-app/issu
 - Consumers always use `useFeatureFlag(FeatureName.X)` (or the `<FeatureFlag>` component).
   The hook routes each flag based on `OPEN_FEATURE_KEYS`:
   - **Mapped** -> evaluated through OpenFeature (render-cycle aware, picks up runtime changes).
+    While OpenFeature can't resolve the key (no definition in that wave yet, provider not ready
+    or unavailable) the flag reads legacy `config.featureToggles` instead, so a mapping can ship
+    before the GOFF definition has reached every wave.
   - **Not mapped** -> legacy `config.featureToggles` (plus the `?features=` URL override).
+  - Call sites that evaluate a dynamic list of flags (e.g. `option.featureToggle`) use
+    `useIsFeatureEnabled()`, which applies the same rules.
 - OSS/on-prem Grafana (>= 12.x) serves the same OFREP endpoint backed by a static provider
   seeded from `[feature_toggles]` in grafana.ini, so operators set migrated flags via ini +
   restart, like legacy toggles. GOFF (runtime changes, rollout targeting) is Cloud-only;
@@ -87,7 +92,8 @@ therefore two independent steps — switch the read path first, move the definit
 3. Smoke test in dev/staging: the flag should resolve with the same value as before
    (`reason: TARGETING_MATCH` from the mirrored definition).
 
-Note: the `?features=<flag>` URL override no longer applies once a flag is routed.
+Note: the `?features=<flag>` URL override only applies to a routed flag while OpenFeature can't
+resolve it (see above); once the GOFF definition is live in a wave, it is ignored there.
 
 ### Step B — move the definition to the new pattern (deployment_tools PRs)
 

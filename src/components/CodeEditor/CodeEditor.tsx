@@ -8,7 +8,7 @@ import { CodeEditorProps, ConstrainedEditorProps } from './CodeEditor.types';
 // import { Overlay } from 'components/Overlay';
 import k6Types from './k6.types';
 import { FeatureName } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 import { useK6TypesForChannel } from './k6TypesLoader/useK6TypesForChannel';
 import { initializeConstrainedInstance, updateConstrainedEditorRanges } from './CodeEditor.utils';
@@ -29,13 +29,12 @@ const clearK6Types = (monaco: typeof monacoType) => {
   currentK6LibUris = [];
 };
 
-const addK6Types = (monaco: typeof monacoType, types: Record<string, string> = k6Types) => {
+const addK6Types = (monaco: typeof monacoType, types: Record<string, string>, secretsEnabled: boolean) => {
   // Clear existing k6 types first
   clearK6Types(monaco);
 
-  // Filter types based on feature flags
   const filteredTypes = { ...types };
-  if (!isFeatureEnabled(FeatureName.SecretsManagement)) {
+  if (!secretsEnabled) {
     delete filteredTypes['k6/secrets'];
   }
 
@@ -116,6 +115,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   }, [editorHeight, editorRef]);
 
   const { types: dynamicK6Types, loading: k6TypesLoading, error: k6TypesError } = useK6TypesForChannel(k6Channel, isJs);
+  const { isEnabled: secretsEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
   const shouldWaitForTypes = k6Channel && isJs && k6TypesLoading && !k6TypesError;
 
@@ -124,10 +124,10 @@ export const CodeEditor = forwardRef(function CodeEditor(
     if (editorRef && dynamicK6Types) {
       const monaco = (window as any).monaco;
       if (monaco) {
-        addK6Types(monaco, dynamicK6Types);
+        addK6Types(monaco, dynamicK6Types, secretsEnabled);
       }
     }
-  }, [dynamicK6Types, editorRef]);
+  }, [dynamicK6Types, editorRef, secretsEnabled]);
 
   // GC
   useEffect(() => {
@@ -157,7 +157,7 @@ export const CodeEditor = forwardRef(function CodeEditor(
   const handleBeforeEditorMount = async (monaco: typeof monacoType) => {
     await onBeforeEditorMount?.(monaco);
 
-    addK6Types(monaco, dynamicK6Types || k6Types);
+    addK6Types(monaco, dynamicK6Types || k6Types, secretsEnabled);
 
     const compilerOptions = monaco.languages.typescript.javascriptDefaults.getCompilerOptions();
     monaco.languages.typescript.javascriptDefaults.setCompilerOptions({

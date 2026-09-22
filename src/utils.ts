@@ -27,7 +27,7 @@ import {
   isTCPFormValuesSettings,
   isTCPSettings,
 } from 'utils.types';
-import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions.constants';
 
 /**
  * Find all synthetic-monitoring datasources

@@ -6,7 +6,7 @@ import { PluginPage } from '@grafana/runtime';
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(AppRoutes.Config)}/${tab}`.replace(/\/+/g, '/');
@@ -27,7 +27,8 @@ function useActiveTab(route: AppRoutes) {
 
 export function ConfigPageLayout() {
   const activeTab = useActiveTab(AppRoutes.Config);
-  const { isFeatureEnabled } = useFeatureFlagContext();
+  const { isEnabled: isLabelMigrationEnabled } = useFeatureFlag(FeatureName.LabelMigration);
+  const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
   const pageNav: NavModelItem = useMemo(() => {
     const navModel: NavModelItem = {
@@ -61,7 +62,7 @@ export function ConfigPageLayout() {
 
     // Label Migration is feature-flagged for rollout. The tab itself limits
     // mode changes to admins and shows a contact-admin notice otherwise.
-    if (isFeatureEnabled(FeatureName.LabelMigration)) {
+    if (isLabelMigrationEnabled) {
       navModel.children!.push({
         icon: 'tag-alt',
         text: 'Label migration',
@@ -71,7 +72,7 @@ export function ConfigPageLayout() {
     }
 
     // Add secrets management tab if the feature is enabled
-    if (isFeatureEnabled(FeatureName.SecretsManagement)) {
+    if (isSecretsManagementEnabled) {
       navModel.children!.push({
         icon: 'key-skeleton-alt',
         text: 'Secrets',
@@ -80,7 +81,7 @@ export function ConfigPageLayout() {
       });
     }
     return navModel;
-  }, [activeTab, isFeatureEnabled]);
+  }, [activeTab, isLabelMigrationEnabled, isSecretsManagementEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>
