@@ -41,7 +41,7 @@ export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }
           className={styles.agentSetupButton}
           onClick={() => setIsAgentSetupOpen(true)}
         >
-          Generate with AI
+          Generate with your AI agent
         </Button>
         {onExpand && (
           <Button
