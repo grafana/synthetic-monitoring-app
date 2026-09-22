@@ -42,6 +42,8 @@ export interface ExposedMiniGraphProps {
   focusEntity?: { type: string; name: string; scope?: { env?: string; site?: string; namespace?: string } };
   nodeLimit?: number;
   nodeFilter?: (node: ExposedMiniGraphNode) => boolean;
+  /** Renders an env picker when the result spans multiple environments; the focus entity always survives. */
+  showEnvFilter?: boolean;
   onNodeClick?: (node: ExposedMiniGraphNode) => void;
   /** dagre orientation; 'TB' puts the shallow neighbourhood's sibling fan on the horizontal axis. */
   rankdir?: 'LR' | 'TB';
@@ -91,6 +93,9 @@ export function ConnectedServicesMiniGraph({ check, MiniGraph }: ConnectedServic
         // neighbours, ~3 ranks) but sibling-heavy, so top-to-bottom puts the sibling fan on the
         // horizontal axis. LR would stack the siblings vertically.
         rankdir="TB"
+        // Checks carry no env, so their service links fan out to every env twin of the linked
+        // service; the picker lets users isolate one environment. The check always survives it.
+        showEnvFilter
       />
     </div>
   );

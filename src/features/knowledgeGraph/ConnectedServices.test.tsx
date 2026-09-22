@@ -153,6 +153,8 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
     name: `${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`,
   });
   expect(props.rankdir).toBe('TB');
+  // Env-less checks link to every env twin of their service; the KG-owned picker isolates one.
+  expect(props.showEnvFilter).toBe(true);
   // The section grows to the graph's natural height instead of zooming out to a fixed box.
   expect(props.autoHeight).toEqual({ min: 280, max: 560 });
   // Node interaction belongs to the exposed component's card; an SM deep link would race it.
