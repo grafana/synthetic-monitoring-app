@@ -137,6 +137,8 @@ describe('useIsFeatureEnabled', () => {
     renderIsFeatureEnabled(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: false });
     expect(await screen.findByText('not enabled')).toBeInTheDocument();
 
+    // OpenFeatureTestProvider wraps an unexported TypedInMemoryProvider; putConfiguration is
+    // the only way to emit ConfigurationChanged through the shared harness.
     const provider = OpenFeature.getProvider(SM_OPEN_FEATURE_DOMAIN) as TypedInMemoryProvider;
     await act(() =>
       provider.putConfiguration({

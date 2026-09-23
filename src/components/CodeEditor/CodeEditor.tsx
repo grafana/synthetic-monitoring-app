@@ -119,12 +119,12 @@ export const CodeEditor = forwardRef(function CodeEditor(
 
   const shouldWaitForTypes = k6Channel && isJs && k6TypesLoading && !k6TypesError;
 
-  // Update Monaco types when dynamic types change
+  // No dynamicK6Types guard: a secrets flag change must re-apply the static libs too
   useEffect(() => {
-    if (editorRef && dynamicK6Types) {
+    if (editorRef) {
       const monaco = (window as any).monaco;
       if (monaco) {
-        addK6Types(monaco, dynamicK6Types, secretsEnabled);
+        addK6Types(monaco, dynamicK6Types || k6Types, secretsEnabled);
       }
     }
   }, [dynamicK6Types, editorRef, secretsEnabled]);
