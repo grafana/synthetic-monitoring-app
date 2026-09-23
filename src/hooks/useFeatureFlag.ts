@@ -51,8 +51,9 @@ export function useIsFeatureEnabled() {
 
 type ResolvedFlags = Record<string, boolean | undefined>;
 
-// undefined = OpenFeature couldn't resolve the key. Re-evaluates on the same provider events
-// the react-sdk flag hooks do, but only re-renders consumers when a value changes.
+// undefined = OpenFeature couldn't resolve the key. Re-evaluates on every provider event (the
+// react-sdk flag hooks re-read on any status change), but only re-renders consumers when a
+// value changes.
 function useResolvedOpenFeatureFlags(): ResolvedFlags {
   const client = useOpenFeatureClient();
   const [resolvedFlags, setResolvedFlags] = useState(() => resolveMappedFlags(client));
@@ -65,9 +66,9 @@ function useResolvedOpenFeatureFlags(): ResolvedFlags {
         return isEqual(next, current) ? current : next;
       });
 
-    client.addHandler(ProviderEvents.Ready, update, { signal: controller.signal });
-    client.addHandler(ProviderEvents.ContextChanged, update, { signal: controller.signal });
-    client.addHandler(ProviderEvents.ConfigurationChanged, update, { signal: controller.signal });
+    for (const event of Object.values(ProviderEvents)) {
+      client.addHandler(event, update, { signal: controller.signal });
+    }
 
     return () => controller.abort();
   }, [client]);

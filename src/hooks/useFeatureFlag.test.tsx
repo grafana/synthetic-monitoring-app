@@ -1,6 +1,14 @@
 import React, { ReactElement } from 'react';
 import { OpenFeatureTestProvider } from '@openfeature/react-sdk';
-import { OpenFeature, TypedInMemoryProvider } from '@openfeature/web-sdk';
+import {
+  ErrorCode,
+  OpenFeature,
+  OpenFeatureEventEmitter,
+  type Provider,
+  ProviderEvents,
+  StandardResolutionReasons,
+  TypedInMemoryProvider,
+} from '@openfeature/web-sdk';
 import { act, render, screen } from '@testing-library/react';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
 import { getTestFlagValues } from 'test/openFeatureTestProvider';
@@ -54,6 +62,39 @@ const renderFeatureFlag = (name: FeatureName, flagValueMap?: Record<string, bool
 const renderIsFeatureEnabled = (name: FeatureName, flagValueMap?: Record<string, boolean>) =>
   renderWithProviders(<WrappedResolver name={name} />, flagValueMap);
 
+// Resolves every flag to `false` until `loseFlags()`, after which it reports FLAG_NOT_FOUND and
+// emits Error, like a provider whose backend has gone away.
+function createFailingProvider() {
+  let lost = false;
+  const events = new OpenFeatureEventEmitter();
+  const provider: Partial<Provider> = {
+    events,
+    resolveBooleanEvaluation: (_key, defaultValue) =>
+      lost
+        ? { value: defaultValue, reason: StandardResolutionReasons.ERROR, errorCode: ErrorCode.FLAG_NOT_FOUND }
+        : { value: false, reason: StandardResolutionReasons.STATIC },
+  };
+
+  return {
+    provider,
+    loseFlags: () => {
+      lost = true;
+      events.emit(ProviderEvents.Error);
+    },
+  };
+}
+
+const renderWithFailingProvider = (ui: ReactElement) => {
+  const failing = createFailingProvider();
+  render(
+    <OpenFeatureTestProvider domain={SM_OPEN_FEATURE_DOMAIN} provider={failing.provider}>
+      <FeatureFlagProvider>{ui}</FeatureFlagProvider>
+    </OpenFeatureTestProvider>
+  );
+
+  return failing;
+};
+
 describe('useFeatureFlag', () => {
   describe('legacy flags (not mapped in OPEN_FEATURE_KEYS)', () => {
     test('gets flag values from config.featureToggles', async () => {
@@ -106,6 +147,16 @@ describe('useFeatureFlag', () => {
       renderFeatureFlag(OPEN_FEATURE_ROUTED_FLAG, { [OPEN_FEATURE_KEY]: true });
       expect(await screen.findByText('ready')).toBeInTheDocument();
     });
+
+    test('falls back to legacy once the provider stops resolving the flag', async () => {
+      mockFeatureToggles({ [OPEN_FEATURE_ROUTED_FLAG]: true });
+      const { loseFlags } = renderWithFailingProvider(<Wrapped name={OPEN_FEATURE_ROUTED_FLAG} />);
+      expect(await screen.findByText('not enabled')).toBeInTheDocument();
+
+      await act(async () => loseFlags());
+
+      expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+    });
   });
 });
 
@@ -145,6 +196,16 @@ describe('useIsFeatureEnabled', () => {
         [OPEN_FEATURE_KEY]: { variants: { on: true }, defaultVariant: 'on', disabled: false },
       })
     );
+
+    expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
+  });
+
+  test('falls back to legacy once the provider stops resolving the flag', async () => {
+    mockFeatureToggles({ [OPEN_FEATURE_ROUTED_FLAG]: true });
+    const { loseFlags } = renderWithFailingProvider(<WrappedResolver name={OPEN_FEATURE_ROUTED_FLAG} />);
+    expect(await screen.findByText('not enabled')).toBeInTheDocument();
+
+    await act(async () => loseFlags());
 
     expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
   });
