@@ -42,6 +42,18 @@ then hard-refresh the browser. Gotcha when switching between `yarn dev` and `yar
 the browser caches `module.js` (not content-hashed) and old chunks linger in `dist/`, so a
 stale bundle can silently keep running — use DevTools "Clear site data" + "Disable cache".
 
+### Grafana Feature control
+
+Feature control overrides take precedence over server evaluations for mapped OpenFeature
+flags through `createOpenFeatureLocalStorageProvider` from `@grafana/runtime`. Open Feature
+control with `?featureControl=true` and add the exact key from
+`OPEN_FEATURE_KEYS` (for example, `synthetic-monitoring.check-suggestions`). Both `true`
+and `false` overrides are supported. Changes apply without reloading; deleting an override
+restores the server value.
+
+Overrides are local to the browser and Grafana origin. They also apply when Graft serves
+the plugin. Legacy flags that still read `config.featureToggles` are unaffected.
+
 ## Migrating one flag
 
 Existing legacy toggles are **automatically mirrored into the flag service**: hosted-grafana

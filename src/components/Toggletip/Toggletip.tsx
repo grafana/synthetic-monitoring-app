@@ -1,4 +1,4 @@
-import React, { cloneElement, ComponentProps, ReactElement, ReactNode, useRef, useState } from 'react';
+import React, { cloneElement, ComponentProps, HTMLProps, ReactElement, ReactNode, useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { IconButton, Portal, Toggletip as GrafanaToggletip, useStyles2, useTheme2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -18,7 +18,7 @@ import {
 interface ToggletipProps extends Omit<ComponentProps<typeof GrafanaToggletip>, 'content'> {
   content: ReactNode;
   contentClassName?: string;
-  children: ReactElement;
+  children: ReactElement<HTMLProps<HTMLElement>>;
   /** @default 'absolute' — use 'fixed' only when the trigger is NOT inside a containerType ancestor */
   strategy?: 'absolute' | 'fixed';
 }

@@ -31,7 +31,7 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
 
   const [hideScreenshots, setHideScreenshots] = useState(false);
 
-  const handleToggleHideScreenshots = useCallback((e: React.FormEvent<HTMLInputElement>) => {
+  const handleToggleHideScreenshots = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const hidden = e.currentTarget.checked;
     trackHideScreenshotsToggled({ hidden });
     setHideScreenshots(hidden);

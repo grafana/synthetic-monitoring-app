@@ -4,11 +4,16 @@ import { RadioButtonGroup } from '@grafana/ui';
 import { CheckListViewType } from 'page/CheckList/CheckList.types';
 
 const BASE_VIEW_TYPE_OPTIONS = [
-  { description: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
-  { description: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
+  { description: 'Card view', ariaLabel: 'Card view', value: CheckListViewType.Card, icon: 'check-square' },
+  { description: 'List view', ariaLabel: 'List view', value: CheckListViewType.List, icon: 'list-ul' },
 ];
 
-const FOLDER_VIEW_OPTION = { description: 'Folder view', value: CheckListViewType.Folder, icon: 'folder' };
+const FOLDER_VIEW_OPTION = {
+  description: 'Folder view',
+  ariaLabel: 'Folder view',
+  value: CheckListViewType.Folder,
+  icon: 'folder',
+};
 
 interface CheckListViewSwitcherProps {
   viewType: CheckListViewType;
