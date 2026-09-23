@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button, ButtonVariant, IconButton } from '@grafana/ui';
+
+import { useCopyToClipboard } from './useCopyToClipboard';
 
 interface CopyToClipboardProps {
   content: string;
@@ -9,10 +11,8 @@ interface CopyToClipboardProps {
   onClipboardError?(err: string): void;
   variant?: ButtonVariant;
   iconButton?: boolean;
-  hideIcon?: boolean;
   className?: string;
   fill?: 'solid' | 'outline' | 'text';
-  size?: 'sm' | 'md' | 'lg';
 }
 
 export const CopyToClipboard = ({
@@ -22,35 +22,20 @@ export const CopyToClipboard = ({
   buttonText,
   buttonTextCopied,
   iconButton = false,
-  hideIcon = false,
   className,
   variant,
   fill,
-  size,
 }: CopyToClipboardProps) => {
-  const [copied, setCopied] = useState(false);
-
-  const copyContent = () => {
-    if (!navigator.clipboard) {
-      onClipboardError && onClipboardError('Clipboard API not available');
-      return;
-    }
-    navigator.clipboard
-      .writeText(content)
-      .then(() => {
-        setCopied(true);
-        onClipboardCopy && onClipboardCopy();
-      })
-      .catch((err) => {
-        onClipboardError && onClipboardError(err);
-      });
-  };
+  const { copied, copy } = useCopyToClipboard({
+    onCopy: onClipboardCopy,
+    onError: (err) => onClipboardError?.(String(err)),
+  });
 
   if (iconButton) {
     return (
       <IconButton
         name={copied ? 'check' : 'clipboard-alt'}
-        onClick={copyContent}
+        onClick={() => copy(content)}
         tooltip={copied ? buttonTextCopied : buttonText}
       />
     );
@@ -58,12 +43,11 @@ export const CopyToClipboard = ({
 
   return (
     <Button
-      onClick={copyContent}
-      icon={hideIcon ? undefined : copied ? 'check' : 'clipboard-alt'}
+      onClick={() => copy(content)}
+      icon={copied ? 'check' : 'clipboard-alt'}
       className={className}
       variant={variant}
       fill={fill}
-      size={size}
     >
       {copied ? buttonTextCopied : buttonText}
     </Button>

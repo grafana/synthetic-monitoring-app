@@ -26,18 +26,34 @@ describe('ChecksEmptyState', () => {
     expect(
       await screen.findByText('Get started monitoring your services with Grafana Cloud')
     ).toBeInTheDocument();
-    expect(await screen.findByText('Or run our CLI-based setup wizard:')).toBeInTheDocument();
+    expect(await screen.findByText('Or run our setup wizard:')).toBeInTheDocument();
 
     // The command is split across nodes so the package name can be highlighted separately
     const commandRow = await screen.findByRole('button', { name: 'Copy command' });
     expect(commandRow).toHaveTextContent(/npx @grafana\/cloud-setup synthetics --stack/);
     expect(await screen.findByText('@grafana/cloud-setup')).toBeInTheDocument();
     expect(
-      await screen.findByText('Requires Node.js 22.6+ and consumes Grafana Assistant tokens.')
+      await screen.findByText('Requires Node.js 22.6+ and consumes Grafana Assistant tokens')
     ).toBeInTheDocument();
 
     // Manual creation is still available, as the primary top-level action
     expect(await screen.findByText('Create your first check')).toBeInTheDocument();
+  });
+
+  it('should reveal the "what does it do" explanation without hiding the requirements note', async () => {
+    const { user } = await renderComponent();
+
+    const explanation = /It does everything you need to get started.*Synthetic Monitoring/s;
+    expect(screen.queryByText(explanation)).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'What does it do?' }));
+
+    expect(await screen.findByText(explanation)).toBeInTheDocument();
+    expect(await screen.findByText('gcx')).toHaveAttribute('href', 'https://github.com/grafana/gcx');
+    expect(await screen.findByText(/analyzing your site, creating checks and exporting them as Terraform/)).toBeInTheDocument();
+    expect(
+      await screen.findByText('Requires Node.js 22.6+ and consumes Grafana Assistant tokens')
+    ).toBeInTheDocument();
   });
 
   it('should copy the command when clicking anywhere on the command row', async () => {
