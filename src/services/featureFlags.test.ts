@@ -20,9 +20,7 @@ describe('Feature control overrides', () => {
     jest.doMock('@grafana/runtime', () => ({
       config: { appSubUrl: '', namespace: 'test-stack' },
       createOpenFeatureLocalStorageProvider: () => localProvider,
-    }));
-    jest.doMock('@openfeature/ofrep-web-provider', () => ({
-      OFREPWebProvider: jest.fn(() => remoteProvider),
+      createOpenFeatureOFREPWebProvider: () => remoteProvider,
     }));
     service = await import('./featureFlags');
     await service.initOpenFeature();
