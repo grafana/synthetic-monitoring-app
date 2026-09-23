@@ -22,17 +22,37 @@ describe('ChecksEmptyState', () => {
     // Verify correct message
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
 
-    // Verify correct button
-    expect(await screen.findByText('Create new check')).toBeInTheDocument();
+    // The subtitle points to the CLI, and the command is shown up front as the main option
+    expect(
+      await screen.findByText('Get started monitoring your services with Grafana Cloud')
+    ).toBeInTheDocument();
+    expect(await screen.findByText('Or run our CLI-based setup wizard:')).toBeInTheDocument();
 
-    // Verify correct link text
-    const docsLink = await screen.findByText('Synthetic Monitoring docs');
-    expect(docsLink).toBeInTheDocument();
+    // The command is split across nodes so the package name can be highlighted separately
+    const commandRow = await screen.findByRole('button', { name: 'Copy command' });
+    expect(commandRow).toHaveTextContent(/npx @grafana\/cloud-setup synthetics --stack/);
+    expect(await screen.findByText('@grafana/cloud-setup')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Requires Node.js 22.6+ and consumes Grafana Assistant tokens.')
+    ).toBeInTheDocument();
 
-    // Verify link href
-    expect(docsLink).toHaveAttribute('href', 'https://grafana.com/docs/grafana-cloud/synthetic-monitoring/');
+    // Manual creation is still available, as the primary top-level action
+    expect(await screen.findByText('Create your first check')).toBeInTheDocument();
+  });
 
-    // Verify link target
-    expect(docsLink).toHaveAttribute('target', '_blank');
+  it('should copy the command when clicking anywhere on the command row', async () => {
+    const { user } = await renderComponent();
+
+    // render() calls userEvent.setup(), which installs its own clipboard stub on
+    // navigator.clipboard — spy on that existing stub rather than replacing it.
+    const writeTextSpy = jest.spyOn(navigator.clipboard, 'writeText');
+
+    const commandRow = await screen.findByRole('button', { name: 'Copy command' });
+    await user.click(commandRow);
+
+    await waitFor(() =>
+      expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('npx @grafana/cloud-setup synthetics --stack'))
+    );
+    expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument();
   });
 });

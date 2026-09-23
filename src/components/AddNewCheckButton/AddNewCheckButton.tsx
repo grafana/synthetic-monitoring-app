@@ -1,6 +1,6 @@
-import React, { useCallback } from 'react';
+import React, { PropsWithChildren, useCallback } from 'react';
 import { Trans } from '@grafana/i18n';
-import { LinkButton } from '@grafana/ui';
+import { ButtonVariant, LinkButton } from '@grafana/ui';
 import { trackAddNewCheckButtonClicked } from 'features/tracking/checkCreationEvents';
 import { ACTIONS_TEST_ID } from 'test/dataTestIds';
 
@@ -13,9 +13,18 @@ import { trackFaroUserAction } from '../../features/tracking/userAction';
 
 interface AddNewCheckButtonProps {
   source: 'check-list-empty-state' | 'check-list' | 'homepage';
+  fill?: 'solid' | 'outline' | 'text';
+  variant?: ButtonVariant;
+  hideIcon?: boolean;
 }
 
-export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
+export function AddNewCheckButton({
+  source,
+  fill,
+  variant = 'primary',
+  hideIcon = false,
+  children,
+}: PropsWithChildren<AddNewCheckButtonProps>) {
   const { canWriteChecks } = getUserPermissions();
 
   const handleClick = useCallback(() => {
@@ -28,11 +37,12 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
       data-testid={ACTIONS_TEST_ID.create.check}
       disabled={!canWriteChecks}
       href={generateRoutePath(AppRoutes.ChooseCheckGroup)}
-      icon="plus"
+      icon={hideIcon ? undefined : 'plus'}
       onClick={handleClick}
-      variant="primary"
+      variant={variant}
+      fill={fill}
     >
-      <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>
+      {children ?? <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>}
     </LinkButton>
   );
 }

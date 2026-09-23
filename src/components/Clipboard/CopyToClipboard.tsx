@@ -9,8 +9,10 @@ interface CopyToClipboardProps {
   onClipboardError?(err: string): void;
   variant?: ButtonVariant;
   iconButton?: boolean;
+  hideIcon?: boolean;
   className?: string;
   fill?: 'solid' | 'outline' | 'text';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export const CopyToClipboard = ({
@@ -20,9 +22,11 @@ export const CopyToClipboard = ({
   buttonText,
   buttonTextCopied,
   iconButton = false,
+  hideIcon = false,
   className,
   variant,
   fill,
+  size,
 }: CopyToClipboardProps) => {
   const [copied, setCopied] = useState(false);
 
@@ -53,12 +57,13 @@ export const CopyToClipboard = ({
   }
 
   return (
-    <Button 
-      onClick={copyContent} 
-      icon={copied ? 'check' : 'clipboard-alt'}
+    <Button
+      onClick={copyContent}
+      icon={hideIcon ? undefined : copied ? 'check' : 'clipboard-alt'}
       className={className}
       variant={variant}
       fill={fill}
+      size={size}
     >
       {copied ? buttonTextCopied : buttonText}
     </Button>
