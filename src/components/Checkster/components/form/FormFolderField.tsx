@@ -2,13 +2,13 @@ import React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 import { CheckFormValues, FeatureName } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { FolderSelector } from 'components/FolderSelector/FolderSelector';
 
 import { StyledField } from '../ui/StyledField';
 
 export function FormFolderField() {
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
   const {
     control,
     formState: { disabled },

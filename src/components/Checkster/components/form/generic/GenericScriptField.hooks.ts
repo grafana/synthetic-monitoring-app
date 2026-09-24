@@ -3,9 +3,9 @@ import { suggestSecretName, useMonacoSecretScanner } from '@grafana/plugin-ui/se
 import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 
 import { FeatureName } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { getUserPermissions } from 'data/permissions';
 import { useSecrets } from 'data/useSecrets';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { SecretFormValues } from 'page/ConfigPageLayout/tabs/SecretsManagementTab/SecretsManagementTab.utils';
 
 interface UseScriptSecretScannerParams {
@@ -22,7 +22,7 @@ export function useScriptSecretScanner({ field, script, onChange, disabled }: Us
   const [monaco, setMonaco] = useState<typeof monacoType>();
   const [editor, setEditor] = useState<monacoType.editor.IStandaloneCodeEditor>();
 
-  const secretsEnabled = isFeatureEnabled(FeatureName.SecretsManagement);
+  const { isEnabled: secretsEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
   const { canCreateSecrets, canReadSecrets } = getUserPermissions();
   const { data: secrets = [] } = useSecrets(secretsEnabled && canReadSecrets);
   const existingSecretNames = useMemo(() => secrets.map((secret) => secret.name), [secrets]);

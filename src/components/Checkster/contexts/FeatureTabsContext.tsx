@@ -2,7 +2,7 @@ import React, { createContext, PropsWithChildren, useCallback, useContext, useEf
 import { trackFeatureTabChanged } from 'features/tracking/checkFormEvents';
 
 import { FeatureTabConfig, FeatureTabLabel } from '../types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { useIsFeatureEnabled } from 'hooks/useFeatureFlag';
 
 import { FEATURE_TABS } from '../feature/config';
 import { useChecksterContext } from './ChecksterContext';
@@ -27,6 +27,7 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
   const [highlightedTab, setHighlightedTab] = useState<FeatureTabLabel | null>(null);
 
   const { checkType } = useChecksterContext();
+  const isFeatureEnabled = useIsFeatureEnabled();
 
   const tabs = useMemo(() => {
     return FEATURE_TABS.filter(([, , checkCompatibility, featureName]) => {
@@ -36,7 +37,7 @@ export function FeatureTabsContextProvider({ children }: PropsWithChildren) {
 
       return checkCompatibility.length === 0 || checkCompatibility.includes(checkType);
     });
-  }, [checkType]);
+  }, [checkType, isFeatureEnabled]);
 
   const activeTab = useMemo<FeatureTabConfig | typeof PANIC_TAB>(() => {
     const tab = tabs.find(([label]) => label === activeLabel);

@@ -1,31 +1,33 @@
 import React, { PropsWithChildren } from 'react';
 import { renderHook } from '@testing-library/react';
+import { createWrapper } from 'test/render';
+import { mockFeatureToggles } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
+import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 import { useChecksterContext } from './ChecksterContext';
 import { FeatureTabsContextProvider, useFeatureTabsContext } from './FeatureTabsContext';
-
-jest.mock('contexts/FeatureFlagContext', () => ({
-  isFeatureEnabled: jest.fn(),
-}));
 
 jest.mock('./ChecksterContext', () => ({
   useChecksterContext: jest.fn(),
 }));
 
-const mockIsFeatureEnabled = isFeatureEnabled as jest.Mock;
 const mockUseChecksterContext = useChecksterContext as jest.Mock;
+
+function ProvidersWrapper({ children }: PropsWithChildren) {
+  return (
+    <FeatureFlagProvider>
+      <FeatureTabsContextProvider>{children}</FeatureTabsContextProvider>
+    </FeatureFlagProvider>
+  );
+}
 
 function setup(checkType: CheckType) {
   mockUseChecksterContext.mockReturnValue({ checkType });
+  const { Wrapper } = createWrapper({ wrapper: ProvidersWrapper });
 
-  const wrapper = ({ children }: PropsWithChildren) => (
-    <FeatureTabsContextProvider>{children}</FeatureTabsContextProvider>
-  );
-
-  return renderHook(() => useFeatureTabsContext(), { wrapper });
+  return renderHook(() => useFeatureTabsContext(), { wrapper: Wrapper });
 }
 
 function hasSecretsTab(result: ReturnType<typeof setup>['result']) {
@@ -33,13 +35,9 @@ function hasSecretsTab(result: ReturnType<typeof setup>['result']) {
 }
 
 describe('FeatureTabsContext secrets tab', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('when the SecretsManagement feature flag is enabled', () => {
     beforeEach(() => {
-      mockIsFeatureEnabled.mockImplementation((name: FeatureName) => name === FeatureName.SecretsManagement);
+      mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
     });
 
     it.each([CheckType.Http, CheckType.Browser, CheckType.Scripted])(
@@ -60,10 +58,6 @@ describe('FeatureTabsContext secrets tab', () => {
   });
 
   describe('when the SecretsManagement feature flag is disabled', () => {
-    beforeEach(() => {
-      mockIsFeatureEnabled.mockReturnValue(false);
-    });
-
     it.each([CheckType.Http, CheckType.Browser, CheckType.Scripted])(
       'hides the Secrets tab for %s checks even though the check type is compatible',
       (checkType) => {

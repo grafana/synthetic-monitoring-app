@@ -21,11 +21,11 @@ import { ZodType } from 'zod';
 import { FormNavigationState, FormSectionName } from '../types';
 import { Check, CheckFormValues, CheckType, FeatureName, ProbeWithMetadata } from 'types';
 import { getCheckType } from 'utils';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useDOMId } from 'hooks/useDOMId';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CenteredSpinner } from 'components/CenteredSpinner';
 import { getAvailableProbes } from 'components/CheckEditor/ProbeOptions';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
@@ -149,7 +149,7 @@ export function ChecksterProvider({
 }: PropsWithChildren<ChecksterProviderProps>) {
   const check = isCheck(externalCheck) ? externalCheck : undefined;
   const { data: probesWithMetadata = [] } = useProbesWithMetadata();
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
   const { status: defaultFolderStatus } = useDefaultFolder(isFoldersEnabled);
   // Pre-fill the default folder through the form defaults (only when the
   // user can edit it) so a new form stays pristine. Everyone else picks a
