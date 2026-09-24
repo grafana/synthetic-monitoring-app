@@ -2,6 +2,7 @@ import React from 'react';
 import { screen, waitFor } from '@testing-library/react';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
+import { runTestAsSMViewer } from 'test/utils';
 
 import { ChecksEmptyState } from './ChecksEmptyState';
 
@@ -27,5 +28,15 @@ describe('ChecksEmptyState', () => {
     // The CLI panel itself (command, tooltip, particles, disclosure) is covered by
     // CloudSetupCliPanel's own tests — this just confirms it's actually composed in here.
     expect(await screen.findByRole('button', { name: 'Copy command' })).toBeInTheDocument();
+  });
+
+  it('should hide the setup wizard for users without permission to create checks', async () => {
+    runTestAsSMViewer();
+
+    await renderComponent();
+
+    expect(await screen.findByText('Create your first check')).toBeInTheDocument();
+    expect(screen.queryByText('Or run our setup wizard in your project folder:')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy command' })).not.toBeInTheDocument();
   });
 });

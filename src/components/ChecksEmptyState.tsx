@@ -4,6 +4,7 @@ import { EmptyState, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
+import { getUserPermissions } from 'data/permissions';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { CloudSetupCliPanel } from 'components/CloudSetupCliPanel';
 
@@ -13,6 +14,7 @@ interface ChecksEmptyStatePageProps {
 
 export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
   const styles = useStyles2(getStyles);
+  const { canWriteChecks } = getUserPermissions();
 
   return (
     <div className={className} data-testid={CHECKS_TEST_ID.emptyState}>
@@ -21,13 +23,17 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
           <div className={styles.cliSection}>
             <AddNewCheckButton source="check-list-empty-state">Create your first check</AddNewCheckButton>
 
-            <div className={styles.panelIntro}>
-              <Text variant="bodySmall" color="secondary" element="p">
-                Or run our setup wizard in your project folder:
-              </Text>
-            </div>
+            {canWriteChecks && (
+              <>
+                <div className={styles.panelIntro}>
+                  <Text variant="bodySmall" color="secondary" element="p">
+                    Or run our setup wizard in your project folder:
+                  </Text>
+                </div>
 
-            <CloudSetupCliPanel />
+                <CloudSetupCliPanel />
+              </>
+            )}
           </div>
         }>
           Get started monitoring your services with Grafana Cloud
