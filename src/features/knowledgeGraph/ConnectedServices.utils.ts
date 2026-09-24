@@ -25,15 +25,15 @@ export function escapeCypher(value: string): string {
  * keep it to a single hop so the graph stays a readable hint rather than the full topology
  * (which lives in the Knowledge Graph app).
  *
- * The CALLS hop is matched undirected rather than as two directed OPTIONAL MATCHes: some KG
- * versions answer `OPTIONAL MATCH (s1)<-[:CALLS]-(upstream:Service)` with a 500 (the whole
- * section then fails), while the undirected form is answered everywhere. Direction is not lost —
- * it comes from the edges frame's source/target, which parseGraphFrames reads.
+ * Use zero or one CALLS hops: the zero-hop match returns the monitored service itself when
+ * it has no neighbours. Returning an unmatched OPTIONAL MATCH variable makes some KG
+ * backends drop the entire result, including the check and its MONITORED_BY connection.
+ * Match undirected to include callers and dependencies; edge source/target retains direction.
  */
 export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
   return [
     `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
-    `OPTIONAL MATCH (s1)-[:CALLS]-(neighbour:Service)`,
+    `MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)`,
     `RETURN sy, s1, neighbour`,
   ].join('\n');
 }
