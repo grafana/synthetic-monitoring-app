@@ -116,26 +116,23 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
                     <div className={styles.footerDetails}>
                       <div className={styles.footerDetailsContent}>
                         <Text variant="bodySmall" color="secondary" element="p">
-                          Our{' '}
                           <TextLink external href="https://github.com/grafana/cloud-setup" variant="bodySmall">
-                            setup wizard
+                            The setup wizard
                           </TextLink>{' '}
-                          is an open source CLI tool that does everything you need to get started and to
-                          continue using Synthetic Monitoring in the future.
-                        </Text>
-                        <Text variant="bodySmall" color="secondary" element="p">
-                          Incl. installing{' '}
-                          <TextLink external href="https://github.com/grafana/gcx" variant="bodySmall">
+                          installs{' '}
+                          <TextLink external href="https://grafana.com/docs/grafana-cloud/ai-tools/gcx/" variant="bodySmall">
                             gcx
-                          </TextLink>
-                          , analyzing your site, creating checks and exporting them as Terraform.
-                        </Text>
-                        <Text variant="bodySmall" color="secondary" element="p">
-                          Needs{' '}
-                          <TextLink external href="https://nodejs.org/en/download" variant="bodySmall">
-                            Node.js 22.6+
                           </TextLink>{' '}
-                          installed.
+                          and{' '}
+                          <TextLink
+                            external
+                            href="https://grafana.com/docs/grafana-cloud/machine-learning/assistant/platform/skills/"
+                            variant="bodySmall"
+                          >
+                            Agent Skills
+                          </TextLink>
+                          , then analyzes your site and suggests synthetic checks for you to review and
+                          create. You can also configure alerts and export checks as Terraform.
                         </Text>
                       </div>
                     </div>

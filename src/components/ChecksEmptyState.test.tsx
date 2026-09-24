@@ -42,19 +42,24 @@ describe('ChecksEmptyState', () => {
   it('should reveal the "what does it do" explanation without hiding the requirements note', async () => {
     const { user } = await renderComponent();
 
-    const explanation = /is an open source CLI tool that does everything.*Synthetic Monitoring/s;
+    const explanation = /installs.*export checks as Terraform/s;
     expect(screen.queryByText(explanation)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'What does it do?' }));
 
     expect(await screen.findByText(explanation)).toBeInTheDocument();
-    expect(await screen.findByText('setup wizard')).toHaveAttribute(
+    expect(await screen.findByText('The setup wizard')).toHaveAttribute(
       'href',
       'https://github.com/grafana/cloud-setup'
     );
-    expect(await screen.findByText('gcx')).toHaveAttribute('href', 'https://github.com/grafana/gcx');
-    expect(await screen.findByText(/analyzing your site, creating checks and exporting them as Terraform/)).toBeInTheDocument();
-    expect(await screen.findByText('Node.js 22.6+')).toHaveAttribute('href', 'https://nodejs.org/en/download');
+    expect(await screen.findByText('gcx')).toHaveAttribute(
+      'href',
+      'https://grafana.com/docs/grafana-cloud/ai-tools/gcx/'
+    );
+    expect(await screen.findByText('Agent Skills')).toHaveAttribute(
+      'href',
+      'https://grafana.com/docs/grafana-cloud/machine-learning/assistant/platform/skills/'
+    );
     expect(await screen.findByText('Requires Node.js 22.6+ · Uses Grafana Assistant tokens')).toBeInTheDocument();
   });
 
