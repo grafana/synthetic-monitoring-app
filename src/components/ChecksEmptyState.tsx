@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { EmptyState, Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { css, cx, keyframes } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { FaroUserAction } from 'faro';
@@ -75,7 +75,23 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
                         {afterPackage}
                       </code>
                     </div>
-                    <Icon className={styles.copyIcon} name={copied ? 'check' : 'clipboard-alt'} />
+                    <span className={styles.iconWrap}>
+                      <Icon
+                        className={cx(styles.copyIcon, copied && styles.copyIconPop)}
+                        name={copied ? 'check' : 'clipboard-alt'}
+                      />
+                      {copied && (
+                        <span className={styles.particles}>
+                          {PARTICLE_OFFSETS.map(([tx, ty], i) => (
+                            <span
+                              key={i}
+                              className={styles.particle}
+                              style={{ '--tx': `${tx}px`, '--ty': `${ty}px` } as React.CSSProperties}
+                            />
+                          ))}
+                        </span>
+                      )}
+                    </span>
                   </button>
                 </div>
 
@@ -140,6 +156,29 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
 // strength for the package name, and at low opacity for the panel's border
 // and hover tint, so the box has a bit of personality without being glossy.
 const ACCENT_RGB = '184, 165, 227';
+
+// A quick, self-contained pop for the checkmark when it swaps in.
+const iconPop = keyframes({
+  '0%': { transform: 'scale(0.5)' },
+  '60%': { transform: 'scale(1.25)' },
+  '100%': { transform: 'scale(1)' },
+});
+
+// Six points around a circle, radius 16px, for the particle burst.
+const PARTICLE_OFFSETS: Array<[number, number]> = [
+  [16, 0],
+  [8, -13.9],
+  [-8, -13.9],
+  [-16, 0],
+  [-8, 13.9],
+  [8, 13.9],
+];
+
+// Small dots fly outward from the icon and fade, like a tiny confetti pop.
+const particleBurst = keyframes({
+  '0%': { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+  '100%': { transform: 'translate(var(--tx), var(--ty)) scale(0.3)', opacity: 0 },
+});
 
 function getStyles(theme: GrafanaTheme2) {
   return {
@@ -303,10 +342,35 @@ function getStyles(theme: GrafanaTheme2) {
         outlineOffset: '-2px',
       },
     }),
+    iconWrap: css({
+      position: 'relative',
+      display: 'inline-flex',
+      flexShrink: 0,
+    }),
     copyIcon: css({
       flexShrink: 0,
       color: theme.colors.text.secondary,
       transition: 'color 150ms ease',
+    }),
+    copyIconPop: css({
+      animation: `${iconPop} 300ms ease-out`,
+    }),
+    particles: css({
+      position: 'absolute',
+      inset: 0,
+      pointerEvents: 'none',
+    }),
+    particle: css({
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      width: '4px',
+      height: '4px',
+      marginTop: '-2px',
+      marginLeft: '-2px',
+      borderRadius: '50%',
+      backgroundColor: `rgb(${ACCENT_RGB})`,
+      animation: `${particleBurst} 550ms ease-out forwards`,
     }),
     commandLine: css({
       display: 'flex',
