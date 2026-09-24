@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
-import { EmptyState, Icon, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { EmptyState, Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
@@ -41,71 +41,90 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
               </Text>
             </div>
 
-            <div
-              className={styles.cliPanel}
-              // Sized off the command's own character count (it's monospace, so
-              // `ch` is exact), plus a fixed allowance for the panel's padding,
-              // the gap, and the copy icon. Nothing else inside — including the
-              // "what does it do" explanation — can influence this width; it can
-              // only wrap within it.
-              style={{ width: `calc(${cliCommand.length}ch + 4.5rem)` }}
-            >
-              <div className={styles.commandArea}>
-                <button
-                  type="button"
-                  className={styles.commandRow}
-                  onClick={() => copy(cliCommand)}
-                  aria-label={copied ? 'Copied' : 'Copy command'}
-                >
-                  <div className={styles.commandLine}>
-                    <code className={styles.command}>
-                      {beforePackage}
-                      <span className={styles.packageName}>{CLOUD_SETUP_PACKAGE}</span>
-                      {afterPackage}
-                    </code>
-                  </div>
-                  <Icon className={styles.copyIcon} name={copied ? 'check' : 'clipboard-alt'} />
-                </button>
-              </div>
+            <div className={styles.cliPanelWrapper}>
+              <Tooltip
+                content={
+                  <span className={styles.tooltipContent}>
+                    This CLI is in public preview and may still change as we stabilize it
+                  </span>
+                }
+              >
+                <div className={styles.previewTab}>Preview</div>
+              </Tooltip>
 
-              <div className={styles.footer}>
-                <button
-                  type="button"
-                  className={styles.footerTrigger}
-                  onClick={() => setIsDetailsOpen((v) => !v)}
-                  aria-expanded={isDetailsOpen}
-                >
-                  <Icon name={isDetailsOpen ? 'angle-down' : 'angle-right'} />
-                  <span>What does it do?</span>
-                </button>
-
-                <div className={styles.footerNote}>
-                  <Text variant="bodySmall" color="secondary">
-                    Requires Node.js 22.6+ and consumes Grafana Assistant tokens
-                  </Text>
+              <div
+                className={styles.cliPanel}
+                // Sized off the command's own character count (it's monospace, so
+                // `ch` is exact), plus a fixed allowance for the panel's padding,
+                // the gap, and the copy icon. Nothing else inside — including the
+                // "what does it do" explanation — can influence this width; it can
+                // only wrap within it.
+                style={{ width: `calc(${cliCommand.length}ch + 4.5rem)` }}
+              >
+                <div className={styles.commandArea}>
+                  <button
+                    type="button"
+                    className={styles.commandRow}
+                    onClick={() => copy(cliCommand)}
+                    aria-label={copied ? 'Copied' : 'Copy command'}
+                  >
+                    <div className={styles.commandLine}>
+                      <code className={styles.command}>
+                        {beforePackage}
+                        <span className={styles.packageName}>{CLOUD_SETUP_PACKAGE}</span>
+                        {afterPackage}
+                      </code>
+                    </div>
+                    <Icon className={styles.copyIcon} name={copied ? 'check' : 'clipboard-alt'} />
+                  </button>
                 </div>
 
-                {isDetailsOpen && (
-                  <div className={styles.footerDetails}>
-                    <div className={styles.footerDetailsContent}>
-                      <Text variant="bodySmall" color="secondary" element="p">
-                        Our{' '}
-                        <TextLink external href="https://github.com/grafana/cloud-setup" variant="bodySmall">
-                          setup wizard
-                        </TextLink>{' '}
-                        is an open source CLI tool that does everything you need to get started and to
-                        continue using Synthetic Monitoring in the future.
-                      </Text>
-                      <Text variant="bodySmall" color="secondary" element="p">
-                        Incl. installing{' '}
-                        <TextLink external href="https://github.com/grafana/gcx" variant="bodySmall">
-                          gcx
-                        </TextLink>
-                        , analyzing your site, creating checks and exporting them as Terraform.
-                      </Text>
-                    </div>
+                <div className={styles.footer}>
+                  <button
+                    type="button"
+                    className={styles.footerTrigger}
+                    onClick={() => setIsDetailsOpen((v) => !v)}
+                    aria-expanded={isDetailsOpen}
+                  >
+                    <Icon name={isDetailsOpen ? 'angle-down' : 'angle-right'} />
+                    <span>What does it do?</span>
+                  </button>
+
+                  <div className={styles.footerNote}>
+                    <Text variant="bodySmall" color="secondary">
+                      Requires Node.js 22.6+ · Uses Grafana Assistant tokens
+                    </Text>
                   </div>
-                )}
+
+                  {isDetailsOpen && (
+                    <div className={styles.footerDetails}>
+                      <div className={styles.footerDetailsContent}>
+                        <Text variant="bodySmall" color="secondary" element="p">
+                          Our{' '}
+                          <TextLink external href="https://github.com/grafana/cloud-setup" variant="bodySmall">
+                            setup wizard
+                          </TextLink>{' '}
+                          is an open source CLI tool that does everything you need to get started and to
+                          continue using Synthetic Monitoring in the future.
+                        </Text>
+                        <Text variant="bodySmall" color="secondary" element="p">
+                          Incl. installing{' '}
+                          <TextLink external href="https://github.com/grafana/gcx" variant="bodySmall">
+                            gcx
+                          </TextLink>
+                          , analyzing your site, creating checks and exporting them as Terraform.
+                        </Text>
+                        <Text variant="bodySmall" color="secondary" element="p">
+                          Needs{' '}
+                          <TextLink external href="https://nodejs.org/en/download" variant="bodySmall">
+                            Node.js 22.6+
+                          </TextLink>{' '}
+                          installed.
+                        </Text>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -128,7 +147,49 @@ function getStyles(theme: GrafanaTheme2) {
       '& > div > div': {
         gap: theme.spacing(2),
         maxWidth: '760px',
+        // EmptyState's title/subtitle are plain spans we can't pass a className
+        // to directly (Text always overwrites it), so bump them a notch from here.
+        '& > div > span:nth-of-type(1)': {
+          fontSize: `calc(${theme.typography.h4.fontSize} * 1.1)`,
+        },
+        '& > div > span:nth-of-type(2)': {
+          fontSize: `calc(${theme.typography.body.fontSize} * 1.1)`,
+        },
       },
+    }),
+    cliPanelWrapper: css({
+      position: 'relative',
+    }),
+    previewTab: css({
+      position: 'absolute',
+      bottom: '100%',
+      left: theme.spacing(2),
+      // Overlaps the panel's own top border by 1px, so the seam disappears and
+      // this reads as a tab poking out of the card rather than a badge floating above it.
+      marginBottom: '-1px',
+      zIndex: 1,
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(0.5),
+      padding: theme.spacing(0.25, 1),
+      // Smaller than the footer's own bodySmall (12px) text, so this reads as
+      // a quiet release-status label rather than competing with it.
+      fontSize: '11px',
+      fontWeight: theme.typography.fontWeightRegular,
+      lineHeight: theme.typography.bodySmall.lineHeight,
+      color: theme.colors.text.secondary,
+      backgroundColor: theme.colors.background.secondary,
+      border: `1px solid ${theme.components.input.borderColor}`,
+      borderTopLeftRadius: theme.shape.radius.default,
+      borderTopRightRadius: theme.shape.radius.default,
+    }),
+    // The tooltip's own container has a hard 400px max-width with no prop to
+    // override it, so this sentence needs a smaller font to fit on one line.
+    // At 12px it measures ~385px against ~384px of usable width — right at
+    // the edge, which is what was wrapping it.
+    tooltipContent: css({
+      display: 'inline-block',
+      fontSize: '11px',
     }),
     cliPanel: css({
       // Width itself is set inline, driven by the command's character count.

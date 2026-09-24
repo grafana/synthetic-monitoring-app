@@ -27,14 +27,13 @@ describe('ChecksEmptyState', () => {
       await screen.findByText('Get started monitoring your services with Grafana Cloud')
     ).toBeInTheDocument();
     expect(await screen.findByText('Or run our setup wizard in your project folder:')).toBeInTheDocument();
+    expect(await screen.findByText('Preview')).toBeInTheDocument();
 
     // The command is split across nodes so the package name can be highlighted separately
     const commandRow = await screen.findByRole('button', { name: 'Copy command' });
     expect(commandRow).toHaveTextContent(/npx @grafana\/cloud-setup synthetics --stack/);
     expect(await screen.findByText('@grafana/cloud-setup')).toBeInTheDocument();
-    expect(
-      await screen.findByText('Requires Node.js 22.6+ and consumes Grafana Assistant tokens')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Requires Node.js 22.6+ · Uses Grafana Assistant tokens')).toBeInTheDocument();
 
     // Manual creation is still available, as the primary top-level action
     expect(await screen.findByText('Create your first check')).toBeInTheDocument();
@@ -55,9 +54,8 @@ describe('ChecksEmptyState', () => {
     );
     expect(await screen.findByText('gcx')).toHaveAttribute('href', 'https://github.com/grafana/gcx');
     expect(await screen.findByText(/analyzing your site, creating checks and exporting them as Terraform/)).toBeInTheDocument();
-    expect(
-      await screen.findByText('Requires Node.js 22.6+ and consumes Grafana Assistant tokens')
-    ).toBeInTheDocument();
+    expect(await screen.findByText('Node.js 22.6+')).toHaveAttribute('href', 'https://nodejs.org/en/download');
+    expect(await screen.findByText('Requires Node.js 22.6+ · Uses Grafana Assistant tokens')).toBeInTheDocument();
   });
 
   it('should copy the command when clicking anywhere on the command row', async () => {
