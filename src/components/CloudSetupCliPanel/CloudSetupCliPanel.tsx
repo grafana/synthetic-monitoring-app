@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
+import { colorManipulator, GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
@@ -119,8 +119,6 @@ export function CloudSetupCliPanel() {
   );
 }
 
-// Muted lavender accent used throughout the panel.
-const ACCENT_RGB = '184, 165, 227';
 // Shared by the preview tab and the tooltip, both meant to stay quiet.
 const QUIET_FONT_SIZE = '11px';
 
@@ -148,6 +146,8 @@ const particleBurst = keyframes({
 
 function getStyles(theme: GrafanaTheme2) {
   const borderColor = theme.components.input.borderColor;
+  // Theme-aware accent (tracks light/dark/high-contrast) instead of a fixed lavender.
+  const accentColor = theme.visualization.getColorByName('purple');
 
   return {
     // --- wrapper: the panel plus its overlapping "Preview" tab ---
@@ -212,7 +212,7 @@ function getStyles(theme: GrafanaTheme2) {
       textAlign: 'left',
       transition: 'background-color 150ms ease',
       '&:hover': {
-        backgroundColor: `rgba(${ACCENT_RGB}, 0.1)`,
+        backgroundColor: colorManipulator.alpha(accentColor, 0.1),
       },
       '&:hover svg': {
         color: theme.colors.text.primary,
@@ -220,7 +220,7 @@ function getStyles(theme: GrafanaTheme2) {
       // Keyboard-only focus ring — not shown on mouse clicks.
       outline: 'none',
       '&:focus-visible': {
-        outline: `2px solid rgba(${ACCENT_RGB}, 0.8)`,
+        outline: `2px solid ${colorManipulator.alpha(accentColor, 0.8)}`,
         outlineOffset: '-2px',
       },
     }),
@@ -239,7 +239,7 @@ function getStyles(theme: GrafanaTheme2) {
     }),
     packageName: css({
       // The one accent color in the command, so the tool name stands out.
-      color: `rgb(${ACCENT_RGB})`,
+      color: accentColor,
     }),
     iconWrap: css({
       position: 'relative',
@@ -265,7 +265,7 @@ function getStyles(theme: GrafanaTheme2) {
       width: '4px',
       height: '4px',
       borderRadius: '50%',
-      backgroundColor: `rgb(${ACCENT_RGB})`,
+      backgroundColor: accentColor,
       animation: `${particleBurst} 550ms ease-out forwards`,
     }),
 
