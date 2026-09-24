@@ -186,6 +186,7 @@ it('renders the neighbourhood graph from the Cypher query result (linked check)'
   // the dashboard's time range.
   const request = query.mock.calls[0][0];
   expect(request.targets[0]).toMatchObject({ queryType: 'entityGraph', queryMode: 'cypher' });
+  expect(request.targets[0].cypherQuery).toContain('MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)');
   expect(request.targets[0].cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
   expect(request.range.from.valueOf()).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
   expect(request.range.to.valueOf()).toBe(Date.parse(MOCK_TIME_RANGE_TO));
