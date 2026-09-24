@@ -54,11 +54,7 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
 
               <div
                 className={styles.cliPanel}
-                // Sized off the command's own character count (it's monospace, so
-                // `ch` is exact), plus a fixed allowance for the panel's padding,
-                // the gap, and the copy icon. Nothing else inside — including the
-                // "what does it do" explanation — can influence this width; it can
-                // only wrap within it.
+                // Width tracks the command's own length (monospace, so `ch` is exact) so nothing else can widen the panel.
                 style={{ width: `calc(${cliCommand.length}ch + 4.5rem)` }}
               >
                 <div className={styles.commandArea}>
@@ -149,9 +145,7 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
   );
 }
 
-// Muted lavender, echoing the violet in the Grot illustration. Used at full
-// strength for the package name, and at low opacity for the panel's border
-// and hover tint, so the box has a bit of personality without being glossy.
+// Muted lavender accent used throughout the panel.
 const ACCENT_RGB = '184, 165, 227';
 
 // A quick, self-contained pop for the checkmark when it swaps in.
@@ -183,8 +177,7 @@ function getStyles(theme: GrafanaTheme2) {
       '& > div > div': {
         gap: theme.spacing(2),
         maxWidth: '760px',
-        // EmptyState's title/subtitle are plain spans we can't pass a className
-        // to directly (Text always overwrites it), so bump them a notch from here.
+        // Text always overwrites className, so bump title/subtitle size via this selector instead.
         '& > div > span:nth-of-type(1)': {
           fontSize: `calc(${theme.typography.h4.fontSize} * 1.1)`,
         },
@@ -200,16 +193,14 @@ function getStyles(theme: GrafanaTheme2) {
       position: 'absolute',
       bottom: '100%',
       left: theme.spacing(2),
-      // Overlaps the panel's own top border by 1px, so the seam disappears and
-      // this reads as a tab poking out of the card rather than a badge floating above it.
+      // Overlaps the panel's border by 1px so it reads as a tab, not a floating badge.
       marginBottom: '-1px',
       zIndex: 1,
       display: 'flex',
       alignItems: 'center',
       gap: theme.spacing(0.5),
       padding: theme.spacing(0.25, 1),
-      // Smaller than the footer's own bodySmall (12px) text, so this reads as
-      // a quiet release-status label rather than competing with it.
+      // Smaller than the footer's 12px text on purpose, so it stays quiet.
       fontSize: '11px',
       fontWeight: theme.typography.fontWeightRegular,
       lineHeight: theme.typography.bodySmall.lineHeight,
@@ -219,27 +210,20 @@ function getStyles(theme: GrafanaTheme2) {
       borderTopLeftRadius: theme.shape.radius.default,
       borderTopRightRadius: theme.shape.radius.default,
     }),
-    // The tooltip's own container has a hard 400px max-width with no prop to
-    // override it, so this sentence needs a smaller font to fit on one line.
-    // At 12px it measures ~385px against ~384px of usable width — right at
-    // the edge, which is what was wrapping it.
+    // Shrunk to fit on one line — Tooltip's container has a fixed 400px max-width with no override prop.
     tooltipContent: css({
       display: 'inline-block',
       fontSize: '11px',
     }),
     cliPanel: css({
-      // Width itself is set inline, driven by the command's character count.
-      // This just keeps it from overflowing a narrow viewport.
+      // Viewport safety cap — the real width is set inline, above.
       maxWidth: 'min(720px, 100%)',
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'stretch',
       textAlign: 'left',
-      // Neutral at rest — a permanent violet border made the whole box look
-      // focused and gave this secondary path too much visual weight. The
-      // violet shows up on the package name, the hover tint, and the
-      // keyboard-focus ring instead.
+      // Neutral at rest — violet shows up on hover, focus, and the package name instead.
       border: `1px solid ${theme.components.input.borderColor}`,
       borderRadius: theme.shape.radius.default,
       backgroundColor: theme.components.input.background,
@@ -256,13 +240,9 @@ function getStyles(theme: GrafanaTheme2) {
       alignItems: 'center',
       justifyContent: 'space-between',
       gap: theme.spacing(0.5, 2),
-      // Horizontal padding lives on the individual children instead of here, so
-      // footerDetails's own border below can span the panel's full width without
-      // fighting this container's padding.
+      // Padding lives on the children so footerDetails's border can span the full width.
       padding: theme.spacing(1, 0),
       borderTop: `1px solid ${theme.components.input.borderColor}`,
-      // A touch lighter than plain "primary" (canvas was too dark, secondary
-      // too light), so the footer still reads as its own, quieter section.
       backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
     }),
     footerTrigger: css({
@@ -287,11 +267,7 @@ function getStyles(theme: GrafanaTheme2) {
       paddingRight: theme.spacing(2.5),
     }),
     footerDetails: css({
-      // Forces this onto its own row, spanning the footer's full width, in the
-      // wrapping flex container above. minWidth lets the text wrap within that
-      // row instead of forcing the panel wider. No horizontal padding here, so
-      // the top border reaches the panel's actual edges; footerDetailsContent
-      // carries the inset for the text/list instead.
+      // minWidth lets long text wrap here instead of forcing the panel wider.
       flexBasis: '100%',
       minWidth: 0,
       marginTop: theme.spacing(1),
@@ -313,26 +289,20 @@ function getStyles(theme: GrafanaTheme2) {
       width: '100%',
       border: 'none',
       background: 'none',
-      // Padding lives here rather than on commandArea, so this button — the
-      // hover target — covers the whole top strip edge to edge, instead of a
-      // rounded inset that looked like a selected input inside the box.
+      // Padding lives here (not commandArea) so hover covers the row edge-to-edge.
       padding: theme.spacing(2, 2.5),
       cursor: 'pointer',
       font: 'inherit',
       color: 'inherit',
       textAlign: 'left',
       transition: 'background-color 150ms ease',
-      // Tints the whole row (with the same lavender as the border/package
-      // name, for a bit of personality) and brightens the copy icon; the
-      // command text and its layout stay untouched.
       '&:hover': {
         backgroundColor: `rgba(${ACCENT_RGB}, 0.1)`,
       },
       '&:hover svg': {
         color: theme.colors.text.primary,
       },
-      // Violet ring for keyboard focus only — not on every mouse click —
-      // so it reads as an accessibility affordance, not a permanent style.
+      // Keyboard-only focus ring — not shown on mouse clicks.
       outline: 'none',
       '&:focus-visible': {
         outline: `2px solid rgba(${ACCENT_RGB}, 0.8)`,
@@ -386,8 +356,7 @@ function getStyles(theme: GrafanaTheme2) {
       padding: 0,
     }),
     packageName: css({
-      // So the tool name reads as the one thing worth noticing in the
-      // command. The rest of the command stays neutral on purpose.
+      // The one accent color in the command, so the tool name stands out.
       color: `rgb(${ACCENT_RGB})`,
     }),
     cliSection: css({
@@ -398,7 +367,6 @@ function getStyles(theme: GrafanaTheme2) {
       gap: theme.spacing(1),
     }),
     panelIntro: css({
-      // Some space between the button above and the CLI panel below.
       marginTop: theme.spacing(2),
     }),
   };
