@@ -81,7 +81,7 @@ export const ThresholdFormSection = ({
           <Input
             data-testid={THRESHOLD_TEST_ID.upperLimit}
             value={isLatency ? thresholds.lowerLimit : thresholds.upperLimit}
-            onChange={(e: React.FormEvent<HTMLInputElement>) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const key = isLatency ? 'lowerLimit' : 'upperLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}
@@ -129,7 +129,7 @@ export const ThresholdFormSection = ({
           <Input
             data-testid={THRESHOLD_TEST_ID.lowerLimit}
             value={isLatency ? thresholds.upperLimit : thresholds.lowerLimit}
-            onChange={(e: React.FormEvent<HTMLInputElement>) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               const key = isLatency ? 'upperLimit' : 'lowerLimit';
               handleUpdateThreshold(key, e.currentTarget.valueAsNumber);
             }}

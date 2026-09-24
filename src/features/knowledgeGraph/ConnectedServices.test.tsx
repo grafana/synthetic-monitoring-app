@@ -142,8 +142,8 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
 
   const props = received.at(-1)!;
   expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
-  // One hop of CALLS — the deeper neighbourhood proved too complex to read.
-  expect(props.cypherQuery).toContain('(s1)-[:CALLS]-(neighbour:Service)');
+  // Preserve services without CALLS neighbours while expanding at most one hop.
+  expect(props.cypherQuery).toContain('MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)');
   expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
   expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
   // The check anchors the ranked layout (first rank + halo); TB puts the shallow neighbourhood's

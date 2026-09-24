@@ -1,6 +1,5 @@
-import { config } from '@grafana/runtime';
-import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
-import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/web-sdk';
+import { createOpenFeatureLocalStorageProvider, createOpenFeatureOFREPWebProvider } from '@grafana/runtime';
+import { type Client, MultiProvider, OpenFeature } from '@openfeature/web-sdk';
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
@@ -31,22 +30,12 @@ export function initOpenFeature(): Promise<void> {
 }
 
 async function doInit(): Promise<void> {
-  const baseUrl = `${config.appSubUrl || ''}/apis/features.grafana.app/v0alpha1/namespaces/${config.namespace}`;
-
   await OpenFeature.setProviderAndWait(
     SM_OPEN_FEATURE_DOMAIN,
-    new OFREPWebProvider({
-      baseUrl,
-      changeDetection: 'none', // flags only re-evaluate on page load
-      disableVisibilityRefresh: true,
-      cacheMode: 'disabled',
-      timeoutMs: 10_000,
-    }),
-    {
-      targetingKey: config.namespace, // evaluate consistently per stack
-      namespace: config.namespace, // required by the multi-tenant flag service
-      ...((config.openFeatureContext ?? {}) as EvaluationContext),
-    }
+    new MultiProvider([
+      { provider: createOpenFeatureLocalStorageProvider() },
+      { provider: createOpenFeatureOFREPWebProvider() },
+    ])
   );
 
   client = OpenFeature.getClient(SM_OPEN_FEATURE_DOMAIN);

@@ -34,6 +34,32 @@ func TestRegistryExpressions(t *testing.T) {
 			instant: true,
 		},
 		{
+			// Ported from src/data/useSuccessRates.ts (useChecksReachabilitySuccessRate).
+			name:    queryChecksReachability,
+			query:   queryChecksReachability,
+			params:  `{}`,
+			expr:    `sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			name:    "checks_reachability ignores unknown params",
+			query:   queryChecksReachability,
+			params:  `{"job":"ignored"}`,
+			expr:    `sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			// Ported from gcx's BuildAllProbeCountQuery.
+			name:    queryChecksProbeCount,
+			query:   queryChecksProbeCount,
+			params:  `{}`,
+			expr:    `count(probe_success) by (job, instance)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
 			// Ported from src/queries/uptime.ts -- deliberately a range query, not
 			// instant: the panel it backs plots uptime over time.
 			name:   queryChecksUptime,

@@ -3,8 +3,8 @@ import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useTimeRange } from '@grafana/scenes-react';
 import { Box, IconButton, Pagination, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { useResizeObserver } from '@react-hookz/web';
 import { trackMiniMapPageClicked, trackMiniMapSectionClicked } from 'features/tracking/timepointExplorerEvents';
-import { useResizeObserver } from 'usehooks-ts';
 
 import {
   ANNOTATION_COLOR_BEFORE_CREATION,
@@ -118,11 +118,8 @@ const TimepointMinimapContent = () => {
       ? Array(MAX_MINIMAP_SECTIONS - miniMapCurrentPageSections.length).fill(null)
       : [];
 
-  useResizeObserver({
-    ref,
-    onResize: (element) => {
-      setMiniMapWidth(element.width ?? 0);
-    },
+  useResizeObserver(ref, (entry) => {
+    setMiniMapWidth(entry.contentRect.width);
   });
 
   const className = useMemo(() => {
