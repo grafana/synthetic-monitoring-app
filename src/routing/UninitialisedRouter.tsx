@@ -29,7 +29,7 @@ export const UninitialisedRouter = () => {
       ))}
       <Route path={AppRoutes.Config} element={<ConfigPageLayout />}>
         <Route index element={<UninitializedTab />} />
-        <Route path="*" element={<Navigate to={getRoute(AppRoutes.Home)} replace />} />
+        <Route path="*" element={<UninitializedTab />} />
       </Route>
 
       {/* TODO: Create 404 instead of navigating to home(?) */}

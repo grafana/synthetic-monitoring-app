@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
 import { Alert, Button, Modal, Spinner, Stack, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -10,6 +9,7 @@ import { useAlerts } from 'hooks/useAlerts';
 import { useLegacyAlertsRestriction } from 'hooks/useLegacyAlertsRestriction';
 import { transformAlertFormValues } from 'components/alertingTransformations';
 import { AlertRuleForm } from 'components/AlertRuleForm';
+import { ConfigContent } from 'page/ConfigPageLayout';
 
 import { ContactAdminAlert } from './ContactAdminAlert';
 
@@ -20,9 +20,9 @@ type SplitAlertRules = {
 
 export const AlertingPage = () => {
   return (
-    <PluginPage renderTitle={() => <h1>Alerts (Legacy)</h1>}>
+    <ConfigContent title="Alerts (Legacy)">
       <Alerting />
-    </PluginPage>
+    </ConfigContent>
   );
 };
 

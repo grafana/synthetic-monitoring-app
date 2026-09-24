@@ -12,5 +12,6 @@ it('uses agentic testing app routes', () => {
 
 it('uses stable SM routes', () => {
   expect(SM_URLS.chooseCheck).toMatch(/checks\/choose-type$/);
+  expect(SM_URLS.probes).toMatch(/\/probes$/);
   expect(SM_URLS.terraform).toMatch(/config\/terraform$/);
 });

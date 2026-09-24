@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
 import { AdHocFiltersVariable } from '@grafana/scenes';
 import {
   QueryVariable,
@@ -23,6 +22,8 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
+import { SyntheticsTab } from 'page/SyntheticsPageNav';
+import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
 
@@ -90,7 +91,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
 
   return (
     <>
-      <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => <h1>Home</h1>}>
+      <SyntheticsPluginPage activeTab={SyntheticsTab.Home}>
         <Stack direction="column" gap={1}>
           {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
           <DashboardContainerAnnotations annotations={annotations}>
@@ -124,7 +125,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
             )}
           </DashboardContainerAnnotations>
         </Stack>
-      </PluginPage>
+      </SyntheticsPluginPage>
     </>
   );
 };
@@ -136,10 +137,12 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
 
   if (checks.length === 0) {
     return (
-      <Stack direction="column" gap={1}>
-        {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
-        <ChecksEmptyState className={styles.emptyState} />
-      </Stack>
+      <SyntheticsPluginPage activeTab={SyntheticsTab.Home}>
+        <Stack direction="column" gap={1}>
+          {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
+          <ChecksEmptyState className={styles.emptyState} />
+        </Stack>
+      </SyntheticsPluginPage>
     );
   }
 
