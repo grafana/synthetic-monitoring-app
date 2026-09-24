@@ -46,8 +46,163 @@
       "missingLabels": ""
     }
   },
+  "checksPageLayout": {
+    "tabs": {
+      "checks": "",
+      "recommendations": ""
+    },
+    "title": ""
+  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Etiquetas"
+  },
+  "recommendations": {
+    "alertingGaps": {
+      "bulkApplied": "",
+      "bulkAppliedSingle": "",
+      "confirm": {
+        "applying": "",
+        "body": "",
+        "confirm": "",
+        "title": ""
+      },
+      "description": "",
+      "row": {
+        "applied": "",
+        "appliedSingle": "",
+        "apply": "",
+        "applying": "",
+        "applySingle": "",
+        "cancel": "",
+        "close": "",
+        "done": "",
+        "previewTitle": "",
+        "setUp": "",
+        "setUpLabel": "",
+        "thresholdWithPeriod": ""
+      },
+      "setUpAll": "",
+      "setUpSelected": "",
+      "setUpSelectedSingle": "",
+      "title": "",
+      "viewInList": ""
+    },
+    "categories": {
+      "alerting": {
+        "caption": "",
+        "label": ""
+      },
+      "cost": {
+        "caption": "",
+        "label": ""
+      },
+      "paused": {
+        "caption": "",
+        "label": ""
+      },
+      "redundancy": {
+        "caption": "",
+        "label": ""
+      },
+      "review": "",
+      "reviewMany": "",
+      "summary": ""
+    },
+    "dismissed": {
+      "none": "",
+      "restoreLong": "",
+      "summary": "",
+      "summarySingle": ""
+    },
+    "dismissedChecks": {
+      "restore": "",
+      "summary": "",
+      "summarySingle": ""
+    },
+    "duplicateChecks": {
+      "description": "",
+      "title": ""
+    },
+    "emptyState": {
+      "body": "",
+      "message": ""
+    },
+    "group": {
+      "count": "",
+      "detail": "",
+      "viewInList": ""
+    },
+    "intro": "",
+    "legend": {
+      "critical": "",
+      "info": "",
+      "warning": ""
+    },
+    "missingCostLabels": {
+      "action": "",
+      "description": "",
+      "row": {
+        "addLabels": "",
+        "addLabelsLabel": "",
+        "missing": ""
+      },
+      "title": ""
+    },
+    "overlappingTargets": {
+      "description": "",
+      "title": ""
+    },
+    "overview": {
+      "headline": ""
+    },
+    "pausedChecks": {
+      "action": "",
+      "description": "",
+      "resumeSelected": "",
+      "resumeSelectedSingle": "",
+      "row": {
+        "done": "",
+        "resume": "",
+        "resumeLabel": "",
+        "since": ""
+      },
+      "title": ""
+    },
+    "probes": {
+      "count": "",
+      "listWithMore": ""
+    },
+    "rail": {
+      "attention": "",
+      "label": ""
+    },
+    "redundancy": {
+      "row": {
+        "edit": "",
+        "editLabel": "",
+        "settings": "",
+        "settingsPaused": ""
+      }
+    },
+    "row": {
+      "dismiss": "",
+      "editCheck": "",
+      "select": ""
+    },
+    "section": {
+      "dismiss": "",
+      "openedFromLink": ""
+    },
+    "selection": {
+      "clear": ""
+    },
+    "summary": {
+      "alertingGaps": "",
+      "duplicates": "",
+      "missingCostLabels": "",
+      "overlapping": "",
+      "paused": ""
+    }
   },
   "testing-and-synthetics-landing": {
     "performance": {

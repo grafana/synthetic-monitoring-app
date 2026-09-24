@@ -45,6 +45,14 @@ export const CHECKS_TEST_ID = {
   },
 } as const;
 
+export const RECOMMENDATIONS_TEST_ID = {
+  section: 'recommendations section',
+  sectionHeader: 'recommendations section-header',
+  emptyState: 'recommendations empty-state',
+  attentionRow: 'recommendations attention-row',
+  legend: 'recommendations legend',
+} as const;
+
 export const CHECKSTER_TEST_ID = {
   navigation: {
     root: 'checkEditor navigation root',
