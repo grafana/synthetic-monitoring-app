@@ -26,7 +26,7 @@ describe('ChecksEmptyState', () => {
     expect(
       await screen.findByText('Get started monitoring your services with Grafana Cloud')
     ).toBeInTheDocument();
-    expect(await screen.findByText('Or run our setup wizard:')).toBeInTheDocument();
+    expect(await screen.findByText('Or run our setup wizard in your project folder:')).toBeInTheDocument();
 
     // The command is split across nodes so the package name can be highlighted separately
     const commandRow = await screen.findByRole('button', { name: 'Copy command' });
@@ -43,12 +43,16 @@ describe('ChecksEmptyState', () => {
   it('should reveal the "what does it do" explanation without hiding the requirements note', async () => {
     const { user } = await renderComponent();
 
-    const explanation = /It does everything you need to get started.*Synthetic Monitoring/s;
+    const explanation = /is an open source CLI tool that does everything.*Synthetic Monitoring/s;
     expect(screen.queryByText(explanation)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'What does it do?' }));
 
     expect(await screen.findByText(explanation)).toBeInTheDocument();
+    expect(await screen.findByText('setup wizard')).toHaveAttribute(
+      'href',
+      'https://github.com/grafana/cloud-setup'
+    );
     expect(await screen.findByText('gcx')).toHaveAttribute('href', 'https://github.com/grafana/gcx');
     expect(await screen.findByText(/analyzing your site, creating checks and exporting them as Terraform/)).toBeInTheDocument();
     expect(

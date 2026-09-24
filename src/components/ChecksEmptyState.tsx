@@ -37,7 +37,7 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
 
             <div className={styles.panelIntro}>
               <Text variant="bodySmall" color="secondary" element="p">
-                Or run our setup wizard:
+                Or run our setup wizard in your project folder:
               </Text>
             </div>
 
@@ -89,8 +89,12 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
                   <div className={styles.footerDetails}>
                     <div className={styles.footerDetailsContent}>
                       <Text variant="bodySmall" color="secondary" element="p">
-                        It does everything you need to get started and to continue using Synthetic
-                        Monitoring in the future.
+                        Our{' '}
+                        <TextLink external href="https://github.com/grafana/cloud-setup" variant="bodySmall">
+                          setup wizard
+                        </TextLink>{' '}
+                        is an open source CLI tool that does everything you need to get started and to
+                        continue using Synthetic Monitoring in the future.
                       </Text>
                       <Text variant="bodySmall" color="secondary" element="p">
                         Incl. installing{' '}
@@ -113,6 +117,11 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
   );
 }
 
+// Muted lavender, echoing the violet in the Grot illustration. Used at full
+// strength for the package name, and at low opacity for the panel's border
+// and hover tint, so the box has a bit of personality without being glossy.
+const ACCENT_RGB = '184, 165, 227';
+
 function getStyles(theme: GrafanaTheme2) {
   return {
     compactEmptyState: css({
@@ -130,8 +139,10 @@ function getStyles(theme: GrafanaTheme2) {
       flexDirection: 'column',
       alignItems: 'stretch',
       textAlign: 'left',
-      // Matches the top Search field's own colors, so this reads as a native, flat
-      // surface rather than a glossy/elevated card.
+      // Neutral at rest — a permanent violet border made the whole box look
+      // focused and gave this secondary path too much visual weight. The
+      // violet shows up on the package name, the hover tint, and the
+      // keyboard-focus ring instead.
       border: `1px solid ${theme.components.input.borderColor}`,
       borderRadius: theme.shape.radius.default,
       backgroundColor: theme.components.input.background,
@@ -141,7 +152,6 @@ function getStyles(theme: GrafanaTheme2) {
       display: 'flex',
       flexDirection: 'column',
       gap: theme.spacing(1.5),
-      padding: theme.spacing(2, 2.5),
     }),
     footer: css({
       display: 'flex',
@@ -154,9 +164,9 @@ function getStyles(theme: GrafanaTheme2) {
       // fighting this container's padding.
       padding: theme.spacing(1, 0),
       borderTop: `1px solid ${theme.components.input.borderColor}`,
-      // Distinct from the command row's background, so the footer reads as its
-      // own section rather than a continuation of the same surface.
-      backgroundColor: theme.colors.background.secondary,
+      // A touch lighter than plain "primary" (canvas was too dark, secondary
+      // too light), so the footer still reads as its own, quieter section.
+      backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
     }),
     footerTrigger: css({
       display: 'flex',
@@ -206,18 +216,36 @@ function getStyles(theme: GrafanaTheme2) {
       width: '100%',
       border: 'none',
       background: 'none',
-      padding: 0,
+      // Padding lives here rather than on commandArea, so this button — the
+      // hover target — covers the whole top strip edge to edge, instead of a
+      // rounded inset that looked like a selected input inside the box.
+      padding: theme.spacing(2, 2.5),
       cursor: 'pointer',
       font: 'inherit',
       color: 'inherit',
       textAlign: 'left',
+      transition: 'background-color 150ms ease',
+      // Tints the whole row (with the same lavender as the border/package
+      // name, for a bit of personality) and brightens the copy icon; the
+      // command text and its layout stay untouched.
       '&:hover': {
-        color: theme.colors.text.maxContrast,
+        backgroundColor: `rgba(${ACCENT_RGB}, 0.1)`,
+      },
+      '&:hover svg': {
+        color: theme.colors.text.primary,
+      },
+      // Violet ring for keyboard focus only — not on every mouse click —
+      // so it reads as an accessibility affordance, not a permanent style.
+      outline: 'none',
+      '&:focus-visible': {
+        outline: `2px solid rgba(${ACCENT_RGB}, 0.8)`,
+        outlineOffset: '-2px',
       },
     }),
     copyIcon: css({
       flexShrink: 0,
       color: theme.colors.text.secondary,
+      transition: 'color 150ms ease',
     }),
     commandLine: css({
       display: 'flex',
@@ -236,10 +264,9 @@ function getStyles(theme: GrafanaTheme2) {
       padding: 0,
     }),
     packageName: css({
-      // Muted lavender, echoing the violet in the Grot illustration, so the tool
-      // name reads as the one thing worth noticing in the command. The rest of
-      // the command stays neutral on purpose.
-      color: '#B8A5E3',
+      // So the tool name reads as the one thing worth noticing in the
+      // command. The rest of the command stays neutral on purpose.
+      color: `rgb(${ACCENT_RGB})`,
     }),
     cliSection: css({
       width: '100%',
