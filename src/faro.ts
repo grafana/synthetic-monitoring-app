@@ -22,6 +22,7 @@ export enum FaroEvent {
   InitializeAccessToken = 'initialize_access_token',
   UpdateCheckAlerts = 'update_check_alerts',
   NoProbeMappingFound = 'no_probe_mapping_found',
+  CloudSetupCliCommandCopyFailed = 'cloud_setup_cli_command_copy_failed',
 }
 
 export enum FaroUserAction {

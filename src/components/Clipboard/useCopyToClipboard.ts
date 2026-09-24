@@ -32,6 +32,9 @@ export function useCopyToClipboard({ onCopy, onError, resetAfterMs }: UseCopyToC
         onCopy?.();
 
         if (resetAfterMs) {
+          if (resetTimeoutRef.current) {
+            clearTimeout(resetTimeoutRef.current);
+          }
           resetTimeoutRef.current = setTimeout(() => setCopied(false), resetAfterMs);
         }
       })
