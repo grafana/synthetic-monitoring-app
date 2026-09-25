@@ -1,0 +1,30 @@
+name: Crowdin automatic task management
+
+on:
+  workflow_dispatch:
+  # Disabled until the existing es-ES translations have been imported into
+  # Crowdin, so translators are not asked to redo work already in the repo.
+  # once a month on the first day of the month at midnight
+  # schedule:
+  #   - cron: '0 0 1 * *'
+
+jobs:
+  create-tasks-in-crowdin:
+    runs-on: ubuntu-x64
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Get vault secrets
+        id: vault-secrets
+        uses: grafana/shared-workflows/actions/get-vault-secrets@a53fc80bc30b0a16a262520465db899fa3af08b7 # get-vault-secrets/v1.3.2
+        with:
+          # Vault secret paths:
+          # - ci/repo/grafana/synthetic-monitoring-app/grafana-frontend-crowdin-token
+          repo_secrets: |
+            CROWDIN_TOKEN=grafana-frontend-crowdin-token:access_token
+      - name: Create tasks in Crowdin
+        uses: grafana/grafana-github-actions/crowdin-create-tasks@26e65a1da9ffdf35d3e8cc6dbeffbccf16022d88 # main
+        with:
+          crowdin_token: ${{ env.CROWDIN_TOKEN }}
+          crowdin_project_id: 64
