@@ -33,17 +33,34 @@ function isReachabilityQuery(queries: string[]): boolean {
   return /\bprobe_all_success_sum\b/.test(combined) && /\bprobe_all_success_count\b/.test(combined);
 }
 
-export function sloMatchesSMCheck(slo: SLO, job: string, instance: string): boolean {
+function toJobInstanceKey(job: string, instance: string): string {
+  return JSON.stringify([job, instance]);
+}
+
+function getLinkedJobInstanceKeys(slo: SLO): Set<string> {
+  const keys = new Set<string>();
   const queries = getSLOQueryStrings(slo);
   if (!isReachabilityQuery(queries)) {
-    return false;
+    return keys;
   }
-  return queries.some(
-    (qs) =>
-      (/\bprobe_all_success_sum\b/.test(qs) || /\bprobe_all_success_count\b/.test(qs)) &&
-      extractLabelValues(qs, 'job').includes(job) &&
-      extractLabelValues(qs, 'instance').includes(instance)
-  );
+
+  for (const qs of queries) {
+    if (!/\bprobe_all_success_sum\b/.test(qs) && !/\bprobe_all_success_count\b/.test(qs)) {
+      continue;
+    }
+    const instances = extractLabelValues(qs, 'instance');
+    for (const job of extractLabelValues(qs, 'job')) {
+      for (const instance of instances) {
+        keys.add(toJobInstanceKey(job, instance));
+      }
+    }
+  }
+
+  return keys;
+}
+
+export function sloMatchesSMCheck(slo: SLO, job: string, instance: string): boolean {
+  return getLinkedJobInstanceKeys(slo).has(toJobInstanceKey(job, instance));
 }
 
 function isSLOActive(slo: SLO): boolean {
@@ -55,28 +72,33 @@ export type SLOCheckLinkMap = {
   checksBySLOUuid: Map<string, Check[]>;
 };
 
+function hasId(check: Check): check is Check & { id: number } {
+  return check.id !== undefined;
+}
+
+function appendToMapList<K, V>(map: Map<K, V[]>, key: K, value: V) {
+  const list = map.get(key);
+  if (list) {
+    list.push(value);
+  } else {
+    map.set(key, [value]);
+  }
+}
+
 export function buildSLOCheckLinkMap(slos: SLO[], checks: Check[]): SLOCheckLinkMap {
   const slosByCheckId = new Map<number, SLO[]>();
   const checksBySLOUuid = new Map<string, Check[]>();
+  const checksByJobInstance = new Map<string, Array<Check & { id: number }>>();
 
-  const activeSLOs = slos.filter(isSLOActive);
+  for (const check of checks.filter(hasId)) {
+    appendToMapList(checksByJobInstance, toJobInstanceKey(check.job, check.target), check);
+  }
 
-  for (const slo of activeSLOs) {
-    for (const check of checks) {
-      if (check.id !== undefined && sloMatchesSMCheck(slo, check.job, check.target)) {
-        const forCheck = slosByCheckId.get(check.id);
-        if (forCheck) {
-          forCheck.push(slo);
-        } else {
-          slosByCheckId.set(check.id, [slo]);
-        }
-
-        const forSLO = checksBySLOUuid.get(slo.uuid);
-        if (forSLO) {
-          forSLO.push(check);
-        } else {
-          checksBySLOUuid.set(slo.uuid, [check]);
-        }
+  for (const slo of slos.filter(isSLOActive)) {
+    for (const key of getLinkedJobInstanceKeys(slo)) {
+      for (const check of checksByJobInstance.get(key) ?? []) {
+        appendToMapList(slosByCheckId, check.id, slo);
+        appendToMapList(checksBySLOUuid, slo.uuid, check);
       }
     }
   }
