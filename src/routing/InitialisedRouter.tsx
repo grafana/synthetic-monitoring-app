@@ -31,7 +31,6 @@ import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
-// Alpha (requires `synthetic-monitoring-check-editor=true`)
 import { EditCheckV2 } from '../page/EditCheck/EditCheckV2';
 import { NewCheckV2 } from '../page/NewCheck/NewCheckV2';
 
