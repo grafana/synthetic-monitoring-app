@@ -11,6 +11,7 @@ export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
   [FeatureName.CALs]: 'synthetic-monitoring.cost-attribution',
   [FeatureName.CheckSuggestions]: 'synthetic-monitoring.check-suggestions',
+  [FeatureName.CheckTemplates]: 'synthetic-monitoring.check-templates',
   [FeatureName.Folders]: 'synthetic-monitoring.folders',
   [FeatureName.GRPCChecks]: 'synthetic-monitoring.grpc-checks',
   [FeatureName.KnowledgeGraph]: 'synthetic-monitoring.knowledge-graph',
