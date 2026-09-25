@@ -63,7 +63,7 @@ Rules:
 - Use `user` from `render`, not `userEvent` directly.
 - Override MSW with `server.use(apiRoute('routeKey', { result: () => ({ ... }) }))`.
 - Assert API payloads with `getServerRequests()` when the journey submits data.
-- Use `mockFeatureToggles` and `runTestAs*` from `test/utils` for flags and personas — not ad-hoc config mocks.
+- Use `mockFeatureToggles` and `runTestAs*` from `test/utils` for flags and personas — not ad-hoc config mocks. Flags are OpenFeature only: a component that reads a flag must render inside `test/render` or `createWrapper` (which mount the test provider), never a bare `render`. See [`docs/development/feature-flags.md`](../../../docs/development/feature-flags.md).
 - Prefer stable fixtures (`test/fixtures/*`) over one-off `DB.build` unless you need a custom variant.
 
 For routing, pass `path` and `route` to `render`. Assert navigation via `ROUTER_TEST_ID` from `test/dataTestIds`.

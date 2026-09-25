@@ -160,6 +160,16 @@ The plugin will show "Invalid provisioning" unless provisioning YAML files exist
 
 After creating/changing provisioning files, restart Grafana (`yarn server` or `docker compose restart`).
 
+### Feature flags
+
+Flags are OpenFeature flags served by Grafana's OFREP endpoint and defined with GOFF in
+`deployment_tools`; the app has no legacy Grafana feature toggles left. Never read
+`config.featureToggles` (Grafana is deprecating those reads for plugins). `FeatureName` values in
+`src/types.ts` are the GOFF keys; read them with `useFeatureFlag` / `useIsFeatureEnabled` and set
+them in tests with `mockFeatureToggles`. Locally, flags go in `dev/custom.ini` under
+`[feature_toggles]` with the same dotted keys, and the local Grafana must be 13.2 or later or
+every flag reads `false`. Full guide: [docs/development/feature-flags.md](./docs/development/feature-flags.md).
+
 ### Node.js version
 
 `.nvmrc` pins Node.js 24 (`nvm use`, or `nvm install 24`), but note that CI
