@@ -265,6 +265,20 @@ describe('useAllSLOs', () => {
     expect(result.current.error).toBeUndefined();
   });
 
+  it('reports a 403 as an access-denied error rather than an empty list', async () => {
+    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([sloManualRatio], { forbidden: true });
+
+    const { Wrapper } = createWrapper();
+    const { result } = renderHook(() => useAllSLOs(), { wrapper: Wrapper });
+
+    await waitFor(() => {
+      expect(result.current.error).toBeDefined();
+    });
+
+    expect(result.current.isAccessDenied).toBe(true);
+    expect(result.current.slos).toEqual([]);
+  });
+
   it('returns empty (not loading) when the SLO plugin is not installed', async () => {
     usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([]);
     const { Wrapper } = createWrapper({

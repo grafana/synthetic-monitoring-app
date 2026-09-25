@@ -127,13 +127,13 @@ describe('CheckList - SLOs', () => {
     expect(screen.queryByText('Failed to fetch linked SLOs. Retry?')).not.toBeInTheDocument();
   });
 
-  test('shows no retry banner when the user is not allowed to read SLOs', async () => {
+  test('shows no linked-SLO badge or retry banner when the user is not allowed to read SLOs', async () => {
     usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([buildReachabilitySLO(BASIC_HTTP_CHECK)], {
       forbidden: true,
     });
 
     const { queryClient } = await renderCheckList([BASIC_HTTP_CHECK]);
-    await waitFor(() => expect(queryClient.getQueryState(sloQueryKeys.all)?.status).toBe('success'));
+    await waitFor(() => expect(queryClient.getQueryState(sloQueryKeys.all)?.status).toBe('error'));
 
     expect(screen.queryByText('Failed to fetch linked SLOs. Retry?')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /^Linked to/ })).not.toBeInTheDocument();

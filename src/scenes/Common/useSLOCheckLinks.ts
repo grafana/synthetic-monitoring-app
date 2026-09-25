@@ -45,10 +45,8 @@ async function fetchSLOsList(getSLOApi: GetSLOApi): Promise<SLO[]> {
     const { slos } = await api.getSlos();
     return slos ?? [];
   } catch (e: unknown) {
-    // The SLO API 404s for tenants that have never had SLOs provisioned,
-    // and 403s for users who can't read SLOs, which no retry will fix.
-    const status = getErrorStatus(e);
-    if (status === 404 || status === 403) {
+    // The SLO API 404s for tenants that have never had SLOs provisioned.
+    if (getErrorStatus(e) === 404) {
       return [];
     }
     throw e;
@@ -85,6 +83,7 @@ export function useAllSLOs() {
     isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
     isFetching: canFetch && query.isFetching,
     error: query.error ? toError(query.error) : undefined,
+    isAccessDenied: getErrorStatus(query.error) === 403,
     refetch: query.refetch,
   };
 }
@@ -95,6 +94,7 @@ export function useSLOCheckLinkMap() {
     isLoading: slosLoading,
     isFetching: slosFetching,
     error: slosError,
+    isAccessDenied: isSLOAccessDenied,
     refetch: refetchSLOs,
   } = useAllSLOs();
   const { data: checks, isLoading: checksLoading, error: checksError } = useChecks();
@@ -106,6 +106,7 @@ export function useSLOCheckLinkMap() {
     isLoading: slosLoading || checksLoading,
     error: slosError ?? (checksError instanceof Error ? checksError : undefined),
     sloError: slosError,
+    isSLOAccessDenied,
     isSLOsFetching: slosFetching,
     refetchSLOs,
   };
@@ -116,9 +117,9 @@ export function getSLOsForCheck(map: SLOCheckLinkMap, checkId: number | undefine
 }
 
 export function useSLOsForCheck(checkId: number | undefined) {
-  const { map, isLoading, error } = useSLOCheckLinkMap();
+  const { map, isLoading, error, isSLOAccessDenied } = useSLOCheckLinkMap();
   const slos = getSLOsForCheck(map, checkId);
-  return { slos, isLoading, error };
+  return { slos, isLoading, error, isAccessDenied: isSLOAccessDenied };
 }
 
 function useSLOPluginApi() {

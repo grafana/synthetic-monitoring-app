@@ -29,7 +29,7 @@ type SLOIntegrationProps = {
 };
 
 export function SLOIntegration({ check }: SLOIntegrationProps) {
-  const { slos, isLoading } = useSLOsForCheck(check.id);
+  const { slos, isLoading, isAccessDenied } = useSLOsForCheck(check.id);
   const deleteSLO = useDeleteSLO();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [activeTabKey, setActiveTabKey] = useState<string>('');
@@ -81,6 +81,10 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
         </span>
       </Tooltip>
     );
+  }
+
+  if (isAccessDenied) {
+    return null;
   }
 
   const countLabel = slos.length > 0 ? (slos.length === 1 ? '1 SLO' : `${slos.length} SLOs`) : 'SLOs';
