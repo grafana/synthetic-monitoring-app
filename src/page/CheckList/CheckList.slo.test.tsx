@@ -1,5 +1,5 @@
 import React from 'react';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { CHECK_IN_EXTERNAL_FOLDER } from 'test/fixtures/folderChecks';
@@ -13,6 +13,7 @@ import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import type { SLO } from 'scenes/Common/grafanaSLOApp.types';
+import { sloQueryKeys } from 'scenes/Common/useSLOCheckLinks';
 
 import { CheckList } from './CheckList';
 
@@ -124,6 +125,18 @@ describe('CheckList - SLOs', () => {
 
     expect(await screen.findByRole('button', { name: 'Linked to 1 SLO' })).toBeInTheDocument();
     expect(screen.queryByText('Failed to fetch linked SLOs. Retry?')).not.toBeInTheDocument();
+  });
+
+  test('shows no retry banner when the user is not allowed to read SLOs', async () => {
+    usePluginFunctionsSpy = spyUsePluginFunctionsForSLOs([buildReachabilitySLO(BASIC_HTTP_CHECK)], {
+      forbidden: true,
+    });
+
+    const { queryClient } = await renderCheckList([BASIC_HTTP_CHECK]);
+    await waitFor(() => expect(queryClient.getQueryState(sloQueryKeys.all)?.status).toBe('success'));
+
+    expect(screen.queryByText('Failed to fetch linked SLOs. Retry?')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Linked to/ })).not.toBeInTheDocument();
   });
 
   describe('with folders enabled', () => {

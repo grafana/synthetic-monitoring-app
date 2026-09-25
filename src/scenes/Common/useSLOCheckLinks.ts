@@ -45,8 +45,10 @@ async function fetchSLOsList(getSLOApi: GetSLOApi): Promise<SLO[]> {
     const { slos } = await api.getSlos();
     return slos ?? [];
   } catch (e: unknown) {
-    // The SLO API 404s for tenants that have never had SLOs provisioned.
-    if (getErrorStatus(e) === 404) {
+    // The SLO API 404s for tenants that have never had SLOs provisioned,
+    // and 403s for users who can't read SLOs, which no retry will fix.
+    const status = getErrorStatus(e);
+    if (status === 404 || status === 403) {
       return [];
     }
     throw e;
