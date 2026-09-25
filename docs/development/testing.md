@@ -185,7 +185,7 @@ DB.check.build({ job: 'My HTTP check', target: 'https://example.com' }, { transi
 
 ### Feature flags and personas
 
-- **`mockFeatureToggles`** — sets Grafana config toggles and OpenFeature test flags. See also [openfeature-migration.md](./openfeature-migration.md).
+- **`mockFeatureToggles`** — sets OpenFeature test flags for the render wrappers. See also [feature-flags.md](./feature-flags.md).
 - **`runTestAs*`** helpers in `test/utils` — simulate viewer, editor, admin, RBAC roles, secrets access, HG Free limits, etc. Prefer these over ad-hoc config mocks.
 
 ### Journey helpers (Checkster and check forms)
