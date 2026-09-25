@@ -160,7 +160,11 @@ export const CheckListHeader = ({
                 {selectedCheckIds.size} check{selectedCheckIds.size !== 1 ? `s are` : ` is`} selected.
               </div>
             )}
-            <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} isFoldersAvailable={isFoldersAvailable} />
+            <CheckListViewSwitcher
+              onChange={onChangeView}
+              viewType={viewType}
+              isFoldersAvailable={isFoldersAvailable}
+            />
           </div>
 
           <div className={styles.supportingContent}>
