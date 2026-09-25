@@ -7,11 +7,19 @@ function getRuntimeModule(): typeof import('@grafana/runtime') {
 }
 
 /** Mirrors the SLO app contract: methods resolve with plain values and reject on failure. */
-export function spyUsePluginFunctionsForSLOs(resolve: SLO[], options?: { notFound?: boolean }) {
+export function spyUsePluginFunctionsForSLOs(
+  resolve: SLO[],
+  options?: { notFound?: boolean; failuresBeforeSuccess?: number }
+) {
+  let remainingFailures = options?.failuresBeforeSuccess ?? 0;
   const apiStub = {
     getSlos: async () => {
       if (options?.notFound) {
         throw Object.assign(new Error('not found'), { status: 404 });
+      }
+      if (remainingFailures > 0) {
+        remainingFailures--;
+        throw Object.assign(new Error('internal server error'), { status: 500 });
       }
       return { slos: resolve };
     },
