@@ -9,7 +9,6 @@ import { runTestWithoutSMAccess } from 'test/utils';
 import { hasGlobalPermission } from 'utils';
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { getQueryClient } from 'data/queryClient';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 import { MetaContextProvider } from './MetaContext';
 import { SMDatasourceProvider } from './SMDatasourceContext';
@@ -25,13 +24,11 @@ const Wrapper = ({ children, initialEntries = [`${PLUGIN_URL_PATH}home`], meta }
   return (
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
-        <FeatureFlagProvider>
-          <MemoryRouter initialEntries={initialEntries}>
-            <Routes>
-              <Route path={`${PLUGIN_URL_PATH}*`} element={children} />
-            </Routes>
-          </MemoryRouter>
-        </FeatureFlagProvider>
+        <MemoryRouter initialEntries={initialEntries}>
+          <Routes>
+            <Route path={`${PLUGIN_URL_PATH}*`} element={children} />
+          </Routes>
+        </MemoryRouter>
       </MetaContextProvider>
     </QueryClientProvider>
   );

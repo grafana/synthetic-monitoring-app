@@ -1,10 +1,9 @@
 import React from 'react';
-import { config } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsHGFreeUserOverLimit } from 'test/utils';
+import { mockFeatureToggles, runTestAsHGFreeUserOverLimit } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -46,10 +45,7 @@ it(`doesn't show gRPC option by default`, async () => {
 });
 
 it('shows gRPC option when feature is enabled', async () => {
-  jest.replaceProperty(config, 'featureToggles', {
-    // @ts-expect-error
-    [FeatureName.GRPCChecks]: true,
-  });
+  mockFeatureToggles({ [FeatureName.GRPCChecks]: true });
 
   await renderChooseCheckGroup();
   expect(screen.getByText('gRPC')).toBeInTheDocument();

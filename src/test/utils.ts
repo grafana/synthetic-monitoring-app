@@ -2,7 +2,6 @@ import { OrgRole } from '@grafana/data';
 import runTime, { config } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
 import { UserEvent } from '@testing-library/user-event';
-import { OPEN_FEATURE_KEYS } from 'services/featureFlags';
 import {
   LOGS_DATASOURCE,
   METRICS_DATASOURCE,
@@ -522,21 +521,10 @@ export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []):
 
 type FeatureToggleOverrides = Partial<Record<FeatureName, boolean>>;
 
+// Drives the OpenFeatureTestProvider that test/render (and createWrapper) mount
 export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
-  const runtime = require('@grafana/runtime');
-  jest.replaceProperty(runtime, `config`, {
-    ...config,
-    featureToggles: {
-      ...runtime.config.featureToggles,
-      ...overrides,
-    },
-  });
-
   Object.entries(overrides).forEach(([name, value]) => {
-    const openFeatureKey = OPEN_FEATURE_KEYS[name as FeatureName];
-    if (openFeatureKey) {
-      setTestFlag(openFeatureKey, Boolean(value));
-    }
+    setTestFlag(name, Boolean(value));
   });
 }
 

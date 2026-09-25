@@ -18,7 +18,6 @@ import { MetaContextProvider } from 'contexts/MetaContext';
 import { PermissionsContextProvider } from 'contexts/PermissionsContext';
 import { SMDatasourceProvider } from 'contexts/SMDatasourceContext';
 import { getQueryClient } from 'data/queryClient';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 export type ComponentWrapperProps = {
   children: ReactNode;
@@ -69,17 +68,15 @@ const DefaultWrapper = ({
         <QueryClientProvider client={queryClient}>
           <MetaContextProvider meta={{ ...SM_META, ...meta }}>
             <ExternalDependenciesProvider overrides={externalDependenciesOverrides}>
-              <FeatureFlagProvider>
-                <SMDatasourceProvider>
-                  <PermissionsContextProvider>
-                    <TestRouteInfo />
-                    <Routes>
-                      <Route path={fullRoutePattern} element={children} />
-                      <Route path="*" element={children} />
-                    </Routes>
-                  </PermissionsContextProvider>
-                </SMDatasourceProvider>
-              </FeatureFlagProvider>
+              <SMDatasourceProvider>
+                <PermissionsContextProvider>
+                  <TestRouteInfo />
+                  <Routes>
+                    <Route path={fullRoutePattern} element={children} />
+                    <Route path="*" element={children} />
+                  </Routes>
+                </PermissionsContextProvider>
+              </SMDatasourceProvider>
             </ExternalDependenciesProvider>
           </MetaContextProvider>
         </QueryClientProvider>
