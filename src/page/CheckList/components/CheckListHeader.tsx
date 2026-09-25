@@ -38,6 +38,9 @@ type CheckListHeaderProps = {
   alertStatesFetching: boolean;
   alertStatesError: boolean;
   onRetryAlertStates: () => void;
+  sloStatesFetching: boolean;
+  sloStatesError: boolean;
+  onRetrySLOStates: () => void;
   calNames?: string[];
   /**
    * Bulk actions for the current selection, shown in place of the sort
@@ -93,6 +96,9 @@ export const CheckListHeader = ({
   alertStatesFetching,
   alertStatesError,
   onRetryAlertStates,
+  sloStatesFetching,
+  sloStatesError,
+  onRetrySLOStates,
   calNames,
   bulkActions,
 }: CheckListHeaderProps) => {
@@ -154,7 +160,11 @@ export const CheckListHeader = ({
                 {selectedCheckIds.size} check{selectedCheckIds.size !== 1 ? `s are` : ` is`} selected.
               </div>
             )}
-            <CheckListViewSwitcher onChange={onChangeView} viewType={viewType} isFoldersAvailable={isFoldersAvailable} />
+            <CheckListViewSwitcher
+              onChange={onChangeView}
+              viewType={viewType}
+              isFoldersAvailable={isFoldersAvailable}
+            />
           </div>
 
           <div className={styles.supportingContent}>
@@ -176,6 +186,14 @@ export const CheckListHeader = ({
                     <Stack alignItems="center" gap={1}>
                       <Icon name="exclamation-triangle" />
                       <span>Failed to fetch alert states. Retry?</span>
+                    </Stack>
+                  </PlainButton>
+                )}
+                {sloStatesError && !sloStatesFetching && (
+                  <PlainButton onClick={onRetrySLOStates} className={styles.errorButton}>
+                    <Stack alignItems="center" gap={1}>
+                      <Icon name="exclamation-triangle" />
+                      <span>Failed to fetch linked SLOs. Retry?</span>
                     </Stack>
                   </PlainButton>
                 )}

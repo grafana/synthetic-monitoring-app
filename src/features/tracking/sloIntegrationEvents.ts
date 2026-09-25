@@ -1,3 +1,4 @@
+import { trackLinkClick } from 'features/tracking/linkEvents';
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
 const sloIntegrationEvents = createSMEventFactory('slo_integration');
@@ -21,3 +22,15 @@ export const trackSLOIntegrationSLODeleted = sloIntegrationEvents('slo_deleted')
 
 /** Tracks when deleting an SLO linked to a check fails. */
 export const trackSLOIntegrationSLODeleteFailed = sloIntegrationEvents('slo_delete_failed');
+
+/** Tracks a click on a link to an SLO's dashboard or its page in the SLO app. */
+export function trackSLOLinkClick(href: string, source: string) {
+  const url = new URL(href, window.location.origin);
+  trackLinkClick({
+    href: url.href,
+    hostname: url.hostname,
+    path: url.pathname,
+    search: url.search,
+    source,
+  });
+}

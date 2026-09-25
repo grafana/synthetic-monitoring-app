@@ -16,6 +16,7 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { FeatureFlagProvider } from '../components/FeatureFlagProvider';
+import { ExternalDependenciesProvider } from '../contexts/ExternalDependenciesContext';
 import { MetaContextProvider } from '../contexts/MetaContext';
 import { PermissionsContextProvider } from '../contexts/PermissionsContext';
 import { SMDatasourceProvider } from '../contexts/SMDatasourceContext';
@@ -26,19 +27,21 @@ function RouteWrapper({ children, meta, initialEntries }: ComponentWrapperProps)
   return (
     <QueryClientProvider client={getQueryClient()}>
       <MetaContextProvider meta={{ ...SM_META, ...meta }}>
-        <FeatureFlagProvider>
-          <SMDatasourceProvider>
-            <PermissionsContextProvider>
-              <MemoryRouter initialEntries={initialEntries}>
-                <Routes>
-                  <Route path={PLUGIN_URL_PATH}>
-                    <Route path="*" element={children} />
-                  </Route>
-                </Routes>
-              </MemoryRouter>
-            </PermissionsContextProvider>
-          </SMDatasourceProvider>
-        </FeatureFlagProvider>
+        <ExternalDependenciesProvider overrides={{ slo: { installed: true, isLoading: false } }}>
+          <FeatureFlagProvider>
+            <SMDatasourceProvider>
+              <PermissionsContextProvider>
+                <MemoryRouter initialEntries={initialEntries}>
+                  <Routes>
+                    <Route path={PLUGIN_URL_PATH}>
+                      <Route path="*" element={children} />
+                    </Route>
+                  </Routes>
+                </MemoryRouter>
+              </PermissionsContextProvider>
+            </SMDatasourceProvider>
+          </FeatureFlagProvider>
+        </ExternalDependenciesProvider>
       </MetaContextProvider>
     </QueryClientProvider>
   );

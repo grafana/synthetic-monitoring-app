@@ -20,6 +20,8 @@ import { Feedback } from 'components/Feedback';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
 import { FolderActionsMenu } from 'page/CheckList/components/FolderActionsMenu';
+import { getSLOsForCheck } from 'scenes/Common/useSLOCheckLinks';
+import type { SLOCheckLinkMap } from 'scenes/Common/useSLOCheckLinks.utils';
 
 interface CheckListFolderViewProps {
   checks: Check[];
@@ -30,6 +32,7 @@ interface CheckListFolderViewProps {
   onRetryFolders?: () => void;
   defaultFolderUid?: string;
   checkAlertStates: CheckRuntimeAlertStates;
+  sloCheckLinkMap: SLOCheckLinkMap;
   calNames: string[];
   onLabelSelect: (label: Label) => void;
   onStatusSelect: (enabled: boolean) => void;
@@ -57,6 +60,7 @@ export function CheckListFolderView({
   onRetryFolders,
   defaultFolderUid,
   checkAlertStates,
+  sloCheckLinkMap,
   calNames,
   onLabelSelect,
   onStatusSelect,
@@ -110,6 +114,7 @@ export function CheckListFolderView({
 
   const checkItemProps = {
     checkAlertStates,
+    sloCheckLinkMap,
     calNames,
     foldersLoading,
     foldersError,
@@ -166,6 +171,7 @@ export function CheckListFolderView({
 
 interface CheckItemCallbacks {
   checkAlertStates: CheckRuntimeAlertStates;
+  sloCheckLinkMap: SLOCheckLinkMap;
   calNames: string[];
   foldersLoading?: boolean;
   foldersError?: boolean;
@@ -369,6 +375,7 @@ function PaginatedCheckList({ checks, checkItemProps, hideTopPagination }: Pagin
           onTypeSelect={checkItemProps.onTypeSelect}
           onToggleCheckbox={checkItemProps.onToggleCheckbox}
           runtimeAlertState={getCheckRuntimeAlertState(checkItemProps.checkAlertStates, check)}
+          slos={getSLOsForCheck(checkItemProps.sloCheckLinkMap, check.id)}
           selected={checkItemProps.selectedCheckIds.has(check.id!)}
           viewType={CheckListViewType.Card}
         />
