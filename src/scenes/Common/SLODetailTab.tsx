@@ -1,6 +1,5 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { config } from '@grafana/runtime';
 import {
   Badge,
   Button,
@@ -15,23 +14,12 @@ import {
   useTheme2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { trackLinkClick } from 'features/tracking/linkEvents';
+import { trackSLOLinkClick } from 'features/tracking/sloIntegrationEvents';
 
 import type { SLO } from './grafanaSLOApp.types';
 
-import { buildSLOEditHref } from './grafanaSLOApp.constants';
+import { buildSLODashboardHref, buildSLOEditHref } from './grafanaSLOApp.constants';
 import { useSLOMetrics } from './SLODetailTab.hooks';
-
-function trackSLOLinkClick(href: string, source: string) {
-  const url = new URL(href, window.location.origin);
-  trackLinkClick({
-    href: url.href,
-    hostname: url.hostname,
-    path: url.pathname,
-    search: url.search,
-    source,
-  });
-}
 
 export type SLODetailTabProps = {
   slo: SLO;
@@ -134,8 +122,7 @@ export function SLODetailTab({ slo, onDelete, isDeleting }: SLODetailTabProps) {
   const styles = useStyles2(getStyles);
   const metrics = useSLOMetrics(slo);
   const primaryObjective = slo.objectives[0];
-  const dashboardUid = slo.readOnly?.drillDownDashboardRef?.UID;
-  const dashboardHref = dashboardUid ? `${config.appSubUrl ?? ''}/d/${dashboardUid}` : undefined;
+  const dashboardHref = buildSLODashboardHref(slo);
   const editHref = buildSLOEditHref(slo.uuid);
   const window = primaryObjective?.window ?? '28d';
 

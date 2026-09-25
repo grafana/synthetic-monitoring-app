@@ -1,5 +1,7 @@
 import { config } from '@grafana/runtime';
 
+import type { SLO } from './grafanaSLOApp.types';
+
 /** Grafana app plugin id for `grafana-slo-app`. */
 export const SLO_APP_PLUGIN_ID = 'grafana-slo-app';
 
@@ -16,4 +18,9 @@ export const SLO_WIZARD_COMPONENT_ID = `${SLO_APP_PLUGIN_ID}/wizard/v1`;
 export function buildSLOEditHref(uuid: string): string {
   const appSubUrl = config.appSubUrl ?? '';
   return `${appSubUrl}/a/${SLO_APP_PLUGIN_ID}/wizard/review/${encodeURIComponent(uuid)}`;
+}
+
+export function buildSLODashboardHref(slo: SLO): string | undefined {
+  const dashboardUid = slo.readOnly?.drillDownDashboardRef?.UID;
+  return dashboardUid ? `${config.appSubUrl ?? ''}/d/${dashboardUid}` : undefined;
 }

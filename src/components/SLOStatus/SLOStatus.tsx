@@ -1,9 +1,11 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, Text, useStyles2 } from '@grafana/ui';
+import { Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackSLOLinkClick } from 'features/tracking/sloIntegrationEvents';
 
 import { Toggletip } from 'components/Toggletip';
+import { buildSLODashboardHref, buildSLOEditHref } from 'scenes/Common/grafanaSLOApp.constants';
 import type { SLO } from 'scenes/Common/grafanaSLOApp.types';
 import { SLOIcon } from 'scenes/Common/SLOIcon';
 
@@ -34,11 +36,19 @@ const SLOStatusTooltip = ({ slos }: { slos: SLO[] }) => {
     <Stack direction="column" gap={1}>
       <Text weight="medium">{slos.length === 1 ? 'Linked SLO' : `Linked SLOs (${slos.length})`}</Text>
       <Stack direction="column" gap={0.5}>
-        {slos.map((slo) => (
-          <Text key={slo.uuid} variant="bodySmall">
-            {slo.name}
-          </Text>
-        ))}
+        {slos.map((slo) => {
+          const href = buildSLODashboardHref(slo) ?? buildSLOEditHref(slo.uuid);
+          return (
+            <TextLink
+              key={slo.uuid}
+              href={href}
+              variant="bodySmall"
+              onClick={() => trackSLOLinkClick(href, 'check_list_slo_status')}
+            >
+              {slo.name}
+            </TextLink>
+          );
+        })}
       </Stack>
     </Stack>
   );
