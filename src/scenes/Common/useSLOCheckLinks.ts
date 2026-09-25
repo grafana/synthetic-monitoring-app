@@ -105,9 +105,6 @@ export function useSLOCheckLinkMap() {
     map,
     isLoading: slosLoading || checksLoading,
     error: slosError ?? (checksError instanceof Error ? checksError : undefined),
-    // Specifically the SLO fetch, so CheckList can surface a retry banner for it
-    // without conflating it with the checks fetch (which already has its own
-    // Suspense error boundary).
     sloError: slosError,
     isSLOsFetching: slosFetching,
     refetchSLOs,

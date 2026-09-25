@@ -185,12 +185,6 @@ export const CheckListHeader = ({
                     </Stack>
                   </PlainButton>
                 )}
-                {sloStatesFetching && (
-                  <Stack alignItems="center" gap={1}>
-                    <Icon name="fa fa-spinner" />
-                    <span>Fetching linked SLOs</span>
-                  </Stack>
-                )}
                 {sloStatesError && !sloStatesFetching && (
                   <PlainButton onClick={onRetrySLOStates} className={styles.errorButton}>
                     <Stack alignItems="center" gap={1}>
