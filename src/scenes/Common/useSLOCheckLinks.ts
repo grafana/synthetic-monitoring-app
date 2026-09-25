@@ -7,7 +7,7 @@ import { useExternalDependencies } from 'contexts/ExternalDependenciesContext';
 import { useChecks } from 'data/useChecks';
 
 import { SLO_APP_API_EXTENSION_POINT_ID } from './grafanaSLOApp.constants';
-import { buildSLOCheckLinkMap } from './useSLOCheckLinks.utils';
+import { buildSLOCheckLinkMap, SLOCheckLinkMap } from './useSLOCheckLinks.utils';
 
 export const sloQueryKeys = {
   all: ['slos'] as const,
@@ -95,9 +95,13 @@ export function useSLOCheckLinkMap() {
   };
 }
 
+export function getSLOsForCheck(map: SLOCheckLinkMap, checkId: number | undefined): SLO[] {
+  return checkId !== undefined ? (map.slosByCheckId.get(checkId) ?? []) : [];
+}
+
 export function useSLOsForCheck(checkId: number | undefined) {
   const { map, isLoading, error } = useSLOCheckLinkMap();
-  const slos = checkId !== undefined ? (map.slosByCheckId.get(checkId) ?? []) : [];
+  const slos = getSLOsForCheck(map, checkId);
   return { slos, isLoading, error };
 }
 
