@@ -90,13 +90,13 @@ Most integration test boilerplate lives in [`src/test/`](../../src/test/). It ac
 | [`handlers/`](../../src/test/handlers/)           | Typed route map; `apiRoute`, `getServerRequests`      |
 | [`db/`](../../src/test/db/)                       | Fishery factories                                     |
 | [`fixtures/`](../../src/test/fixtures/)           | Stable named entities                                 |
-| [`utils.ts`](../../src/test/utils.ts)             | Role helpers, feature toggles, form/combobox helpers  |
+| [`utils.ts`](../../src/test/utils.ts)             | Role helpers, feature flags, form/combobox helpers    |
 | [`dataTestIds.ts`](../../src/test/dataTestIds.ts) | Shared `data-testid` constants                        |
 | [`jest-setup.tsx`](../../src/test/jest-setup.tsx) | Server lifecycle, global mocks, observers             |
 
 ### Custom `render`
 
-Import from `test/render`. It wraps the component in the same provider stack as the app (router, React Query, meta, feature flags, datasource, permissions, OpenFeature).
+Import from `test/render`. It wraps the component in the same provider stack as the app (router, React Query, meta, datasource, permissions, OpenFeature feature flags).
 
 Because render waits on mocked network responses, tests must be `async` and use `await` with `findBy*` queries after render:
 
