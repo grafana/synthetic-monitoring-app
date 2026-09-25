@@ -5,7 +5,9 @@ export type AgentSkillReferenceSource =
   | 'docs-panel-scripted'
   | 'docs-panel-browser'
   | 'choose-check-type'
-  | 'terraform-tab';
+  | 'terraform-tab'
+  | 'script-editor-toolbar-scripted'
+  | 'script-editor-toolbar-browser';
 
 export const AGENT_SKILL_REPO_URL =
   'https://github.com/grafana/skills/tree/main/skills/grafana-cloud/synthetic-monitoring-checks';
@@ -15,7 +17,7 @@ export const AGENT_SKILL_TOOLS = [
     id: 'claude-code' as const,
     trackingId: 'claude-plugin' as const,
     name: 'Claude Code',
-    cardDescription: 'Install the Synthetic Monitoring skill as a Claude Code plugin.',
+    cardDescription: 'Install as a Claude Code plugin.',
     installCommand: 'claude plugin install grafana-cloud@grafana-skills',
     installLabel: 'Claude Code plugin',
   },
@@ -23,7 +25,7 @@ export const AGENT_SKILL_TOOLS = [
     id: 'agent-skills' as const,
     trackingId: 'npx' as const,
     name: 'Cursor, Codex & other agents',
-    cardDescription: 'Install via the Agent Skills CLI — works with any compatible coding agent.',
+    cardDescription: 'Install via the Agent Skills CLI.',
     installCommand: 'npx skills add grafana/skills',
     installLabel: 'Any Agent Skills compatible tool (Claude Code, Cursor, Codex, ...)',
   },
@@ -38,7 +40,7 @@ export const AGENT_SKILL_INSTALL_COMMANDS = AGENT_SKILL_TOOLS.map(({ installComm
 }));
 
 export const AGENT_SKILL_PROMPTS: Array<{
-  id: 'site' | 'api-spec' | 'terraform-import';
+  id: 'site' | 'api-spec' | 'terraform-import' | 'toolbar-scripted' | 'toolbar-scripted-api-spec' | 'toolbar-browser';
   label: string;
   prompt: string;
   sources: AgentSkillReferenceSource[];
@@ -62,6 +64,24 @@ export const AGENT_SKILL_PROMPTS: Array<{
 
 <paste the exported config and import commands from this page>`,
     sources: ['terraform-tab'],
+  },
+  {
+    id: 'toolbar-scripted',
+    label: 'From your target',
+    prompt: `Write the k6 script for this Synthetic Monitoring check against <target URL>. Assert on the response using the k6-testing library (import { expect } from 'https://jslib.k6.io/k6-testing/0.6.1/index.js') so a failing assertion fails the check, and validate locally with k6 run — passing several times in a row — before giving me the script to paste into the editor.`,
+    sources: ['script-editor-toolbar-scripted'],
+  },
+  {
+    id: 'toolbar-scripted-api-spec',
+    label: 'From an API spec',
+    prompt: `Write the k6 script for this Synthetic Monitoring check from my API spec: <path or URL to OpenAPI/Swagger/Postman file>. The production base URL is <https://api.example.com> — verify it, don't trust the spec's servers list. Assert on the fields the response schema promises using the k6-testing library (import { expect } from 'https://jslib.k6.io/k6-testing/0.6.1/index.js') so a failing assertion fails the check, and validate locally with k6 run — passing several times in a row — before giving me the script to paste into the editor.`,
+    sources: ['script-editor-toolbar-scripted'],
+  },
+  {
+    id: 'toolbar-browser',
+    label: 'Write this script',
+    prompt: `Write the k6 browser script for this Synthetic Monitoring check against <target URL>. Use the k6 browser API for navigation and the k6-testing library's auto-retrying matchers (e.g. await expect(page.locator(...)).toBeVisible()) for assertions, so a failing assertion fails the check, and validate locally with k6 run — passing several times in a row — before giving me the script to paste into the editor.`,
+    sources: ['script-editor-toolbar-browser'],
   },
 ];
 

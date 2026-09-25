@@ -19,11 +19,7 @@ const FormWrapper = ({
   children: React.ReactNode;
   checkType?: CheckType;
 }) => {
-  return (
-    <ChecksterProvider checkType={checkType}>
-      {children}
-    </ChecksterProvider>
-  );
+  return <ChecksterProvider checkType={checkType}>{children}</ChecksterProvider>;
 };
 
 describe('K6ChannelSelect', () => {
@@ -42,7 +38,7 @@ describe('K6ChannelSelect', () => {
       </FormWrapper>
     );
 
-    expect(screen.queryByLabelText(/k6 version/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: /k6 runtime version/i })).not.toBeInTheDocument();
   });
 
   it('should render when feature flag is enabled', async () => {
@@ -55,9 +51,8 @@ describe('K6ChannelSelect', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/k6 version/i)).toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: /k6 runtime version/i })).toBeInTheDocument();
     });
-    expect(screen.getByText(/select the k6 version channel/i)).toBeInTheDocument();
   });
 
   it('should auto-select the default channel (v2)', async () => {
@@ -70,7 +65,7 @@ describe('K6ChannelSelect', () => {
     );
 
     await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i);
+      const combobox = screen.getByRole('combobox', { name: /k6 runtime version/i });
       expect(combobox).toHaveValue('v2.x (default)');
     });
   });
@@ -115,11 +110,11 @@ describe('K6ChannelSelect', () => {
     );
 
     await waitFor(() => {
-      const combobox = screen.getByLabelText(/k6 version/i);
+      const combobox = screen.getByRole('combobox', { name: /k6 runtime version/i });
       expect(combobox).toHaveValue('v2.x (default)');
     });
 
-    const combobox = screen.getByLabelText(/k6 version/i);
+    const combobox = screen.getByRole('combobox', { name: /k6 runtime version/i });
     await user.click(combobox);
     await user.click(screen.getByRole('option', { name: /v1\.x/ }));
 

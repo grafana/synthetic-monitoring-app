@@ -130,8 +130,9 @@ describe('AgentSkillPicker', () => {
 
   it('asks for feedback on a return visit after an install command was copied', async () => {
     localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
-    render(<AgentSkillPicker source={SOURCE} />);
+    const { user } = render(<AgentSkillPicker source={SOURCE} />);
 
+    await user.click(await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) }));
     expect(await screen.findByText('Did the skill help?')).toBeInTheDocument();
   });
 
@@ -139,6 +140,7 @@ describe('AgentSkillPicker', () => {
     localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
     const { user } = render(<AgentSkillPicker source={SOURCE} />);
 
+    await user.click(await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) }));
     await screen.findByText('Did the skill help?');
     await user.click(screen.getByRole('button', { name: 'I love this feature' }));
 
@@ -149,9 +151,9 @@ describe('AgentSkillPicker', () => {
   it('does not ask for feedback on visits after the user has already reacted', async () => {
     localStorage.setItem(AGENT_SKILL_INSTALL_COPIED_STORAGE_KEY, 'true');
     localStorage.setItem(AGENT_SKILL_FEEDBACK_GIVEN_STORAGE_KEY, 'true');
-    render(<AgentSkillPicker source={SOURCE} />);
+    const { user } = render(<AgentSkillPicker source={SOURCE} />);
 
-    expect(await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) })).toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) }));
     expect(screen.queryByText('Did the skill help?')).not.toBeInTheDocument();
   });
 });

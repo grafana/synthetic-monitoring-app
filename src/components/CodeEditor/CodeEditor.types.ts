@@ -4,6 +4,8 @@ import type * as monacoType from 'monaco-editor/esm/vs/editor/editor.api';
 
 export interface CodeEditorProps {
   checkJs?: boolean;
+  /** Grow to fill a flex-column parent's remaining height, instead of a fixed min-height. */
+  fill?: boolean;
   id?: string;
   k6Channel?: string;
   language?: 'javascript' | 'json' | 'text';

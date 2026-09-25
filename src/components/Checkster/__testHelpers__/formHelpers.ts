@@ -68,7 +68,8 @@ export async function selectComboboxOption(user: UserEvent, combobox: HTMLElemen
   }
 
   await user.click(comboboxElement);
-  await user.click(screen.getByRole('option', { name: value }));
+  // findByRole (not getByRole) since some Comboboxes load their options asynchronously.
+  await user.click(await screen.findByRole('option', { name: value }));
 }
 
 export async function selectRadioGroupOption(user: UserEvent, label: string | RegExp, valueLabel: string | RegExp) {
