@@ -26,7 +26,7 @@ describe('SummaryDashboard', () => {
 
     expect(await screen.findByTestId('reliability-inbox-banner')).toBeInTheDocument();
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
-    expect(await screen.findByText('Create new check')).toBeInTheDocument();
+    expect(await screen.findByText('Create your first check')).toBeInTheDocument();
   });
 
   it('hides the check suggestions banner when the flag is disabled', async () => {
@@ -35,6 +35,6 @@ describe('SummaryDashboard', () => {
 
     expect(screen.queryByTestId('reliability-inbox-banner')).not.toBeInTheDocument();
     expect(await screen.findByText("You haven't created any checks yet")).toBeInTheDocument();
-    expect(await screen.findByText('Create new check')).toBeInTheDocument();
+    expect(await screen.findByText('Create your first check')).toBeInTheDocument();
   });
 });

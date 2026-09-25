@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { PropsWithChildren, useCallback } from 'react';
 import { Trans } from '@grafana/i18n';
 import { LinkButton } from '@grafana/ui';
 import { trackAddNewCheckButtonClicked } from 'features/tracking/checkCreationEvents';
@@ -15,7 +15,7 @@ interface AddNewCheckButtonProps {
   source: 'check-list-empty-state' | 'check-list' | 'homepage';
 }
 
-export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
+export function AddNewCheckButton({ source, children }: PropsWithChildren<AddNewCheckButtonProps>) {
   const { canWriteChecks } = getUserPermissions();
 
   const handleClick = useCallback(() => {
@@ -32,7 +32,7 @@ export function AddNewCheckButton({ source }: AddNewCheckButtonProps) {
       onClick={handleClick}
       variant="primary"
     >
-      <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>
+      {children ?? <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>}
     </LinkButton>
   );
 }

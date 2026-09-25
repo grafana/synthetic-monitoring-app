@@ -22,6 +22,7 @@ export enum FaroEvent {
   InitializeAccessToken = 'initialize_access_token',
   UpdateCheckAlerts = 'update_check_alerts',
   NoProbeMappingFound = 'no_probe_mapping_found',
+  CloudSetupCliCommandCopyFailed = 'cloud_setup_cli_command_copy_failed',
 }
 
 export enum FaroUserAction {
@@ -52,6 +53,7 @@ export enum FaroUserAction {
   ResetAccessTokenClicked = 'reset-access-token-clicked',
   ResetAccessTokenConfirmationClicked = 'reset-access-token-confirmation-clicked',
   ResetAccessTokenCancellationClicked = 'reset-access-token-cancelation-clicked',
+  CloudSetupCliCommandCopied = 'cloud-setup-cli-command-copied',
 }
 
 export enum FaroEnv {
