@@ -27,6 +27,9 @@ interface TimepointListEntryPendingProps {
   children: ReactNode;
   timepoint: StatelessTimepoint;
   status: TimepointStatus;
+  // overrides the default `vizDisplay.includes(status)` visibility check,
+  // e.g. a success bar with partial failures should stay visible when filtering on failures
+  isVisible?: boolean;
 }
 
 const GLOBAL_CLASS = `list_entry_bar`;
@@ -36,9 +39,18 @@ export const TimepointListEntryBar = ({
   children,
   status,
   timepoint,
+  isVisible,
 }: TimepointListEntryPendingProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { checkType, handleViewerStateChange, handleSetScrollToViewer, yAxisMax, viewerState, timepointWidth, vizDisplay } = useTimepointExplorerContext();
+  const {
+    checkType,
+    handleViewerStateChange,
+    handleSetScrollToViewer,
+    yAxisMax,
+    viewerState,
+    timepointWidth,
+    vizDisplay,
+  } = useTimepointExplorerContext();
   const selectedProbeNames = useSelectedProbeNames(statefulTimepoint);
 
   const height = getEntryHeight(statefulTimepoint.maxProbeDuration, yAxisMax);
@@ -56,9 +68,17 @@ export const TimepointListEntryBar = ({
     });
     handleSetScrollToViewer(true);
     handleViewerStateChange([timepoint, probeNameToView, 0]);
-  }, [analyticsEventName, checkType, status, timepoint, probeNameToView, handleViewerStateChange, handleSetScrollToViewer]);
+  }, [
+    analyticsEventName,
+    checkType,
+    status,
+    timepoint,
+    probeNameToView,
+    handleViewerStateChange,
+    handleSetScrollToViewer,
+  ]);
 
-  if (!vizDisplay.includes(status)) {
+  if (!(isVisible ?? vizDisplay.includes(status))) {
     return <div />;
   }
 
@@ -70,7 +90,13 @@ export const TimepointListEntryBar = ({
         </div>
       )}
       <Tooltip content={<TimepointListEntryTooltip timepoint={timepoint} />} ref={ref} interactive placement="top">
-        <PlainButton className={styles.button} ref={ref} onClick={handleViewerStateClick} showFocusStyles={false} data-testid={`${SCENES_TEST_ID.timepoint.listEntryBar}-${timepoint.index}`}>
+        <PlainButton
+          className={styles.button}
+          ref={ref}
+          onClick={handleViewerStateClick}
+          showFocusStyles={false}
+          data-testid={`${SCENES_TEST_ID.timepoint.listEntryBar}-${timepoint.index}`}
+        >
           <TimepointVizItem
             className={cx(styles.bar, GLOBAL_CLASS, {
               [styles.selected]: isSelected,
@@ -90,7 +116,7 @@ const getStyles = (
   timepointWidth: number,
   height: number,
   isSelected: boolean,
-  hasSelection: boolean,
+  hasSelection: boolean
 ) => {
   return {
     container: css`
