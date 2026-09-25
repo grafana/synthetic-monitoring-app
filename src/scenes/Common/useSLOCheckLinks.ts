@@ -13,6 +13,9 @@ export const sloQueryKeys = {
   all: ['slos'] as const,
 };
 
+// Shared so consumers' memos hold while there's no SLO data.
+const NO_SLOS: SLO[] = [];
+
 /** The SLO app registers a getter that resolves to the API object, not the API itself. */
 type GetSLOApi = () => Promise<SLOApiV1>;
 
@@ -76,7 +79,7 @@ export function useAllSLOs() {
   });
 
   return {
-    slos: query.data ?? [],
+    slos: query.data ?? NO_SLOS,
     isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
     isFetching: canFetch && query.isFetching,
     error: query.error ? toError(query.error) : undefined,

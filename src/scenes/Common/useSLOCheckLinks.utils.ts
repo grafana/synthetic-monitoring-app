@@ -88,13 +88,17 @@ function appendToMapList<K, V>(map: Map<K, V[]>, key: K, value: V) {
 export function buildSLOCheckLinkMap(slos: SLO[], checks: Check[]): SLOCheckLinkMap {
   const slosByCheckId = new Map<number, SLO[]>();
   const checksBySLOUuid = new Map<string, Check[]>();
-  const checksByJobInstance = new Map<string, Array<Check & { id: number }>>();
+  const activeSLOs = slos.filter(isSLOActive);
+  if (activeSLOs.length === 0) {
+    return { slosByCheckId, checksBySLOUuid };
+  }
 
+  const checksByJobInstance = new Map<string, Array<Check & { id: number }>>();
   for (const check of checks.filter(hasId)) {
     appendToMapList(checksByJobInstance, toJobInstanceKey(check.job, check.target), check);
   }
 
-  for (const slo of slos.filter(isSLOActive)) {
+  for (const slo of activeSLOs) {
     for (const key of getLinkedJobInstanceKeys(slo)) {
       for (const check of checksByJobInstance.get(key) ?? []) {
         appendToMapList(slosByCheckId, check.id, slo);
