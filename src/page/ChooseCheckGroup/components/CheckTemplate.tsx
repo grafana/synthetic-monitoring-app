@@ -6,7 +6,7 @@ import { trackCheckTemplateDraftCreated, trackCheckTemplateSelected } from 'feat
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
-import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions.constants';
 import { useIsOverlimit } from 'hooks/useIsOverlimit';
 
 import { CheckTemplateCard } from './CheckTemplateCard';
@@ -21,7 +21,7 @@ export function CheckTemplate({ template }: { template: CheckTemplateDefinition 
   const checkTypeOption = CHECK_TYPE_OPTIONS.find((option) => option.value === template.checkType)!;
   const disabled = isOverlimit !== false || !canWriteChecks;
 
-  function continueToCheck(event: React.FormEvent) {
+  function continueToCheck(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (disabled) {
       return;
@@ -95,4 +95,3 @@ export function CheckTemplate({ template }: { template: CheckTemplateDefinition 
     </>
   );
 }
-

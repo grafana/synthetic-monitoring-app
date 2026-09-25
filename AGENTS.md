@@ -4,6 +4,18 @@
 
 This is the **Grafana Synthetic Monitoring Frontend Application** — a Grafana Cloud plugin for blackbox monitoring. It supports HTTP, DNS, TCP, ICMP, k6 scripted, and k6 browser checks. See `CONTRIBUTING.md` for full contributor setup details.
 
+### Grafana runtime compatibility
+
+- This is a Grafana Cloud plugin. Target the latest Grafana Cloud runtime; do not
+  add compatibility fallbacks for older Grafana releases unless explicitly requested.
+- Use public `@grafana/runtime` APIs through normal named imports. If the installed
+  Grafana packages lack a current runtime API, update the relevant Grafana packages
+  and lockfile instead of adding capability checks, compatibility type casts, or
+  ESLint disables to accommodate stale package definitions.
+- Grafana supplies the runtime implementation on the host. Package versions provide
+  build-time types; do not treat an older package pin as a requirement to support
+  older Grafana hosts.
+
 ### Key commands
 
 Standard commands are in `package.json`:

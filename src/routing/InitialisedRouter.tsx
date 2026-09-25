@@ -9,7 +9,6 @@ import { AppRoutes } from 'routing/types';
 import { getNewCheckTypeRedirects, getRoute } from 'routing/utils';
 import { getUserPermissions } from 'data/permissions';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { useFeatureFlagContext } from 'hooks/useFeatureFlagContext';
 import { useLimits } from 'hooks/useLimits';
 import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
@@ -39,10 +38,11 @@ import { NewCheckV2 } from '../page/NewCheck/NewCheckV2';
 export const InitialisedRouter = () => {
   const urlSearchParams = useURLSearchParams();
   const navigate = useNavigation();
-  const { isFeatureEnabled } = useFeatureFlagContext();
   const { isEnabled: isCheckSuggestionsEnabled, isReady: isCheckSuggestionsReady } = useFeatureFlag(
     FeatureName.CheckSuggestions
   );
+  const { isEnabled: isLabelMigrationEnabled } = useFeatureFlag(FeatureName.LabelMigration);
+  const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -159,10 +159,8 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
-        {isFeatureEnabled(FeatureName.LabelMigration) && (
-          <Route path="label-migration" element={<LabelMigrationTab />} />
-        )}
-        {isFeatureEnabled(FeatureName.SecretsManagement) && <Route path="secrets" element={<SecretsManagementTab />} />}
+        {isLabelMigrationEnabled && <Route path="label-migration" element={<LabelMigrationTab />} />}
+        {isSecretsManagementEnabled && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
 
       <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />

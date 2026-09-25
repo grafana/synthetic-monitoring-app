@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { useResizeObserver } from '@react-hookz/web';
 import { trackTimepointViewerLogsViewToggled } from 'features/tracking/timepointExplorerEvents';
-import { useResizeObserver } from 'usehooks-ts';
 import { SCENES_TEST_ID } from 'test/dataTestIds';
 
 import { formatDuration } from 'utils';
@@ -20,7 +20,8 @@ import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/Time
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
 
 export const TimepointViewer = () => {
-  const { checkType, isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } = useTimepointExplorerContext();
+  const { checkType, isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } =
+    useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
   const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
@@ -105,11 +106,8 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
 
   useRefetchInterval(enableRefetch, refetch);
 
-  useResizeObserver({
-    ref: elRef,
-    onResize: (element) => {
-      setViewerWidth(element.width ?? 0);
-    },
+  useResizeObserver(elRef, (entry) => {
+    setViewerWidth(entry.contentRect.width);
   });
 
   return (
