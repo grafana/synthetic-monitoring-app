@@ -172,4 +172,8 @@ export function getServerRequests() {
   return { record, read, requests };
 }
 
-export const HANDLERS = Object.keys(API_ROUTES).map((key) => apiRoute(key as keyof ApiRoutes));
+export const HANDLERS_BY_ROUTE = Object.fromEntries(
+  Object.keys(API_ROUTES).map((key) => [key, apiRoute(key as keyof ApiRoutes)])
+);
+
+export const HANDLERS = Object.values(HANDLERS_BY_ROUTE);
