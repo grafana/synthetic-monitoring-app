@@ -78,12 +78,20 @@ export function useAllSLOs() {
   return {
     slos: query.data ?? [],
     isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
+    isFetching: canFetch && query.isFetching,
     error: query.error ? toError(query.error) : undefined,
+    refetch: query.refetch,
   };
 }
 
 export function useSLOCheckLinkMap() {
-  const { slos, isLoading: slosLoading, error: slosError } = useAllSLOs();
+  const {
+    slos,
+    isLoading: slosLoading,
+    isFetching: slosFetching,
+    error: slosError,
+    refetch: refetchSLOs,
+  } = useAllSLOs();
   const { data: checks, isLoading: checksLoading, error: checksError } = useChecks();
 
   const map = useMemo(() => buildSLOCheckLinkMap(slos, checks ?? []), [slos, checks]);
@@ -92,6 +100,12 @@ export function useSLOCheckLinkMap() {
     map,
     isLoading: slosLoading || checksLoading,
     error: slosError ?? (checksError instanceof Error ? checksError : undefined),
+    // Specifically the SLO fetch, so CheckList can surface a retry banner for it
+    // without conflating it with the checks fetch (which already has its own
+    // Suspense error boundary).
+    sloError: slosError,
+    isSLOsFetching: slosFetching,
+    refetchSLOs,
   };
 }
 

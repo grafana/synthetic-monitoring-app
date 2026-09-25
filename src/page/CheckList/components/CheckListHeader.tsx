@@ -38,6 +38,9 @@ type CheckListHeaderProps = {
   alertStatesFetching: boolean;
   alertStatesError: boolean;
   onRetryAlertStates: () => void;
+  sloStatesFetching: boolean;
+  sloStatesError: boolean;
+  onRetrySLOStates: () => void;
   calNames?: string[];
   /**
    * Bulk actions for the current selection, shown in place of the sort
@@ -93,6 +96,9 @@ export const CheckListHeader = ({
   alertStatesFetching,
   alertStatesError,
   onRetryAlertStates,
+  sloStatesFetching,
+  sloStatesError,
+  onRetrySLOStates,
   calNames,
   bulkActions,
 }: CheckListHeaderProps) => {
@@ -176,6 +182,20 @@ export const CheckListHeader = ({
                     <Stack alignItems="center" gap={1}>
                       <Icon name="exclamation-triangle" />
                       <span>Failed to fetch alert states. Retry?</span>
+                    </Stack>
+                  </PlainButton>
+                )}
+                {sloStatesFetching && (
+                  <Stack alignItems="center" gap={1}>
+                    <Icon name="fa fa-spinner" />
+                    <span>Fetching linked SLOs</span>
+                  </Stack>
+                )}
+                {sloStatesError && !sloStatesFetching && (
+                  <PlainButton onClick={onRetrySLOStates} className={styles.errorButton}>
+                    <Stack alignItems="center" gap={1}>
+                      <Icon name="exclamation-triangle" />
+                      <span>Failed to fetch linked SLOs. Retry?</span>
                     </Stack>
                   </PlainButton>
                 )}

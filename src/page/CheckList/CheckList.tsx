@@ -99,7 +99,12 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     refetch: refetchAlertStates,
   } = useChecksAlertStates(checks);
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
-  const { map: sloCheckLinkMap } = useSLOCheckLinkMap();
+  const {
+    map: sloCheckLinkMap,
+    isSLOsFetching,
+    sloError,
+    refetchSLOs,
+  } = useSLOCheckLinkMap();
   const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
@@ -337,6 +342,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         alertStatesFetching={isAlertStatesFetching}
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
+        sloStatesFetching={isSLOsFetching}
+        sloStatesError={Boolean(sloError)}
+        onRetrySLOStates={refetchSLOs}
         calNames={calNames}
       />
       {foldersUnavailable &&
