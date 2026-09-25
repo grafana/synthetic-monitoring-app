@@ -1,12 +1,12 @@
 import React, { ChangeEvent, Fragment, ReactNode, useMemo, useState } from 'react';
-import { FeatureToggles, GrafanaTheme2 } from '@grafana/data';
-import { config } from '@grafana/runtime';
+import { GrafanaTheme2 } from '@grafana/data';
 import { Field, Icon, Modal, Switch, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import useKonami from 'use-konami';
 import { useSessionStorage } from 'usehooks-ts';
 
 import { FeatureName } from 'types';
+import { useIsFeatureEnabled } from 'hooks/useFeatureFlag';
 
 import packageJson from '../../../package.json';
 import { DEV_STORAGE_KEYS } from './DevTools.constants';
@@ -49,16 +49,15 @@ function DevToolsComponent({ children }: DevToolsProps) {
 
   const handleDismiss = () => setIsOpen(false);
 
-  const featureToggles = useMemo(() => {
-    return Object.entries(FEATURE_MAP).reduce<Array<[string, boolean]>>((acc, [key, value]) => {
-      if (key in config.featureToggles) {
-        acc.push([value, Boolean(config.featureToggles[key as keyof FeatureToggles])]);
-      } else {
-        acc.push([value, false]);
-      }
-      return acc;
-    }, []);
-  }, []);
+  const isFeatureEnabled = useIsFeatureEnabled();
+  const featureToggles = useMemo(
+    () =>
+      Object.entries(FEATURE_MAP).map<[string, boolean]>(([flag, name]) => [
+        name,
+        isFeatureEnabled(flag as FeatureName),
+      ]),
+    [isFeatureEnabled]
+  );
 
   return (
     <>
