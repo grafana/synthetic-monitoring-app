@@ -136,10 +136,12 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
 
   if (checks.length === 0) {
     return (
-      <Stack direction="column" gap={1}>
-        {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
-        <ChecksEmptyState className={styles.emptyState} />
-      </Stack>
+      <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => null}>
+        <Stack direction="column" gap={1}>
+          {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
+          <ChecksEmptyState className={styles.emptyState} />
+        </Stack>
+      </PluginPage>
     );
   }
 
@@ -196,6 +198,9 @@ const getStyles = (theme: GrafanaTheme2) => {
   return {
     emptyState: css({
       width: '100%',
+      // Compensates for the page title being hidden on this route (see the checks.length
+      // === 0 branch above), so the content isn't left sitting higher than on other pages.
+      marginTop: theme.spacing(4),
     }),
     header: css`
       display: flex;

@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button, ButtonVariant, IconButton } from '@grafana/ui';
+
+import { useCopyToClipboard } from './useCopyToClipboard';
 
 interface CopyToClipboardProps {
   content: string;
@@ -24,37 +26,24 @@ export const CopyToClipboard = ({
   variant,
   fill,
 }: CopyToClipboardProps) => {
-  const [copied, setCopied] = useState(false);
-
-  const copyContent = () => {
-    if (!navigator.clipboard) {
-      onClipboardError && onClipboardError('Clipboard API not available');
-      return;
-    }
-    navigator.clipboard
-      .writeText(content)
-      .then(() => {
-        setCopied(true);
-        onClipboardCopy && onClipboardCopy();
-      })
-      .catch((err) => {
-        onClipboardError && onClipboardError(err);
-      });
-  };
+  const { copied, copy } = useCopyToClipboard({
+    onCopy: onClipboardCopy,
+    onError: (err) => onClipboardError?.(String(err)),
+  });
 
   if (iconButton) {
     return (
       <IconButton
         name={copied ? 'check' : 'clipboard-alt'}
-        onClick={copyContent}
+        onClick={() => copy(content)}
         tooltip={copied ? buttonTextCopied : buttonText}
       />
     );
   }
 
   return (
-    <Button 
-      onClick={copyContent} 
+    <Button
+      onClick={() => copy(content)}
       icon={copied ? 'check' : 'clipboard-alt'}
       className={className}
       variant={variant}
