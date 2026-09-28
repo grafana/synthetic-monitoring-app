@@ -40,15 +40,12 @@ describe('CloudSetupCliPanel', () => {
     await user.click(screen.getByRole('button', { name: 'What does it do?' }));
 
     expect(await screen.findByText(explanation)).toBeInTheDocument();
-    expect(await screen.findByText('The setup wizard')).toHaveAttribute(
-      'href',
-      'https://github.com/grafana/cloud-setup'
-    );
+    expect(screen.queryByText('The setup wizard')).not.toBeInTheDocument();
     expect(await screen.findByText('gcx')).toHaveAttribute(
       'href',
       'https://grafana.com/docs/grafana-cloud/ai-tools/gcx/'
     );
-    expect(await screen.findByText('Agent Skills')).toHaveAttribute(
+    expect(await screen.findByText('agent skills')).toHaveAttribute(
       'href',
       'https://grafana.com/docs/grafana-cloud/machine-learning/assistant/platform/skills/'
     );
