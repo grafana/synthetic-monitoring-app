@@ -30,6 +30,7 @@ export function AddNewCheckButton({ source, children }: PropsWithChildren<AddNew
       href={generateRoutePath(AppRoutes.ChooseCheckGroup)}
       icon="plus"
       onClick={handleClick}
+      tooltip={!canWriteChecks ? 'You do not have permission to create checks. Contact your administrator for access.' : undefined}
       variant="primary"
     >
       {children ?? <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>}
