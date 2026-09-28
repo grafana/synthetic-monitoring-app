@@ -119,9 +119,6 @@ export function CloudSetupCliPanel() {
   );
 }
 
-// Shared by the preview tab and the tooltip, both meant to stay quiet.
-const QUIET_FONT_SIZE = '11px';
-
 // A quick, self-contained pop for the checkmark when it swaps in.
 const iconPop = keyframes({
   '0%': { transform: 'scale(0.5)' },
@@ -150,6 +147,11 @@ function getStyles(theme: GrafanaTheme2) {
   // for light mode so it stays readable against a white background (contrast ~4.9:1).
   const LAVENDER = '#B8A5E3';
   const accentColor = theme.isDark ? LAVENDER : colorManipulator.darken(LAVENDER, 0.35);
+  // Derived from bodySmall rather than a bare literal, but kept a touch under it:
+  // the preview tab needs to read smaller than the footer's bodySmall text, and the
+  // tooltip needs to fit Tooltip's fixed 400px width without wrapping (bodySmall
+  // itself measures right at that edge).
+  const quietFontSize = `calc(${theme.typography.bodySmall.fontSize} * 0.9)`;
 
   return {
     // --- wrapper: the panel plus its overlapping "Preview" tab ---
@@ -167,8 +169,7 @@ function getStyles(theme: GrafanaTheme2) {
       alignItems: 'center',
       gap: theme.spacing(0.5),
       padding: theme.spacing(0.25, 1),
-      // Smaller than the footer's 12px text on purpose, so it stays quiet.
-      fontSize: QUIET_FONT_SIZE,
+      fontSize: quietFontSize,
       fontWeight: theme.typography.fontWeightRegular,
       lineHeight: theme.typography.bodySmall.lineHeight,
       color: theme.colors.text.secondary,
@@ -176,10 +177,9 @@ function getStyles(theme: GrafanaTheme2) {
       border: `1px solid ${borderColor}`,
       borderRadius: `${theme.shape.radius.default} ${theme.shape.radius.default} 0 0`,
     }),
-    // Shrunk to fit on one line — Tooltip's container has a fixed 400px max-width with no override prop.
     tooltipContent: css({
       display: 'inline-block',
-      fontSize: QUIET_FONT_SIZE,
+      fontSize: quietFontSize,
     }),
 
     // --- panel: the command + footer card itself ---
