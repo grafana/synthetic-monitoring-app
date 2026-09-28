@@ -60,6 +60,11 @@ const containerStyles = css`
 `;
 
 const MIN_EDITOR_HEIGHT = 640;
+const RESIZE_HANDLE_HOTZONE_PX = 20;
+
+function isNearResizeHandle(rect: DOMRect, clientX: number, clientY: number) {
+  return clientX >= rect.right - RESIZE_HANDLE_HOTZONE_PX && clientY >= rect.bottom - RESIZE_HANDLE_HOTZONE_PX;
+}
 
 const loadingOverlayStyles = css`
   position: absolute;
@@ -216,9 +221,10 @@ export const CodeEditor = forwardRef(function CodeEditor(
       resizeObserver.observe(parentContainer);
     }
 
-    const handlePointerDown = () => {
-      isPointerDownRef.current = true;
-      heightAtPointerDownRef.current = parentContainer?.getBoundingClientRect().height ?? 0;
+    const handlePointerDown = (event: MouseEvent) => {
+      const rect = parentContainer?.getBoundingClientRect();
+      isPointerDownRef.current = !!rect && isNearResizeHandle(rect, event.clientX, event.clientY);
+      heightAtPointerDownRef.current = rect?.height ?? 0;
     };
     const handlePointerUp = () => {
       if (isPointerDownRef.current && parentContainer) {
