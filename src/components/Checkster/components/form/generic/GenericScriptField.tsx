@@ -73,6 +73,7 @@ export function GenericScriptField({
         examples={examples}
         onRequestLoadExample={setPendingExample}
         onExpand={options?.expanded ? undefined : () => setIsExpanded(true)}
+        onBeforeOpenDocs={() => setIsExpanded(false)}
       />
       {warningMessage && (
         <div className={styles.warningBanner}>
@@ -81,6 +82,12 @@ export function GenericScriptField({
         </div>
       )}
     </>
+  );
+
+  const scannerPanel = showScannerPanel && (
+    <Box padding={2} paddingBottom={0}>
+      <SecretScannerPanel scanner={scanner} readOnly={disabled} />
+    </Box>
   );
 
   return (
@@ -99,11 +106,7 @@ export function GenericScriptField({
           )}
         </div>
       </div>
-      {showScannerPanel && (
-        <Box padding={2} paddingBottom={0}>
-          <SecretScannerPanel scanner={scanner} readOnly={disabled} />
-        </Box>
-      )}
+      {!isExpanded && scannerPanel}
       {activeFinding && (
         <SecretEditModal
           key={activeFinding.id}
@@ -158,6 +161,7 @@ export function GenericScriptField({
           className={styles.expandedModal}
           contentClassName={styles.expandedModalContent}
         >
+          {scannerPanel}
           <CodeEditor
             {...(fieldProps as any)}
             readOnly={disabled}
