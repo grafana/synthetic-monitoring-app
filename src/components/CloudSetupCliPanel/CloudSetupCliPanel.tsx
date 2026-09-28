@@ -24,13 +24,7 @@ export function CloudSetupCliPanel() {
 
   return (
     <div className={styles.wrapper}>
-      <Tooltip
-        content={
-          <span className={styles.tooltipContent}>
-            This CLI is in public preview and may still change as we stabilize it
-          </span>
-        }
-      >
+      <Tooltip content="This CLI is in public preview and may still change as we stabilize it">
         <div className={styles.previewTab}>Preview</div>
       </Tooltip>
 
@@ -176,10 +170,6 @@ function getStyles(theme: GrafanaTheme2) {
       backgroundColor: theme.colors.background.secondary,
       border: `1px solid ${borderColor}`,
       borderRadius: `${theme.shape.radius.default} ${theme.shape.radius.default} 0 0`,
-    }),
-    tooltipContent: css({
-      display: 'inline-block',
-      fontSize: quietFontSize,
     }),
 
     // --- panel: the command + footer card itself ---
