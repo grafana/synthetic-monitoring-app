@@ -66,10 +66,7 @@ export function CloudSetupCliPanel() {
             <div className={styles.footerDetails}>
               <div className={styles.footerDetailsContent}>
                 <Text variant="bodySmall" color="secondary" element="p">
-                  <TextLink external href="https://github.com/grafana/cloud-setup" variant="bodySmall">
-                    The setup wizard
-                  </TextLink>{' '}
-                  installs{' '}
+                  The setup wizard installs{' '}
                   <TextLink external href="https://grafana.com/docs/grafana-cloud/ai-tools/gcx/" variant="bodySmall">
                     gcx
                   </TextLink>{' '}
@@ -79,7 +76,7 @@ export function CloudSetupCliPanel() {
                     href="https://grafana.com/docs/grafana-cloud/machine-learning/assistant/platform/skills/"
                     variant="bodySmall"
                   >
-                    Agent Skills
+                    agent skills
                   </TextLink>
                   , then analyzes your site and suggests synthetic checks for you to review and
                   create. You can also configure alerts and export checks as Terraform.
