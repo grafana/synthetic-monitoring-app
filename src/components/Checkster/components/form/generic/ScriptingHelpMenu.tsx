@@ -13,9 +13,10 @@ import { SECONDARY_CONTAINER_ID } from '../../../constants';
 interface ScriptingHelpMenuProps {
   examples?: ExampleScript[];
   onRequestLoadExample: (example: ExampleScript) => void;
+  onBeforeOpenDocs?: () => void;
 }
 
-export function ScriptingHelpMenu({ examples, onRequestLoadExample }: ScriptingHelpMenuProps) {
+export function ScriptingHelpMenu({ examples, onRequestLoadExample, onBeforeOpenDocs }: ScriptingHelpMenuProps) {
   const styles = useStyles2(getStyles);
   const { setActive } = useFeatureTabsContext();
   const { checkType } = useChecksterContext();
@@ -41,6 +42,7 @@ export function ScriptingHelpMenu({ examples, onRequestLoadExample }: ScriptingH
           <Menu.Item
             label="Open documentation"
             onClick={() => {
+              onBeforeOpenDocs?.();
               setActive('Docs', true);
               document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
               trackNeedHelpScriptsButtonClicked({ source: `${checkType}_check` });

@@ -16,9 +16,16 @@ interface ScriptEditorToolbarProps {
   onRequestLoadExample: (example: ExampleScript) => void;
   /** Omit when the editor is already expanded — there's nothing left to expand into. */
   onExpand?: () => void;
+  /** Called before the docs side panel opens, so an expanded editor modal can get out of its way. */
+  onBeforeOpenDocs?: () => void;
 }
 
-export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }: ScriptEditorToolbarProps) {
+export function ScriptEditorToolbar({
+  examples,
+  onRequestLoadExample,
+  onExpand,
+  onBeforeOpenDocs,
+}: ScriptEditorToolbarProps) {
   const styles = useStyles2(getStyles);
   const [isAgentSetupOpen, setIsAgentSetupOpen] = useState(false);
   const { checkType } = useChecksterContext();
@@ -30,7 +37,11 @@ export function ScriptEditorToolbar({ examples, onRequestLoadExample, onExpand }
     <div className={styles.toolbar}>
       <div className={styles.leftGroup}>
         <K6ChannelSelect />
-        <ScriptingHelpMenu examples={examples} onRequestLoadExample={onRequestLoadExample} />
+        <ScriptingHelpMenu
+          examples={examples}
+          onRequestLoadExample={onRequestLoadExample}
+          onBeforeOpenDocs={onBeforeOpenDocs}
+        />
       </div>
       <div className={styles.rightGroup}>
         <Button
