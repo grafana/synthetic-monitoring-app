@@ -5,12 +5,12 @@ import { AppRoutes } from 'routing/types';
 
 /**
  * Routes that are intentionally not registered with the Grafana Assistant
- * because they have no user-facing surface area (they immediately redirect
- * elsewhere on mount; see SceneRedirecter).
+ * because they redirect immediately or provide action-scoped context.
  */
 export const ASSISTANT_CONTEXT_EXCLUDED_ROUTES: ReadonlySet<AppRoutes> = new Set([
   AppRoutes.Redirect,
   AppRoutes.Scene,
+  AppRoutes.ReliabilityInbox,
 ]);
 
 interface AssistantPageContextEntry {
@@ -207,19 +207,6 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
         'Organize checks at scale',
         'What are best practices for organising and labelling checks across teams and services?'
       ),
-    ],
-  },
-  {
-    id: 'sm-check-recommendations',
-    route: AppRoutes.CheckRecommendations,
-    urlPattern: `${root}/checks/recommendations`,
-    createContextItems: () => [
-      structured('Synthetic Monitoring check recommendations', {
-        name: 'Recommendations',
-        pageType: 'sm-check-recommendations',
-        capabilities: ['recommend-checks'],
-        help: 'Shows recommended checks for the current tenant. Help with: understanding why a check is recommended and how to create one from a recommendation.',
-      }),
     ],
   },
   {
@@ -537,7 +524,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
   {
     id: 'sm-config',
     route: AppRoutes.Config,
-    urlPattern: new RegExp(`^${escapedRoot}/config(?:/(?!probes$)[^/]+)?/?$`),
+    urlPattern: new RegExp(`^${escapedRoot}/config(?:/(?!alerts$)[^/]+)?/?$`),
     createContextItems: () => [
       structured('Synthetic Monitoring configuration', {
         name: 'Configuration',

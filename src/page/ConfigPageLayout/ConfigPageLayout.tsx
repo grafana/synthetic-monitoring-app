@@ -1,13 +1,14 @@
 import React, { useCallback, useMemo } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, type IconName, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { type IconName, useStyles2, VerticalTab } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { useUserPermissions } from 'data/permissions';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { SyntheticsTab } from 'page/SyntheticsPageNav';
 import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
@@ -39,6 +40,7 @@ function useActiveTab(route: AppRoutes) {
 export function ConfigPageLayout() {
   const styles = useStyles2(getStyles);
   const activeTab = useActiveTab(AppRoutes.Config);
+  const { canReadAlerts } = useUserPermissions();
   const { isEnabled: isLabelMigrationEnabled } = useFeatureFlag(FeatureName.LabelMigration);
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
@@ -84,33 +86,35 @@ export function ConfigPageLayout() {
       });
     }
 
-    items.push({
-      icon: 'bell',
-      text: 'Alerts (Legacy)',
-      url: getConfigTabUrl('alerts'),
-      active: activeTab('alerts'),
-    });
+    if (canReadAlerts) {
+      items.push({
+        icon: 'bell',
+        text: 'Alerts (Legacy)',
+        url: getConfigTabUrl('alerts'),
+        active: activeTab('alerts'),
+      });
+    }
 
     return items;
-  }, [activeTab, isLabelMigrationEnabled, isSecretsManagementEnabled]);
+  }, [activeTab, canReadAlerts, isLabelMigrationEnabled, isSecretsManagementEnabled]);
 
   return (
     <SyntheticsPluginPage activeTab={SyntheticsTab.Configuration}>
       <div className={styles.layout}>
-        <nav className={styles.nav} aria-label="Configuration">
+        <div className={styles.nav} role="tablist" aria-orientation="vertical" aria-label="Configuration">
           {navItems.map((item) => (
-            <a
+            <VerticalTab
               key={item.url}
+              label={item.text}
+              // VerticalTab otherwise uses its e2e selector as the accessible name.
+              aria-label={item.text}
+              icon={item.icon}
               href={item.url}
-              className={cx(styles.item, item.active && styles.active)}
-              aria-current={item.active ? 'page' : undefined}
+              active={item.active}
               data-testid={item.active ? CONFIG_TEST_ID.layout.activeNavItem : undefined}
-            >
-              <Icon name={item.icon} />
-              {item.text}
-            </a>
+            />
           ))}
-        </nav>
+        </div>
         <div className={styles.content}>
           <Outlet />
         </div>
@@ -132,36 +136,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     width: theme.spacing(28),
     paddingRight: theme.spacing(2),
     borderRight: `1px solid ${theme.colors.border.weak}`,
-  }),
-  item: css({
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    padding: theme.spacing(0.75, 1.5),
-    color: theme.colors.text.primary,
-    textDecoration: 'none',
-
-    '&:hover, &:focus': {
-      textDecoration: 'underline',
-    },
-  }),
-  active: css({
-    color: theme.colors.text.primary,
-    fontWeight: theme.typography.fontWeightMedium,
-    background: theme.colors.action.selected,
-
-    '&::before': {
-      display: 'block',
-      content: '" "',
-      position: 'absolute',
-      left: 0,
-      width: 4,
-      top: 2,
-      bottom: 2,
-      borderRadius: theme.shape.radius.default,
-      backgroundImage: theme.colors.gradients.brandVertical,
-    },
   }),
   content: css({
     flexGrow: 1,

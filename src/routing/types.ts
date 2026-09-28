@@ -1,7 +1,6 @@
 export enum AppRoutes {
   Alerts = 'alerts',
   CheckDashboard = 'checks/:id',
-  CheckRecommendations = 'checks/recommendations',
   Checks = 'checks',
   ChooseCheckGroup = 'checks/choose-type',
   Config = 'config', // config (index)

@@ -22,7 +22,6 @@ export const APP_INITIALIZER_TEST_ID = {
 export const CHECKS_TEST_ID = {
   card: 'checks card',
   emptyState: 'checks empty-state',
-  recommendations: 'checks recommendations',
   groupCard: 'checks group-card',
   usage: 'checks usage',
   form: {

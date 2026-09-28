@@ -266,15 +266,28 @@ jest.mock('@grafana/runtime', () => {
       children: ReactNode;
       pageNav: NavModelItem;
       renderTitle?: (title: string) => ReactNode;
-    }) => (
-      <div>
-        {renderTitle ? renderTitle(pageNav?.text) : <h2>{pageNav?.text}</h2>}
-        <div>{actions}</div>
-        {children}
-        <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
-          {pageNav?.children?.filter((child) => !child.hideFromTabs).find((c) => c.active)?.text ?? 'No active tab'}
+    }) => {
+      const tabs = pageNav?.children?.filter((child) => !child.hideFromTabs);
+
+      return (
+        <div>
+          {renderTitle ? renderTitle(pageNav?.text) : <h2>{pageNav?.text}</h2>}
+          <div>{actions}</div>
+          {tabs && (
+            <div role="tablist">
+              {tabs.map((tab) => (
+                <a key={tab.text} role="tab" href={tab.url} aria-selected={Boolean(tab.active)}>
+                  {tab.text}
+                </a>
+              ))}
+            </div>
+          )}
+          {children}
+          <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
+            {tabs?.find((tab) => tab.active)?.text ?? 'No active tab'}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   };
 });

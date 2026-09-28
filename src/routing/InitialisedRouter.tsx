@@ -14,7 +14,7 @@ import { QueryParamMap, useNavigation } from 'hooks/useNavigation';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
-import { CheckList, CheckListLayout, CheckRecommendationsTab } from 'page/CheckList';
+import { CheckList } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
@@ -78,9 +78,8 @@ export const InitialisedRouter = () => {
         }
       />
 
-      <Route path={AppRoutes.Checks} element={<CheckListLayout />}>
+      <Route path={AppRoutes.Checks}>
         <Route index element={<CheckList />} />
-        <Route path="recommendations" element={<CheckRecommendationsTab />} />
         <Route path=":id">
           <Route
             index
@@ -151,7 +150,6 @@ export const InitialisedRouter = () => {
       </Route>
 
       <Route path={AppRoutes.Alerts} element={<Navigate to={`${getRoute(AppRoutes.Config)}/alerts`} replace />} />
-      <Route path={`${AppRoutes.Config}/probes`} element={<Navigate to={getRoute(AppRoutes.Probes)} replace />} />
 
       <Route
         path={AppRoutes.ReliabilityInbox}
