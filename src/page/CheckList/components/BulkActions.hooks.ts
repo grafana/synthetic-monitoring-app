@@ -54,7 +54,7 @@ export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
   const checksLabel = `${checkCount} check${checkCount !== 1 ? 's' : ''}`;
 
   const confirmationText =
-    checkCount > DELETE_CONFIRMATION_COUNT_THRESHOLD ? `Delete ${checksLabel}` : DELETE_CONFIRMATION_TEXT;
+    checkCount > DELETE_CONFIRMATION_COUNT_THRESHOLD ? `Delete ${checkCount}` : DELETE_CONFIRMATION_TEXT;
 
   const deleteModalProps = useMemo(
     () => ({

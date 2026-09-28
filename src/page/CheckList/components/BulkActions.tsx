@@ -37,7 +37,6 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
     deleteChecks,
     deleteModalProps,
   } = useBulkActions({ checks, onResolved });
-  const deleteConfirmModalStyles = useStyles2(getDeleteConfirmModalStyles, deleteModalProps.confirmationText);
 
   return (
     <>
@@ -123,7 +122,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
         <ConfirmModal
           isOpen={showDeleteModal}
           {...deleteModalProps}
-          modalClass={deleteConfirmModalStyles.deleteConfirmModal}
+          modalClass={styles.deleteConfirmModal}
           onConfirm={deleteChecks}
           onDismiss={() => setShowDeleteModal(false)}
         />
@@ -144,16 +143,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: `center`,
     gap: theme.spacing(2),
   }),
-});
-
-// Accounts for the fixed `Type "" to confirm` wrapper text, plus a little slack.
-const CONFIRMATION_PLACEHOLDER_OVERHEAD_CH = 20;
-
-// ConfirmModal's input doesn't grow with the modal, so it clips text unless sized explicitly.
-const getDeleteConfirmModalStyles = (theme: GrafanaTheme2, confirmationText: string) => ({
+  // ConfirmModal's confirmation input doesn't grow with the modal, so it clips "Delete <count>".
   deleteConfirmModal: css({
     input: {
-      width: `${confirmationText.length + CONFIRMATION_PLACEHOLDER_OVERHEAD_CH}ch`,
+      width: '30ch',
     },
   }),
 });
