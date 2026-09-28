@@ -122,6 +122,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
         <ConfirmModal
           isOpen={showDeleteModal}
           {...deleteModalProps}
+          modalClass={styles.deleteConfirmModal}
           onConfirm={deleteChecks}
           onDismiss={() => setShowDeleteModal(false)}
         />
@@ -141,5 +142,14 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: `flex`,
     alignItems: `center`,
     gap: theme.spacing(2),
+  }),
+  // ConfirmModal's confirmation input sizes to the browser's default input width
+  // (~20 characters), not the modal, so it clips a confirmationText that includes
+  // the check count (e.g. "Delete 12345"). 30ch comfortably fits that up to five
+  // digits; measured against the actual rendered font, not guessed.
+  deleteConfirmModal: css({
+    input: {
+      width: '30ch',
+    },
   }),
 });
