@@ -56,7 +56,7 @@ describe('CloudSetupCliPanel', () => {
   });
 
   it('should copy the command when clicking anywhere on the command row', async () => {
-    const { user, container } = await renderComponent();
+    const { user } = await renderComponent();
 
     // render() calls userEvent.setup(), which installs its own clipboard stub on
     // navigator.clipboard — spy on that existing stub rather than replacing it.
@@ -69,9 +69,6 @@ describe('CloudSetupCliPanel', () => {
       expect(writeTextSpy).toHaveBeenCalledWith(expect.stringContaining('npx @grafana/cloud-setup synthetics --stack'))
     );
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument();
-
-    // The particle burst is six dots, each carrying its own travel offset as a CSS custom property.
-    expect(container.querySelectorAll('span[style*="--tx"]')).toHaveLength(6);
   });
 
   it('should copy the command when activated from the keyboard', async () => {

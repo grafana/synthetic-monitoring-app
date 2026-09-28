@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { colorManipulator, GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
-import { css, cx, keyframes } from '@emotion/css';
+import { css } from '@emotion/css';
 
 import { FaroEvent, FaroUserAction, reportError } from '../../faro';
 import { trackFaroUserAction } from '../../features/tracking/userAction';
@@ -42,23 +42,7 @@ export function CloudSetupCliPanel() {
               {afterPackage}
             </code>
           </div>
-          <span className={styles.iconWrap}>
-            <Icon
-              className={cx(styles.copyIcon, copied && styles.copyIconPop)}
-              name={copied ? 'check' : 'clipboard-alt'}
-            />
-            {copied && (
-              <span className={styles.particles}>
-                {PARTICLE_OFFSETS.map(([tx, ty], i) => (
-                  <span
-                    key={i}
-                    className={styles.particle}
-                    style={{ '--tx': `${tx}px`, '--ty': `${ty}px` } as React.CSSProperties}
-                  />
-                ))}
-              </span>
-            )}
-          </span>
+          <Icon className={styles.copyIcon} name={copied ? 'check' : 'clipboard-alt'} />
         </button>
 
         <div className={styles.footer}>
@@ -108,28 +92,6 @@ export function CloudSetupCliPanel() {
     </div>
   );
 }
-
-// A quick, self-contained pop for the checkmark when it swaps in.
-const iconPop = keyframes({
-  '0%': { transform: 'scale(0.5)' },
-  '60%': { transform: 'scale(1.25)' },
-  '100%': { transform: 'scale(1)' },
-});
-
-// Six points around a circle, radius 16px, for the particle burst.
-const PARTICLE_COUNT = 6;
-const PARTICLE_RADIUS = 16;
-const PARTICLE_OFFSETS: Array<[number, number]> = Array.from({ length: PARTICLE_COUNT }, (_, i) => {
-  const angle = (i / PARTICLE_COUNT) * 2 * Math.PI;
-  return [PARTICLE_RADIUS * Math.cos(angle), PARTICLE_RADIUS * Math.sin(angle)] as [number, number];
-});
-
-// Small dots fly outward from the icon and fade, like a tiny confetti pop.
-// translate(-50%, -50%) is the centering offset; the animated part is added on top of it.
-const particleBurst = keyframes({
-  '0%': { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 },
-  '100%': { transform: 'translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0.3)', opacity: 0 },
-});
 
 function getStyles(theme: GrafanaTheme2) {
   const borderColor = theme.components.input.borderColor;
@@ -228,32 +190,10 @@ function getStyles(theme: GrafanaTheme2) {
       // The one accent color in the command, so the tool name stands out.
       color: accentColor,
     }),
-    iconWrap: css({
-      position: 'relative',
-      display: 'inline-flex',
-      flexShrink: 0,
-    }),
     copyIcon: css({
+      flexShrink: 0,
       color: theme.colors.text.secondary,
       transition: 'color 150ms ease',
-    }),
-    copyIconPop: css({
-      animation: `${iconPop} 300ms ease-out`,
-    }),
-    particles: css({
-      position: 'absolute',
-      inset: 0,
-      pointerEvents: 'none',
-    }),
-    particle: css({
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      width: '4px',
-      height: '4px',
-      borderRadius: '50%',
-      backgroundColor: accentColor,
-      animation: `${particleBurst} 550ms ease-out forwards`,
     }),
 
     // --- footer: "What does it do?" trigger, note, and expanded details ---
