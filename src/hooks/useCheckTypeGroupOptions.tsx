@@ -8,8 +8,8 @@ import { getRoute } from 'routing/utils';
 
 import { FaroUserAction } from '../faro';
 import { trackFaroUserAction } from '../features/tracking/userAction';
-import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
-import { useFeatureFlagContext } from './useFeatureFlagContext';
+import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions.constants';
+import { useIsFeatureEnabled } from './useFeatureFlag';
 
 export type ProtocolOption = {
   label: string;
@@ -106,7 +106,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
 ];
 
 export function useCheckTypeGroupOptions() {
-  const { isFeatureEnabled } = useFeatureFlagContext();
+  const isFeatureEnabled = useIsFeatureEnabled();
 
   return CHECK_TYPE_GROUP_OPTIONS.map((option) => {
     const protocols = option.protocols.filter((protocol) =>

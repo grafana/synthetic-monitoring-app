@@ -38,6 +38,8 @@ module.exports = {
       'constrained-editor-plugin',
       '@faker-js/faker',
       'react-error-boundary',
+      '@react-hookz/web',
+      '@ver0/deep-equal',
       'until-async', // Transitive dependency of MSW v2
       '@grafana/plugin-ui', // Ships ESM-only; must be transformed for Jest
     ]),

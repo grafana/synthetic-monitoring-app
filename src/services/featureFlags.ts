@@ -1,6 +1,5 @@
-import { config } from '@grafana/runtime';
-import { OFREPWebProvider } from '@openfeature/ofrep-web-provider';
-import { type Client, type EvaluationContext, OpenFeature } from '@openfeature/web-sdk';
+import { createOpenFeatureLocalStorageProvider, createOpenFeatureOFREPWebProvider } from '@grafana/runtime';
+import { type Client, MultiProvider, OpenFeature } from '@openfeature/web-sdk';
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
@@ -10,7 +9,16 @@ export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 // Adding an entry routes all consumers of that FeatureName through OpenFeature instead
 // of legacy config.featureToggles. See docs/development/openfeature-migration.md
 export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
+  [FeatureName.CALs]: 'synthetic-monitoring.cost-attribution',
   [FeatureName.CheckSuggestions]: 'synthetic-monitoring.check-suggestions',
+  [FeatureName.Folders]: 'synthetic-monitoring.folders',
+  [FeatureName.GRPCChecks]: 'synthetic-monitoring.grpc-checks',
+  [FeatureName.KnowledgeGraph]: 'synthetic-monitoring.knowledge-graph',
+  [FeatureName.LabelMigration]: 'synthetic-monitoring.label-migration',
+  [FeatureName.Screenshots]: 'synthetic-monitoring.screenshots',
+  [FeatureName.SecretsManagement]: 'synthetic-monitoring.secrets-management',
+  [FeatureName.TimepointExplorer]: 'synthetic-monitoring.timepoint-explorer',
+  [FeatureName.VersionManagement]: 'synthetic-monitoring.version-management',
 };
 
 let initPromise: Promise<void> | undefined;
@@ -31,22 +39,12 @@ export function initOpenFeature(): Promise<void> {
 }
 
 async function doInit(): Promise<void> {
-  const baseUrl = `${config.appSubUrl || ''}/apis/features.grafana.app/v0alpha1/namespaces/${config.namespace}`;
-
   await OpenFeature.setProviderAndWait(
     SM_OPEN_FEATURE_DOMAIN,
-    new OFREPWebProvider({
-      baseUrl,
-      changeDetection: 'none', // flags only re-evaluate on page load
-      disableVisibilityRefresh: true,
-      cacheMode: 'disabled',
-      timeoutMs: 10_000,
-    }),
-    {
-      targetingKey: config.namespace, // evaluate consistently per stack
-      namespace: config.namespace, // required by the multi-tenant flag service
-      ...((config.openFeatureContext ?? {}) as EvaluationContext),
-    }
+    new MultiProvider([
+      { provider: createOpenFeatureLocalStorageProvider() },
+      { provider: createOpenFeatureOFREPWebProvider() },
+    ])
   );
 
   client = OpenFeature.getClient(SM_OPEN_FEATURE_DOMAIN);

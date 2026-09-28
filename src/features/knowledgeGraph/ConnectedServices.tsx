@@ -6,10 +6,8 @@ import { css } from '@emotion/css';
 import { Check } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { CenteredSpinner } from 'components/CenteredSpinner/CenteredSpinner';
 import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { FormSectionName } from 'components/Checkster/types';
-import { ErrorAlert } from 'components/ErrorAlert/ErrorAlert';
 import { Feedback } from 'components/Feedback';
 
 import {
@@ -17,9 +15,8 @@ import {
   CONNECTED_SERVICES_TEST_ID,
   CONNECTED_SERVICES_TITLE,
 } from './ConnectedServices.constants';
-import { useServiceNeighbourhood } from './ConnectedServices.hooks';
 import { getCheckGraphUrl } from './ConnectedServices.utils';
-import { ConnectedServicesGraph } from './ConnectedServicesGraph';
+import { ConnectedServicesMiniGraph, ExposedMiniGraphComponent, useExposedMiniGraph } from './ConnectedServicesMiniGraph';
 import {
   findLabelValue,
   getSyntheticCheckEntityName,
@@ -28,35 +25,40 @@ import {
 } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
-// Reserve room for the loading state so the section doesn't jump when the graph arrives.
-const MIN_BODY_HEIGHT = 280;
-
 interface ConnectedServicesProps {
   check: Check;
 }
 
 /**
  * Renders the check's Knowledge Graph service neighbourhood as an inline dashboard section (the
- * check, the Service linked via MONITORED_BY, and that Service's one-hop CALLS neighbours in both directions).
- * The nodes carry the KG's insight rings, so red-ringed neighbours surface as RCA hints without
- * leaving the dashboard.
+ * check, the Service linked via MONITORED_BY, and that Service's one-hop CALLS neighbours in both
+ * directions), drawn by the KG's exposed mini graph component — the KG owns fetching, the ranked
+ * layout anchored on the check, insight rings, the node card, and loading/error/empty states, so
+ * the section stays visually consistent with the KG by construction.
  *
  * Gating:
  * - KG app not installed or feature flag off → renders nothing (SM works without the Knowledge Graph).
+ * - Asserts app predating the mini-graph exposure → renders nothing (the component is the only renderer).
  * - Enabled but the check has no service link → an inviting zero state pointing at the edit form.
- * - Enabled and linked → the neighbourhood graph, with loading/error states from the query.
+ * - Enabled and linked → the exposed mini graph.
  */
 export function ConnectedServices({ check }: ConnectedServicesProps) {
   const kgEnabled = useKnowledgeGraphEnabled();
+  const { component: MiniGraph, isLoading } = useExposedMiniGraph();
 
-  if (!kgEnabled) {
+  if (!kgEnabled || isLoading || !MiniGraph) {
     return null;
   }
 
-  return <ConnectedServicesSection check={check} />;
+  return <ConnectedServicesSection check={check} MiniGraph={MiniGraph} />;
 }
 
-function ConnectedServicesSection({ check }: ConnectedServicesProps) {
+interface ConnectedServicesSectionProps {
+  check: Check;
+  MiniGraph: ExposedMiniGraphComponent;
+}
+
+function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSectionProps) {
   const styles = useStyles2(getStyles);
   // Expanded on load: the graph is the point of the section, and the KG query only runs for a
   // check that is actually linked to a service.
@@ -97,62 +99,22 @@ function ConnectedServicesSection({ check }: ConnectedServicesProps) {
 
       {isOpen && (
         <div className={styles.body}>
-          {serviceName ? <ServiceNeighbourhoodGraph check={check} /> : <ConnectedServicesZeroState checkId={check.id} />}
+          {serviceName ? (
+            <ConnectedServicesMiniGraph check={check} MiniGraph={MiniGraph} />
+          ) : (
+            <ConnectedServicesZeroState checkId={check.id} />
+          )}
         </div>
       )}
     </section>
   );
 }
 
-interface ServiceNeighbourhoodGraphProps {
-  check: Check;
-}
-
-function ServiceNeighbourhoodGraph({ check }: ServiceNeighbourhoodGraphProps) {
-  const styles = useStyles2(getStyles);
-  const { data, isLoading, isError, refetch } = useServiceNeighbourhood(check);
-
-  if (isError) {
-    return (
-      <div data-testid={CONNECTED_SERVICES_TEST_ID.error}>
-        <ErrorAlert
-          title="Couldn't load the service graph."
-          content="The Knowledge Graph datasource didn't respond. Check its status and try again."
-          buttonText="Retry"
-          onClick={() => refetch()}
-        />
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className={styles.loading} data-testid={CONNECTED_SERVICES_TEST_ID.loading}>
-        <CenteredSpinner aria-label="Loading connected services" />
-      </div>
-    );
-  }
-
-  if (!data || data.nodes.length === 0) {
-    // The check is linked but the KG hasn't discovered the entities yet (rules sync every few
-    // minutes, and the linked service may not exist under that name/namespace).
-    return (
-      <div className={styles.empty} data-testid={CONNECTED_SERVICES_TEST_ID.empty}>
-        <Text variant="body" color="secondary">
-          No graph data for this check yet. The Knowledge Graph may still be discovering it — check back in a few
-          minutes.
-        </Text>
-      </div>
-    );
-  }
-
-  return <ConnectedServicesGraph neighbourhood={data} />;
-}
-
 interface ConnectedServicesZeroStateProps {
   checkId: Check['id'];
 }
 
+/** Inviting CTA for a check without a Knowledge Graph service link. */
 function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
   const styles = useStyles2(getStyles);
   // Deep link straight to the Labels section of the edit form, where the KG service link lives.
@@ -206,14 +168,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   body: css({
     padding: theme.spacing(0, 2, 2, 2),
-  }),
-  loading: css({
-    height: MIN_BODY_HEIGHT,
-  }),
-  empty: css({
-    display: 'flex',
-    justifyContent: 'center',
-    padding: theme.spacing(4, 2),
   }),
   zeroState: css({
     display: 'flex',

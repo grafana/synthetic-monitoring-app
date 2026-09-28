@@ -2,7 +2,7 @@
   "kind": "QueryTypeDefinitionList",
   "apiVersion": "datasource.grafana.app/v0alpha1",
   "metadata": {
-    "resourceVersion": "1788464229422"
+    "resourceVersion": "1790107514260"
   },
   "items": [
     {
@@ -68,6 +68,50 @@
             "instance",
             "frequency"
           ],
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "checks_probe_count",
+        "resourceVersion": "1790107514260",
+        "creationTimestamp": "2026-09-22T20:05:14Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "checks_probe_count"
+          }
+        ],
+        "description": "Number of probes reporting for each check in the tenant, grouped by job and instance. Has no app counterpart yet; anticipates one.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "TenantWideQuery has no parameters: the query is computed across the whole tenant.",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "checks_reachability",
+        "resourceVersion": "1790107514260",
+        "creationTimestamp": "2026-09-22T20:05:14Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "checks_reachability"
+          }
+        ],
+        "description": "Reachability (probe_all_success ratio) summed across all checks in the tenant, grouped by job and instance.",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "TenantWideQuery has no parameters: the query is computed across the whole tenant.",
           "type": "object"
         }
       }

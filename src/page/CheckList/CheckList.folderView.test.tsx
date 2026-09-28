@@ -202,7 +202,7 @@ describe('CheckList - Folder View Integration', () => {
 
     test('folder view option appears in the view switcher', async () => {
       await renderCheckList();
-      expect(screen.getByTitle('Folder view')).toBeInTheDocument();
+      expect(await screen.findByRole('radio', { name: 'Folder view' })).toBeInTheDocument();
     });
 
     test('folder view renders when view=folder is in URL', async () => {
@@ -302,7 +302,7 @@ describe('CheckList - Folder View Integration', () => {
   describe('with folders feature disabled', () => {
     test('folder view option does not appear in the view switcher', async () => {
       await renderCheckList();
-      expect(screen.queryByTitle('Folder view')).not.toBeInTheDocument();
+      expect(screen.queryByRole('radio', { name: 'Folder view' })).not.toBeInTheDocument();
     });
   });
 });

@@ -15,11 +15,23 @@ import {
   useTheme2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import type { SLO } from './grafanaSLOApp.types';
 
 import { buildSLOEditHref } from './grafanaSLOApp.constants';
 import { useSLOMetrics } from './SLODetailTab.hooks';
+
+function trackSLOLinkClick(href: string, source: string) {
+  const url = new URL(href, window.location.origin);
+  trackLinkClick({
+    href: url.href,
+    hostname: url.hostname,
+    path: url.pathname,
+    search: url.search,
+    source,
+  });
+}
 
 export type SLODetailTabProps = {
   slo: SLO;
@@ -187,11 +199,21 @@ export function SLODetailTab({ slo, onDelete, isDeleting }: SLODetailTabProps) {
 
       <Stack direction="row" gap={1}>
         {dashboardHref ? (
-          <LinkButton href={dashboardHref} variant="primary" icon="dashboard">
+          <LinkButton
+            href={dashboardHref}
+            variant="primary"
+            icon="dashboard"
+            onClick={() => trackSLOLinkClick(dashboardHref, 'slo_integration_dashboard')}
+          >
             View dashboard
           </LinkButton>
         ) : null}
-        <LinkButton href={editHref} variant="secondary" icon="edit">
+        <LinkButton
+          href={editHref}
+          variant="secondary"
+          icon="edit"
+          onClick={() => trackSLOLinkClick(editHref, 'slo_integration_edit')}
+        >
           Edit
         </LinkButton>
         {onDelete ? (

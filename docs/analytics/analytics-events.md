@@ -609,6 +609,34 @@ Tracks when a secret is successfully deleted.
 | ------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
 | source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
 
+### slo_integration
+
+#### synthetic-monitoring_slo_integration_drawer_opened
+
+Tracks when the linked-SLOs button on a check dashboard is clicked to open the drawer.
+
+##### Properties
+
+| name     | type     | description                                                                |
+| -------- | -------- | -------------------------------------------------------------------------- |
+| sloCount | `number` | The number of SLOs already linked to the check when the drawer was opened. |
+
+#### synthetic-monitoring_slo_integration_wizard_completed
+
+Tracks when a new SLO is successfully created from the check dashboard wizard.
+
+#### synthetic-monitoring_slo_integration_wizard_cancelled
+
+Tracks when the new SLO wizard is cancelled from the check dashboard.
+
+#### synthetic-monitoring_slo_integration_slo_deleted
+
+Tracks when an SLO linked to a check is successfully deleted.
+
+#### synthetic-monitoring_slo_integration_slo_delete_failed
+
+Tracks when deleting an SLO linked to a check fails.
+
 ### terraform
 
 #### synthetic-monitoring_terraform_config_viewed

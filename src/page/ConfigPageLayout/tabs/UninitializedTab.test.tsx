@@ -41,6 +41,9 @@ describe('<UninitializedTab />', () => {
 
   it('should use <AppInitializer />', async () => {
     await renderUninitializedTab();
-    expect(AppInitializer).toHaveBeenCalledWith({ buttonText: 'Initialize plugin', redirectTo: AppRoutes.Config }, {});
+    expect(AppInitializer).toHaveBeenCalledWith(
+      { buttonText: 'Initialize plugin', redirectTo: AppRoutes.Config },
+      undefined
+    );
   });
 });

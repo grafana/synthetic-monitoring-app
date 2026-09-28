@@ -4,9 +4,9 @@ import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
 import { FeatureName, GrafanaFolder } from 'types';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import { queryClient } from 'data/queryClient';
 import { useDefaultFolder } from 'data/useDefaultFolder';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 import { FOLDERS_STALE_TIME } from './folders.constants';
 
@@ -189,12 +189,8 @@ export function getFolderPath(folder: GrafanaFolder, allFoldersMap: Map<string, 
  * and gates all downstream queries via enabled params.
  */
 export function useAllFolders() {
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
-  const {
-    defaultFolder,
-    defaultFolderUid,
-    status: folderStatus,
-  } = useDefaultFolder(isFoldersEnabled);
+  const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
+  const { defaultFolder, defaultFolderUid, status: folderStatus } = useDefaultFolder(isFoldersEnabled);
   const {
     data: childFolders = [],
     isLoading: isChildrenLoading,
@@ -215,8 +211,7 @@ export function useAllFolders() {
   // not a reason to disable folder grouping and access control entirely.
   // While loading we treat folders as available (optimistic) so access control
   // applies as soon as data arrives, instead of briefly showing every check.
-  const isFoldersAvailable =
-    isFoldersEnabled && (folderStatus === 'available' || folderStatus === 'loading');
+  const isFoldersAvailable = isFoldersEnabled && (folderStatus === 'available' || folderStatus === 'loading');
   const isError = isChildrenError;
   const refetch = () => queryClient.invalidateQueries({ queryKey: folderQueryKeys.all });
 

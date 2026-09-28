@@ -2,7 +2,7 @@ import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
-import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions.constants';
 
 export function useDuplicateCheckUrl() {
   const duplicateCheckUrl = (check: Check) => {

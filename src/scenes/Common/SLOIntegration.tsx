@@ -2,6 +2,13 @@ import React, { useCallback, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePluginComponent } from '@grafana/runtime';
 import { Box, Button, Drawer, Spinner, Stack, Tab, TabsBar, Text, Tooltip } from '@grafana/ui';
+import {
+  trackSLOIntegrationDrawerOpened,
+  trackSLOIntegrationSLODeleted,
+  trackSLOIntegrationSLODeleteFailed,
+  trackSLOIntegrationWizardCancelled,
+  trackSLOIntegrationWizardCompleted,
+} from 'features/tracking/sloIntegrationEvents';
 
 import { type SLO, type SLOComponentPropsV1, type SLOWizardInitialValues, StepKey } from './grafanaSLOApp.types';
 import { Check } from 'types';
@@ -45,10 +52,12 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
       try {
         const result = await deleteSLO(slo.uuid);
         if (result.error) {
+          trackSLOIntegrationSLODeleteFailed();
           showAlert('error', `Failed to delete SLO: ${result.error.message}`);
           return;
         }
 
+        trackSLOIntegrationSLODeleted();
         await handleSLOListInvalidate();
         const remaining = slos.filter((s) => s.uuid !== slo.uuid);
         setActiveTabKey(remaining.length > 0 ? remaining[0].uuid : NEW_SLO_TAB_KEY);
@@ -85,6 +94,7 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
     setActiveTabKey(firstSLOKey ?? NEW_SLO_TAB_KEY);
     setShowNewSLOTab(!firstSLOKey);
     setDrawerOpen(true);
+    trackSLOIntegrationDrawerOpened({ sloCount: slos.length });
   };
 
   const handleCloseNewSLOTab = () => {
@@ -149,11 +159,15 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
                 stepperOrientation="horizontal"
                 submitLabel="Create SLO"
                 onSuccess={() => {
+                  trackSLOIntegrationWizardCompleted();
                   handleCloseNewSLOTab();
                   setDrawerOpen(false);
                   handleSLOListInvalidate();
                 }}
-                onCancel={handleCloseNewSLOTab}
+                onCancel={() => {
+                  trackSLOIntegrationWizardCancelled();
+                  handleCloseNewSLOTab();
+                }}
                 initialStep={StepKey.Review}
               />
             ) : null}
