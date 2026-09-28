@@ -85,7 +85,7 @@ export function GenericScriptField({
   );
 
   const scannerPanel = showScannerPanel && (
-    <Box padding={2} paddingBottom={0}>
+    <Box paddingTop={2}>
       <SecretScannerPanel scanner={scanner} readOnly={disabled} />
     </Box>
   );
