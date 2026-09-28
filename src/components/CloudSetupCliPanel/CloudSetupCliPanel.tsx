@@ -141,11 +141,6 @@ function getStyles(theme: GrafanaTheme2) {
   // for light mode so it stays readable against a white background (contrast ~4.9:1).
   const LAVENDER = '#B8A5E3';
   const accentColor = theme.isDark ? LAVENDER : colorManipulator.darken(LAVENDER, 0.35);
-  // Derived from bodySmall rather than a bare literal, but kept a touch under it:
-  // the preview tab needs to read smaller than the footer's bodySmall text, and the
-  // tooltip needs to fit Tooltip's fixed 400px width without wrapping (bodySmall
-  // itself measures right at that edge).
-  const quietFontSize = `calc(${theme.typography.bodySmall.fontSize} * 0.9)`;
 
   return {
     // --- wrapper: the panel plus its overlapping "Preview" tab ---
@@ -163,7 +158,7 @@ function getStyles(theme: GrafanaTheme2) {
       alignItems: 'center',
       gap: theme.spacing(0.5),
       padding: theme.spacing(0.25, 1),
-      fontSize: quietFontSize,
+      fontSize: theme.typography.bodySmall.fontSize,
       fontWeight: theme.typography.fontWeightRegular,
       lineHeight: theme.typography.bodySmall.lineHeight,
       color: theme.colors.text.secondary,
