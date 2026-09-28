@@ -45,18 +45,10 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
 
 function getStyles(theme: GrafanaTheme2) {
   return {
-    // Wraps EmptyState's own message/subtitle, so their size can be bumped below.
     compactEmptyState: css({
       '& > div > div': {
         gap: theme.spacing(2),
         maxWidth: '760px',
-        // Text always overwrites className, so bump title/subtitle size via this selector instead.
-        '& > div > span:nth-of-type(1)': {
-          fontSize: `calc(${theme.typography.h4.fontSize} * 1.1)`,
-        },
-        '& > div > span:nth-of-type(2)': {
-          fontSize: `calc(${theme.typography.body.fontSize} * 1.1)`,
-        },
       },
     }),
     cliSection: css({
