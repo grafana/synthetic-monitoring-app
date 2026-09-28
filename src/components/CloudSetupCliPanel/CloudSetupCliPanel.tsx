@@ -28,11 +28,7 @@ export function CloudSetupCliPanel() {
         <div className={styles.previewTab}>Preview</div>
       </Tooltip>
 
-      <div
-        className={styles.panel}
-        // Width tracks the command's own length (monospace, so `ch` is exact) so nothing else can widen the panel.
-        style={{ width: `calc(${cliCommand.length}ch + 4.5rem)` }}
-      >
+      <div className={styles.panel}>
         <button
           type="button"
           className={styles.commandRow}
@@ -169,7 +165,9 @@ function getStyles(theme: GrafanaTheme2) {
 
     // --- panel: the command + footer card itself ---
     panel: css({
-      // Viewport safety cap — the real width is set inline, above.
+      // Shrinks to the command's width, capped so it doesn't overflow the
+      // viewport — the command itself scrolls if it's ever longer than that.
+      width: 'fit-content',
       maxWidth: 'min(720px, 100%)',
       boxSizing: 'border-box',
       display: 'flex',
@@ -290,9 +288,14 @@ function getStyles(theme: GrafanaTheme2) {
       paddingRight: theme.spacing(2.5),
     }),
     footerDetails: css({
-      // minWidth lets long text wrap here instead of forcing the panel wider.
+      // minWidth lets long text wrap here instead of forcing the panel wider. Since
+      // panel's own width is fit-content, minWidth alone isn't enough — this text's
+      // full unwrapped length would still count toward that calculation without
+      // inline-size containment isolating it (verified: without this, the panel
+      // visibly jumps wider the instant this expands).
       flexBasis: '100%',
       minWidth: 0,
+      contain: 'inline-size',
       marginTop: theme.spacing(1),
       paddingTop: theme.spacing(1),
       borderTop: `1px solid ${borderColor}`,
