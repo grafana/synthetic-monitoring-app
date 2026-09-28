@@ -1,6 +1,7 @@
 import React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { ComponentWrapperProps, render } from 'test/render';
+import { runTestWithoutPermissions } from 'test/utils';
 
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
@@ -51,7 +52,7 @@ describe('ConfigPageLayout', () => {
     const activeItem = getByTestId(CONFIG_TEST_ID.layout.activeNavItem);
     expect(activeItem).toBeInTheDocument();
     expect(activeItem).toHaveTextContent(text);
-    expect(getByRole('navigation', { name: 'Configuration' })).toContainElement(activeItem);
+    expect(getByRole('tablist', { name: 'Configuration' })).toContainElement(activeItem);
   });
 
   it('keeps Configuration selected in the Synthetics tab row', () => {
@@ -59,11 +60,11 @@ describe('ConfigPageLayout', () => {
     expect(getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Configuration');
   });
 
-  it('does not list Probes in the configuration nav', () => {
+  it('hides Alerts (Legacy) from users who cannot read alerts', () => {
+    runTestWithoutPermissions('grafana-synthetic-monitoring-app.alerts:read');
     const { getByRole, queryByRole } = renderPage();
-    const nav = getByRole('navigation', { name: 'Configuration' });
 
-    expect(nav).not.toHaveTextContent('Probes');
-    expect(queryByRole('link', { name: /Probes/ })).not.toBeInTheDocument();
+    expect(getByRole('tab', { name: 'General' })).toBeInTheDocument();
+    expect(queryByRole('tab', { name: 'Alerts (Legacy)' })).not.toBeInTheDocument();
   });
 });

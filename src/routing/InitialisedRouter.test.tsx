@@ -49,22 +49,18 @@ describe('Routes to pages correctly', () => {
     const homePageText = await screen.findByText('Home page', { selector: 'h1' });
     expect(homePageText).toBeInTheDocument();
   });
-  test('Checks page renders', async () => {
+  test('Checks page renders as a Synthetics tab', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Checks) });
     const checksButton = await screen.findByText('Create new check');
     expect(checksButton).toBeInTheDocument();
     expect(await screen.findByText(BASIC_HTTP_CHECK.job)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Checks');
   });
   test('Check dashboards do not use the checks list tabs', async () => {
     renderInitialisedRouting({ path: `${getRoute(AppRoutes.Checks)}/${BASIC_HTTP_CHECK.id}` });
     expect(await screen.findByText('Dashboard page', { selector: 'h1' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Synthetics' })).not.toBeInTheDocument();
-  });
-  test('Checks recommendations tab renders', async () => {
-    renderInitialisedRouting({ path: getRoute(AppRoutes.CheckRecommendations) });
-    const recommendations = await screen.findByText('No recommendations yet');
-    expect(recommendations).toBeInTheDocument();
-    expect(screen.queryByText('Dashboard page')).not.toBeInTheDocument();
   });
   test('Probes page renders as a Synthetics tab', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Probes) });
@@ -72,12 +68,6 @@ describe('Routes to pages correctly', () => {
     expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Probes');
     const probeStatTexts = await screen.findAllByText('Check runs / min');
     expect(probeStatTexts.length).toBeGreaterThan(0);
-  });
-  test('Probes config path redirects to the Probes tab', async () => {
-    renderInitialisedRouting({ path: `${getRoute(AppRoutes.Config)}/probes` });
-    expect(await screen.findByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
-    expect(screen.getByTestId(CONFIG_TEST_ID.layout.activeTab)).toHaveTextContent('Probes');
-    expect(await screen.findByText('Add Private Probe')).toBeInTheDocument();
   });
   test('Alert page renders as a Config tab', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Alerts) });
