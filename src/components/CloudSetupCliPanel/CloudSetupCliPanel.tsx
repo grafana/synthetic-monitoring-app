@@ -133,10 +133,12 @@ const particleBurst = keyframes({
 
 function getStyles(theme: GrafanaTheme2) {
   const borderColor = theme.components.input.borderColor;
-  // The lavender the panel was designed around. Kept as-is for dark mode; darkened
-  // for light mode so it stays readable against a white background (contrast ~4.9:1).
-  const LAVENDER = '#B8A5E3';
-  const accentColor = theme.isDark ? LAVENDER : colorManipulator.darken(LAVENDER, 0.35);
+  // Derived from the theme's own semantic purple, not a custom hex. The dark-mode
+  // value is lightened to soften it (getColorByName('purple') alone read too
+  // saturated); light mode uses it as-is since it's already calibrated for
+  // contrast against a white background (~4.5:1) and lightening would hurt that.
+  const themePurple = theme.visualization.getColorByName('purple');
+  const accentColor = theme.isDark ? colorManipulator.lighten(themePurple, 0.35) : themePurple;
 
   return {
     // --- wrapper: the panel plus its overlapping "Preview" tab ---
