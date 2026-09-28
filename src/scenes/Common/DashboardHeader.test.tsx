@@ -8,7 +8,10 @@ import { DashboardHeader } from './DashboardHeader';
 jest.mock('@grafana/scenes-react', () => ({
   VariableControl: () => <div data-testid="variable-control" />,
   RefreshPicker: () => <div data-testid="refresh-picker" />,
-  TimeRangePicker: () => <div data-testid="time-range-picker" />,
+}));
+
+jest.mock('./SceneTimeRangePicker', () => ({
+  SceneTimeRangePicker: () => <div data-testid="time-range-picker" />,
 }));
 
 jest.mock('features/knowledgeGraph/KnowledgeGraphInsights', () => ({

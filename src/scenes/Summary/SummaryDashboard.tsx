@@ -6,7 +6,6 @@ import {
   QueryVariable,
   RefreshPicker,
   SceneContextProvider,
-  TimeRangePicker,
   useSceneContext,
   VariableControl,
 } from '@grafana/scenes-react';
@@ -25,6 +24,7 @@ import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
+import { SceneTimeRangePicker } from 'scenes/Common/SceneTimeRangePicker';
 
 import { useSummaryDashboardAnnotations } from './SummaryDashboard.hooks';
 import { SummaryErrorPctgViz } from './SummaryErrorPctgViz';
@@ -102,7 +102,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
               <DashboardAnnotationControls annotations={annotations} />
               <div className={styles.spacer} />
               <AddNewCheckButton source="homepage" />
-              <TimeRangePicker />
+              <SceneTimeRangePicker />
               <RefreshPicker />
             </div>
 
