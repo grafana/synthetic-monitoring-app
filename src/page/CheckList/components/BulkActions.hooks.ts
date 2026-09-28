@@ -12,10 +12,7 @@ interface UseBulkActionsOptions {
 /** Matched case-insensitively by ConfirmModal before it enables the confirm button. */
 export const DELETE_CONFIRMATION_TEXT = 'Delete';
 
-/**
- * Above this many selected checks, typing the bare word "Delete" is too easy to do
- * on autopilot, so the count itself must be typed too.
- */
+/** Above this many selected checks, typing the bare word "Delete" is too easy to do on autopilot. */
 export const DELETE_CONFIRMATION_COUNT_THRESHOLD = 5;
 
 export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
@@ -57,7 +54,7 @@ export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
   const checksLabel = `${checkCount} check${checkCount !== 1 ? 's' : ''}`;
 
   const confirmationText =
-    checkCount > DELETE_CONFIRMATION_COUNT_THRESHOLD ? `Delete ${checkCount}` : DELETE_CONFIRMATION_TEXT;
+    checkCount > DELETE_CONFIRMATION_COUNT_THRESHOLD ? `Delete ${checksLabel}` : DELETE_CONFIRMATION_TEXT;
 
   const deleteModalProps = useMemo(
     () => ({

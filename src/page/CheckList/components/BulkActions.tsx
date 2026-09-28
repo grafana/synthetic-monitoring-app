@@ -37,6 +37,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
     deleteChecks,
     deleteModalProps,
   } = useBulkActions({ checks, onResolved });
+  const deleteConfirmModalStyles = useStyles2(getDeleteConfirmModalStyles, deleteModalProps.confirmationText);
 
   return (
     <>
@@ -122,7 +123,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
         <ConfirmModal
           isOpen={showDeleteModal}
           {...deleteModalProps}
-          modalClass={styles.deleteConfirmModal}
+          modalClass={deleteConfirmModalStyles.deleteConfirmModal}
           onConfirm={deleteChecks}
           onDismiss={() => setShowDeleteModal(false)}
         />
@@ -143,13 +144,16 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: `center`,
     gap: theme.spacing(2),
   }),
-  // ConfirmModal's confirmation input sizes to the browser's default input width
-  // (~20 characters), not the modal, so it clips a confirmationText that includes
-  // the check count (e.g. "Delete 12345"). 30ch comfortably fits that up to five
-  // digits; measured against the actual rendered font, not guessed.
+});
+
+// Accounts for the fixed `Type "" to confirm` wrapper text, plus a little slack.
+const CONFIRMATION_PLACEHOLDER_OVERHEAD_CH = 20;
+
+// ConfirmModal's input doesn't grow with the modal, so it clips text unless sized explicitly.
+const getDeleteConfirmModalStyles = (theme: GrafanaTheme2, confirmationText: string) => ({
   deleteConfirmModal: css({
     input: {
-      width: '30ch',
+      width: `${confirmationText.length + CONFIRMATION_PLACEHOLDER_OVERHEAD_CH}ch`,
     },
   }),
 });

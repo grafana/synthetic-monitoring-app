@@ -8,14 +8,7 @@ export function getDeleteConfirmationInput(confirmationText = DELETE_CONFIRMATIO
   return screen.getByPlaceholderText(`Type "${confirmationText}" to confirm`);
 }
 
-/**
- * Bulk deletion is gated behind a typed confirmation, so every test that wants
- * checks actually deleted has to go through the same motions the user does.
- *
- * `confirmationText` must match what the modal actually renders: the bare word
- * "Delete" for small selections, or `Delete N checks` above the count threshold
- * (see DELETE_CONFIRMATION_COUNT_THRESHOLD).
- */
+/** `confirmationText` must match what the modal actually shows (see DELETE_CONFIRMATION_COUNT_THRESHOLD). */
 export async function confirmBulkDelete(user: UserEvent, confirmationText = DELETE_CONFIRMATION_TEXT) {
   const confirmButton = await screen.findByRole('button', { name: 'Delete checks' });
   expect(confirmButton).toBeDisabled();

@@ -122,7 +122,7 @@ describe('CheckList - scope of the select-all checkbox', () => {
     expect(await screen.findByText(`Delete ${CHECKS_PER_PAGE_CARD} checks`)).toBeInTheDocument();
 
     // CHECKS_PER_PAGE_CARD is above the threshold, so the count must be typed, not just "Delete".
-    await confirmBulkDelete(user, `Delete ${CHECKS_PER_PAGE_CARD}`);
+    await confirmBulkDelete(user, `Delete ${CHECKS_PER_PAGE_CARD} checks`);
     await waitFor(() => expect(requests.length).toBe(CHECKS_PER_PAGE_CARD));
   });
 
@@ -154,9 +154,11 @@ describe('CheckList - stricter confirmation for large selections', () => {
     const checks = buildChecks(DELETE_CONFIRMATION_COUNT_THRESHOLD + 1);
     const { user } = await selectAllAndOpenDeleteModal(checks);
 
-    const confirmationText = `Delete ${checks.length}`;
+    const confirmationText = `Delete ${checks.length} checks`;
     const confirmButton = await screen.findByRole('button', { name: 'Delete checks' });
 
+    // Matches the title/body verbatim, so there's nothing to guess about what to type.
+    expect(await screen.findByText(confirmationText)).toBeInTheDocument();
     expect(getDeleteConfirmationInput(confirmationText)).toHaveAttribute(
       'placeholder',
       `Type "${confirmationText}" to confirm`
