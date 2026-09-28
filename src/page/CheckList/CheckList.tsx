@@ -45,6 +45,8 @@ import {
   FolderNotProvisionedBanner,
   FolderPermissionBanner,
 } from 'page/CheckList/components/FolderBanners';
+import { SyntheticsTab } from 'page/SyntheticsPageNav';
+import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
 
 export const CheckList = () => {
   const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
@@ -60,9 +62,11 @@ export const CheckList = () => {
   };
 
   return (
-    <QueryErrorBoundary>
-      <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
-    </QueryErrorBoundary>
+    <SyntheticsPluginPage activeTab={SyntheticsTab.Checks}>
+      <QueryErrorBoundary>
+        <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
+      </QueryErrorBoundary>
+    </SyntheticsPluginPage>
   );
 };
 

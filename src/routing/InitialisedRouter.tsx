@@ -177,7 +177,6 @@ export const InitialisedRouter = () => {
       </Route>
 
       <Route path={AppRoutes.Alerts} element={<Navigate to={`${getRoute(AppRoutes.Config)}/alerts`} replace />} />
-      <Route path={`${AppRoutes.Config}/probes`} element={<Navigate to={getRoute(AppRoutes.Probes)} replace />} />
 
       <Route
         path={AppRoutes.ReliabilityInbox}

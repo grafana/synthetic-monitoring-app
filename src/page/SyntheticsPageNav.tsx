@@ -11,7 +11,12 @@ export enum SyntheticsTab {
   Checks = 'checks',
   Probes = 'probes',
   Configuration = 'configuration',
-  Recommendations = 'recommendations',
+}
+
+export interface SyntheticsTabVisibility {
+  checks: boolean;
+  probes: boolean;
+  recommendations: boolean;
 }
 
 // Distinct from /home and the plugin root so Grafana does not skip the Synthetics section crumb.
@@ -25,87 +30,54 @@ function NewFeatureTabSuffix({ className }: { className?: string }) {
   );
 }
 
-export function getSyntheticsPageNav(activeTab: SyntheticsTab): NavModelItem {
+export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: SyntheticsTabVisibility): NavModelItem {
   const isOverview = activeTab === SyntheticsTab.Home;
-  const isRecommendations = activeTab === SyntheticsTab.Recommendations;
   const isConfiguration = activeTab === SyntheticsTab.Configuration;
-  const recommendationsUrl = getRoute(AppRoutes.CheckRecommendations);
   const configurationUrl = getRoute(AppRoutes.Config);
-  const probesUrl = getRoute(AppRoutes.Probes);
   const tabs: NavModelItem[] = [
     {
       text: 'Overview',
       url: getRoute(AppRoutes.Home),
       active: isOverview,
     },
-    {
+  ];
+
+  if (visibility.checks) {
+    tabs.push({
       text: 'Checks',
       url: getRoute(AppRoutes.Checks),
       active: activeTab === SyntheticsTab.Checks,
-    },
-    {
+    });
+  }
+
+  if (visibility.probes) {
+    tabs.push({
       text: 'Probes',
-      url: probesUrl,
+      url: getRoute(AppRoutes.Probes),
       active: activeTab === SyntheticsTab.Probes,
-    },
-    {
+    });
+  }
+
+  // Check Suggestions renders its own page header, so this tab is never the active one.
+  if (visibility.recommendations) {
+    tabs.push({
       text: 'Recommendations',
-      url: recommendationsUrl,
-      active: isRecommendations,
+      url: getRoute(AppRoutes.ReliabilityInbox),
       tabSuffix: NewFeatureTabSuffix,
-    },
-    {
-      text: 'Configuration',
-      url: configurationUrl,
-      active: isConfiguration,
-    },
-  ];
-
-  if (isRecommendations) {
-    // Grafana adds the active tab as an extra crumb when it is not the first child.
-    // Keep a hidden copy first so Recommendations replaces Checks instead of duplicating.
-    tabs.unshift({
-      text: 'Recommendations',
-      url: recommendationsUrl,
-      active: true,
-      hideFromTabs: true,
     });
   }
 
-  if (isConfiguration) {
-    tabs.unshift({
-      text: 'Configuration',
-      url: configurationUrl,
-      active: true,
-      hideFromTabs: true,
-    });
-  }
+  tabs.push({
+    text: 'Configuration',
+    url: configurationUrl,
+    active: isConfiguration,
+  });
 
   return {
-    // Overview and Recommendations must not share a URL with Synthetics/Checks or Grafana
-    // drops or reuses those crumbs. Checks keeps pageNav hidden so its trail stays the same.
-    text: isOverview
-      ? 'Overview'
-      : isRecommendations
-        ? 'Recommendations'
-        : isConfiguration
-          ? 'Configuration'
-          : 'Synthetics',
-    url: isOverview
-      ? OVERVIEW_BREADCRUMB_URL
-      : isRecommendations
-        ? recommendationsUrl
-        : isConfiguration
-          ? configurationUrl
-          : getRoute(AppRoutes.Home),
-    hideFromBreadcrumbs: !isOverview && !isRecommendations,
-    parentItem: isRecommendations
-      ? {
-          text: 'Checks',
-          url: getRoute(AppRoutes.Checks),
-          hideFromBreadcrumbs: true,
-        }
-      : undefined,
+    // Only Overview adds its own crumb; the other tabs keep the Synthetics section trail unchanged.
+    text: isOverview ? 'Overview' : isConfiguration ? 'Configuration' : 'Synthetics',
+    url: isOverview ? OVERVIEW_BREADCRUMB_URL : isConfiguration ? configurationUrl : getRoute(AppRoutes.Home),
+    hideFromBreadcrumbs: !isOverview,
     children: tabs,
   };
 }
