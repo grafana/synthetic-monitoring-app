@@ -245,6 +245,12 @@ Tracks when the duplicate check button is clicked.
 | --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being duplicated. |
 
+### cloud_setup
+
+#### synthetic-monitoring_cloud_setup_cli_command_copied
+
+Tracks when the cloud-setup CLI command is copied to the clipboard.
+
 ### cost_attribution
 
 #### synthetic-monitoring_cost_attribution_setup_banner_shown
