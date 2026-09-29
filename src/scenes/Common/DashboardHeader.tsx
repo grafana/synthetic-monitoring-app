@@ -22,9 +22,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
 
   return (
     <div className={styles.container}>
-      <div className={styles.statusRow}>
-        <CheckFailureExplanation check={check} />
-      </div>
+      <CheckFailureExplanation check={check} />
       <div className={styles.header}>
         <div className={styles.variableControls}>
           <VariableControl name="probe" />
@@ -54,10 +52,6 @@ const getStyles = (theme: GrafanaTheme2) => {
     container: css`
       container-name: ${containerName};
       container-type: inline-size;
-    `,
-    statusRow: css`
-      display: flex;
-      justify-content: flex-end;
     `,
     header: css`
       display: flex;

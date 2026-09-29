@@ -12,18 +12,19 @@ interface CheckFailureExplanationProps {
 
 const AI_ACCENT_COLOR = 'rgb(168, 85, 247)';
 
-// Rendered right-aligned at the top of DashboardHeader — deliberately NOT inside Grafana's own
-// PluginPage title slot (renderTitle): that container clips/constrains its content in ways this
-// component doesn't own or control, which broke both the sticky positioning and the text
-// truncation in practice. This container is ours end to end, so both actually work. No need to
-// repeat the check name here either — the page's own <h1> already has it.
+// Rendered full-width at the top of DashboardHeader, right under the page title — deliberately
+// NOT inside Grafana's own PluginPage title slot (renderTitle): that container clips/constrains
+// its content in ways this component doesn't own or control, which broke both the sticky
+// positioning and the text truncation in practice. This container is ours end to end, so both
+// actually work. No need to repeat the check name here either — the page's own <h1> already has
+// it, right above.
 //
-// A persistent compact status pill, not a conditional alert: green when healthy, red when
-// failing, so the pattern never jumps in and out as the check's state changes. The AI
-// explanation is layered on top of that — shown only while actually failing, and only once the
-// org has opted in and the LLM app is available (see useCheckFailureExplanation) — rather than
-// being the reason the pill exists. Sticky (not fixed) so it keeps floating in view while
-// scrolling. Clicking it expands the full sentence and the evidence behind it.
+// A persistent status bar, not a conditional alert: green when healthy, red when failing, so
+// the pattern never jumps in and out as the check's state changes. The AI explanation is
+// layered on top of that — shown only while actually failing, and only once the org has opted
+// in and the LLM app is available (see useCheckFailureExplanation) — rather than being the
+// reason the bar exists. Sticky (not fixed) so it keeps floating in view while scrolling.
+// Clicking it expands the full sentence and the evidence behind it.
 export function CheckFailureExplanation({ check }: CheckFailureExplanationProps) {
   const { isCheckFailing, showAiExplanation, explanation, isLoading, facts } = useCheckFailureExplanation(check);
   const styles = useStyles2(getStyles);
@@ -37,7 +38,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
     <div className={styles.container}>
       <button
         type="button"
-        className={styles.pill}
+        className={styles.bar}
         onClick={() => setIsExpanded((open) => !open)}
         aria-expanded={isExpanded}
       >
@@ -121,19 +122,18 @@ const getStyles = (theme: GrafanaTheme2) => ({
     position: 'sticky',
     top: 0,
     zIndex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-end',
+    width: '100%',
+    marginBottom: theme.spacing(1),
   }),
-  pill: css({
+  bar: css({
     all: 'unset',
     boxSizing: 'border-box',
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
-    maxWidth: 480,
-    padding: theme.spacing(0.75, 1.5),
-    borderRadius: theme.shape.radius.pill,
+    width: '100%',
+    padding: theme.spacing(1, 1.5),
+    borderRadius: theme.shape.radius.default,
     border: `1px solid ${theme.colors.border.weak}`,
     background: theme.colors.background.canvas,
     cursor: 'pointer',
@@ -176,7 +176,8 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   expanded: css({
     marginTop: theme.spacing(1),
-    width: 'min(480px, 100%)',
+    width: '100%',
+    boxSizing: 'border-box',
     padding: theme.spacing(1.5, 2),
     border: `1px solid ${theme.colors.border.weak}`,
     borderRadius: theme.shape.radius.default,
