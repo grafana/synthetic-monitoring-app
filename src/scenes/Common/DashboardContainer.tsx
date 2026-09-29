@@ -3,6 +3,7 @@ import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Stack } from '@grafana/ui';
+import { CheckFailureExplanation } from 'features/checkInsights/CheckFailureExplanation';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
@@ -84,7 +85,12 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
             hide={VariableHide.hideVariable}
           >
             <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
+              {/* Rendered as a sibling of the whole page's content, not nested inside the header:
+                  `position: sticky` only keeps an element pinned while its own parent is still
+                  on screen, so for it to stay floating for the full scroll of the dashboard, its
+                  parent has to span the full dashboard — this Stack, not just the header row. */}
               <Stack direction="column" gap={2}>
+                <CheckFailureExplanation check={check} />
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
                   {children}

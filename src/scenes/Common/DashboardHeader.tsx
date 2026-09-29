@@ -3,7 +3,6 @@ import { AnnotationQuery, GrafanaTheme2 } from '@grafana/data';
 import { RefreshPicker, VariableControl } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { CheckFailureExplanation } from 'features/checkInsights/CheckFailureExplanation';
 import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGraphInsights';
 
 import { Check } from 'types';
@@ -22,7 +21,6 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
 
   return (
     <div className={styles.container}>
-      <CheckFailureExplanation check={check} />
       <div className={styles.header}>
         <div className={styles.variableControls}>
           <VariableControl name="probe" />
