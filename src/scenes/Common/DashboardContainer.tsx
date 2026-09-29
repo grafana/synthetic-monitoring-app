@@ -1,8 +1,11 @@
 import React, { PropsWithChildren, useEffect, useRef } from 'react';
+import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
-import { Stack } from '@grafana/ui';
+import { Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
+import { CheckFailureExplanation } from 'features/checkInsights/CheckFailureExplanation';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
@@ -42,6 +45,7 @@ const useTrackCheckDashboardViewed = (check: Check, checkType: CheckType) => {
 export const DashboardContainer = ({ check, checkType, children }: DashboardContainerProps) => {
   const metricsDS = useMetricsDS();
   const annotations = useDashboardContainerAnnotations(check);
+  const styles = useStyles2(getStyles);
   // the scope must be registered before useTrackCheckDashboardViewed fires its event
   // (same-component effects run in hook call order)
   useTrackingScope({
@@ -83,7 +87,15 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
             label={check.target}
             hide={VariableHide.hideVariable}
           >
-            <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
+            <PluginPage
+              pageNav={{ text: check.job }}
+              renderTitle={() => (
+                <div className={styles.titleRow}>
+                  <h1>{check.job}</h1>
+                  <CheckFailureExplanation check={check} />
+                </div>
+              )}
+            >
               <Stack direction="column" gap={2}>
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
@@ -97,3 +109,12 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
     </SceneContextProvider>
   );
 };
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  titleRow: css({
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing(2),
+  }),
+});

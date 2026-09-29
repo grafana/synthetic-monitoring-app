@@ -13,6 +13,11 @@ export interface ProvisioningJsonData {
   stackId: number;
   metrics: ProvisioningLinkedDatasourceInfo;
   logs: ProvisioningLinkedDatasourceInfo;
+  // Org-level toggle, defaults to true when unset: every failing check dashboard calls the
+  // Grafana LLM app when this is on (and that app is configured), with a real cost/token
+  // consequence, so it's an explicit per-org setting rather than a rollout flag. See
+  // page/ConfigPageLayout/tabs/GeneralTab.tsx and features/checkInsights.
+  aiCheckExplanationsEnabled?: boolean;
 }
 
 export interface InitializedJsonData {
@@ -20,6 +25,7 @@ export interface InitializedJsonData {
   stackId: number;
   metrics: LinkedDatasourceInfo;
   logs: LinkedDatasourceInfo;
+  aiCheckExplanationsEnabled?: boolean;
 }
 
 export enum IpVersion {

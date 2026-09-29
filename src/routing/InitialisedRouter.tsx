@@ -18,6 +18,7 @@ import { CheckList } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
+import { AiTab } from 'page/ConfigPageLayout/tabs/AiTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { LabelMigrationTab } from 'page/ConfigPageLayout/tabs/LabelMigrationTab';
 import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
@@ -159,6 +160,7 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
+        <Route path="ai" element={<AiTab />} />
         {isLabelMigrationEnabled && <Route path="label-migration" element={<LabelMigrationTab />} />}
         {isSecretsManagementEnabled && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
