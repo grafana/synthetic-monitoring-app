@@ -12,14 +12,18 @@ interface CheckFailureExplanationProps {
 
 const AI_ACCENT_COLOR = 'rgb(168, 85, 247)';
 
-// Rendered next to the check's page title (see DashboardContainer's renderTitle), not below it —
-// no need to repeat the check name here, the <h1> right beside it already has it. A persistent
-// compact status pill, not a conditional alert: green when healthy, red when failing, so the
-// pattern never jumps in and out as the check's state changes. The AI explanation is layered on
-// top of that — shown only while actually failing, and only once the org has opted in and the
-// LLM app is available (see useCheckFailureExplanation) — rather than being the reason the pill
-// exists. Sticky (not fixed) so it keeps floating in view while scrolling, without fighting
-// Grafana's own chrome. Clicking it expands the full sentence and the evidence behind it.
+// Rendered right-aligned at the top of DashboardHeader — deliberately NOT inside Grafana's own
+// PluginPage title slot (renderTitle): that container clips/constrains its content in ways this
+// component doesn't own or control, which broke both the sticky positioning and the text
+// truncation in practice. This container is ours end to end, so both actually work. No need to
+// repeat the check name here either — the page's own <h1> already has it.
+//
+// A persistent compact status pill, not a conditional alert: green when healthy, red when
+// failing, so the pattern never jumps in and out as the check's state changes. The AI
+// explanation is layered on top of that — shown only while actually failing, and only once the
+// org has opted in and the LLM app is available (see useCheckFailureExplanation) — rather than
+// being the reason the pill exists. Sticky (not fixed) so it keeps floating in view while
+// scrolling. Clicking it expands the full sentence and the evidence behind it.
 export function CheckFailureExplanation({ check }: CheckFailureExplanationProps) {
   const { isCheckFailing, showAiExplanation, explanation, isLoading, facts } = useCheckFailureExplanation(check);
   const styles = useStyles2(getStyles);
