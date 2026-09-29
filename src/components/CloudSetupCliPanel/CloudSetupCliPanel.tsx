@@ -5,6 +5,7 @@ import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, FaroUserAction, reportError } from '../../faro';
+import { trackCloudSetupCliCommandCopied } from '../../features/tracking/cloudSetupEvents';
 import { trackFaroUserAction } from '../../features/tracking/userAction';
 import { useCopyToClipboard } from '../Clipboard/useCopyToClipboard';
 
@@ -16,7 +17,10 @@ export function CloudSetupCliPanel() {
   const cliCommand = `npx ${CLOUD_SETUP_PACKAGE} synthetics --stack ${stackUrl}`;
   const [beforePackage, afterPackage] = cliCommand.split(CLOUD_SETUP_PACKAGE);
   const { copied, copy } = useCopyToClipboard({
-    onCopy: () => trackFaroUserAction(FaroUserAction.CloudSetupCliCommandCopied),
+    onCopy: () => {
+      trackFaroUserAction(FaroUserAction.CloudSetupCliCommandCopied);
+      trackCloudSetupCliCommandCopied();
+    },
     onError: (err) => reportError(String(err), FaroEvent.CloudSetupCliCommandCopyFailed),
     resetAfterMs: 1500,
   });
