@@ -93,6 +93,12 @@ export function useCheckFailureExplanation(check: Check) {
   // Fetched independently of the AI explanation below — evidence (reachability, alerts, logs)
   // is useful on its own and shouldn't disappear just because the org opted out of AI
   // explanations, the LLM app isn't configured, or a chat-completion call happens to fail.
+  //
+  // Deliberately NOT gated on `isCheckFailing`: that would make this wait for the
+  // reachability/alerts round trip to resolve before even starting, adding a full sequential
+  // network round trip to the critical path. Firing it eagerly, in parallel with those queries
+  // from mount, means logs are usually already in by the time we know the check is failing — at
+  // the cost of one wasted Loki query per view of a check that turns out to be healthy.
   const logsQuery = useQuery({
     // check.job/check.target are the stable decomposition of `check` used as the key elsewhere
     // in this file; logsUrl only changes with the configured logs datasource, not per-render.
@@ -102,7 +108,6 @@ export function useCheckFailureExplanation(check: Check) {
       const { start, end } = getStartEnd();
       return fetchRecentFailureLogLines(logsUrl, check, start, end);
     },
-    enabled: isCheckFailing,
     staleTime: STANDARD_REFRESH_INTERVAL,
   });
   const recentFailureLogLines = logsQuery.data ?? [];
