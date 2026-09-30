@@ -175,7 +175,7 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
   expect(userMessage).toContain('CheckHighReachability');
 });
 
-it('keeps the supporting evidence collapsed until expanded', async () => {
+it('keeps the supporting evidence hidden until the bar is expanded', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
   fetchRecentFailureLogLines.mockResolvedValue(['probe_success=0 msg="context deadline exceeded"']);
@@ -193,12 +193,8 @@ it('keeps the supporting evidence collapsed until expanded', async () => {
   await screen.findByText('Explanation.');
 
   expect(screen.queryByText(/context deadline exceeded/)).not.toBeInTheDocument();
-  expect(screen.queryByText('Reasoning and facts')).not.toBeInTheDocument();
 
-  // The status bar itself is the only button until expanded; expanding it reveals the nested
-  // "Reasoning and facts" collapse.
   await user.click(screen.getByRole('button'));
-  await user.click(screen.getByText('Reasoning and facts'));
 
   expect(await screen.findByText(/context deadline exceeded/)).toBeInTheDocument();
   expect(screen.getByText(/Reachability over the last 3 hours: 50\.0%/)).toBeInTheDocument();

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { useChromeHeaderHeight } from '@grafana/runtime';
-import { ControlledCollapse, Icon, Text, useStyles2 } from '@grafana/ui';
+import { Badge, Icon, LinkButton, Spinner, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
 import { useCheckFailureExplanation } from 'features/checkInsights/useCheckFailureExplanation';
 
 import { Check } from 'types';
+import { checkHasAlerting } from 'utils';
+import { AppRoutes } from 'routing/types';
+import { generateRoutePath } from 'routing/utils';
 
 interface CheckFailureExplanationProps {
   check: Check;
@@ -13,31 +15,21 @@ interface CheckFailureExplanationProps {
 
 const AI_ACCENT_COLOR = 'rgb(168, 85, 247)';
 
-// Rendered full-width at the top of DashboardHeader, right under the page title — deliberately
-// NOT inside Grafana's own PluginPage title slot (renderTitle): that container clips/constrains
-// its content in ways this component doesn't own or control, which broke both the sticky
-// positioning and the text truncation in practice. This container is ours end to end, so both
-// actually work. No need to repeat the check name here either — the page's own <h1> already has
-// it, right above.
+// Rendered right under the page title (which already has the check name — no need to repeat
+// it here) — but deliberately outside Grafana's own PluginPage title slot (renderTitle): that
+// container clips/constrains its content in ways this component doesn't own or control, which
+// broke text truncation in practice.
 //
-// A persistent status bar, not a conditional alert: green when healthy, red when failing, so
-// the pattern never jumps in and out as the check's state changes. The AI explanation is
-// layered on top of that — shown only while actually failing, and only once the org has opted
-// in and the LLM app is available (see useCheckFailureExplanation) — rather than being the
-// reason the bar exists. Sticky (not fixed) so it keeps floating in view while scrolling.
-// Clicking it expands into the same card (a divider, not a second floating box) to show the
-// full sentence and the evidence behind it.
-//
-// `top: 0` alone silently fails here: with no scrollable ancestor, `position: sticky` sticks
-// relative to the viewport itself, and Grafana's own top nav is a `position: fixed` bar sitting
-// exactly at that y=0 — so a plain sticky top:0 element gets stuck *behind* it instead of
-// visibly staying put. useChromeHeaderHeight() (from @grafana/runtime, despite the name — its
-// own doc comment calls it "useStickyTopPadding") gives the nav's current height, which is what
-// AppChrome itself uses as top padding for exactly this reason.
+// A persistent status badge (red/green, so it never jumps in and out as state changes), with
+// the AI explanation layered on top as quiet secondary text — shown only while actually
+// failing, and only once the org has opted in and the LLM app is available (see
+// useCheckFailureExplanation) — rather than being the reason the bar exists. Clicking it
+// expands to show the full explanation sentence and the evidence behind it.
 export function CheckFailureExplanation({ check }: CheckFailureExplanationProps) {
-  const { isCheckFailing, showAiExplanation, explanation, isLoading, facts } = useCheckFailureExplanation(check);
-  const chromeHeaderHeight = useChromeHeaderHeight() ?? 0;
-  const styles = useStyles2(getStyles, chromeHeaderHeight);
+  const { isCheckFailing, isStatusLoading, showAiExplanation, explanation, isLoading, facts } =
+    useCheckFailureExplanation(check);
+  const borderStatus = isStatusLoading ? 'pending' : isCheckFailing ? 'failing' : 'healthy';
+  const styles = useStyles2(getStyles, borderStatus);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const hasAlerts = facts.firingAlertNames.size > 0;
@@ -49,46 +41,39 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
       <div className={styles.card}>
         <button
           type="button"
-          className={styles.bar}
+          className={styles.metaBar}
           onClick={() => setIsExpanded((open) => !open)}
           aria-expanded={isExpanded}
+          disabled={isStatusLoading}
         >
-          <span className={cx(styles.dot, isCheckFailing ? styles.dotError : styles.dotOk)} />
-          <Text variant="bodySmall">{statusLabel}</Text>
-          {showExplanationSegment && (
-            <>
-              <span className={styles.separator}>·</span>
-              {isLoading ? (
-                <>
-                  <span className={cx(styles.dot, styles.dotAi)} />
-                  <Text variant="bodySmall" color="secondary">
-                    Investigating…
-                  </Text>
-                </>
-              ) : (
-                <span className={styles.truncated}>
-                  <Text variant="bodySmall" color="secondary">
-                    {explanation ?? ''}
-                  </Text>
-                </span>
-              )}
-            </>
+          {isStatusLoading ? (
+            // The health state itself isn't known yet, so don't default to a healthy-looking
+            // badge that would just flash and flip to failing once the queries resolve.
+            <span className={styles.skeleton} style={{ width: 70, flexShrink: 0 }} />
+          ) : (
+            <Badge color={isCheckFailing ? 'red' : 'green'} text={statusLabel} />
           )}
-          <Icon name="angle-right" size="sm" className={cx(styles.chevron, isExpanded && styles.chevronOpen)} />
-        </button>
-        {isExpanded && (
-          <div className={styles.expanded}>
-            {showAiExplanation && !isLoading && explanation && (
-              <div className={styles.expandedHeader}>
-                <Icon name="ai-sparkle" className={styles.icon} />
-                <Text element="p" variant="h5" weight="medium">
-                  {explanation}
+          {showExplanationSegment && (
+            <span className={styles.investigation}>
+              {isLoading ? (
+                <Spinner size={12} className={styles.spinner} />
+              ) : (
+                <Icon name="ai-sparkle" size="sm" className={styles.icon} />
+              )}
+              <span className={styles.investigationText}>
+                <Text variant="body" weight="medium">
+                  {isLoading ? 'Investigating…' : explanation ?? ''}
                 </Text>
-              </div>
-            )}
-            <ControlledCollapse label="Reasoning and facts" className={styles.collapse}>
-              <FailureFacts facts={facts} />
-            </ControlledCollapse>
+              </span>
+            </span>
+          )}
+          {!isStatusLoading && (
+            <Icon name="angle-right" size="sm" className={cx(styles.chevron, isExpanded && styles.chevronOpen)} />
+          )}
+        </button>
+        {isExpanded && !isStatusLoading && (
+          <div className={styles.expanded}>
+            <FailureFacts check={check} facts={facts} />
           </div>
         )}
       </div>
@@ -96,7 +81,13 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
   );
 }
 
-function FailureFacts({ facts }: { facts: ReturnType<typeof useCheckFailureExplanation>['facts'] }) {
+function FailureFacts({
+  check,
+  facts,
+}: {
+  check: Check;
+  facts: ReturnType<typeof useCheckFailureExplanation>['facts'];
+}) {
   const styles = useStyles2(getStyles);
   const { reachabilityFraction, firingAlertNames, recentFailureLogLines } = facts;
 
@@ -112,6 +103,16 @@ function FailureFacts({ facts }: { facts: ReturnType<typeof useCheckFailureExpla
           ? `Firing alert(s): ${Array.from(firingAlertNames).join(', ')}.`
           : 'No alerts currently firing.'}
       </Text>
+      {!checkHasAlerting(check) && check.id !== undefined && (
+        <Stack alignItems="center" gap={1}>
+          <Text variant="bodySmall" color="secondary">
+            This check has no alerting configured, so failures are only caught by this reachability check.
+          </Text>
+          <LinkButton size="sm" variant="secondary" href={generateRoutePath(AppRoutes.EditCheck, { id: check.id })}>
+            Set up alerting
+          </LinkButton>
+        </Stack>
+      )}
       {recentFailureLogLines.length > 0 && (
         <>
           <Text variant="bodySmall" color="secondary">
@@ -124,82 +125,81 @@ function FailureFacts({ facts }: { facts: ReturnType<typeof useCheckFailureExpla
   );
 }
 
-const pulse = keyframes({
-  '0%, 100%': { opacity: 1 },
-  '50%': { opacity: 0.3 },
-});
-
 const fadeIn = keyframes({
   from: { opacity: 0, transform: 'translateY(-4px)' },
   to: { opacity: 1, transform: 'translateY(0)' },
 });
 
-const getStyles = (theme: GrafanaTheme2, chromeHeaderHeight = 0) => ({
+const BORDER_COLOR_BY_STATUS = (theme: GrafanaTheme2) => ({
+  pending: theme.colors.text.secondary,
+  failing: theme.colors.error.text,
+  healthy: theme.colors.success.text,
+});
+
+const getStyles = (theme: GrafanaTheme2, borderStatus: 'pending' | 'failing' | 'healthy' = 'healthy') => ({
   container: css({
-    position: 'sticky',
-    top: chromeHeaderHeight,
-    // Comfortably above ordinary panel content scrolling underneath it (VizPanel headers/menus
-    // included), but well below Grafana's own chrome (mega menu, command palette, etc. all sit
-    // much higher) — this only needs to win against this page's own content.
-    zIndex: 2,
     width: '100%',
     marginBottom: theme.spacing(1),
   }),
-  // One card, always — collapsed is just the card with only the bar visible; expanding reveals
-  // more of the SAME card (a divider below), not a second floating box underneath it.
+  // A thin border/background so the badge and explanation read as one designed unit, not
+  // floating text. The colored left border repeats the health signal at a glance without
+  // having to read the badge.
   card: css({
     width: '100%',
     boxSizing: 'border-box',
     borderRadius: theme.shape.radius.default,
     border: `1px solid ${theme.colors.border.weak}`,
-    borderLeft: `3px solid ${AI_ACCENT_COLOR}`,
-    background: theme.colors.background.canvas,
-    boxShadow: theme.shadows.z2,
-    overflow: 'hidden',
+    borderLeft: `3px solid ${BORDER_COLOR_BY_STATUS(theme)[borderStatus]}`,
+    background: theme.colors.background.primary,
+    padding: theme.spacing(1.5, 2),
   }),
-  bar: css({
+  // Badge stays the headline; everything else on this row is quiet by design (no competing
+  // pill chrome). Still a button, since clicking anywhere along it expands the full explanation
+  // and evidence below.
+  metaBar: css({
     all: 'unset',
     boxSizing: 'border-box',
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(1),
     width: '100%',
-    padding: theme.spacing(1, 1.5),
     cursor: 'pointer',
-    transition: 'background 120ms ease',
-    '&:hover': {
-      background: theme.colors.action.hover,
-    },
+    borderRadius: theme.shape.radius.default,
+    padding: theme.spacing(0.5, 0),
     '&:focus-visible': {
       outline: `2px solid ${theme.colors.primary.main}`,
-      outlineOffset: -2,
+      outlineOffset: 2,
+    },
+    '&:disabled': {
+      cursor: 'default',
     },
   }),
-  dot: css({
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
+  skeleton: css({
+    display: 'inline-block',
+    height: 20,
+    borderRadius: theme.shape.radius.default,
+    background: theme.colors.background.secondary,
+    animationName: fadeIn,
+    animationDuration: '100ms',
+    animationTimingFunction: 'ease-in',
+    animationFillMode: 'backwards',
+    animationDelay: '100ms',
+  }),
+  spinner: css({
+    color: AI_ACCENT_COLOR,
     flexShrink: 0,
-    transition: 'background-color 200ms ease',
   }),
-  dotError: css({
-    background: theme.colors.error.text,
-  }),
-  dotOk: css({
-    background: theme.colors.success.text,
-  }),
-  dotAi: css({
-    background: AI_ACCENT_COLOR,
-    [theme.transitions.handleMotion('no-preference')]: {
-      animation: `${pulse} 1.4s ease-in-out infinite`,
-    },
-  }),
-  separator: css({
-    color: theme.colors.text.disabled,
-  }),
-  truncated: css({
-    display: 'block',
+  // Fills the remaining space to the right of the meta text, same as the resolved explanation
+  // would, so the row reads with the same width whether it's investigating or done.
+  investigation: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
     flex: '1 1 auto',
+    minWidth: 0,
+  }),
+  investigationText: css({
+    display: 'block',
     minWidth: 0,
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -217,26 +217,15 @@ const getStyles = (theme: GrafanaTheme2, chromeHeaderHeight = 0) => ({
   }),
   expanded: css({
     borderTop: `1px solid ${theme.colors.border.weak}`,
-    padding: theme.spacing(1.5, 2),
+    marginTop: theme.spacing(1),
+    paddingTop: theme.spacing(1),
     [theme.transitions.handleMotion('no-preference')]: {
       animation: `${fadeIn} 150ms ease-out`,
     },
   }),
-  expandedHeader: css({
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: theme.spacing(1.5),
-  }),
   icon: css({
     color: AI_ACCENT_COLOR,
     flexShrink: 0,
-    marginTop: 2,
-  }),
-  collapse: css({
-    marginTop: theme.spacing(1),
-    paddingTop: theme.spacing(1),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    background: 'transparent',
   }),
   facts: css({
     display: 'flex',

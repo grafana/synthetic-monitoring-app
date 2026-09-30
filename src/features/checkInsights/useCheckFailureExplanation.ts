@@ -63,6 +63,11 @@ export function useCheckFailureExplanation(check: Check) {
   const alertStatesQuery = useChecksAlertStates([check]);
   const logsUrl = useLogsDS()?.url || '';
 
+  // True only while the very first fetch of either query is still in flight (no cached data
+  // yet) — this is what a caller should treat as "we don't know the real status yet", rather
+  // than defaulting to a healthy-looking state that would flash and then flip to failing.
+  const isStatusLoading = reachabilityQuery.isLoading || alertStatesQuery.isLoading;
+
   const reachabilityFraction = reachabilityQuery.data ? Number(reachabilityQuery.data.value[1]) : undefined;
   const { firingCount, firingAlertNames } = getCheckRuntimeAlertState(alertStatesQuery.data ?? {}, check);
   const isCheckFailing =
@@ -74,7 +79,8 @@ export function useCheckFailureExplanation(check: Check) {
 
   // Only pay for the LLM app health-check once there's actually a reason to show something —
   // no need to ask on every healthy check's dashboard, or when the org hasn't opted in at all.
-  const { data: llmEnabled } = useLlmEnabled(showAiExplanation);
+  const llmEnabledQuery = useLlmEnabled(showAiExplanation);
+  const llmEnabled = llmEnabledQuery.data;
 
   const explanationQuery = useQuery({
     // The primitives below are a full, stable decomposition of check/reachabilityFraction/firingAlertNames
@@ -126,11 +132,18 @@ export function useCheckFailureExplanation(check: Check) {
     retry: false,
   });
 
+  // Covers the whole investigation, not just the chat completion call: the moment the check is
+  // confirmed failing we're already "investigating" from the user's perspective, so this stays
+  // true through the LLM health-check too, not just once the actual explanation request starts.
+  const isLoading =
+    showAiExplanation && (llmEnabledQuery.isLoading || (Boolean(llmEnabled) && explanationQuery.isLoading));
+
   return {
     isCheckFailing,
+    isStatusLoading,
     showAiExplanation,
     explanation: explanationQuery.data?.explanation,
-    isLoading: showAiExplanation && explanationQuery.isLoading,
+    isLoading,
     isError: explanationQuery.isError,
     facts: {
       reachabilityFraction,
