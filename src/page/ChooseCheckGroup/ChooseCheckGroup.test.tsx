@@ -17,6 +17,19 @@ import { ChooseCheckGroup } from './ChooseCheckGroup';
 
 jest.mock('features/tracking/checkTemplateEvents');
 
+beforeEach(() => {
+  // Match the host's locationService: state embedded in the URL descriptor is lost.
+  // React Router passes state separately to the underlying history instead.
+  jest.spyOn(locationService, 'push').mockImplementation((location) => {
+    if (typeof location === 'string') {
+      locationService.getHistory().push(location);
+    } else {
+      const { pathname, search, hash } = location;
+      locationService.getHistory().push({ pathname, search, hash });
+    }
+  });
+});
+
 it('uses the template check type for the badge, destination, and draft', async () => {
   const { user } = render(
     <CheckTemplate template={{

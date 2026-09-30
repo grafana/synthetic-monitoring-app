@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { locationService } from '@grafana/runtime';
+import { useNavigate } from 'react-router';
 import { Button, Field, Input, Modal } from '@grafana/ui';
 import { trackCheckTemplateDraftCreated, trackCheckTemplateSelected } from 'features/tracking/checkTemplateEvents';
 
@@ -13,6 +13,7 @@ import { CheckTemplateCard } from './CheckTemplateCard';
 import { CheckTemplateDefinition } from './checkTemplates';
 
 export function CheckTemplate({ template }: { template: CheckTemplateDefinition }) {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [error, setError] = useState<string>();
@@ -41,11 +42,14 @@ export function CheckTemplate({ template }: { template: CheckTemplateDefinition 
     const prefilledCheck = template.createCheck(pageUrl);
 
     trackCheckTemplateDraftCreated({ check_template_id: template.id });
-    locationService.push({
-      pathname: `${getRoute(AppRoutes.NewCheck)}/${checkTypeOption.group}`,
-      search: `?checkType=${template.checkType}`,
-      state: { prefilledCheck, checkTemplateId: template.id },
-    });
+    // Pass draft state through React Router, as locationService.push drops it.
+    navigate(
+      {
+        pathname: `${getRoute(AppRoutes.NewCheck)}/${checkTypeOption.group}`,
+        search: `?checkType=${template.checkType}`,
+      },
+      { state: { prefilledCheck, checkTemplateId: template.id } }
+    );
   }
 
   return (
