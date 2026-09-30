@@ -107,7 +107,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
             </div>
 
             <div className={styles.tableRow}>
-              <SummaryTableViz />
+              <SummaryTableViz checks={checks} />
             </div>
 
             {metricsDS?.uid && (
