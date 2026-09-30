@@ -9,7 +9,15 @@ import {
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
-import { ExtendedProbe, FeatureName, GrafanaFolder, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
+import {
+  ExtendedProbe,
+  FeatureName,
+  GrafanaFolder,
+  PluginPermissions,
+  type Probe,
+  ProbeProvider,
+  ProbeWithMetadata,
+} from 'types';
 import { pascalCaseToSentence } from 'utils';
 import { CMAB_COST_ATTRIBUTION_WRITE } from 'components/CostAttribution/CostAttribution.constants';
 
@@ -332,6 +340,24 @@ export function runTestAsRBACAdmin() {
       ...runtime.config.bootData,
       user: {
         permissions: FULL_ADMIN_ACCESS,
+      },
+    },
+  });
+}
+
+export function runTestWithoutPermissions(...permissions: PluginPermissions[]) {
+  const runtime = require('@grafana/runtime');
+  const { user } = runtime.config.bootData;
+  jest.replaceProperty(runtime, `config`, {
+    ...runtime.config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        ...user,
+        permissions: {
+          ...user.permissions,
+          ...Object.fromEntries(permissions.map((permission) => [permission, false])),
+        },
       },
     },
   });
