@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { llm } from '@grafana/llm';
+import { useAssistant, useInlineAssistant, useLimits, useTerms } from '@grafana/assistant';
 import { type FailureLogLine, fetchRecentFailureLogLines } from 'features/checkInsights/fetchRecentFailureLogLines';
-import { useLlmEnabled } from 'features/checkInsights/useLlmEnabled';
 
 import { Check } from 'types';
 import { getCheckType } from 'utils';
@@ -15,6 +14,13 @@ import { STANDARD_REFRESH_INTERVAL } from 'components/constants';
 // Matches the yellow/red boundary already used by the Reachability/Uptime stat panels:
 // below this, or with anything firing, the check counts as failing for explanation purposes.
 const FAILING_REACHABILITY_THRESHOLD = 0.99;
+
+// A non-interactive completion, not the interactive panel (see ASSISTANT_ORIGIN in
+// CheckFailureExplanation.tsx for that) — distinct origin so analytics can tell them apart.
+const ASSISTANT_INLINE_ORIGIN = 'grafana-synthetic-monitoring-app/check-failure-explanation/inline';
+
+const EXPLANATION_SYSTEM_PROMPT =
+  'You are an SRE assistant explaining synthetic monitoring check failures, grounded strictly in the evidence given (execution log failure reasons and firing alerts), not in assumptions about what commonly goes wrong with this kind of check. Never state a specific cause the evidence doesn\'t support. Reply with exactly one short, plain-English sentence and nothing else — no preamble, no markdown.';
 
 function buildPrompt(
   check: Check,
@@ -67,7 +73,7 @@ function buildPrompt(
 
 export function useCheckFailureExplanation(check: Check) {
   const meta = useMeta();
-  // Defaults to on (unset -> true): orgs with the LLM app configured get this immediately, no
+  // Defaults to on (unset -> true): orgs with Grafana Assistant enabled get this immediately, no
   // explicit opt-in required. An org that wants it off has to say so once; see AiCheckExplanationsSetting.
   const aiCheckExplanationsEnabled = meta.jsonData.aiCheckExplanationsEnabled ?? true;
 
@@ -101,15 +107,21 @@ export function useCheckFailureExplanation(check: Check) {
   });
   const recentFailureLogLines = logsQuery.data ?? [];
 
-  // Only pay for the LLM app health-check once there's actually a reason to show something —
-  // no need to ask on every healthy check's dashboard, or when the org hasn't opted in at all.
-  const llmEnabledQuery = useLlmEnabled(showAiExplanation);
-  const llmEnabled = llmEnabledQuery.data;
+  // Whether a non-interactive completion is actually usable right now — mirrors the gate
+  // grafana-k6-app's own inline generation uses for its "Generate test" button
+  // (NewTestPromptForm.tsx): Assistant has to be available, its terms accepted, and the org's
+  // monthly usage limit not already hit. More orgs have Assistant enabled than have the Grafana
+  // LLM app configured, so this is checked instead of `llm.enabled()`.
+  const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistant();
+  const { accepted: termsAccepted, loading: termsLoading } = useTerms();
+  const { isLimitReached, loading: limitsLoading } = useLimits();
+  const { generate } = useInlineAssistant();
+  const isAssistantReady = isAssistantAvailable && termsAccepted && !isLimitReached;
+  const isAssistantGateLoading = isAssistantLoading || termsLoading || limitsLoading;
 
   const explanationQuery = useQuery({
     // The primitives below are a full, stable decomposition of check/reachabilityFraction/firingAlertNames
     // (which don't compare well by identity across renders), so they're deliberately used as the key instead.
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps
     queryKey: [
       'check_failure_explanation',
       check.job,
@@ -120,48 +132,52 @@ export function useCheckFailureExplanation(check: Check) {
       Array.from(firingAlertNames).sort().join(','),
       recentFailureLogLines,
     ],
-    queryFn: async () => {
-      const enabled = await llm.enabled();
-      if (!enabled) {
-        return null;
-      }
-
-      const response = await llm.chatCompletions({
-        model: llm.Model.BASE,
-        temperature: 0.2,
-        max_tokens: 100,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are an SRE assistant explaining synthetic monitoring check failures, grounded strictly in the evidence given (execution log failure reasons and firing alerts), not in assumptions about what commonly goes wrong with this kind of check. Never state a specific cause the evidence doesn\'t support. Reply with exactly one short, plain-English sentence and nothing else — no preamble, no markdown.',
-          },
-          { role: 'user', content: buildPrompt(check, reachabilityFraction, firingAlertNames, recentFailureLogLines) },
-        ],
-      });
-
-      const explanation = response.choices[0]?.message.content?.trim();
-      return explanation || null;
-    },
+    // generate() (from useInlineAssistant) never rejects — success and failure both arrive via
+    // the onComplete/onError callbacks — so this always resolves rather than throwing.
+    queryFn: () =>
+      new Promise<string | null>((resolve) => {
+        generate({
+          prompt: buildPrompt(check, reachabilityFraction, firingAlertNames, recentFailureLogLines),
+          origin: ASSISTANT_INLINE_ORIGIN,
+          systemPrompt: EXPLANATION_SYSTEM_PROMPT,
+          onComplete: (text) => resolve(text.trim() || null),
+          onError: () => resolve(null),
+        });
+      }),
     // Waits for logs to finish loading (isFetched, not just !isLoading, so a still-pending first
-    // fetch doesn't slip through) so the LLM sees the real evidence instead of an empty array.
-    enabled: showAiExplanation && Boolean(llmEnabled) && logsQuery.isFetched,
+    // fetch doesn't slip through) so the model sees the real evidence instead of an empty array.
+    enabled: showAiExplanation && isAssistantReady && logsQuery.isFetched,
     staleTime: STANDARD_REFRESH_INTERVAL,
     retry: false,
   });
 
-  // Covers the whole investigation, not just the chat completion call: the moment the check is
+  // Covers the whole investigation, not just the completion call: the moment the check is
   // confirmed failing we're already "investigating" from the user's perspective, so this stays
-  // true through the log fetch and the LLM health-check too, not just once the actual
-  // explanation request starts.
+  // true through the log fetch and the Assistant availability/terms/limits checks too, not just
+  // once the actual explanation request starts.
   const isLoading =
     showAiExplanation &&
-    (llmEnabledQuery.isLoading || (Boolean(llmEnabled) && (logsQuery.isLoading || explanationQuery.isLoading)));
+    (isAssistantGateLoading || (isAssistantReady && (logsQuery.isLoading || explanationQuery.isLoading)));
+
+  // Rather than silently showing nothing when the org has opted in but Assistant can't actually
+  // produce anything, say so — same three reasons, and same "open assistant to fix it" path
+  // (via the Actions menu), that grafana-k6-app's own "Generate test" button uses
+  // (NewTestPromptForm.tsx: createButtonTooltip / TermsRow). Undefined while still loading, or
+  // once Assistant is ready — a ready-but-still-failed completion stays silent, same as before.
+  const explanationUnavailableReason =
+    showAiExplanation && !isAssistantGateLoading && !isAssistantReady
+      ? !isAssistantAvailable
+        ? 'Grafana Assistant is not available.'
+        : isLimitReached
+          ? "Grafana Assistant's usage limit has been reached."
+          : "Accept Grafana Assistant's terms and conditions to see an explanation."
+      : undefined;
 
   return {
     isCheckFailing,
     showAiExplanation,
     explanation: explanationQuery.data ?? undefined,
+    explanationUnavailableReason,
     isLoading,
     facts: {
       reachabilityFraction,

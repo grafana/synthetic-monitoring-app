@@ -3,10 +3,6 @@ import { render } from 'test/render';
 
 import { AiTab } from './AiTab';
 
-jest.mock('@grafana/llm', () => ({
-  llm: { enabled: jest.fn().mockResolvedValue(true) },
-}));
-
 it('renders the AI check failure explanations setting', async () => {
   const { findByText, findByRole } = render(<AiTab />);
 

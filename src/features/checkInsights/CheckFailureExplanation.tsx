@@ -10,7 +10,6 @@ import {
   type IconName,
   LinkButton,
   Menu,
-  Spinner,
   Stack,
   Text,
   useStyles2,
@@ -53,7 +52,8 @@ function getFailingStatusBadge(hasAlerts: boolean): { color: 'red'; text: string
 // useCheckFailureExplanation) — rather than being the reason the bar exists. Clicking it
 // expands to show the full explanation sentence and the evidence behind it.
 export function CheckFailureExplanation({ check }: CheckFailureExplanationProps) {
-  const { isCheckFailing, showAiExplanation, explanation, isLoading, facts } = useCheckFailureExplanation(check);
+  const { isCheckFailing, showAiExplanation, explanation, explanationUnavailableReason, isLoading, facts } =
+    useCheckFailureExplanation(check);
   const styles = useStyles2(getStyles);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isIncidentOpen, setIsIncidentOpen] = useState(false);
@@ -68,7 +68,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
   const { isAvailable: isAssistantAvailable, openAssistant } = useAssistant();
 
   const hasAlerts = facts.firingAlertNames.size > 0;
-  const showExplanationSegment = showAiExplanation && (isLoading || explanation);
+  const showExplanationSegment = showAiExplanation && (isLoading || explanation || explanationUnavailableReason);
   const isAssistantActionAvailable = Boolean(isAssistantAvailable && openAssistant);
   const actionsCount = (isAssistantActionAvailable ? 2 : 0) + (DeclareIncidentForm ? 1 : 0);
   const hasActions = actionsCount > 0;
@@ -142,9 +142,13 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
             <Badge color={statusBadge.color} text={statusBadge.text} icon={statusBadge.icon} />
             {showExplanationSegment && (
               <span className={styles.investigationText}>
-                <Text variant="body" color="secondary">
-                  {isLoading ? <Spinner inline size={12} className={styles.spinner} /> : <>— {explanation ?? ''}</>}
-                </Text>
+                {isLoading ? (
+                  <span className={styles.explanationSkeleton} aria-hidden="true" data-testid="explanation-skeleton" />
+                ) : (
+                  <Text variant="body" color="secondary">
+                    — {explanation ?? explanationUnavailableReason ?? ''}
+                  </Text>
+                )}
               </span>
             )}
           </div>
@@ -345,15 +349,24 @@ const getStyles = (theme: GrafanaTheme2) => ({
       outlineOffset: 2,
     },
   }),
-  spinner: css({
-    color: theme.colors.text.secondary,
-    flexShrink: 0,
-  }),
   // Sized to match the real Actions button's footprint, so nothing shifts when it's swapped
   // in for the actual button once the explanation resolves.
   actionsSkeleton: css({
     width: 96,
     height: 24,
+    borderRadius: theme.shape.radius.default,
+    background: theme.colors.background.secondary,
+    [theme.transitions.handleMotion('no-preference')]: {
+      animation: `${pulse} 1.5s ease-in-out infinite`,
+    },
+  }),
+  // A single line-shaped placeholder standing in for the not-yet-known explanation text —
+  // inline-block so it sits on the same line as the badge instead of dropping to its own row.
+  explanationSkeleton: css({
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    width: 180,
+    height: 14,
     borderRadius: theme.shape.radius.default,
     background: theme.colors.background.secondary,
     [theme.transitions.handleMotion('no-preference')]: {

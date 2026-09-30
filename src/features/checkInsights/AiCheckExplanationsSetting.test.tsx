@@ -1,5 +1,5 @@
 import React from 'react';
-import { UseQueryResult } from '@tanstack/react-query';
+import { useAssistant, useLimits, useTerms } from '@grafana/assistant';
 import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { SM_META } from 'test/fixtures/meta';
@@ -8,16 +8,34 @@ import { server } from 'test/server';
 
 import { AiCheckExplanationsSetting } from './AiCheckExplanationsSetting';
 
-jest.mock('features/checkInsights/useLlmEnabled', () => ({
-  useLlmEnabled: jest.fn(),
-}));
-
-const { useLlmEnabled } = jest.requireMock('features/checkInsights/useLlmEnabled') as {
-  useLlmEnabled: jest.MockedFunction<() => Partial<UseQueryResult<boolean>>>;
-};
-
-function mockLlmEnabled(enabled: boolean) {
-  useLlmEnabled.mockReturnValue({ data: enabled, isLoading: false } as any);
+function mockAssistantReady({
+  isAssistantAvailable = true,
+  termsAccepted = true,
+  isLimitReached = false,
+  openAssistant = jest.fn(),
+} = {}) {
+  jest.mocked(useAssistant).mockReturnValue({
+    isAvailable: isAssistantAvailable,
+    isLoading: false,
+    openAssistant: isAssistantAvailable ? openAssistant : undefined,
+    closeAssistant: jest.fn(),
+    toggleAssistant: jest.fn(),
+  });
+  jest.mocked(useTerms).mockReturnValue({
+    accepted: termsAccepted,
+    termsType: 'termsAndConditions',
+    loading: false,
+    error: null,
+  });
+  jest.mocked(useLimits).mockReturnValue({
+    count: isLimitReached ? 100 : 0,
+    limit: 100,
+    month: '2026-01',
+    isLimitReached,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  });
 }
 
 /** Captures the body of the plugin-settings save request, if any is made. */
@@ -48,25 +66,44 @@ beforeEach(() => {
       originalError(...args);
     }
   });
+  mockAssistantReady();
 });
 
 it('defaults to on when the org has never set the value', async () => {
-  mockLlmEnabled(true);
   renderSetting(undefined);
 
   expect(await screen.findByRole('switch')).toBeChecked();
 });
 
-it('is disabled, with an explanation, when the Grafana LLM app is not configured', async () => {
-  mockLlmEnabled(false);
+it('is disabled, with an explanation, when Grafana Assistant is not available', async () => {
+  mockAssistantReady({ isAssistantAvailable: false });
   renderSetting(undefined);
 
   expect(await screen.findByRole('switch')).toBeDisabled();
-  expect(screen.getByText(/requires the grafana llm app/i)).toBeInTheDocument();
+  expect(screen.getByText(/requires grafana assistant to be enabled/i)).toBeInTheDocument();
+});
+
+it('is disabled, with an explanation, when the usage limit has been reached', async () => {
+  mockAssistantReady({ isLimitReached: true });
+  renderSetting(undefined);
+
+  expect(await screen.findByRole('switch')).toBeDisabled();
+  expect(screen.getByText(/usage limit has been reached/i)).toBeInTheDocument();
+});
+
+it('is disabled, and offers to open Assistant, when the terms and conditions are not accepted', async () => {
+  const openAssistant = jest.fn();
+  mockAssistantReady({ termsAccepted: false, openAssistant });
+  const { user } = renderSetting(undefined);
+
+  expect(await screen.findByRole('switch')).toBeDisabled();
+  expect(screen.getByText(/accept the grafana assistant terms and conditions/i)).toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: /open assistant/i }));
+  expect(openAssistant).toHaveBeenCalled();
 });
 
 it('saves immediately, without confirmation, when turning the setting off', async () => {
-  mockLlmEnabled(true);
   const getSavedBody = mockSettingsSave();
   const { user } = renderSetting(true);
 
@@ -78,7 +115,6 @@ it('saves immediately, without confirmation, when turning the setting off', asyn
 });
 
 it('asks for confirmation before turning the setting on, and saves only on confirm', async () => {
-  mockLlmEnabled(true);
   const getSavedBody = mockSettingsSave();
   const { user } = renderSetting(false);
 

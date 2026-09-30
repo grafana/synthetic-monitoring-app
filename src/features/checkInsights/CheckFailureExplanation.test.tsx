@@ -1,7 +1,6 @@
 import React from 'react';
 import { UseQueryResult } from '@tanstack/react-query';
-import { useAssistant } from '@grafana/assistant';
-import { llm } from '@grafana/llm';
+import { InlineAssistantOptions, useAssistant, useInlineAssistant, useLimits, useTerms } from '@grafana/assistant';
 import { usePluginComponent } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { FailureLogLine } from 'features/checkInsights/fetchRecentFailureLogLines';
@@ -40,14 +39,6 @@ jest.mock('data/useSuccessRates', () => {
   };
 });
 
-jest.mock('@grafana/llm', () => ({
-  llm: {
-    enabled: jest.fn(),
-    chatCompletions: jest.fn(),
-    Model: { BASE: 'base', LARGE: 'large' },
-  },
-}));
-
 jest.mock('features/checkInsights/fetchRecentFailureLogLines', () => ({
   fetchRecentFailureLogLines: jest.fn(),
 }));
@@ -83,15 +74,52 @@ function mockAlertStates(firingAlertNames: string[] = []) {
   } as any);
 }
 
+/** Default: resolves immediately with no explanation, for tests that don't care about the text. */
+function mockInlineAssistantAutoResolve() {
+  const generate = jest.fn<Promise<void>, [InlineAssistantOptions]>(async (options) => {
+    options.onComplete?.('');
+  });
+  jest.mocked(useInlineAssistant).mockReturnValue({
+    generate,
+    isGenerating: false,
+    content: '',
+    error: null,
+    cancel: jest.fn(),
+    reset: jest.fn(),
+  });
+  return generate;
+}
+
+/**
+ * Manual control: the caller resolves via the captured onComplete/onError, mirroring the old
+ * `resolveChatCompletions` pattern from when this called `llm.chatCompletions` directly.
+ */
+function mockInlineAssistantManual() {
+  const generate = jest.fn<Promise<void>, [InlineAssistantOptions]>();
+  jest.mocked(useInlineAssistant).mockReturnValue({
+    generate,
+    isGenerating: false,
+    content: '',
+    error: null,
+    cancel: jest.fn(),
+    reset: jest.fn(),
+  });
+  return generate;
+}
+
+async function findGenerateOptions(generate: jest.Mock) {
+  await waitFor(() => expect(generate).toHaveBeenCalled());
+  return generate.mock.calls[0][0] as InlineAssistantOptions;
+}
+
 beforeEach(() => {
-  jest.mocked(llm.chatCompletions).mockReset();
-  jest.mocked(llm.enabled).mockReset();
   fetchRecentFailureLogLines.mockReset().mockResolvedValue([]);
   // Explicit, stable defaults for every test (rather than relying on the global mocks' own
   // internal defaults) — usePluginComponent's global default already matches (no incident
-  // plugin installed), but useAssistant's global mock creates a *new* openAssistant jest.fn on
-  // every render, which would make it impossible for a test to assert on a call made after a
-  // re-render. Pinning it here gives every test the same stable mock function to assert against.
+  // plugin installed), but useAssistant/useInlineAssistant's global mocks create *new* mock
+  // functions on every render, which would make it impossible for a test to assert on a call
+  // made after a re-render. Pinning them here gives every test the same stable mock functions
+  // to assert against. useTerms/useLimits default to "fully clear to use Assistant".
   jest.mocked(usePluginComponent).mockReturnValue({ component: null, isLoading: false });
   jest.mocked(useAssistant).mockReturnValue({
     isAvailable: true,
@@ -100,47 +128,103 @@ beforeEach(() => {
     closeAssistant: jest.fn(),
     toggleAssistant: jest.fn(),
   });
+  jest.mocked(useTerms).mockReturnValue({ accepted: true, termsType: 'termsAndConditions', loading: false, error: null });
+  jest.mocked(useLimits).mockReturnValue({
+    count: 0,
+    limit: 0,
+    month: '2026-01',
+    isLimitReached: false,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  });
+  mockInlineAssistantAutoResolve();
 });
 
-it('renders nothing, without calling the LLM, for a healthy check', async () => {
+it('renders nothing, without calling Assistant, for a healthy check', async () => {
   mockReachability(1);
   mockAlertStates([]);
+  const generate = mockInlineAssistantAutoResolve();
   renderExplanation(BASIC_HTTP_CHECK);
 
   await waitFor(() => expect(screen.queryByRole('button')).not.toBeInTheDocument());
   expect(screen.queryByText(/healthy|failing|alert firing/i)).not.toBeInTheDocument();
-  await waitFor(() => expect(llm.enabled).not.toHaveBeenCalled());
+  expect(generate).not.toHaveBeenCalled();
 });
 
 it('shows a failing status without an AI explanation when the org has not enabled the setting', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  jest.mocked(llm.enabled).mockResolvedValue(true);
+  const generate = mockInlineAssistantAutoResolve();
 
   renderExplanation(BASIC_HTTP_CHECK, { aiCheckExplanationsEnabled: false });
 
   expect(await screen.findByText('Alert firing')).toBeInTheDocument();
-  await waitFor(() => expect(llm.enabled).not.toHaveBeenCalled());
-  expect(screen.queryByText(/investigating/i)).not.toBeInTheDocument();
+  expect(generate).not.toHaveBeenCalled();
 });
 
-it('shows a failing status without an AI explanation when the Grafana LLM app is not configured', async () => {
+it('shows why the explanation is unavailable when Grafana Assistant is not available', async () => {
   mockReachability(0.5);
   mockAlertStates([]);
-  jest.mocked(llm.enabled).mockResolvedValue(false);
+  const generate = mockInlineAssistantAutoResolve();
+  jest.mocked(useAssistant).mockReturnValue({
+    isAvailable: false,
+    isLoading: false,
+    openAssistant: undefined,
+    closeAssistant: undefined,
+    toggleAssistant: undefined,
+  });
 
   renderExplanation(BASIC_HTTP_CHECK);
 
   expect(await screen.findByText('Failing')).toBeInTheDocument();
-  await waitFor(() => expect(llm.enabled).toHaveBeenCalled());
-  await waitFor(() => expect(screen.queryByText(/investigating/i)).not.toBeInTheDocument());
-  expect(llm.chatCompletions).not.toHaveBeenCalled();
+  expect(await screen.findByText(/grafana assistant is not available\.$/i)).toBeInTheDocument();
+  expect(generate).not.toHaveBeenCalled();
 });
 
-it('still fetches and shows the log evidence when the Grafana LLM app is not configured', async () => {
+it('shows why the explanation is unavailable when the terms and conditions are not accepted', async () => {
   mockReachability(0.5);
   mockAlertStates([]);
-  jest.mocked(llm.enabled).mockResolvedValue(false);
+  const generate = mockInlineAssistantAutoResolve();
+  jest.mocked(useTerms).mockReturnValue({ accepted: false, termsType: 'termsAndConditions', loading: false, error: null });
+
+  renderExplanation(BASIC_HTTP_CHECK);
+
+  expect(await screen.findByText(/accept grafana assistant's terms and conditions/i)).toBeInTheDocument();
+  expect(generate).not.toHaveBeenCalled();
+});
+
+it('shows why the explanation is unavailable when the usage limit has been reached', async () => {
+  mockReachability(0.5);
+  mockAlertStates([]);
+  const generate = mockInlineAssistantAutoResolve();
+  jest.mocked(useLimits).mockReturnValue({
+    count: 100,
+    limit: 100,
+    month: '2026-01',
+    isLimitReached: true,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  });
+
+  renderExplanation(BASIC_HTTP_CHECK);
+
+  expect(await screen.findByText(/grafana assistant's usage limit has been reached\.$/i)).toBeInTheDocument();
+  expect(generate).not.toHaveBeenCalled();
+});
+
+it('still fetches and shows the log evidence when Grafana Assistant is not available', async () => {
+  mockReachability(0.5);
+  mockAlertStates([]);
+  mockInlineAssistantAutoResolve();
+  jest.mocked(useAssistant).mockReturnValue({
+    isAvailable: false,
+    isLoading: false,
+    openAssistant: undefined,
+    closeAssistant: undefined,
+    toggleAssistant: undefined,
+  });
   fetchRecentFailureLogLines.mockResolvedValue([
     { text: 'error: x509: certificate signed by unknown authority', severity: 'critical' },
   ]);
@@ -157,27 +241,14 @@ it('still fetches and shows the log evidence when the Grafana LLM app is not con
 it('shows the analyzing state while the request is in flight, then the resolved explanation', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  jest.mocked(llm.enabled).mockResolvedValue(true);
-
-  let resolveChatCompletions: (value: any) => void = () => {};
-  jest.mocked(llm.chatCompletions).mockReturnValue(
-    new Promise((resolve) => {
-      resolveChatCompletions = resolve;
-    }) as any
-  );
+  const generate = mockInlineAssistantManual();
 
   render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
 
-  expect(await screen.findByTestId('Spinner')).toBeInTheDocument();
+  expect(await screen.findByTestId('explanation-skeleton')).toBeInTheDocument();
 
-  resolveChatCompletions({
-    id: '1',
-    object: 'chat.completion',
-    created: 0,
-    model: 'base',
-    usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
-    choices: [{ message: { role: 'assistant', content: 'Resolved explanation.' }, finish_reason: 'stop', index: 0 }],
-  });
+  const options = await findGenerateOptions(generate);
+  options.onComplete?.('Resolved explanation.');
 
   expect(await screen.findByText(/Resolved explanation\.$/)).toBeInTheDocument();
   expect(screen.queryByText(/grafana ai is analyzing/i)).not.toBeInTheDocument();
@@ -187,43 +258,29 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
   fetchRecentFailureLogLines.mockResolvedValue([{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }]);
-  jest.mocked(llm.enabled).mockResolvedValue(true);
-  jest.mocked(llm.chatCompletions).mockResolvedValue({
-    id: '1',
-    object: 'chat.completion',
-    created: 0,
-    model: 'base',
-    usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
-    choices: [
-      { message: { role: 'assistant', content: 'The target is timing out on every probe request.' }, finish_reason: 'stop', index: 0 },
-    ],
-  } as any);
+  const generate = mockInlineAssistantManual();
 
   render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
 
-  expect(await screen.findByText(/The target is timing out on every probe request\.$/)).toBeInTheDocument();
+  const options = await findGenerateOptions(generate);
+  expect(options.prompt).toContain('context deadline exceeded');
+  expect(options.prompt).toContain('CheckHighReachability');
 
-  const [{ messages }] = jest.mocked(llm.chatCompletions).mock.calls[0];
-  const userMessage = messages.find((message) => message.role === 'user')?.content ?? '';
-  expect(userMessage).toContain('context deadline exceeded');
-  expect(userMessage).toContain('CheckHighReachability');
+  options.onComplete?.('The target is timing out on every probe request.');
+
+  expect(await screen.findByText(/The target is timing out on every probe request\.$/)).toBeInTheDocument();
 });
 
 it('keeps the supporting evidence hidden until the bar is expanded', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
   fetchRecentFailureLogLines.mockResolvedValue([{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }]);
-  jest.mocked(llm.enabled).mockResolvedValue(true);
-  jest.mocked(llm.chatCompletions).mockResolvedValue({
-    id: '1',
-    object: 'chat.completion',
-    created: 0,
-    model: 'base',
-    usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
-    choices: [{ message: { role: 'assistant', content: 'Explanation.' }, finish_reason: 'stop', index: 0 }],
-  } as any);
+  const generate = mockInlineAssistantManual();
 
   const { user, container } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+  const options = await findGenerateOptions(generate);
+  options.onComplete?.('Explanation.');
+
   await screen.findByText(/Explanation\.$/);
 
   expect(screen.queryByText(/context deadline exceeded/)).not.toBeInTheDocument();
@@ -243,7 +300,6 @@ describe('Actions menu', () => {
   it('lists ask assistant, start investigation, and create incident when both integrations are available', async () => {
     mockReachability(0.5);
     mockAlertStates([]);
-    jest.mocked(llm.enabled).mockResolvedValue(false);
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
 
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
@@ -259,7 +315,6 @@ describe('Actions menu', () => {
   it('counts only the available integrations, and hides the button entirely when none are', async () => {
     mockReachability(0.5);
     mockAlertStates([]);
-    jest.mocked(llm.enabled).mockResolvedValue(false);
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: false,
@@ -281,7 +336,6 @@ describe('Actions menu', () => {
   it('opens the assistant in assistant mode without auto-sending when "Ask assistant" is clicked', async () => {
     mockReachability(0.5);
     mockAlertStates(['CheckHighReachability']);
-    jest.mocked(llm.enabled).mockResolvedValue(false);
     const openAssistant = jest.fn();
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: true,
@@ -303,7 +357,6 @@ describe('Actions menu', () => {
   it('opens the assistant in investigation mode with auto-send when "Start investigation" is clicked', async () => {
     mockReachability(0.5);
     mockAlertStates(['CheckHighReachability']);
-    jest.mocked(llm.enabled).mockResolvedValue(false);
     const openAssistant = jest.fn();
     jest.mocked(useAssistant).mockReturnValue({
       isAvailable: true,
@@ -323,7 +376,6 @@ describe('Actions menu', () => {
   it('opens the incident form when "Create incident" is clicked', async () => {
     mockReachability(0.5);
     mockAlertStates([]);
-    jest.mocked(llm.enabled).mockResolvedValue(false);
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
 
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
@@ -336,28 +388,15 @@ describe('Actions menu', () => {
   it('shows a loading skeleton instead of the Actions button while the explanation is in flight', async () => {
     mockReachability(0.5);
     mockAlertStates(['CheckHighReachability']);
-    jest.mocked(llm.enabled).mockResolvedValue(true);
-
-    let resolveChatCompletions: (value: any) => void = () => {};
-    jest.mocked(llm.chatCompletions).mockReturnValue(
-      new Promise((resolve) => {
-        resolveChatCompletions = resolve;
-      }) as any
-    );
+    const generate = mockInlineAssistantManual();
 
     renderExplanation(BASIC_HTTP_CHECK);
-    await screen.findByTestId('Spinner');
+    await screen.findByTestId('explanation-skeleton');
 
     expect(screen.queryByRole('button', { name: /actions/i })).not.toBeInTheDocument();
 
-    resolveChatCompletions({
-      id: '1',
-      object: 'chat.completion',
-      created: 0,
-      model: 'base',
-      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0 },
-      choices: [{ message: { role: 'assistant', content: 'Explanation.' }, finish_reason: 'stop', index: 0 }],
-    });
+    const options = await findGenerateOptions(generate);
+    options.onComplete?.('Explanation.');
 
     expect(await screen.findByRole('button', { name: /actions \(2\)/i })).toBeInTheDocument();
   });

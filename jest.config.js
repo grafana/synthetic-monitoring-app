@@ -2,7 +2,6 @@
 // generally used by snapshots, but can affect specific tests
 process.env.TZ = 'UTC';
 const { grafanaESModules, nodeModulesToTransform } = require('./.config/jest/utils');
-const { grafanaLLMESModules } = require('@grafana/llm/jest');
 const config = require('./.config/jest.config');
 
 module.exports = {
@@ -29,7 +28,6 @@ module.exports = {
   transformIgnorePatterns: [
     nodeModulesToTransform([
       ...grafanaESModules,
-      ...grafanaLLMESModules,
       'flat',
       '@grafana/ui/node_modules/ol',
       'yaml',
