@@ -26,7 +26,7 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
     })
   );
   const res = render(<ChooseCheckGroup />);
-  await screen.findByText('Choose a check type');
+  await screen.findByText('Create a new check');
 
   return res;
 }
@@ -34,10 +34,22 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
 it('shows check type options correctly', async () => {
   await renderChooseCheckGroup();
 
-  expect(screen.queryByRole('link', { name: `API Endpoint` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Multi Step` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Scripted` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Browser` })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'API Endpoint' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Multi Step' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Scripted' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Browser' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^api endpoint$/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^multi step$/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^scripted$/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^browser$/i })).toBeInTheDocument();
+});
+
+it('shows a start from a template section', async () => {
+  await renderChooseCheckGroup();
+
+  expect(screen.getByText('Start from a template')).toBeInTheDocument();
+  expect(screen.getByText('Detect broken links')).toBeInTheDocument();
+  expect(screen.getByText('Check a page for links that no longer work.')).toBeInTheDocument();
 });
 
 it(`doesn't show gRPC option by default`, async () => {
@@ -68,13 +80,14 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
   const alert = await screen.findByText(/You have reached your monthly execution limit of/);
   expect(alert).toBeInTheDocument();
 
-  const apiEndPointButton = screen.getByRole('link', { name: `API Endpoint` });
-  const multiStepButton = screen.getByRole('link', { name: `Multi Step` });
-  const scriptedButton = screen.getByRole('link', { name: `Scripted` });
-  const browserButton = screen.getByRole('link', { name: `Browser` });
+  const tileButtons = [
+    screen.getByRole('link', { name: /^api endpoint$/i }),
+    screen.getByRole('link', { name: /^multi step$/i }),
+    screen.getByRole('link', { name: /^scripted$/i }),
+    screen.getByRole('link', { name: /^browser$/i }),
+  ];
 
-  expect(apiEndPointButton).toHaveAttribute(`aria-disabled`, `true`);
-  expect(multiStepButton).toHaveAttribute(`aria-disabled`, `true`);
-  expect(scriptedButton).toHaveAttribute(`aria-disabled`, `true`);
-  expect(browserButton).toHaveAttribute(`aria-disabled`, `true`);
+  tileButtons.forEach((button) => {
+    expect(button).toHaveAttribute(`aria-disabled`, `true`);
+  });
 });

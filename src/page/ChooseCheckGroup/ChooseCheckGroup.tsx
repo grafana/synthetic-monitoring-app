@@ -1,8 +1,8 @@
 import React from 'react';
 import { GrafanaTheme2, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Box, Stack, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Stack, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
@@ -10,13 +10,14 @@ import { AgentSkillPicker } from 'components/AgentSkillReference/AgentSkillPicke
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { CheckGroupCard } from './components/CheckGroupCard';
+import { CheckTemplateCard } from './components/CheckTemplateCard';
 
 export const ChooseCheckGroup = () => {
   const styles = useStyles2(getStyles);
   const options = useCheckTypeGroupOptions();
 
   return (
-    <PluginPage layout={PageLayoutType.Standard} pageNav={{ text: 'Choose a check type' }}>
+    <PluginPage layout={PageLayoutType.Standard} pageNav={{ text: 'Create a new check' }}>
       <div className={styles.wrapper}>
         <Stack direction="column" gap={2}>
           <div>
@@ -24,14 +25,19 @@ export const ChooseCheckGroup = () => {
             fits your needs.
           </div>
           <OverLimitAlert />
-          <div className={styles.container} data-testid={CHECKS_TEST_ID.form.chooseType}>
+          <div
+            className={cx(styles.container, styles.afterTiles)}
+            data-testid={CHECKS_TEST_ID.form.chooseType}
+          >
             {options.map((group) => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
-          <Box marginTop={2}>
-            <AgentSkillPicker source="choose-check-type" />
-          </Box>
+          <div>Start from a template</div>
+          <div className={cx(styles.container, styles.afterTiles)}>
+            <CheckTemplateCard />
+          </div>
+          <AgentSkillPicker source="choose-check-type" />
         </Stack>
       </div>
     </PluginPage>
@@ -66,8 +72,7 @@ const getStyles = (theme: GrafanaTheme2) => {
       display: `grid`,
       gridTemplateColumns: 'repeat(4, 1fr)',
       gap: theme.spacing(2),
-      textAlign: `center`,
-      color: theme.colors.text.secondary,
+      textAlign: 'left',
 
       [twoColsMediaQuery]: {
         gridTemplateColumns: containerRules.twoCols,
@@ -82,6 +87,9 @@ const getStyles = (theme: GrafanaTheme2) => {
       [containerOneColQuery]: {
         gridTemplateColumns: containerRules.oneCol,
       },
+    }),
+    afterTiles: css({
+      marginBottom: theme.spacing(1),
     }),
   };
 };

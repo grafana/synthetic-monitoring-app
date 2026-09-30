@@ -74,7 +74,7 @@ export function NewCheckV2() {
   const duplicateId = urlSearchParams.get('duplicateId');
   const { check: duplicateCheck, isLoading: isLoadingDuplicateCheck } = useDuplicateCheck(duplicateId);
 
-  const navModel = createNavModel({ text: `Choose a check type`, url: generateRoutePath(AppRoutes.ChooseCheckGroup) }, [
+  const navModel = createNavModel({ text: `Create a new check`, url: generateRoutePath(AppRoutes.ChooseCheckGroup) }, [
     {
       text: `${duplicateCheck ? `Duplicate check ${duplicateCheck?.job}` : (checkTypeGroupOption?.label ?? 'Check not found')}`,
     },
