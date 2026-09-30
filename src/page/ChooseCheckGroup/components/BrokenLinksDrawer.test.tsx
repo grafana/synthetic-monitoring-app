@@ -7,7 +7,7 @@ import { ONLINE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
+import { mockFeatureToggles } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { ONE_HOUR_IN_MS } from 'utils.constants';
@@ -34,7 +34,6 @@ async function openDrawer() {
 }
 
 it('creates an hourly check directly with library options and an online probe', async () => {
-  testUsesCombobox();
   const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
   const { record, read } = getServerRequests();
   server.use(
@@ -57,8 +56,7 @@ it('creates an hourly check directly with library options and an online probe', 
   const statuses = screen.getByRole('textbox', { name: /^Accepted HTTP/ });
   await user.clear(statuses);
   await user.type(statuses, '200,204');
-  await user.click(screen.getByRole('combobox', { name: 'Fail on broken links (optional)' }));
-  await user.click(await screen.findByRole('option', { name: 'No' }));
+  await user.click(screen.getByRole('switch', { name: 'Fail on broken links' }));
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   const { body } = await read();
@@ -146,6 +144,7 @@ it('uses library defaults when optional settings are empty and preselects a prob
   server.use(apiRoute('addCheck', { result: () => ({ json: COMPLEX_BROWSER_CHECK }) }, record));
   const { user, onClose } = await openDrawer();
   expect(screen.queryByRole('combobox', { name: 'Probe' })).not.toBeInTheDocument();
+  expect(screen.getByRole('switch', { name: 'Fail on broken links' })).toBeChecked();
   expect(screen.getByRole('spinbutton', { name: /^Maximum links \(optional\)/ })).toHaveValue(null);
   expect(screen.getByRole('spinbutton', { name: 'Timeout per link in seconds (optional)' })).toHaveValue(null);
   expect(screen.getByRole('textbox', { name: /^Accepted HTTP/ })).toHaveValue('');

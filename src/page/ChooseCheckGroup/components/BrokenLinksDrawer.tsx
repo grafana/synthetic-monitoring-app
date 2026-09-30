@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Combobox, Drawer, Field, Input, Stack, Text } from '@grafana/ui';
+import { Alert, Button, Drawer, Field, Input, Stack, Switch, Text } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { jobSchema } from 'schemas/general/Job';
 
@@ -33,7 +33,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
   const [maxLinks, setMaxLinks] = useState('');
   const [timeout, setLinkTimeout] = useState('');
   const [statuses, setStatuses] = useState('');
-  const [failOnBroken, setFailOnBroken] = useState<boolean>();
+  const [failOnBroken, setFailOnBroken] = useState(true);
   const [folderUid, setFolderUid] = useState<string>();
   const [folderChanged, setFolderChanged] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -112,7 +112,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
         maxLinks: maxLinks.trim() ? Number(maxLinks) : undefined,
         timeout: timeout.trim() ? `${Number(timeout)}s` : undefined,
         validStatuses,
-        failOnBroken,
+        failOnBroken: failOnBroken ? undefined : false,
       });
       const result = await mutation.mutateAsync({
         ...check,
@@ -212,17 +212,11 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
                 onChange={(event) => setStatuses(event.currentTarget.value)}
               />
             </Field>
-            <Field label="Fail on broken links (optional)">
-              <Combobox
-                aria-label="Fail on broken links (optional)"
-                placeholder="Yes (default)"
-                options={[
-                  { label: 'Yes', value: 'yes' },
-                  { label: 'No', value: 'no' },
-                ]}
-                value={failOnBroken === undefined ? null : failOnBroken ? 'yes' : 'no'}
-                onChange={(option) => setFailOnBroken(option ? option.value === 'yes' : undefined)}
-                isClearable
+            <Field label="Fail on broken links" htmlFor="template-fail-on-broken">
+              <Switch
+                id="template-fail-on-broken"
+                value={failOnBroken}
+                onChange={(event) => setFailOnBroken(event.currentTarget.checked)}
               />
             </Field>
             {foldersEnabled && (
