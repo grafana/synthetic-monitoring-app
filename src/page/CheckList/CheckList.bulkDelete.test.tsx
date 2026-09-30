@@ -14,23 +14,27 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { confirmBulkDelete, getDeleteConfirmationInput } from 'page/CheckList/__testHelpers__/bulkDelete';
 import { CHECKS_PER_PAGE_CARD } from 'page/CheckList/CheckList.constants';
+import { DELETE_CONFIRMATION_COUNT_THRESHOLD, DELETE_CONFIRMATION_TEXT } from 'page/CheckList/components/BulkActions.hooks';
 
 import { CheckList } from './CheckList';
 
 const TWO_CHECKS = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK];
 
+const buildChecks = (count: number): Check[] =>
+  Array.from({ length: count }, (_, index) =>
+    DB.check.build(
+      {
+        job: `Check ${String(index).padStart(2, '0')}`,
+        target: `https://example-${index}.com`,
+        probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
+      },
+      { transient: { type: CheckType.Http } }
+    )
+  );
+
 // More than one card page holds, so "select all" and "select everything that
 // matches the filters" are no longer the same thing.
-const CHECKS_ACROSS_TWO_PAGES: Check[] = Array.from({ length: CHECKS_PER_PAGE_CARD + 5 }, (_, index) =>
-  DB.check.build(
-    {
-      job: `Paginated check ${String(index).padStart(2, '0')}`,
-      target: `https://example-${index}.com`,
-      probes: [PRIVATE_PROBE.id, PUBLIC_PROBE.id] as number[],
-    },
-    { transient: { type: CheckType.Http } }
-  )
-);
+const CHECKS_ACROSS_TWO_PAGES: Check[] = buildChecks(CHECKS_PER_PAGE_CARD + 5);
 
 const renderCheckList = async (checks: Check[]) => {
   server.use(
@@ -117,7 +121,8 @@ describe('CheckList - scope of the select-all checkbox', () => {
 
     expect(await screen.findByText(`Delete ${CHECKS_PER_PAGE_CARD} checks`)).toBeInTheDocument();
 
-    await confirmBulkDelete(user);
+    // CHECKS_PER_PAGE_CARD is above the threshold, so the count must be typed, not just "Delete".
+    await confirmBulkDelete(user, `Delete ${CHECKS_PER_PAGE_CARD}`);
     await waitFor(() => expect(requests.length).toBe(CHECKS_PER_PAGE_CARD));
   });
 
@@ -129,5 +134,39 @@ describe('CheckList - scope of the select-all checkbox', () => {
     await user.click(await screen.findByTestId(CHECKS_TEST_ID.header.selectAll));
 
     expect(await screen.findByText(`${CHECKS_ACROSS_TWO_PAGES.length} checks are selected.`)).toBeInTheDocument();
+  });
+});
+
+describe('CheckList - stricter confirmation for large selections', () => {
+  it('accepts the bare word "Delete" at the threshold', async () => {
+    const checks = buildChecks(DELETE_CONFIRMATION_COUNT_THRESHOLD);
+    const { user } = await selectAllAndOpenDeleteModal(checks);
+
+    expect(getDeleteConfirmationInput()).toHaveAttribute(
+      'placeholder',
+      `Type "Delete" to confirm`
+    );
+
+    await confirmBulkDelete(user);
+  });
+
+  it('requires typing the count once the selection exceeds the threshold', async () => {
+    const checks = buildChecks(DELETE_CONFIRMATION_COUNT_THRESHOLD + 1);
+    const { user } = await selectAllAndOpenDeleteModal(checks);
+
+    const confirmationText = `Delete ${checks.length}`;
+    const confirmButton = await screen.findByRole('button', { name: 'Delete checks' });
+
+    expect(getDeleteConfirmationInput(confirmationText)).toHaveAttribute(
+      'placeholder',
+      `Type "${confirmationText}" to confirm`
+    );
+
+    // The old, no-longer-sufficient word does not enable the button.
+    await user.type(getDeleteConfirmationInput(confirmationText), DELETE_CONFIRMATION_TEXT);
+    expect(confirmButton).toBeDisabled();
+
+    await user.clear(getDeleteConfirmationInput(confirmationText));
+    await confirmBulkDelete(user, confirmationText);
   });
 });
