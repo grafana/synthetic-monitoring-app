@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
 import { AdHocFiltersVariable } from '@grafana/scenes';
@@ -31,6 +31,7 @@ import { SummaryErrorPctgViz } from './SummaryErrorPctgViz';
 import { SummaryErrorRateMapViz } from './SummaryErrorRateMapViz';
 import { SummaryLatencyViz } from './SummaryLatencyViz';
 import { SummaryTableViz } from './SummaryTableViz';
+import { useSummaryFilterLabels } from './useSummaryFilterLabels';
 
 interface SummaryDashboardProps {
   checks: Check[];
@@ -46,15 +47,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
 
   useDemAssistantContext(checks);
 
-  const labelKeys = useMemo(() => {
-    return checks.reduce<Set<string>>((acc, check) => {
-      check.labels.forEach(({ name }) => {
-        acc.add(name);
-      });
-
-      return acc;
-    }, new Set<string>());
-  }, [checks]);
+  const { getTagKeysProvider, getTagValuesProvider } = useSummaryFilterLabels(checks);
 
   useEffect(() => {
     if (!metricsDS?.uid) {
@@ -67,12 +60,8 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
       datasource: { uid: metricsDS.uid },
       filters: [],
       applyMode: 'manual',
-      getTagKeysProvider: () => {
-        return Promise.resolve({
-          replace: true,
-          values: Array.from(labelKeys).map((key) => ({ text: key, value: `label_${key}` })),
-        });
-      },
+      getTagKeysProvider,
+      getTagValuesProvider,
     });
 
     const removeFn = scene.addVariable(filters);
@@ -82,7 +71,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
       removeFn();
       setFiltersAdded(false);
     };
-  }, [scene, metricsDS?.uid, labelKeys]);
+  }, [scene, metricsDS?.uid, getTagKeysProvider, getTagValuesProvider]);
 
   if (!filtersAdded) {
     return null;
