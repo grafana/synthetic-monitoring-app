@@ -42,7 +42,26 @@ it('drops passing assertions and summarizes failing ones, most recent first', as
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual(['error: x509: certificate signed by unknown authority', 'Failed assertion: "Click element"']);
+  expect(result).toEqual([
+    { text: 'error: x509: certificate signed by unknown authority', severity: 'critical' },
+    { text: 'Failed assertion: "Click element"', severity: 'context' },
+  ]);
+});
+
+it('treats level=info lines as context, not critical, even though they carry a msg', async () => {
+  mockLokiResponse([
+    'level=info msg="Beginning check"',
+    'level=info msg="Check will be run with resolved k6 version"',
+    'level=error msg="Uncaught (in promise) waiting for navigation: timed out after 10s"',
+  ]);
+
+  const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
+
+  expect(result).toEqual([
+    { text: 'error: Uncaught (in promise) waiting for navigation: timed out after 10s', severity: 'critical' },
+    { text: 'info: Check will be run with resolved k6 version', severity: 'context' },
+    { text: 'info: Beginning check', severity: 'context' },
+  ]);
 });
 
 it('deduplicates the same failure reason repeated across executions', async () => {
@@ -53,7 +72,7 @@ it('deduplicates the same failure reason repeated across executions', async () =
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual(['Failed assertion: "Click element"']);
+  expect(result).toEqual([{ text: 'Failed assertion: "Click element"', severity: 'context' }]);
 });
 
 it('falls back to a raw, truncated line when nothing recognizable is found', async () => {
@@ -61,7 +80,7 @@ it('falls back to a raw, truncated line when nothing recognizable is found', asy
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual(['some unstructured line with no fields']);
+  expect(result).toEqual([{ text: 'some unstructured line with no fields', severity: 'context' }]);
 });
 
 it('returns an empty list when the request fails', async () => {

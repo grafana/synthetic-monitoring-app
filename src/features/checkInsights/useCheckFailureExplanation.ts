@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { llm } from '@grafana/llm';
-import { fetchRecentFailureLogLines } from 'features/checkInsights/fetchRecentFailureLogLines';
+import { type FailureLogLine, fetchRecentFailureLogLines } from 'features/checkInsights/fetchRecentFailureLogLines';
 import { useLlmEnabled } from 'features/checkInsights/useLlmEnabled';
 
 import { Check } from 'types';
@@ -20,7 +20,7 @@ function buildPrompt(
   check: Check,
   reachabilityFraction: number | undefined,
   firingAlertNames: Set<string>,
-  recentFailureLogLines: string[]
+  recentFailureLogLines: FailureLogLine[]
 ): string {
   const checkType = getCheckType(check.settings);
   const reachabilityText =
@@ -37,9 +37,13 @@ function buildPrompt(
   // These are the actual trigger for the failure (timeouts, TLS errors, assertion failures, ...)
   // — feeding them in is what lets the model explain the real cause instead of just restating
   // the aggregate reachability number back as prose, or guessing based on the check type alone.
+  // Labeling each line's severity nudges the model toward the "root cause" lines rather than
+  // just restating a "consequence" (e.g. a downstream assertion failure) as if it were the cause.
   const logsText =
     recentFailureLogLines.length > 0
-      ? `Recent failure reasons from execution logs, most recent first:\n${recentFailureLogLines.map((line) => `- ${line}`).join('\n')}`
+      ? `Recent failure reasons from execution logs, most recent first:\n${recentFailureLogLines
+          .map((line) => `- [${line.severity === 'critical' ? 'root cause' : 'consequence'}] ${line.text}`)
+          .join('\n')}`
       : 'No recent failure reasons were found in the execution logs for this check.';
 
   return (
@@ -49,7 +53,9 @@ function buildPrompt(
     `most likely root cause of this failure. Only state a specific cause (e.g. a TLS/certificate error, a ` +
     `DNS failure, a specific script step) if it is directly supported by the evidence above — do not guess ` +
     `a plausible-sounding cause the check type commonly has if the evidence doesn't back it up. If the ` +
-    `evidence is too thin or generic to point to a specific cause, say that plainly instead.`
+    `evidence is too thin or generic to point to a specific cause, say that plainly instead. Start the ` +
+    `sentence with the specific fact itself — no "the check failed because" or "the script encountered ` +
+    `an error due to" lead-in at all. Say what happened, not that something happened.`
   );
 }
 
@@ -62,11 +68,6 @@ export function useCheckFailureExplanation(check: Check) {
   const reachabilityQuery = useCheckReachabilitySuccessRate(check);
   const alertStatesQuery = useChecksAlertStates([check]);
   const logsUrl = useLogsDS()?.url || '';
-
-  // True only while the very first fetch of either query is still in flight (no cached data
-  // yet) — this is what a caller should treat as "we don't know the real status yet", rather
-  // than defaulting to a healthy-looking state that would flash and then flip to failing.
-  const isStatusLoading = reachabilityQuery.isLoading || alertStatesQuery.isLoading;
 
   const reachabilityFraction = reachabilityQuery.data ? Number(reachabilityQuery.data.value[1]) : undefined;
   const { firingCount, firingAlertNames } = getCheckRuntimeAlertState(alertStatesQuery.data ?? {}, check);
@@ -140,7 +141,6 @@ export function useCheckFailureExplanation(check: Check) {
 
   return {
     isCheckFailing,
-    isStatusLoading,
     showAiExplanation,
     explanation: explanationQuery.data?.explanation,
     isLoading,

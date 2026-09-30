@@ -37,6 +37,16 @@ function parseLogfmtFields(line: string): Record<string, string> {
   return fields;
 }
 
+export interface FailureLogLine {
+  text: string;
+  // 'critical' lines are the actual root cause (network/DNS/TLS errors, timeouts, ...) — the
+  // thing that made the check fail. 'context' lines are consequences of that root cause (a
+  // downstream assertion failing because of it), useful supporting evidence but not the cause
+  // itself. See the QUERY_LIMIT comment above: the root cause often sits earlier in the stream
+  // than the assertion failures it triggers.
+  severity: 'critical' | 'context';
+}
+
 /**
  * Turns one raw logfmt log line into a short, human-readable failure reason, or null if the
  * line isn't useful evidence.
@@ -45,12 +55,18 @@ function parseLogfmtFields(line: string): Record<string, string> {
  * pass or fail — those passing (`value="1"`) are noise, since surfacing them just crowds out the
  * real error within the small line budget below. Anything else (network/DNS/TLS errors,
  * timeouts, ...) already carries the actual diagnostic text in `msg` or `error`.
+ *
+ * A line only counts as 'critical' when its own level says so (`level=error`, or an `error`
+ * field present) — plain `level=info` lines ("Beginning check", "resolved k6 version", ...) are
+ * lifecycle narration, not evidence, even though they still carry a `msg`.
  */
-function summarizeFailureLine(line: string): string | null {
+function summarizeFailureLine(line: string): FailureLogLine | null {
   const fields = parseLogfmtFields(line);
 
   if (fields.msg === 'check result') {
-    return fields.value === '1' ? null : `Failed assertion: "${fields.check ?? 'unknown check'}"`;
+    return fields.value === '1'
+      ? null
+      : { text: `Failed assertion: "${fields.check ?? 'unknown check'}"`, severity: 'context' };
   }
 
   const detail = fields.error ?? fields.msg;
@@ -58,7 +74,43 @@ function summarizeFailureLine(line: string): string | null {
     return null;
   }
 
-  return fields.level ? `${fields.level}: ${detail}` : detail;
+  const isError = fields.level === 'error' || Boolean(fields.error);
+  return { text: fields.level ? `${fields.level}: ${detail}` : detail, severity: isError ? 'critical' : 'context' };
+}
+
+// Generic wrapper messages that show up around the actual error rather than describing it —
+// a script runtime or top-level handler restating "something broke" without saying what. Best
+// effort, not exhaustive: matched so the specific line underneath (e.g. the actual timeout or
+// TLS error) gets to be the one thing that's highlighted, instead of every level in the wrapper
+// all getting equal billing.
+const GENERIC_CRITICAL_PATTERNS = [
+  /^(?:\w+:\s*)?check failed$/i,
+  /^(?:\w+:\s*)?uncaught error occurred while running the script$/i,
+  /^(?:\w+:\s*)?script exception$/i,
+];
+
+function isGenericCriticalLine(line: FailureLogLine): boolean {
+  return GENERIC_CRITICAL_PATTERNS.some((pattern) => pattern.test(line.text.trim()));
+}
+
+/**
+ * When several lines are all flagged 'critical', a generic wrapper message ("Check failed") and
+ * the actual specific cause ("TLS handshake timeout") often show up side by side — highlighting
+ * both equally buries the one that's actually useful. Demotes the generic ones to 'context', but
+ * only when a more specific critical line survives; if every critical line we have is generic,
+ * leave them all critical rather than end up highlighting nothing at all.
+ */
+function deprioritizeGenericCriticalLines(lines: FailureLogLine[]): FailureLogLine[] {
+  const criticalLines = lines.filter((line) => line.severity === 'critical');
+  const hasSpecificCritical = criticalLines.some((line) => !isGenericCriticalLine(line));
+
+  if (criticalLines.length <= 1 || !hasSpecificCritical) {
+    return lines;
+  }
+
+  return lines.map((line) =>
+    line.severity === 'critical' && isGenericCriticalLine(line) ? { ...line, severity: 'context' } : line
+  );
 }
 
 /**
@@ -71,7 +123,7 @@ export async function fetchRecentFailureLogLines(
   check: Check,
   startSeconds: number,
   endSeconds: number
-): Promise<string[]> {
+): Promise<FailureLogLine[]> {
   if (!logsUrl) {
     return [];
   }
@@ -104,8 +156,12 @@ export async function fetchRecentFailureLogLines(
       })
       .map(([, line]) => line);
 
-    const summarized = Array.from(
-      new Set(rawLines.map(summarizeFailureLine).filter((line): line is string => line !== null))
+    const seenText = new Set<string>();
+    const summarized = deprioritizeGenericCriticalLines(
+      rawLines
+        .map(summarizeFailureLine)
+        .filter((line): line is FailureLogLine => line !== null)
+        .filter((line) => (seenText.has(line.text) ? false : (seenText.add(line.text), true)))
     );
 
     if (summarized.length > 0) {
@@ -113,8 +169,11 @@ export async function fetchRecentFailureLogLines(
     }
 
     // Nothing matched the expected shape (unexpected log format for this check type) — fall
-    // back to raw lines so the model still gets *something*, even if it's noisier.
-    return rawLines.slice(0, MAX_LOG_LINES).map((line) => line.slice(0, MAX_LOG_LINE_LENGTH));
+    // back to raw lines so the model still gets *something*, even if it's noisier. Unstructured,
+    // so we can't confidently call any of them the root cause — treat them all as context.
+    return rawLines
+      .slice(0, MAX_LOG_LINES)
+      .map((line) => ({ text: line.slice(0, MAX_LOG_LINE_LENGTH), severity: 'context' as const }));
   } catch {
     return [];
   }

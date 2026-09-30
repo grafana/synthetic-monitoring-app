@@ -2,6 +2,7 @@ import React from 'react';
 import { UseQueryResult } from '@tanstack/react-query';
 import { llm } from '@grafana/llm';
 import { screen, waitFor } from '@testing-library/react';
+import { FailureLogLine } from 'features/checkInsights/fetchRecentFailureLogLines';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_META } from 'test/fixtures/meta';
 import { render } from 'test/render';
@@ -58,7 +59,7 @@ const { useCheckReachabilitySuccessRate } = jest.requireMock('data/useSuccessRat
 };
 
 const { fetchRecentFailureLogLines } = jest.requireMock('features/checkInsights/fetchRecentFailureLogLines') as {
-  fetchRecentFailureLogLines: jest.MockedFunction<() => Promise<string[]>>;
+  fetchRecentFailureLogLines: jest.MockedFunction<() => Promise<FailureLogLine[]>>;
 };
 
 function mockReachability(fraction: number | undefined) {
@@ -86,12 +87,13 @@ beforeEach(() => {
   fetchRecentFailureLogLines.mockReset().mockResolvedValue([]);
 });
 
-it('shows a healthy status, without calling the LLM, for a healthy check', async () => {
+it('renders nothing, without calling the LLM, for a healthy check', async () => {
   mockReachability(1);
   mockAlertStates([]);
   renderExplanation(BASIC_HTTP_CHECK);
 
-  expect(await screen.findByText('Healthy')).toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByRole('button')).not.toBeInTheDocument());
+  expect(screen.queryByText(/healthy|failing|alert firing/i)).not.toBeInTheDocument();
   await waitFor(() => expect(llm.enabled).not.toHaveBeenCalled());
 });
 
@@ -134,7 +136,7 @@ it('shows the analyzing state while the request is in flight, then the resolved 
 
   render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
 
-  expect(await screen.findByText(/investigating/i)).toBeInTheDocument();
+  expect(await screen.findByTestId('Spinner')).toBeInTheDocument();
 
   resolveChatCompletions({
     id: '1',
@@ -145,14 +147,14 @@ it('shows the analyzing state while the request is in flight, then the resolved 
     choices: [{ message: { role: 'assistant', content: 'Resolved explanation.' }, finish_reason: 'stop', index: 0 }],
   });
 
-  expect(await screen.findByText('Resolved explanation.')).toBeInTheDocument();
+  expect(await screen.findByText(/Resolved explanation\.$/)).toBeInTheDocument();
   expect(screen.queryByText(/grafana ai is analyzing/i)).not.toBeInTheDocument();
 });
 
 it('shows the one-liner explanation for a failing check, grounded in the failure logs', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  fetchRecentFailureLogLines.mockResolvedValue(['probe_success=0 msg="context deadline exceeded"']);
+  fetchRecentFailureLogLines.mockResolvedValue([{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }]);
   jest.mocked(llm.enabled).mockResolvedValue(true);
   jest.mocked(llm.chatCompletions).mockResolvedValue({
     id: '1',
@@ -167,7 +169,7 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
 
   render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
 
-  expect(await screen.findByText('The target is timing out on every probe request.')).toBeInTheDocument();
+  expect(await screen.findByText(/The target is timing out on every probe request\.$/)).toBeInTheDocument();
 
   const [{ messages }] = jest.mocked(llm.chatCompletions).mock.calls[0];
   const userMessage = messages.find((message) => message.role === 'user')?.content ?? '';
@@ -178,7 +180,7 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
 it('keeps the supporting evidence hidden until the bar is expanded', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  fetchRecentFailureLogLines.mockResolvedValue(['probe_success=0 msg="context deadline exceeded"']);
+  fetchRecentFailureLogLines.mockResolvedValue([{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }]);
   jest.mocked(llm.enabled).mockResolvedValue(true);
   jest.mocked(llm.chatCompletions).mockResolvedValue({
     id: '1',
@@ -189,14 +191,14 @@ it('keeps the supporting evidence hidden until the bar is expanded', async () =>
     choices: [{ message: { role: 'assistant', content: 'Explanation.' }, finish_reason: 'stop', index: 0 }],
   } as any);
 
-  const { user } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
-  await screen.findByText('Explanation.');
+  const { user, container } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+  await screen.findByText(/Explanation\.$/);
 
   expect(screen.queryByText(/context deadline exceeded/)).not.toBeInTheDocument();
 
-  await user.click(screen.getByRole('button'));
+  await user.click(screen.getByRole('button', { name: /show evidence/i }));
 
   expect(await screen.findByText(/context deadline exceeded/)).toBeInTheDocument();
-  expect(screen.getByText(/Reachability last 3 hours: 50\.0%/)).toBeInTheDocument();
-  expect(screen.getByText(/Firing alert\(s\): CheckHighReachability/)).toBeInTheDocument();
+  expect(container).toHaveTextContent('Reachability: 50% over 3h');
+  expect(container).toHaveTextContent('Firing alert: CheckHighReachability');
 });
