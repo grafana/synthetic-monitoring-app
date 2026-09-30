@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Icon, LinkButton, Spinner, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Badge, Icon, type IconName, LinkButton, Spinner, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx, keyframes } from '@emotion/css';
 import { useCheckFailureExplanation } from 'features/checkInsights/useCheckFailureExplanation';
 
@@ -15,6 +15,22 @@ interface CheckFailureExplanationProps {
 
 const AI_ACCENT_COLOR = 'rgb(168, 85, 247)';
 
+// One place deriving the badge's color/text/icon from status, rather than computing it inline —
+// mirrors grafana-k6-app's status->color/icon lookup (e.g. getRunStatusColorName,
+// getTestRunBadgeIcon), just with a much smaller state space. The pending/loading case is
+// handled separately by the caller (a skeleton, not a badge — no real status to report yet).
+function getCheckStatusBadge(
+  isCheckFailing: boolean,
+  hasAlerts: boolean
+): { color: 'red' | 'green'; text: string; icon: IconName } {
+  if (isCheckFailing) {
+    return hasAlerts
+      ? { color: 'red', text: 'Alert firing', icon: 'bell' }
+      : { color: 'red', text: 'Failing', icon: 'exclamation-triangle' };
+  }
+  return { color: 'green', text: 'Healthy', icon: 'check' };
+}
+
 // Rendered right under the page title (which already has the check name — no need to repeat
 // it here) — but deliberately outside Grafana's own PluginPage title slot (renderTitle): that
 // container clips/constrains its content in ways this component doesn't own or control, which
@@ -28,12 +44,11 @@ const AI_ACCENT_COLOR = 'rgb(168, 85, 247)';
 export function CheckFailureExplanation({ check }: CheckFailureExplanationProps) {
   const { isCheckFailing, isStatusLoading, showAiExplanation, explanation, isLoading, facts } =
     useCheckFailureExplanation(check);
-  const borderStatus = isStatusLoading ? 'pending' : isCheckFailing ? 'failing' : 'healthy';
-  const styles = useStyles2(getStyles, borderStatus);
+  const styles = useStyles2(getStyles);
   const [isExpanded, setIsExpanded] = useState(false);
 
   const hasAlerts = facts.firingAlertNames.size > 0;
-  const statusLabel = isCheckFailing ? (hasAlerts ? 'Alert firing' : 'Failing') : 'Healthy';
+  const statusBadge = getCheckStatusBadge(isCheckFailing, hasAlerts);
   const showExplanationSegment = showAiExplanation && (isLoading || explanation);
 
   return (
@@ -46,12 +61,15 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
           aria-expanded={isExpanded}
           disabled={isStatusLoading}
         >
+          {!isStatusLoading && (
+            <Icon name="angle-right" size="sm" className={cx(styles.chevron, isExpanded && styles.chevronOpen)} />
+          )}
           {isStatusLoading ? (
             // The health state itself isn't known yet, so don't default to a healthy-looking
             // badge that would just flash and flip to failing once the queries resolve.
             <span className={styles.skeleton} style={{ width: 70, flexShrink: 0 }} />
           ) : (
-            <Badge color={isCheckFailing ? 'red' : 'green'} text={statusLabel} />
+            <Badge color={statusBadge.color} text={statusBadge.text} icon={statusBadge.icon} />
           )}
           {showExplanationSegment && (
             <span className={styles.investigation}>
@@ -66,9 +84,6 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
                 </Text>
               </span>
             </span>
-          )}
-          {!isStatusLoading && (
-            <Icon name="angle-right" size="sm" className={cx(styles.chevron, isExpanded && styles.chevronOpen)} />
           )}
         </button>
         {isExpanded && !isStatusLoading && (
@@ -95,8 +110,8 @@ function FailureFacts({
     <div className={styles.facts}>
       <Text variant="bodySmall" color="secondary">
         {reachabilityFraction === undefined
-          ? 'No recent reachability data available.'
-          : `Reachability over the last 3 hours: ${(reachabilityFraction * 100).toFixed(1)}%.`}
+          ? 'No reachability data available.'
+          : `Reachability last 3 hours: ${(reachabilityFraction * 100).toFixed(1)}%.`}
       </Text>
       <Text variant="bodySmall" color="secondary">
         {firingAlertNames.size > 0
@@ -106,7 +121,7 @@ function FailureFacts({
       {!checkHasAlerting(check) && check.id !== undefined && (
         <Stack alignItems="center" gap={1}>
           <Text variant="bodySmall" color="secondary">
-            This check has no alerting configured, so failures are only caught by this reachability check.
+            This check has no alerting configured.
           </Text>
           <LinkButton size="sm" variant="secondary" href={generateRoutePath(AppRoutes.EditCheck, { id: check.id })}>
             Set up alerting
@@ -130,26 +145,19 @@ const fadeIn = keyframes({
   to: { opacity: 1, transform: 'translateY(0)' },
 });
 
-const BORDER_COLOR_BY_STATUS = (theme: GrafanaTheme2) => ({
-  pending: theme.colors.text.secondary,
-  failing: theme.colors.error.text,
-  healthy: theme.colors.success.text,
-});
-
-const getStyles = (theme: GrafanaTheme2, borderStatus: 'pending' | 'failing' | 'healthy' = 'healthy') => ({
+const getStyles = (theme: GrafanaTheme2) => ({
   container: css({
     width: '100%',
     marginBottom: theme.spacing(1),
   }),
   // A thin border/background so the badge and explanation read as one designed unit, not
-  // floating text. The colored left border repeats the health signal at a glance without
-  // having to read the badge.
+  // floating text — the badge itself already carries the health signal, so the border stays
+  // neutral rather than repeating it.
   card: css({
     width: '100%',
     boxSizing: 'border-box',
     borderRadius: theme.shape.radius.default,
     border: `1px solid ${theme.colors.border.weak}`,
-    borderLeft: `3px solid ${BORDER_COLOR_BY_STATUS(theme)[borderStatus]}`,
     background: theme.colors.background.primary,
     padding: theme.spacing(1.5, 2),
   }),

@@ -197,6 +197,6 @@ it('keeps the supporting evidence hidden until the bar is expanded', async () =>
   await user.click(screen.getByRole('button'));
 
   expect(await screen.findByText(/context deadline exceeded/)).toBeInTheDocument();
-  expect(screen.getByText(/Reachability over the last 3 hours: 50\.0%/)).toBeInTheDocument();
+  expect(screen.getByText(/Reachability last 3 hours: 50\.0%/)).toBeInTheDocument();
   expect(screen.getByText(/Firing alert\(s\): CheckHighReachability/)).toBeInTheDocument();
 });
