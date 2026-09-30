@@ -39,34 +39,40 @@ export function AiCheckExplanationsSetting() {
     mutation.mutate(false);
   };
 
-  // Same three reasons, same wording, as grafana-k6-app's own "Generate test" button
-  // (NewTestPromptForm.tsx: createButtonTooltip) — terms get a dedicated row below instead,
-  // since accepting them takes an action (opening Assistant), not just an explanation.
-  const statusCaption = isAssistantReady
-    ? "May count against your organization's Grafana Assistant usage."
-    : !isAssistantAvailable
-      ? 'Requires Grafana Assistant to be enabled for this organization.'
-      : isLimitReached
-        ? "Grafana Assistant's usage limit has been reached."
-        : undefined;
+  // Only reports problems now — the org-wide/usage-cost framing is a permanent part of the
+  // Field description below instead of a caption that only appeared once Assistant happened to
+  // already be ready, which meant it was easy to never actually see.
+  // Same wording as grafana-k6-app's own "Generate test" button (NewTestPromptForm.tsx:
+  // createButtonTooltip) for the first two — terms get a dedicated row below instead, since
+  // accepting them takes an action (opening Assistant), not just an explanation.
+  const statusCaption = !isAssistantAvailable
+    ? 'Requires Grafana Assistant to be enabled for this organization.'
+    : isLimitReached
+      ? "Grafana Assistant's usage limit has been reached."
+      : undefined;
 
   return (
     <>
-      <Field
-        description="Ask Grafana Assistant for a one-sentence explanation whenever a failing check's dashboard is opened. Applies org-wide."
-        disabled={!canToggle || mutation.isPending}
-      >
-        <Stack direction="row" alignItems="center" gap={1.5}>
-          <Switch
-            value={isEnabled}
-            disabled={!canToggle || mutation.isPending}
-            onChange={(e) => handleChange(e.currentTarget.checked)}
-          />
-          {!isStatusLoading && statusCaption && (
-            <Text variant="bodySmall" color="secondary">
-              {statusCaption}
-            </Text>
-          )}
+      <Field disabled={!canToggle || mutation.isPending}>
+        {/* Field's `description` prop only renders alongside a string `label` — we don't have
+            one here, so this text has to be a direct child instead, or it silently vanishes. */}
+        <Stack direction="column" gap={1}>
+          <Text variant="bodySmall" color="secondary">
+            Ask Grafana Assistant for a one-sentence explanation whenever a failing check's dashboard is opened.
+            Applies org-wide, and counts against your organization's Grafana Assistant usage.
+          </Text>
+          <Stack direction="row" alignItems="center" gap={1.5}>
+            <Switch
+              value={isEnabled}
+              disabled={!canToggle || mutation.isPending}
+              onChange={(e) => handleChange(e.currentTarget.checked)}
+            />
+            {!isStatusLoading && statusCaption && (
+              <Text variant="bodySmall" color="secondary">
+                {statusCaption}
+              </Text>
+            )}
+          </Stack>
         </Stack>
       </Field>
       {!isStatusLoading && isAssistantAvailable && !isLimitReached && !termsAccepted && (
@@ -86,7 +92,7 @@ export function AiCheckExplanationsSetting() {
       <ConfirmModal
         isOpen={pendingEnable}
         title="Enable AI check failure explanations?"
-        body="Every time a failing check's dashboard is opened, across everyone in this org, Grafana will ask Assistant to generate an explanation. This counts against your organization's Grafana Assistant usage."
+        body="You can turn this off again at any time."
         confirmText="Enable"
         confirmVariant="primary"
         onConfirm={() => {
