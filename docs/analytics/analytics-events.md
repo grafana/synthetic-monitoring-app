@@ -249,23 +249,13 @@ Tracks when the duplicate check button is clicked.
 
 #### synthetic-monitoring_check_templates_template_selected
 
-Tracks selection of a template card, before its configuration dialog opens.
+Tracks selection of a template card, before its configuration drawer opens.
 
 ##### Properties
 
-| name              | type                                  | description                                                     |
-| ----------------- | ------------------------------------- | --------------------------------------------------------------- |
-| check_template_id | `"broken_links" \| "ssl_certificate"` | Stable template identifier. Never a URL, check name, or script. |
-
-#### synthetic-monitoring_check_templates_draft_created
-
-Tracks a valid template configuration becoming a draft in the check form, not a saved check.
-
-##### Properties
-
-| name              | type                                  | description                                                     |
-| ----------------- | ------------------------------------- | --------------------------------------------------------------- |
-| check_template_id | `"broken_links" \| "ssl_certificate"` | Stable template identifier. Never a URL, check name, or script. |
+| name              | type             | description                                                     |
+| ----------------- | ---------------- | --------------------------------------------------------------- |
+| check_template_id | `"broken_links"` | Stable template identifier. Never a URL, check name, or script. |
 
 ### cloud_setup
 
