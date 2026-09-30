@@ -8,7 +8,6 @@ export interface BrokenLinksOptions {
   maxLinks?: number;
   timeout?: string;
   validStatuses?: number[];
-  failOnBroken?: boolean;
 }
 
 export function createBrokenLinksCheck(url: URL, job: string, options: BrokenLinksOptions): BrowserCheck {

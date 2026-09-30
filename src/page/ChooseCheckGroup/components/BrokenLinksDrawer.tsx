@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Drawer, Field, Input, Stack, Switch, Text } from '@grafana/ui';
+import { Alert, Button, Drawer, Field, Input, Stack, Text } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { jobSchema } from 'schemas/general/Job';
 
@@ -28,12 +28,11 @@ export function BrokenLinksDrawer({ onClose }: { onClose: () => void }) {
 
 function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; foldersEnabled: boolean }) {
   const [url, setUrl] = useState('');
-  const [job, setJob] = useState('');
-  const suggestedName = useRef('');
+  const [job, setJob] = useState('Detect broken links');
+  const nameEdited = useRef(false);
   const [maxLinks, setMaxLinks] = useState('');
   const [timeout, setLinkTimeout] = useState('');
   const [statuses, setStatuses] = useState('');
-  const [failOnBroken, setFailOnBroken] = useState(true);
   const [folderUid, setFolderUid] = useState<string>();
   const [folderChanged, setFolderChanged] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -68,10 +67,9 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
       return;
     }
     const next = `Broken links on ${parsed.hostname}`;
-    if (!job.trim() || job === suggestedName.current) {
+    if (!nameEdited.current) {
       setJob(next);
     }
-    suggestedName.current = next;
   }
 
   async function createCheck(event: React.SubmitEvent<HTMLFormElement>) {
@@ -80,7 +78,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
       return;
     }
     const parsed = parseUrl();
-    const name = jobSchema.safeParse(job.trim() || (parsed ? `Broken links on ${parsed.hostname}` : ''));
+    const name = jobSchema.safeParse(job.trim());
     const validStatuses = statuses.trim() ? statuses.split(',').map((status) => Number(status.trim())) : undefined;
     const nextErrors: Record<string, string> = {};
     if (!parsed) {
@@ -112,7 +110,6 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
         maxLinks: maxLinks.trim() ? Number(maxLinks) : undefined,
         timeout: timeout.trim() ? `${Number(timeout)}s` : undefined,
         validStatuses,
-        failOnBroken: failOnBroken ? undefined : false,
       });
       const result = await mutation.mutateAsync({
         ...check,
@@ -144,8 +141,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
       <form onSubmit={createCheck} noValidate>
         <Stack direction="column" gap={2}>
           <Text>
-            Open a page in a browser, collect its links, and check their HTTP responses. Broken links fail the check
-            unless you turn that option off.
+            Open a page in a browser, collect its links, and check their HTTP responses. Broken links fail the check.
           </Text>
           <fieldset
             disabled={mutation.isPending}
@@ -163,7 +159,14 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
               />
             </Field>
             <Field label="Check name" htmlFor="template-job" error={errors.job} invalid={!!errors.job}>
-              <Input id="template-job" value={job} onChange={(event) => setJob(event.currentTarget.value)} />
+              <Input
+                id="template-job"
+                value={job}
+                onChange={(event) => {
+                  nameEdited.current = true;
+                  setJob(event.currentTarget.value);
+                }}
+              />
             </Field>
             <Field
               label="Maximum links (optional)"
@@ -210,13 +213,6 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
                 placeholder="200"
                 value={statuses}
                 onChange={(event) => setStatuses(event.currentTarget.value)}
-              />
-            </Field>
-            <Field label="Fail on broken links" htmlFor="template-fail-on-broken">
-              <Switch
-                id="template-fail-on-broken"
-                value={failOnBroken}
-                onChange={(event) => setFailOnBroken(event.currentTarget.checked)}
               />
             </Field>
             {foldersEnabled && (
