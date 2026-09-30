@@ -5,10 +5,10 @@ import { ONE_HOUR_IN_MS } from 'utils.constants';
 import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
 
 export interface BrokenLinksOptions {
-  maxLinks: number;
-  timeout: string;
-  validStatuses: number[];
-  failOnBroken: boolean;
+  maxLinks?: number;
+  timeout?: string;
+  validStatuses?: number[];
+  failOnBroken?: boolean;
 }
 
 export function createBrokenLinksCheck(url: URL, job: string, options: BrokenLinksOptions): BrowserCheck {

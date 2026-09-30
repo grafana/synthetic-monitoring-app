@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FolderPicker } from '@grafana/runtime';
 import { Alert, Button, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
 import { GrafanaFolder } from 'types';
@@ -71,15 +72,17 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
   }
 
   return (
-    <Stack gap={1.5} alignItems="center">
-      <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
+    <Stack gap={1.5} alignItems="center" wrap="wrap" minWidth={0}>
+      <div className={folderPickerStyles}>
+        <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
+      </div>
       {canCreateFolders && (
-        <>
+        <Stack gap={1.5} alignItems="center" shrink={0}>
           <span>or</span>
           <Button variant="secondary" size="md" icon="plus" onClick={() => setShowCreateModal(true)} type="button">
             Create folder
           </Button>
-        </>
+        </Stack>
       )}
       {showCreateModal && (
         <CreateFolderModal
@@ -163,3 +166,14 @@ function CreateFolderModal({ defaultParentUid, onCreated, onDismiss }: CreateFol
     </Modal>
   );
 }
+
+const folderPickerStyles = css({
+  flex: '1 1 240px',
+  minWidth: 0,
+  maxWidth: '100%',
+  '& > *': {
+    minWidth: 0,
+    maxWidth: '100%',
+    width: '100%',
+  },
+});
