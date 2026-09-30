@@ -1,12 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { AdHocFiltersVariable } from '@grafana/scenes';
 import {
   QueryVariable,
   RefreshPicker,
   SceneContextProvider,
-  useSceneContext,
   VariableControl,
 } from '@grafana/scenes-react';
 import { VariableRefresh } from '@grafana/schema';
@@ -31,7 +29,7 @@ import { SummaryErrorPctgViz } from './SummaryErrorPctgViz';
 import { SummaryErrorRateMapViz } from './SummaryErrorRateMapViz';
 import { SummaryLatencyViz } from './SummaryLatencyViz';
 import { SummaryTableViz } from './SummaryTableViz';
-import { useSummaryFilterLabels } from './useSummaryFilterLabels';
+import { useSummaryFilters } from './useSummaryFilters';
 
 interface SummaryDashboardProps {
   checks: Check[];
@@ -42,36 +40,9 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
   const styles = useStyles2(getStyles);
   const annotations = useSummaryDashboardAnnotations();
   const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
-  const scene = useSceneContext();
-  const [filtersAdded, setFiltersAdded] = useState(false);
+  const filtersAdded = useSummaryFilters(checks, metricsDS?.uid);
 
   useDemAssistantContext(checks);
-
-  const { getTagKeysProvider, getTagValuesProvider } = useSummaryFilterLabels(checks);
-
-  useEffect(() => {
-    if (!metricsDS?.uid) {
-      return;
-    }
-
-    // Add AdHocFiltersVariable to the scene using the proper addVariable method
-    const filters = new AdHocFiltersVariable({
-      name: 'Filters',
-      datasource: { uid: metricsDS.uid },
-      filters: [],
-      applyMode: 'manual',
-      getTagKeysProvider,
-      getTagValuesProvider,
-    });
-
-    const removeFn = scene.addVariable(filters);
-    setFiltersAdded(true);
-
-    return () => {
-      removeFn();
-      setFiltersAdded(false);
-    };
-  }, [scene, metricsDS?.uid, getTagKeysProvider, getTagValuesProvider]);
 
   if (!filtersAdded) {
     return null;
