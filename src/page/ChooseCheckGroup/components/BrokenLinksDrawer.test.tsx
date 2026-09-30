@@ -46,7 +46,7 @@ it('creates an hourly check directly with library options and an online probe', 
   const { user, onClose } = await openDrawer();
   await user.type(screen.getByRole('textbox', { name: 'Page URL' }), 'https://grafana.com');
   await user.tab();
-  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Broken links on grafana.com');
+  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Detect broken links on https://grafana.com');
   const maxLinks = screen.getByRole('spinbutton', { name: /^Maximum links/ });
   await user.clear(maxLinks);
   await user.type(maxLinks, '25');
@@ -60,7 +60,7 @@ it('creates an hourly check directly with library options and an online probe', 
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   const { body } = await read();
   expect(body).toMatchObject({
-    job: 'Broken links on grafana.com',
+    job: 'Detect broken links on https://grafana.com',
     target: 'https://grafana.com/',
     frequency: ONE_HOUR_IN_MS,
     probes: [ONLINE_PROBE.id],
@@ -88,7 +88,7 @@ it('updates suggested names on blur but preserves a custom name', async () => {
   await user.clear(url);
   await user.type(url, 'https://test.k6.io');
   await user.tab();
-  expect(name).toHaveValue('Broken links on test.k6.io');
+  expect(name).toHaveValue('Detect broken links on https://test.k6.io');
   await user.clear(name);
   await user.type(name, 'My links');
   await user.clear(url);
@@ -120,7 +120,7 @@ it('preserves inputs on API failure and allows retry', async () => {
   await user.tab();
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   expect(await screen.findByText('Unable to create check')).toBeInTheDocument();
-  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Broken links on grafana.com');
+  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Detect broken links on https://grafana.com');
   expect(onClose).not.toHaveBeenCalled();
   server.use(apiRoute('addCheck', { result: () => ({ json: COMPLEX_BROWSER_CHECK }) }));
   await user.click(screen.getByRole('button', { name: 'Create check' }));

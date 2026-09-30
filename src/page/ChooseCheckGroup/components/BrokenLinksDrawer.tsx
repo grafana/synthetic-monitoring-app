@@ -66,7 +66,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     if (!parsed) {
       return;
     }
-    const next = `Broken links on ${parsed.hostname}`;
+    const next = `Detect broken links on ${url.trim()}`;
     if (!nameEdited.current) {
       setJob(next);
     }
