@@ -6,7 +6,6 @@ import {
   QueryVariable,
   RefreshPicker,
   SceneContextProvider,
-  TimeRangePicker,
   useSceneContext,
   VariableControl,
 } from '@grafana/scenes-react';
@@ -25,6 +24,7 @@ import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
+import { SceneTimeRangePicker } from 'scenes/Common/SceneTimeRangePicker';
 
 import { useSummaryDashboardAnnotations } from './SummaryDashboard.hooks';
 import { SummaryErrorPctgViz } from './SummaryErrorPctgViz';
@@ -102,7 +102,7 @@ const SummaryDashboardContent = ({ checks }: SummaryDashboardProps) => {
               <DashboardAnnotationControls annotations={annotations} />
               <div className={styles.spacer} />
               <AddNewCheckButton source="homepage" />
-              <TimeRangePicker />
+              <SceneTimeRangePicker />
               <RefreshPicker />
             </div>
 
@@ -136,10 +136,12 @@ export const SummaryDashboard = ({ checks }: SummaryDashboardProps) => {
 
   if (checks.length === 0) {
     return (
-      <Stack direction="column" gap={1}>
-        {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
-        <ChecksEmptyState className={styles.emptyState} />
-      </Stack>
+      <PluginPage pageNav={{ text: 'Home' }} renderTitle={() => null}>
+        <Stack direction="column" gap={1}>
+          {isCheckSuggestionsEnabled && <ReliabilityInboxBanner />}
+          <ChecksEmptyState className={styles.emptyState} />
+        </Stack>
+      </PluginPage>
     );
   }
 
@@ -196,6 +198,9 @@ const getStyles = (theme: GrafanaTheme2) => {
   return {
     emptyState: css({
       width: '100%',
+      // Compensates for the page title being hidden on this route (see the checks.length
+      // === 0 branch above), so the content isn't left sitting higher than on other pages.
+      marginTop: theme.spacing(4),
     }),
     header: css`
       display: flex;
