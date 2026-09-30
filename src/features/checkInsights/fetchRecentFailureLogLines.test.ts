@@ -72,7 +72,60 @@ it('deduplicates the same failure reason repeated across executions', async () =
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([{ text: 'Failed assertion: "Click element"', severity: 'context' }]);
+  // Promoted to 'critical': with no other error line in the logs, the assertion is the only
+  // evidence there is, not a consequence of some other line.
+  expect(result).toEqual([{ text: 'Failed assertion: "Click element"', severity: 'critical' }]);
+});
+
+it('keeps a failed assertion as context when a more specific critical line explains it', async () => {
+  mockLokiResponse([
+    'target=https://http.com probe=Frankfurt msg="check result" check="Click element" value="0"',
+    'target=https://http.com probe=Frankfurt level=error msg="x509: certificate signed by unknown authority"',
+  ]);
+
+  const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
+
+  expect(result).toEqual([
+    { text: 'error: x509: certificate signed by unknown authority', severity: 'critical' },
+    { text: 'Failed assertion: "Click element"', severity: 'context' },
+  ]);
+});
+
+it('demotes a generic wrapper error in favor of the specific cause underneath it', async () => {
+  mockLokiResponse([
+    // Ascending timestamps (oldest first); the fetch result is most-recent-first, so the
+    // navigation timeout (logged later) comes back before the generic wrapper (logged earlier).
+    'level=error msg="check failed"',
+    'level=error msg="Uncaught (in promise) waiting for navigation: timed out after 10s"',
+  ]);
+
+  const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
+
+  expect(result).toEqual([
+    { text: 'error: Uncaught (in promise) waiting for navigation: timed out after 10s', severity: 'critical' },
+    { text: 'error: check failed', severity: 'context' },
+  ]);
+});
+
+it('keeps the critical root-cause line even when more recent context lines would otherwise push it past the cap', async () => {
+  mockLokiResponse([
+    // Oldest first here; mockLokiResponse assigns ascending timestamps to array order, so the
+    // fetch result is most-recent-first, i.e. reversed relative to this list.
+    'level=error msg="x509: certificate signed by unknown authority"',
+    'msg="check result" check="Assertion 1" value="0"',
+    'msg="check result" check="Assertion 2" value="0"',
+    'msg="check result" check="Assertion 3" value="0"',
+    'msg="check result" check="Assertion 4" value="0"',
+    'msg="check result" check="Assertion 5" value="0"',
+  ]);
+
+  const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
+
+  expect(result).toHaveLength(5);
+  expect(result).toContainEqual({
+    text: 'error: x509: certificate signed by unknown authority',
+    severity: 'critical',
+  });
 });
 
 it('falls back to a raw, truncated line when nothing recognizable is found', async () => {

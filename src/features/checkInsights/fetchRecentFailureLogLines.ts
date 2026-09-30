@@ -60,13 +60,15 @@ export interface FailureLogLine {
  * field present) — plain `level=info` lines ("Beginning check", "resolved k6 version", ...) are
  * lifecycle narration, not evidence, even though they still carry a `msg`.
  */
+const ASSERTION_FAILURE_PREFIX = 'Failed assertion: ';
+
 function summarizeFailureLine(line: string): FailureLogLine | null {
   const fields = parseLogfmtFields(line);
 
   if (fields.msg === 'check result') {
     return fields.value === '1'
       ? null
-      : { text: `Failed assertion: "${fields.check ?? 'unknown check'}"`, severity: 'context' };
+      : { text: `${ASSERTION_FAILURE_PREFIX}"${fields.check ?? 'unknown check'}"`, severity: 'context' };
   }
 
   const detail = fields.error ?? fields.msg;
@@ -75,7 +77,8 @@ function summarizeFailureLine(line: string): FailureLogLine | null {
   }
 
   const isError = fields.level === 'error' || Boolean(fields.error);
-  return { text: fields.level ? `${fields.level}: ${detail}` : detail, severity: isError ? 'critical' : 'context' };
+  const text = fields.level ? `${fields.level}: ${detail}` : detail;
+  return { text: text.slice(0, MAX_LOG_LINE_LENGTH), severity: isError ? 'critical' : 'context' };
 }
 
 // Generic wrapper messages that show up around the actual error rather than describing it —
@@ -111,6 +114,41 @@ function deprioritizeGenericCriticalLines(lines: FailureLogLine[]): FailureLogLi
   return lines.map((line) =>
     line.severity === 'critical' && isGenericCriticalLine(line) ? { ...line, severity: 'context' } : line
   );
+}
+
+/**
+ * A failed assertion is filed as 'context' (a consequence) whenever there's a more specific
+ * 'critical' line — a network/TLS/timeout error — that actually caused it. But plenty of checks
+ * fail with nothing else in the logs but the assertion itself (e.g. "Status code is 200" simply
+ * didn't hold) — there, the assertion IS the only concrete evidence, so promote it rather than
+ * leaving every line 'context' and telling the model the evidence is too thin to say anything.
+ */
+function promoteAssertionsWhenNoOtherCriticalLine(lines: FailureLogLine[]): FailureLogLine[] {
+  if (lines.some((line) => line.severity === 'critical')) {
+    return lines;
+  }
+
+  return lines.map((line) =>
+    line.text.startsWith(ASSERTION_FAILURE_PREFIX) ? { ...line, severity: 'critical' } : line
+  );
+}
+
+/**
+ * Caps the line count without letting 'critical' lines get pushed out by newer 'context' ones.
+ * Within a single failing run, the root cause (e.g. a TLS error early in the script) logs
+ * *before* the assertion failures it goes on to trigger — so under a plain most-recent-first
+ * truncation, a run with more than MAX_LOG_LINES lines would drop the one line that actually
+ * explains the failure and keep only its consequences. Guarantees every 'critical' line survives
+ * (up to the budget), then fills any remaining slots with the most recent 'context' lines, while
+ * keeping the original most-recent-first relative order in the result.
+ */
+function selectTopLines(lines: FailureLogLine[]): FailureLogLine[] {
+  const critical = lines.filter((line) => line.severity === 'critical').slice(0, MAX_LOG_LINES);
+  const contextBudget = MAX_LOG_LINES - critical.length;
+  const context = lines.filter((line) => line.severity === 'context').slice(0, contextBudget);
+  const selected = new Set<FailureLogLine>([...critical, ...context]);
+
+  return lines.filter((line) => selected.has(line));
 }
 
 /**
@@ -157,15 +195,17 @@ export async function fetchRecentFailureLogLines(
       .map(([, line]) => line);
 
     const seenText = new Set<string>();
-    const summarized = deprioritizeGenericCriticalLines(
-      rawLines
-        .map(summarizeFailureLine)
-        .filter((line): line is FailureLogLine => line !== null)
-        .filter((line) => (seenText.has(line.text) ? false : (seenText.add(line.text), true)))
+    const summarized = promoteAssertionsWhenNoOtherCriticalLine(
+      deprioritizeGenericCriticalLines(
+        rawLines
+          .map(summarizeFailureLine)
+          .filter((line): line is FailureLogLine => line !== null)
+          .filter((line) => (seenText.has(line.text) ? false : (seenText.add(line.text), true)))
+      )
     );
 
     if (summarized.length > 0) {
-      return summarized.slice(0, MAX_LOG_LINES);
+      return selectTopLines(summarized);
     }
 
     // Nothing matched the expected shape (unexpected log format for this check type) — fall

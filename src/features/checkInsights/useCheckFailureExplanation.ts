@@ -39,6 +39,12 @@ function buildPrompt(
   // the aggregate reachability number back as prose, or guessing based on the check type alone.
   // Labeling each line's severity nudges the model toward the "root cause" lines rather than
   // just restating a "consequence" (e.g. a downstream assertion failure) as if it were the cause.
+  // Log text can originate from whatever the monitored target sent back, so it's untrusted —
+  // low-risk here since the model's reply is only ever rendered as plain text in the UI, never
+  // executed or fed into a tool-using flow. (The Actions menu's "Ask assistant"/"Start
+  // investigation" keep the same lines out of the freeform prompt entirely, passing them only as
+  // tagged structured `data`, not instructions — see buildInvestigationContext in
+  // CheckFailureExplanation.tsx.)
   const logsText =
     recentFailureLogLines.length > 0
       ? `Recent failure reasons from execution logs, most recent first:\n${recentFailureLogLines
@@ -78,6 +84,23 @@ export function useCheckFailureExplanation(check: Check) {
   // read so callers can still show a status (e.g. a healthy/green state) when this is false.
   const showAiExplanation = isCheckFailing && aiCheckExplanationsEnabled;
 
+  // Fetched independently of the AI explanation below — evidence (reachability, alerts, logs)
+  // is useful on its own and shouldn't disappear just because the org opted out of AI
+  // explanations, the LLM app isn't configured, or a chat-completion call happens to fail.
+  const logsQuery = useQuery({
+    // check.job/check.target are the stable decomposition of `check` used as the key elsewhere
+    // in this file; logsUrl only changes with the configured logs datasource, not per-render.
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: ['check_failure_log_lines', check.job, check.target],
+    queryFn: () => {
+      const { start, end } = getStartEnd();
+      return fetchRecentFailureLogLines(logsUrl, check, start, end);
+    },
+    enabled: isCheckFailing,
+    staleTime: STANDARD_REFRESH_INTERVAL,
+  });
+  const recentFailureLogLines = logsQuery.data ?? [];
+
   // Only pay for the LLM app health-check once there's actually a reason to show something —
   // no need to ask on every healthy check's dashboard, or when the org hasn't opted in at all.
   const llmEnabledQuery = useLlmEnabled(showAiExplanation);
@@ -95,15 +118,13 @@ export function useCheckFailureExplanation(check: Check) {
       check.disableReason,
       reachabilityFraction === undefined ? null : Math.round(reachabilityFraction * 1000),
       Array.from(firingAlertNames).sort().join(','),
+      recentFailureLogLines,
     ],
     queryFn: async () => {
       const enabled = await llm.enabled();
       if (!enabled) {
         return null;
       }
-
-      const { start, end } = getStartEnd();
-      const recentFailureLogLines = await fetchRecentFailureLogLines(logsUrl, check, start, end);
 
       const response = await llm.chatCompletions({
         model: llm.Model.BASE,
@@ -120,35 +141,32 @@ export function useCheckFailureExplanation(check: Check) {
       });
 
       const explanation = response.choices[0]?.message.content?.trim();
-      if (!explanation) {
-        return null;
-      }
-
-      // Kept alongside the explanation (rather than re-derived by the caller) so the UI can show
-      // exactly the evidence the model saw, not a live/possibly-since-changed version of it.
-      return { explanation, recentFailureLogLines };
+      return explanation || null;
     },
-    enabled: showAiExplanation && Boolean(llmEnabled),
+    // Waits for logs to finish loading (isFetched, not just !isLoading, so a still-pending first
+    // fetch doesn't slip through) so the LLM sees the real evidence instead of an empty array.
+    enabled: showAiExplanation && Boolean(llmEnabled) && logsQuery.isFetched,
     staleTime: STANDARD_REFRESH_INTERVAL,
     retry: false,
   });
 
   // Covers the whole investigation, not just the chat completion call: the moment the check is
   // confirmed failing we're already "investigating" from the user's perspective, so this stays
-  // true through the LLM health-check too, not just once the actual explanation request starts.
+  // true through the log fetch and the LLM health-check too, not just once the actual
+  // explanation request starts.
   const isLoading =
-    showAiExplanation && (llmEnabledQuery.isLoading || (Boolean(llmEnabled) && explanationQuery.isLoading));
+    showAiExplanation &&
+    (llmEnabledQuery.isLoading || (Boolean(llmEnabled) && (logsQuery.isLoading || explanationQuery.isLoading)));
 
   return {
     isCheckFailing,
     showAiExplanation,
-    explanation: explanationQuery.data?.explanation,
+    explanation: explanationQuery.data ?? undefined,
     isLoading,
-    isError: explanationQuery.isError,
     facts: {
       reachabilityFraction,
       firingAlertNames,
-      recentFailureLogLines: explanationQuery.data?.recentFailureLogLines ?? [],
+      recentFailureLogLines,
     },
   };
 }
