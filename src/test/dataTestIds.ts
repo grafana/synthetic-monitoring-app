@@ -52,6 +52,7 @@ export const RECOMMENDATIONS_TEST_ID = {
   emptyState: 'recommendations empty-state',
   attentionRow: 'recommendations attention-row',
   legend: 'recommendations legend',
+  calsUnavailable: 'recommendations cals-unavailable',
 } as const;
 
 export const CHECKSTER_TEST_ID = {

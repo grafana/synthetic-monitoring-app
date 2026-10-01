@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { t, Trans } from '@grafana/i18n';
-import { Button, EmptyState, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Alert, Button, EmptyState, LoadingPlaceholder, Stack, Text, useStyles2 } from '@grafana/ui';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
@@ -43,8 +43,13 @@ function RecommendationsTabContent() {
   const styles = useStyles2(getStyles);
   const { data: checks } = useSuspenseChecks();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
-  const { data: calData } = useTenantCostAttributionLabels();
+  const { data: calData, isLoading: isCALsLoading, isError: isCALsError } = useTenantCostAttributionLabels();
   const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);
+  // No labels and not-yet-known are the same empty array to the finders, so wait for the
+  // query to settle before deciding what to show. Otherwise the cost finding is missing
+  // from the first render, the empty state and the one-shot visit impression.
+  const isCALsUnresolved = isCALsEnabled && isCALsLoading;
+  const isCALsUnavailable = isCALsEnabled && isCALsError;
 
   const recommendations = useMemo(() => computeRecommendations({ checks, calNames }), [checks, calNames]);
   const { dismissed, dismiss, restoreAll } = useDismissedRecommendations();
@@ -66,10 +71,15 @@ function RecommendationsTabContent() {
     checkCount: checks.length,
     dismissedCount,
     focusedId,
+    isComplete: !isCALsUnresolved,
   });
 
   if (checks.length === 0) {
     return <ChecksEmptyState />;
+  }
+
+  if (isCALsUnresolved) {
+    return <LoadingPlaceholder text={t('recommendations.loading', 'Looking for findings...')} />;
   }
 
   return (
@@ -83,7 +93,18 @@ function RecommendationsTabContent() {
             <Feedback feature="recommendations" about={{ text: `New feature!` }} />
           </div>
         </Stack>
-        {recommendations.length === 0 && (
+        {isCALsUnavailable && (
+          <Alert
+            severity="warning"
+            title={t('recommendations.calsUnavailable.title', 'Cost attribution labels could not be loaded')}
+            data-testid={RECOMMENDATIONS_TEST_ID.calsUnavailable}
+          >
+            <Trans i18nKey="recommendations.calsUnavailable.body">
+              Checks missing cost attribution labels are not included below. Every other finding is unaffected.
+            </Trans>
+          </Alert>
+        )}
+        {recommendations.length === 0 && !isCALsUnavailable && (
           <EmptyState
             variant="completed"
             message={t('recommendations.emptyState.message', 'Nothing needs your attention')}
