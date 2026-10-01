@@ -1,15 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Provider } from 'react-redux';
-import { type ContactPoint, ContactPointSelector, notificationsAPIv1beta1, useListContactPoints } from '@grafana/alerting/unstable';
+import { type ContactPoint, ContactPointSelector, type Integration, notificationsAPIv1beta1, useListContactPoints } from '@grafana/alerting/unstable';
 import { Alert, Button, Field, Stack, Text, TextLink } from '@grafana/ui';
 import { configureStore } from '@reduxjs/toolkit';
 import { setupListeners } from '@reduxjs/toolkit/query';
+
+import { encodeReceiverForUrl } from './alertRoutingUtils';
+
+function describeDestination(integration: Integration): string {
+  // Only display known destination fields; URLs and credentials can contain secrets.
+  switch (integration.type) {
+    case 'email': {
+      const addresses = integration.settings.addresses;
+      return typeof addresses === 'string' && addresses.trim()
+        ? `Email: ${addresses}`
+        : 'Email: recipient details unavailable';
+    }
+    case 'slack': {
+      const recipient = integration.settings.recipient;
+      return typeof recipient === 'string' && recipient.trim()
+        ? `Slack: ${recipient}`
+        : 'Slack: destination details unavailable';
+    }
+    case 'pagerduty':
+      return 'PagerDuty integration';
+    default:
+      return `${integration.type} integration — view destination in Grafana Alerting`;
+  }
+}
 
 // Keep this selection outside the check form: this prototype never writes routing.
 const ContactPointPrototypeContent = () => {
   const [selected, setSelected] = useState<ContactPoint | null>(null);
   const { currentData, isError, isLoading, refetch } = useListContactPoints();
+  const selectedContactPoint: ContactPoint | undefined = selected
+    ? currentData?.items.find((contactPoint: ContactPoint) => contactPoint.metadata.name === selected.metadata.name)
+    : undefined;
 
   return (
     <Stack direction="column" gap={2}>
@@ -36,7 +63,27 @@ const ContactPointPrototypeContent = () => {
       {!isLoading && !isError && currentData?.items.length === 0 && (
         <Text>No contact points found. Create one in Grafana Alerting, then refresh.</Text>
       )}
-      {selected && <Text>Preview destination: {selected.spec.title}. Current routing below still applies.</Text>}
+      {selectedContactPoint && (
+        <Stack direction="column" gap={1}>
+          <Text weight="medium">Destinations for {selectedContactPoint.spec.title}</Text>
+          {selectedContactPoint.spec.integrations.length > 0 ? (
+            <ul>
+              {selectedContactPoint.spec.integrations.map((integration: Integration, index: number) => (
+                <li key={index}>{describeDestination(integration)}</li>
+              ))}
+            </ul>
+          ) : (
+            <Text>This contact point has no integrations and will not send notifications.</Text>
+          )}
+          <TextLink
+            href={`/alerting/notifications/receivers/${encodeReceiverForUrl(selectedContactPoint.spec.title)}/edit`}
+            external
+          >
+            View contact point details
+          </TextLink>
+          <Text color="secondary">Preview only. Existing notification routing still applies.</Text>
+        </Stack>
+      )}
       <Stack gap={2}>
         <TextLink href="/alerting/notifications" external>
           Manage contact points
