@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAssistant, useTerms } from '@grafana/assistant';
+import { TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant, useTerms } from '@grafana/assistant';
 import { FieldType, toDataFrame } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { fireEvent, screen, within } from '@testing-library/react';
@@ -476,6 +476,29 @@ describe('ReliabilityInboxPage', () => {
     await user.click(screen.getByRole('button', { name: 'Open Assistant' }));
     expect(openAssistant).toHaveBeenCalledWith({ origin: 'grafana-synthetic-monitoring-app/reliability-inbox' });
     expect(generate).not.toHaveBeenCalled();
+  });
+
+  it('offers a retry, not the Assistant setup, when the terms check fails', async () => {
+    jest
+      .mocked(useTerms)
+      .mockReturnValue({ accepted: false, termsType: null, loading: false, error: 'Failed to check terms' });
+    const generate = jest.fn(() => ({ json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } }));
+    server.use(apiRoute('reliabilityInboxSuggestions', { result: generate }));
+    const recheck = jest.fn();
+    document.addEventListener(TERMS_AND_CONDITIONS_REFRESH_EVENT, recheck);
+
+    const { user } = render(<ReliabilityInboxPage />, {
+      path: generateRoutePath(AppRoutes.ReliabilityInbox),
+      route: getRoute(AppRoutes.ReliabilityInbox),
+    });
+
+    expect(await screen.findByText('The Reliability Inbox service is unavailable. Try again later.')).toBeVisible();
+    expect(screen.queryByText('Check Suggestions needs Grafana Assistant')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(recheck).toHaveBeenCalled();
+    expect(generate).not.toHaveBeenCalled();
+    document.removeEventListener(TERMS_AND_CONDITIONS_REFRESH_EVENT, recheck);
   });
 
   it('keeps current suggestions usable while looking for new opportunities', async () => {

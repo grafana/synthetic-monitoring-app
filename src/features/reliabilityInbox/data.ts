@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useAssistant, useTerms } from '@grafana/assistant';
+import { TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant, useTerms } from '@grafana/assistant';
 import { DataFrame, DataSourceInstanceSettings } from '@grafana/data';
 import { queryDS } from 'features/queryDatasources/queryDS';
 import { useLocalStorage } from 'usehooks-ts';
@@ -70,7 +70,16 @@ export function useAIAllowed() {
   return {
     allowed: assistant.isAvailable && terms.accepted,
     isLoading: assistant.isLoading || terms.loading,
+    // A terms check that failed (a timeout, a 5xx) is not a refusal: it still
+    // blocks generation, but is reported apart so the page can offer a retry.
+    // Without Assistant there are no terms to check, so its failure is moot.
+    error: assistant.isAvailable ? terms.error : null,
   };
+}
+
+// useTerms has no refetch of its own; it re-checks whenever this event fires.
+function retryTermsCheck() {
+  document.dispatchEvent(new Event(TERMS_AND_CONDITIONS_REFRESH_EVENT));
 }
 
 /**
@@ -81,13 +90,24 @@ export function useAIAllowed() {
 export function useReliabilityInboxSuggestions({ includeDismissed = false } = {}) {
   const ai = useAIAllowed();
   const query = useReliabilityInboxQuery(ai.allowed, includeDismissed);
+  const aiError = ai.isLoading ? null : ai.error;
 
   return {
     ...query,
     isLoading: query.isLoading || (ai.isLoading && !query.data),
-    aiRequired: !ai.isLoading && !ai.allowed,
+    // A failed terms check goes through the page's usual error state, whose
+    // Retry runs the check again (see refetch).
+    isError: query.isError || Boolean(aiError),
+    error: query.error ?? aiError,
+    aiRequired: !ai.isLoading && !aiError && !ai.allowed,
     // refetch() runs even a disabled query, so the gate has to cover it too.
-    refetch: () => (ai.allowed ? query.refetch() : Promise.resolve(undefined)),
+    refetch: () => {
+      if (aiError) {
+        retryTermsCheck();
+      }
+
+      return ai.allowed ? query.refetch() : Promise.resolve(undefined);
+    },
   };
 }
 

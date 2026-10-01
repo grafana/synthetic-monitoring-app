@@ -50,6 +50,7 @@ jest.mock('@grafana/assistant', () => {
     useAssistant,
     isAssistantAvailable,
     useTerms,
+    TERMS_AND_CONDITIONS_REFRESH_EVENT: 'grafana-assistant-terms-and-conditions-refresh',
     createAssistantContextItem,
   };
 });
