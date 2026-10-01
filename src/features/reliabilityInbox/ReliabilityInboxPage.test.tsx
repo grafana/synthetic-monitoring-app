@@ -458,7 +458,7 @@ describe('ReliabilityInboxPage', () => {
     expect(await screen.findByText('The Reliability Inbox service is unavailable. Try again later.')).toBeVisible();
   });
 
-  it('does not generate suggestions, which uses AI, until the Assistant terms are accepted', async () => {
+  it('does not generate suggestions when the Assistant terms are not accepted', async () => {
     jest
       .mocked(useTerms)
       .mockReturnValue({ accepted: false, termsType: 'termsAndConditions', loading: false, error: null });
