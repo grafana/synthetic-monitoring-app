@@ -245,6 +245,18 @@ Tracks when the duplicate check button is clicked.
 | --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being duplicated. |
 
+### check_templates
+
+#### synthetic-monitoring_check_templates_template_selected
+
+Tracks selection of a template card, before its configuration drawer opens.
+
+##### Properties
+
+| name              | type             | description                                                     |
+| ----------------- | ---------------- | --------------------------------------------------------------- |
+| check_template_id | `"broken_links"` | Stable template identifier. Never a URL, check name, or script. |
+
 ### cloud_setup
 
 #### synthetic-monitoring_cloud_setup_cli_command_copied
