@@ -133,7 +133,7 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   legendBar: css({
     width: 14,
     height: 4,
-    borderRadius: 2,
+    borderRadius: theme.shape.radius.default,
   }),
 
   panel: css({

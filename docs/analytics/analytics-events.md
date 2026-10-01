@@ -490,6 +490,78 @@ Tracks when a private probe is deleted.
 
 Tracks when a private probe's token is reset.
 
+### recommendations
+
+#### synthetic-monitoring_recommendations_tab_viewed
+
+Tracks a visit to the Recommendations tab.
+
+##### Properties
+
+| name           | type                  | description                                                   |
+| -------------- | --------------------- | ------------------------------------------------------------- |
+| findingCount   | `number`              | Findings for this tenant, dismissed ones included.            |
+| dismissedCount | `number`              | How many of those the user had dismissed.                     |
+| checkCount     | `number`              | How many checks the tenant has.                               |
+| focusSource    | `undefined \| string` | The `RecommendationId` a `?finding=` link pointed at, if any. |
+
+#### synthetic-monitoring_recommendations_finding_shown
+
+Tracks the first time a finding's panel is rendered in a visit.
+
+##### Properties
+
+| name               | type     | description                            |
+| ------------------ | -------- | -------------------------------------- |
+| finding            | `string` | The `RecommendationId` of the finding. |
+| affectedCheckCount | `number` | How many checks the finding covers.    |
+
+#### synthetic-monitoring_recommendations_finding_actioned
+
+Tracks a click through to the check list or a check's editor.
+
+##### Properties
+
+| name    | type                              | description                                                                |
+| ------- | --------------------------------- | -------------------------------------------------------------------------- |
+| finding | `string`                          | The `RecommendationId` of the finding.                                     |
+| scope   | `"finding" \| "group" \| "check"` | What was clicked: the whole finding, a group within it, or a single check. |
+
+#### synthetic-monitoring_recommendations_action_completed
+
+Tracks an action carried out from the tab itself.
+
+##### Properties
+
+| name       | type                                  | description                                                               |
+| ---------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| finding    | `string`                              | The `RecommendationId` of the finding.                                    |
+| action     | `"alerts_added" \| "check_resumed"`   | What was changed.                                                         |
+| checkCount | `number`                              | How many checks the change reached.                                       |
+| scope      | `"finding" \| "check" \| "selection"` | Whether it ran for the whole finding, the ticked rows, or a single check. |
+
+#### synthetic-monitoring_recommendations_finding_dismissed
+
+Tracks a finding, or a check within one, being hidden.
+
+##### Properties
+
+| name    | type                   | description                                                  |
+| ------- | ---------------------- | ------------------------------------------------------------ |
+| finding | `string`               | The `RecommendationId` of the finding.                       |
+| scope   | `"finding" \| "check"` | Whether the whole finding was hidden or one check within it. |
+
+#### synthetic-monitoring_recommendations_finding_restored
+
+Tracks hidden findings or checks being brought back.
+
+##### Properties
+
+| name    | type                   | description                                                  |
+| ------- | ---------------------- | ------------------------------------------------------------ |
+| finding | `string`               | The `RecommendationId` of the finding.                       |
+| scope   | `"finding" \| "check"` | Whether the whole finding was hidden or one check within it. |
+
 ### reliability_inbox
 
 #### synthetic-monitoring_reliability_inbox_exposed
