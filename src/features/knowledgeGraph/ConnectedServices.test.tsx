@@ -39,11 +39,13 @@ function setKgInstalled(value: boolean) {
 
 /** Serves the exposed mini graph for its ID only; everything else keeps the null default. */
 function setExposedMiniGraph(Stub: React.ComponentType<ExposedMiniGraphProps>) {
-  jest.mocked(usePluginComponent).mockImplementation((id: string) =>
-    id === KG_ENTITY_GRAPH_COMPONENT_ID
-      ? { component: Stub as React.ComponentType, isLoading: false }
-      : { component: null, isLoading: false }
-  );
+  jest
+    .mocked(usePluginComponent)
+    .mockImplementation((id: string) =>
+      id === KG_ENTITY_GRAPH_COMPONENT_ID
+        ? { component: Stub as React.ComponentType, isLoading: false }
+        : { component: null, isLoading: false }
+    );
 }
 
 beforeEach(() => {
@@ -173,4 +175,8 @@ it('links the section header to this check and its services in the KG entity gra
   );
   expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
   expect(params.get('view')).toBe('graph');
+  expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
+  expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
+  expect(params.get('start')).toBe(String(Date.parse(MOCK_TIME_RANGE_FROM)));
+  expect(params.get('end')).toBe(String(Date.parse(MOCK_TIME_RANGE_TO)));
 });

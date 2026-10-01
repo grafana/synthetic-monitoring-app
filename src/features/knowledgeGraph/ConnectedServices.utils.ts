@@ -9,20 +9,9 @@ export function escapeCypher(value: string): string {
 }
 
 /**
- * Builds the Cypher query for a check's service neighbourhood.
- *
- * Starting from the SyntheticCheck entity, it walks the MONITORED_BY relationship (Service
- * MONITORED_BY check — the direction the KG's insight propagation expects) to the linked
- * Service, then one hop of CALLS in either direction. Both directions matter for RCA: a failing
- * check could be caused by a broken downstream dependency, or be the cause of failures in an
- * upstream caller. Returning both surfaces red-ringed neighbours either way. We deliberately
- * keep it to a single hop so the graph stays a readable hint rather than the full topology
- * (which lives in the Knowledge Graph app).
- *
- * Use zero or one CALLS hops: the zero-hop match returns the monitored service itself when
- * it has no neighbours. Returning an unmatched OPTIONAL MATCH variable makes some KG
- * backends drop the entire result, including the check and its MONITORED_BY connection.
- * Match undirected to include callers and dependencies; edge source/target retains direction.
+ * Show services monitoring this check and their immediate callers/dependencies.
+ * Restrict expansion to CALLS in either direction; other service associations are outside
+ * this preview's scope. Zero hops retains monitored services without CALLS neighbours.
  */
 export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
   return [
@@ -82,18 +71,10 @@ function toQueryString(params: URLSearchParams): string {
 }
 
 /**
- * Deep link to this check's neighbourhood in the Knowledge Graph's entity graph — the same
- * entities this section renders, in the app that owns them.
- *
- * The search is anchored on the check, connected to Services, so the graph opens on exactly the
- * services this check monitors. Anchoring on the monitored service instead would open that
- * service's own neighbourhood, which is a different (and wider) set.
- *
- * It deliberately doesn't link to the Service's entity page (`/catalog/Service/<name>`): that page
- * is behind the KG's own feature gating, so on stacks without it the link lands on an empty
- * "entity not found" page. The entity graph is available everywhere.
+ * Open the check, its monitored services, and their service neighbours. Environment selection
+ * stays inside the exposed mini graph, so this link intentionally opens across environments.
  */
-export function getCheckGraphUrl(checkEntityName: string): string {
+export function getCheckGraphUrl(checkEntityName: string, start: number, end: number): string {
   const params = new URLSearchParams();
   appendGraphSearchParams(params, {
     entityType: KG_SYNTHETIC_CHECK_ENTITY_TYPE,
@@ -101,6 +82,16 @@ export function getCheckGraphUrl(checkEntityName: string): string {
     scope: {},
     connectToEntityTypes: [KG_SERVICE_ENTITY_TYPE],
   });
+  // The graph search chains these criteria: check -> monitored Service -> Service neighbours.
+  // A self filter retains monitored services with no neighbours (the API uses zero-or-one hop).
+  params.set('filterCriteria[1][entityType]', KG_SERVICE_ENTITY_TYPE);
+  params.set('filterCriteria[1][connectToEntityTypes][0]', KG_SERVICE_ENTITY_TYPE);
+  params.set('filterCriteria[1][propertyMatchers][0][name]', 'name');
+  params.set('filterCriteria[1][propertyMatchers][0][op]', 'IS NOT NULL');
+  params.set('filterCriteria[1][propertyMatchers][0][type]', 'String');
+  params.set('filterCriteria[1][propertyMatchers][0][value]', '');
+  params.set('start', String(start));
+  params.set('end', String(end));
 
   return `/a/${KG_PLUGIN_ID}/entities?${toQueryString(params)}`;
 }
