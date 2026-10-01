@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Drawer, Field, Input, Stack, Text } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Alert, Button, Drawer, Field, Input, Stack, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
-import { jobSchema } from 'schemas/general/Job';
 
 import { CheckType, FeatureName } from 'types';
 import { getUserPermissions } from 'data/permissions';
@@ -28,11 +29,9 @@ export function BrokenLinksDrawer({ onClose }: { onClose: () => void }) {
 
 function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; foldersEnabled: boolean }) {
   const [url, setUrl] = useState('');
-  const [job, setJob] = useState('Detect broken links');
-  const nameEdited = useRef(false);
+  const styles = useStyles2(getStyles);
   const [maxLinks, setMaxLinks] = useState('');
   const [timeout, setLinkTimeout] = useState('');
-  const [statuses, setStatuses] = useState('');
   const [folderUid, setFolderUid] = useState<string>();
   const [folderChanged, setFolderChanged] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -61,31 +60,15 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     }
   }
 
-  function commitUrl() {
-    const parsed = parseUrl();
-    if (!parsed) {
-      return;
-    }
-    const next = `Detect broken links on ${url.trim()}`;
-    if (!nameEdited.current) {
-      setJob(next);
-    }
-  }
-
   async function createCheck(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (disabled || submitting.current || probeId === undefined) {
       return;
     }
     const parsed = parseUrl();
-    const name = jobSchema.safeParse(job.trim());
-    const validStatuses = statuses.trim() ? statuses.split(',').map((status) => Number(status.trim())) : undefined;
     const nextErrors: Record<string, string> = {};
     if (!parsed) {
       nextErrors.url = 'Enter a valid URL starting with https:// or http://.';
-    }
-    if (!name.success) {
-      nextErrors.job = name.error.issues[0].message;
     }
     if (maxLinks.trim() && (!Number.isSafeInteger(Number(maxLinks)) || Number(maxLinks) < 1)) {
       nextErrors.maxLinks = 'Enter a positive whole number.';
@@ -93,23 +76,19 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     if (timeout.trim() && (!Number.isFinite(Number(timeout)) || Number(timeout) <= 0 || Number(timeout) > 60)) {
       nextErrors.timeout = 'Enter a timeout greater than 0 and at most 60 seconds.';
     }
-    if (validStatuses?.some((status) => !Number.isInteger(status) || status < 100 || status > 599)) {
-      nextErrors.statuses = 'Enter HTTP status codes from 100 to 599, separated by commas.';
-    }
     if (foldersEnabled && folderStatus === 'available' && !selectedFolder) {
       nextErrors.folder = 'Choose a folder.';
     }
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length || !parsed || !name.success) {
+    if (Object.keys(nextErrors).length || !parsed) {
       return;
     }
 
     submitting.current = true;
     try {
-      const check = createBrokenLinksCheck(parsed, name.data, {
+      const check = createBrokenLinksCheck(parsed, {
         maxLinks: maxLinks.trim() ? Number(maxLinks) : undefined,
         timeout: timeout.trim() ? `${Number(timeout)}s` : undefined,
-        validStatuses,
       });
       const result = await mutation.mutateAsync({
         ...check,
@@ -129,7 +108,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
   return (
     <Drawer
       title="Detect broken links"
-      subtitle="Create a check from a template"
+      subtitle="Create a browser check"
       size="md"
       closeOnMaskClick={!mutation.isPending}
       onClose={() => {
@@ -138,81 +117,22 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
         }
       }}
     >
-      <form onSubmit={createCheck} noValidate>
+      <form onSubmit={createCheck} autoComplete="off" noValidate>
         <Stack direction="column" gap={2}>
-          <Text>
-            Open a page in a browser, collect its links, and check their HTTP responses. Broken links fail the check.
-          </Text>
+          <Text>Check a page for broken links on a regular schedule.</Text>
           <fieldset
             disabled={mutation.isPending}
             style={{ border: 0, padding: 0, margin: 0, minWidth: 0, width: '100%' }}
           >
-            <Field label="Page URL" htmlFor="template-url" error={errors.url} invalid={!!errors.url}>
+            <Field label="Page URL" required htmlFor="template-url" error={errors.url} invalid={!!errors.url}>
               <Input
                 id="template-url"
                 type="url"
+                required
                 autoFocus
                 placeholder="https://grafana.com"
                 value={url}
-                onBlur={commitUrl}
                 onChange={(event) => setUrl(event.currentTarget.value)}
-              />
-            </Field>
-            <Field label="Check name" htmlFor="template-job" error={errors.job} invalid={!!errors.job}>
-              <Input
-                id="template-job"
-                value={job}
-                onChange={(event) => {
-                  nameEdited.current = true;
-                  setJob(event.currentTarget.value);
-                }}
-              />
-            </Field>
-            <Field
-              label="Maximum links (optional)"
-              htmlFor="template-max-links"
-              description="Check up to this many unique links from the page."
-              error={errors.maxLinks}
-              invalid={!!errors.maxLinks}
-            >
-              <Input
-                id="template-max-links"
-                type="number"
-                min={1}
-                step={1}
-                placeholder="10"
-                value={maxLinks}
-                onChange={(event) => setMaxLinks(event.currentTarget.value)}
-              />
-            </Field>
-            <Field
-              label="Timeout per link in seconds (optional)"
-              htmlFor="template-timeout"
-              error={errors.timeout}
-              invalid={!!errors.timeout}
-            >
-              <Input
-                id="template-timeout"
-                type="number"
-                min={0.1}
-                max={60}
-                placeholder="10"
-                value={timeout}
-                onChange={(event) => setLinkTimeout(event.currentTarget.value)}
-              />
-            </Field>
-            <Field
-              label="Accepted HTTP status codes (optional)"
-              htmlFor="template-statuses"
-              description="Separate codes with commas."
-              error={errors.statuses}
-              invalid={!!errors.statuses}
-            >
-              <Input
-                id="template-statuses"
-                placeholder="200"
-                value={statuses}
-                onChange={(event) => setStatuses(event.currentTarget.value)}
               />
             </Field>
             {foldersEnabled && (
@@ -227,6 +147,43 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
                 />
               </Field>
             )}
+            <div className={styles.options}>
+              <Field
+                label="Link limit"
+                htmlFor="template-max-links"
+                description="Maximum links per run."
+                error={errors.maxLinks}
+                invalid={!!errors.maxLinks}
+              >
+                <Input
+                  id="template-max-links"
+                  type="number"
+                  min={1}
+                  step={1}
+                  placeholder="10"
+                  value={maxLinks}
+                  onChange={(event) => setMaxLinks(event.currentTarget.value)}
+                />
+              </Field>
+              <Field
+                label="Timeout"
+                description="Wait time per link."
+                htmlFor="template-timeout"
+                error={errors.timeout}
+                invalid={!!errors.timeout}
+              >
+                <Input
+                  id="template-timeout"
+                  suffix="seconds"
+                  type="number"
+                  min={0.1}
+                  max={60}
+                  placeholder="10"
+                  value={timeout}
+                  onChange={(event) => setLinkTimeout(event.currentTarget.value)}
+                />
+              </Field>
+            </div>
           </fieldset>
           {!probesLoading && !probesError && probeId === undefined && (
             <Alert title="No compatible probe available" severity="error">
@@ -257,3 +214,11 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     </Drawer>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  options: css({
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
+    columnGap: theme.spacing(2),
+  }),
+});

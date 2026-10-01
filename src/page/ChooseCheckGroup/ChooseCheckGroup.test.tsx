@@ -105,10 +105,10 @@ it('opens the template drawer from the redesigned card', async () => {
   const card = await screen.findByRole('button', { name: 'Detect broken links' });
   await waitFor(() => expect(card).toBeEnabled());
   await user.click(card);
-  expect(await screen.findByRole('textbox', { name: 'Page URL' })).toBeInTheDocument();
-  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Detect broken links');
+  expect(await screen.findByRole('textbox', { name: /^Page URL/ })).toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: 'Check name' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
-  expect(screen.queryByRole('textbox', { name: 'Page URL' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: /^Page URL/ })).not.toBeInTheDocument();
 });
 
 it('disables templates when the check limit is reached', async () => {

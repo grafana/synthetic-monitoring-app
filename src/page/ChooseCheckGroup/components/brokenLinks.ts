@@ -7,14 +7,16 @@ import { DEFAULT_CHECK_CONFIG_MAP } from 'components/Checkster/constants';
 export interface BrokenLinksOptions {
   maxLinks?: number;
   timeout?: string;
-  validStatuses?: number[];
 }
 
-export function createBrokenLinksCheck(url: URL, job: string, options: BrokenLinksOptions): BrowserCheck {
+export function createBrokenLinksCheck(url: URL, options: BrokenLinksOptions): BrowserCheck {
   const defaults = DEFAULT_CHECK_CONFIG_MAP[CheckType.Browser] as BrowserCheck;
   return {
     ...defaults,
-    job,
+    // Check names allow at most 128 characters and cannot contain quotes or commas.
+    job: `Detect broken links on ${url.href}`
+      .replace(/[\x27",]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`)
+      .slice(0, 128),
     target: url.href,
     frequency: ONE_HOUR_IN_MS,
     settings: { browser: { ...defaults.settings.browser, script: encode(createBrokenLinksScript(url.href, options)) } },

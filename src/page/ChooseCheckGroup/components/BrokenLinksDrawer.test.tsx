@@ -44,23 +44,21 @@ it('creates an hourly check directly with library options and an online probe', 
     )
   );
   const { user, onClose } = await openDrawer();
-  await user.type(screen.getByRole('textbox', { name: 'Page URL' }), 'https://grafana.com');
+  expect(screen.getByRole('textbox', { name: /^Page URL/ })).toBeRequired();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.tab();
-  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Detect broken links on https://grafana.com');
-  const maxLinks = screen.getByRole('spinbutton', { name: /^Maximum links/ });
+  expect(screen.queryByRole('textbox', { name: 'Check name' })).not.toBeInTheDocument();
+  const maxLinks = screen.getByRole('spinbutton', { name: /^Link limit/ });
   await user.clear(maxLinks);
   await user.type(maxLinks, '25');
-  const timeout = screen.getByRole('spinbutton', { name: 'Timeout per link in seconds (optional)' });
+  const timeout = screen.getByRole('spinbutton', { name: /^Timeout/ });
   await user.clear(timeout);
   await user.type(timeout, '5');
-  const statuses = screen.getByRole('textbox', { name: /^Accepted HTTP/ });
-  await user.clear(statuses);
-  await user.type(statuses, '200,204');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   const { body } = await read();
   expect(body).toMatchObject({
-    job: 'Detect broken links on https://grafana.com',
+    job: 'Detect broken links on https://grafana.com/',
     target: 'https://grafana.com/',
     frequency: ONE_HOUR_IN_MS,
     probes: [ONLINE_PROBE.id],
@@ -69,7 +67,7 @@ it('creates an hourly check directly with library options and an online probe', 
   const script = decode(body.settings.browser.script);
   expect(script).toContain('"maxLinks": 25');
   expect(script).toContain('"timeout": "5s"');
-  expect(script).toContain('204');
+  expect(script).not.toContain('validStatuses');
   expect(script).not.toContain('failOnBroken');
   expect(locationService.getLocation().pathname).toContain('/checks/123');
   expect(reportInteraction).toHaveBeenCalledWith(
@@ -78,37 +76,16 @@ it('creates an hourly check directly with library options and an online probe', 
   );
 });
 
-it('updates suggested names on blur but preserves a custom name', async () => {
-  const { user } = await openDrawer();
-  const url = screen.getByRole('textbox', { name: 'Page URL' });
-  const name = screen.getByRole('textbox', { name: 'Check name' });
-  expect(name).toHaveValue('Detect broken links');
-  await user.type(url, 'https://grafana.com');
-  await user.tab();
-  await user.clear(url);
-  await user.type(url, 'https://test.k6.io');
-  await user.tab();
-  expect(name).toHaveValue('Detect broken links on https://test.k6.io');
-  await user.clear(name);
-  await user.type(name, 'My links');
-  await user.clear(url);
-  await user.type(url, 'https://example.com');
-  await user.tab();
-  expect(name).toHaveValue('My links');
-});
-
 it('validates inputs before sending a check', async () => {
   const { record, requests } = getServerRequests();
   server.use(apiRoute('addCheck', {}, record));
   const { user } = await openDrawer();
-  await user.clear(screen.getByRole('textbox', { name: 'Check name' }));
-  await user.type(screen.getByRole('textbox', { name: 'Page URL' }), 'ftp://example.com');
-  const maximum = screen.getByRole('spinbutton', { name: /^Maximum links/ });
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'ftp://example.com');
+  const maximum = screen.getByRole('spinbutton', { name: /^Link limit/ });
   await user.clear(maximum);
   await user.type(maximum, '0');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   expect(await screen.findByText('Enter a valid URL starting with https:// or http://.')).toBeInTheDocument();
-  expect(screen.getByText('Job name is required')).toBeInTheDocument();
   expect(screen.getByText('Enter a positive whole number.')).toBeInTheDocument();
   expect(requests).toHaveLength(0);
 });
@@ -116,11 +93,11 @@ it('validates inputs before sending a check', async () => {
 it('preserves inputs on API failure and allows retry', async () => {
   server.use(apiRoute('addCheck', { result: () => ({ status: 500, json: { err: 'Creation failed' } }) }));
   const { user, onClose } = await openDrawer();
-  await user.type(screen.getByRole('textbox', { name: 'Page URL' }), 'https://grafana.com');
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.tab();
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   expect(await screen.findByText('Unable to create check')).toBeInTheDocument();
-  expect(screen.getByRole('textbox', { name: 'Check name' })).toHaveValue('Detect broken links on https://grafana.com');
+  expect(screen.queryByRole('textbox', { name: 'Check name' })).not.toBeInTheDocument();
   expect(onClose).not.toHaveBeenCalled();
   server.use(apiRoute('addCheck', { result: () => ({ json: COMPLEX_BROWSER_CHECK }) }));
   await user.click(screen.getByRole('button', { name: 'Create check' }));
@@ -146,10 +123,12 @@ it('uses library defaults when optional settings are empty and preselects a prob
   const { user, onClose } = await openDrawer();
   expect(screen.queryByRole('combobox', { name: 'Probe' })).not.toBeInTheDocument();
   expect(screen.queryByRole('switch', { name: 'Fail on broken links' })).not.toBeInTheDocument();
-  expect(screen.getByRole('spinbutton', { name: /^Maximum links \(optional\)/ })).toHaveValue(null);
-  expect(screen.getByRole('spinbutton', { name: 'Timeout per link in seconds (optional)' })).toHaveValue(null);
-  expect(screen.getByRole('textbox', { name: /^Accepted HTTP/ })).toHaveValue('');
-  await user.type(screen.getByRole('textbox', { name: 'Page URL' }), 'https://grafana.com');
+  expect(screen.getByRole('spinbutton', { name: /^Link limit/ })).toHaveValue(null);
+  expect(screen.getByRole('spinbutton', { name: /^Timeout/ })).toHaveValue(null);
+  expect(screen.getByText('Create a browser check')).toBeInTheDocument();
+  expect(screen.getByText('Check a page for broken links on a regular schedule.')).toBeInTheDocument();
+  expect(screen.queryByText('Accepted status codes')).not.toBeInTheDocument();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   const { body } = await read();
@@ -157,20 +136,18 @@ it('uses library defaults when optional settings are empty and preselects a prob
   expect(decode(body.settings.browser.script)).toContain('await checkLinks(page, {});');
 });
 
-it('does not overwrite a name the user edited back to the template name or cleared', async () => {
-  const { user } = await openDrawer();
-  const name = screen.getByRole('textbox', { name: 'Check name' });
-  const url = screen.getByRole('textbox', { name: 'Page URL' });
-  await user.clear(name);
-  await user.type(name, 'Detect broken links');
+it('generates a valid name from the latest URL on submit without requiring blur', async () => {
+  const { record, read } = getServerRequests();
+  server.use(apiRoute('addCheck', { result: () => ({ json: COMPLEX_BROWSER_CHECK }) }, record));
+  const { user, onClose } = await openDrawer();
+  const url = screen.getByRole('textbox', { name: /^Page URL/ });
   await user.type(url, 'https://grafana.com');
-  await user.tab();
-  expect(name).toHaveValue('Detect broken links');
-  await user.clear(name);
   await user.clear(url);
-  await user.type(url, 'https://example.com');
-  await user.tab();
-  expect(name).toHaveValue('');
-  await user.click(screen.getByRole('button', { name: 'Create check' }));
-  expect(await screen.findByText('Job name is required')).toBeInTheDocument();
+  await user.type(url, 'https://example.com/path?q=a,b' + 'x'.repeat(150));
+  await user.keyboard('{Enter}');
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  const { body } = await read();
+  expect(body.job).toMatch(/^Detect broken links on https:\/\/example.com\/path\?q=a%2Cb/);
+  expect(body.job.length).toBeLessThanOrEqual(128);
+  expect(body.target).toBe('https://example.com/path?q=a,b' + 'x'.repeat(150));
 });
