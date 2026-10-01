@@ -5,6 +5,7 @@ import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
 import { FeatureName } from 'types';
+import { CheckFolderAccessProvider } from 'contexts/CheckFolderAccessContext';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -34,8 +35,19 @@ const NO_FINDINGS: Recommendation[] = [];
 export function RecommendationsTab() {
   return (
     <QueryErrorBoundary>
-      <RecommendationsTabContent />
+      <RecommendationsTabChecks />
     </QueryErrorBoundary>
+  );
+}
+
+// Findings act on checks, so they need the same folder-level permissions the check list uses.
+function RecommendationsTabChecks() {
+  const { data: checks } = useSuspenseChecks();
+
+  return (
+    <CheckFolderAccessProvider checks={checks}>
+      <RecommendationsTabContent />
+    </CheckFolderAccessProvider>
   );
 }
 
