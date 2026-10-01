@@ -18,6 +18,7 @@ import { CheckList } from 'page/CheckList';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
+import { FeaturesTab } from 'page/ConfigPageLayout/tabs/FeaturesTab';
 import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { LabelMigrationTab } from 'page/ConfigPageLayout/tabs/LabelMigrationTab';
 import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
@@ -161,6 +162,7 @@ export const InitialisedRouter = () => {
         <Route path="terraform" element={<TerraformTab />} />
         {isLabelMigrationEnabled && <Route path="label-migration" element={<LabelMigrationTab />} />}
         {isSecretsManagementEnabled && <Route path="secrets" element={<SecretsManagementTab />} />}
+        <Route path="features" element={<FeaturesTab />} />
       </Route>
 
       <Route path={AppRoutes.Redirect} element={<SceneRedirecter />} />
