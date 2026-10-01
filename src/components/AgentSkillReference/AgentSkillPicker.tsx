@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Card, Icon, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Icon, Stack, styleMixins, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import {
   trackAgentSkillInstallCommandCopied,
@@ -8,6 +8,7 @@ import {
   trackAgentSkillToolSelected,
 } from 'features/tracking/agentSkillEvents';
 
+import { Card } from 'components/Card';
 import { Clipboard } from 'components/Clipboard';
 import { Feedback } from 'components/Feedback';
 
@@ -66,19 +67,24 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
       <div className={styles.cardRow}>
         {AGENT_SKILL_TOOLS.map((tool) => (
           <div key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
-            <Card
-              noMargin
-              onClick={() => handleSelect(tool)}
-              className={cx(styles.toolCard, selectedId === tool.id && styles.toolCardSelected)}
-            >
-              <Card.Heading>
-                <span className={styles.heading}>
+            <Card className={cx(styles.toolCard, selectedId === tool.id && styles.toolCardSelected)}>
+              <Stack alignItems="flex-start" direction="column" gap={1}>
+                <Stack alignItems="center" direction="row" gap={1}>
                   {tool.id === 'claude-code' && <ClaudeIcon />}
-                  {tool.id === 'agent-skills' && <Icon name="ai-sparkle" size="lg" />}
-                  {tool.name}
-                </span>
-              </Card.Heading>
-              <Card.Description>{tool.cardDescription}</Card.Description>
+                  {tool.id === 'agent-skills' && <Icon name="ai-sparkle" size="lg" aria-hidden="true" />}
+                  <Card.Heading variant="h5">
+                    <button
+                      type="button"
+                      className={styles.action}
+                      aria-expanded={selectedId === tool.id}
+                      onClick={() => handleSelect(tool)}
+                    >
+                      {tool.name}
+                    </button>
+                  </Card.Heading>
+                </Stack>
+                <Text color="secondary">{tool.cardDescription}</Text>
+              </Stack>
             </Card>
           </div>
         ))}
@@ -133,15 +139,23 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
     gap: theme.spacing(2),
   }),
-  heading: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
+  action: css({
+    all: 'unset',
+    '&::after': {
+      content: "''",
+      position: 'absolute',
+      inset: 0,
+      borderRadius: theme.shape.radius.default,
+      cursor: 'pointer',
+    },
+    '&:focus-visible::after': styleMixins.getFocusStyles(theme),
   }),
   toolCard: css({
     height: '100%',
+    minWidth: 0,
+    textAlign: 'left',
   }),
   toolCardSelected: css({
-    borderColor: theme.colors.primary.border,
+    boxShadow: `inset 0 0 0 1px ${theme.colors.primary.border}`,
   }),
 });
