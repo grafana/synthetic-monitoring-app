@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useAssistant, useTerms } from '@grafana/assistant';
 import { DataFrame, DataSourceInstanceSettings } from '@grafana/data';
 import { queryDS } from 'features/queryDatasources/queryDS';
 import { useLocalStorage } from 'usehooks-ts';
@@ -57,10 +58,37 @@ function useReliabilityInboxAvailable(enabled: boolean) {
 }
 
 /**
- * Fetches suggestions from the reliability-inbox experiment.
+ * Whether suggestions may be generated here. Generating sends a summary of the
+ * stack's telemetry to an LLM, so it is an AI feature: it needs Grafana
+ * Assistant available and its AI terms accepted by an admin. Agentic Testing
+ * uses the same gate, so one acceptance in Assistant covers every AI feature.
+ */
+export function useAIAllowed() {
+  const assistant = useAssistant();
+  const terms = useTerms();
+
+  return {
+    allowed: assistant.isAvailable && terms.accepted,
+    isLoading: assistant.isLoading || terms.loading,
+  };
+}
+
+/**
+ * Fetches suggestions from the reliability-inbox experiment, only once AI use
+ * is allowed (see useAIAllowed). `aiRequired` means it is not, so there is
+ * nothing to show until Assistant is enabled and its terms are accepted.
  */
 export function useReliabilityInboxSuggestions({ includeDismissed = false } = {}) {
-  return useReliabilityInboxQuery(true, includeDismissed);
+  const ai = useAIAllowed();
+  const query = useReliabilityInboxQuery(ai.allowed, includeDismissed);
+
+  return {
+    ...query,
+    isLoading: query.isLoading || ai.isLoading,
+    aiRequired: !ai.isLoading && !ai.allowed,
+    // refetch() runs even a disabled query, so the gate has to cover it too.
+    refetch: () => (ai.allowed ? query.refetch() : Promise.resolve(undefined)),
+  };
 }
 
 /**

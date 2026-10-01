@@ -1,6 +1,7 @@
 import React from 'react';
+import { useAssistant } from '@grafana/assistant';
 import { PluginPage } from '@grafana/runtime';
-import { Stack, Text, useStyles2 } from '@grafana/ui';
+import { Button, EmptyState, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Feedback } from 'components/Feedback';
@@ -8,7 +9,11 @@ import { Feedback } from 'components/Feedback';
 import { ReliabilityInboxReview } from './components/ReliabilityInboxReview';
 import { SuggestionsRefreshControl } from './components/SuggestionsRefreshControl';
 import { useReliabilityInboxSuggestions } from './data';
-import { RELIABILITY_INBOX_CONTAINER, RELIABILITY_INBOX_PAGE_NAV } from './ReliabilityInboxPage.constants';
+import {
+  ASSISTANT_ORIGIN,
+  RELIABILITY_INBOX_CONTAINER,
+  RELIABILITY_INBOX_PAGE_NAV,
+} from './ReliabilityInboxPage.constants';
 
 export { RELIABILITY_INBOX_PAGE_NAV };
 
@@ -32,11 +37,13 @@ export function ReliabilityInboxPage() {
   return (
     <PluginPage
       actions={
-        <SuggestionsRefreshControl
-          generatedAt={suggestionsQuery.dataUpdatedAt || undefined}
-          isFetching={suggestionsQuery.isFetching}
-          onRefresh={() => void suggestionsQuery.refetch()}
-        />
+        suggestionsQuery.aiRequired ? undefined : (
+          <SuggestionsRefreshControl
+            generatedAt={suggestionsQuery.dataUpdatedAt || undefined}
+            isFetching={suggestionsQuery.isFetching}
+            onRefresh={() => void suggestionsQuery.refetch()}
+          />
+        )
       }
       pageNav={RELIABILITY_INBOX_PAGE_NAV}
       renderTitle={() => <ReliabilityInboxPageTitle />}
@@ -46,10 +53,37 @@ export function ReliabilityInboxPage() {
           <Text element="p" color="secondary">
             Review monitoring gaps discovered from recent traffic.
           </Text>
-          <ReliabilityInboxReview suggestionsQuery={suggestionsQuery} />
+          {suggestionsQuery.aiRequired ? (
+            <AssistantRequired />
+          ) : (
+            <ReliabilityInboxReview suggestionsQuery={suggestionsQuery} />
+          )}
         </Stack>
       </div>
     </PluginPage>
+  );
+}
+
+// Opening Assistant is where an admin accepts its AI terms; once accepted, the
+// page generates suggestions without a reload.
+function AssistantRequired() {
+  const { isAvailable, openAssistant } = useAssistant();
+
+  return (
+    <EmptyState
+      variant="call-to-action"
+      message="Check Suggestions needs Grafana Assistant"
+      button={
+        isAvailable && openAssistant ? (
+          <Button icon="ai-sparkle" onClick={() => openAssistant({ origin: ASSISTANT_ORIGIN })}>
+            Open Assistant
+          </Button>
+        ) : undefined
+      }
+    >
+      Suggestions are ranked with AI, so they are only available when Grafana Assistant is enabled and an admin has
+      accepted its terms.
+    </EmptyState>
   );
 }
 
