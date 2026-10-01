@@ -10,6 +10,7 @@ import {
 
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
+import { useCheckPermissions } from 'contexts/CheckFolderAccessContext';
 import { QUERY_KEYS, useBulkUpdateChecks, useUpdateCheck } from 'data/useChecks';
 
 import {
@@ -132,6 +133,7 @@ interface PausedCheckRowProps {
 function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditClick, onResumed }: PausedCheckRowProps) {
   const queryClient = useQueryClient();
   const { mutateAsync: updateCheck } = useUpdateCheck();
+  const { canWrite } = useCheckPermissions(check);
   const [isResuming, setIsResuming] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const pausedSince = getPausedSince(check);
@@ -158,7 +160,7 @@ function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditCl
       check={check}
       doneLabel={isDone ? t('recommendations.pausedChecks.row.done', 'Resumed') : undefined}
       isSelected={isSelected}
-      onSelectChange={onSelectChange}
+      onSelectChange={canWrite ? onSelectChange : undefined}
       onDismiss={onDismiss}
       onEditClick={onEditClick}
       detail={
@@ -172,7 +174,7 @@ function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditCl
           size="sm"
           variant="primary"
           icon={isResuming ? 'spinner' : 'play'}
-          disabled={isResuming}
+          disabled={isResuming || !canWrite}
           onClick={handleResume}
           aria-label={t('recommendations.pausedChecks.row.resumeLabel', 'Resume {{job}}', { job: check.job })}
         >

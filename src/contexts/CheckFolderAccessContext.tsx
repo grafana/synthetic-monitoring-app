@@ -59,6 +59,11 @@ export function useCheckFolderStatus(check: Pick<Check, 'folderUid'>): CheckFold
   return useCheckFolderAccessContext().getFolderStatus(check);
 }
 
+/** For filtering a list of checks by permission, where a hook per check is not possible. */
+export function useGetCheckPermissions() {
+  return useCheckFolderAccessContext().getPermissions;
+}
+
 export function useBulkCheckPermissions(checks: Array<Pick<Check, 'folderUid'>>) {
   const { getPermissions } = useCheckFolderAccessContext();
   return {

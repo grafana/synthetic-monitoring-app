@@ -7,7 +7,7 @@ import { DB } from 'test/db';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureToggles, runTestAsSMViewer } from 'test/utils';
 
 import { RecommendationCategoryId } from './Recommendations.types';
 import { AlertSensitivity, Check, CheckAlertDraft, CheckAlertType, CheckType, FeatureName } from 'types';
@@ -825,6 +825,32 @@ describe('Recommendations tab', () => {
           expect.objectContaining({ findingCount: 1 })
         )
       );
+    });
+  });
+
+  describe('permissions', () => {
+    it('offers no way to act on checks a viewer cannot write', async () => {
+      runTestAsSMViewer();
+
+      await renderCategory([UNALERTED()], RecommendationCategoryId.Alerting);
+
+      const section = await findSection(/1 of 1 checks have no alerts/);
+
+      expect(within(section).getByRole('button', { name: /set up alerts for unalerted/i })).toBeDisabled();
+      // Selection exists only to bulk-apply, so it goes too.
+      expect(within(section).queryByRole('checkbox')).not.toBeInTheDocument();
+      expect(within(section).queryByRole('button', { name: /set up alerts for all/i })).not.toBeInTheDocument();
+    });
+
+    it('offers no way to resume a paused check a viewer cannot write', async () => {
+      runTestAsSMViewer();
+
+      await renderCategory([PAUSED()], RecommendationCategoryId.Paused);
+
+      const section = await findSection(/1 of 1 checks are paused/);
+
+      expect(within(section).getByRole('button', { name: /resume forgotten/i })).toBeDisabled();
+      expect(within(section).queryByRole('checkbox')).not.toBeInTheDocument();
     });
   });
 

@@ -9,6 +9,7 @@ import {
 
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
+import { useCheckPermissions, useGetCheckPermissions } from 'contexts/CheckFolderAccessContext';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS } from 'data/useChecks';
 import { showAlert } from 'data/utils';
@@ -51,11 +52,15 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   const [isConfirmingAll, setIsConfirmingAll] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
-  // A check slower than the longest alert period has no valid default alert.
+  const getPermissions = useGetCheckPermissions();
+  // A check slower than the longest alert period has no valid default alert, and one in a
+  // folder the user cannot edit would 403, so neither belongs in a bulk apply.
   const plans = useMemo<AlertPlan[]>(
     () =>
-      rows.map((check) => ({ check, alerts: getRecommendedAlerts(check) })).filter((plan) => plan.alerts.length > 0),
-    [rows]
+      rows
+        .map((check) => ({ check, alerts: getRecommendedAlerts(check) }))
+        .filter((plan) => plan.alerts.length > 0 && getPermissions(plan.check).canWrite),
+    [rows, getPermissions]
   );
   const totalAlertCount = plans.reduce((sum, plan) => sum + plan.alerts.length, 0);
 
@@ -200,9 +205,11 @@ function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditCli
   const styles = useStyles2(getStyles);
   const queryClient = useQueryClient();
   const { mutateAsync: updateAlerts, isPending } = useUpdateAlertsForCheck();
+  const { canWrite } = useCheckPermissions(check);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const alerts = useMemo(() => getRecommendedAlerts(check), [check]);
+  const canApply = alerts.length > 0 && canWrite;
 
   const handleApply = async () => {
     try {
@@ -234,7 +241,7 @@ function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditCli
       check={check}
       doneLabel={isDone ? t('recommendations.alertingGaps.row.done', 'Alerts added') : undefined}
       isSelected={isSelected}
-      onSelectChange={alerts.length > 0 ? onSelectChange : undefined}
+      onSelectChange={canApply ? onSelectChange : undefined}
       onDismiss={onDismiss}
       onEditClick={onEditClick}
       action={
@@ -242,6 +249,7 @@ function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditCli
           <Button
             size="sm"
             variant="primary"
+            disabled={!canWrite}
             onClick={() => setIsExpanded(!isExpanded)}
             aria-expanded={isExpanded}
             aria-label={t('recommendations.alertingGaps.row.setUpLabel', 'Set up alerts for {{job}}', {
