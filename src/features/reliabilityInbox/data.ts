@@ -84,7 +84,7 @@ export function useReliabilityInboxSuggestions({ includeDismissed = false } = {}
 
   return {
     ...query,
-    isLoading: query.isLoading || ai.isLoading,
+    isLoading: query.isLoading || (ai.isLoading && !query.data),
     aiRequired: !ai.isLoading && !ai.allowed,
     // refetch() runs even a disabled query, so the gate has to cover it too.
     refetch: () => (ai.allowed ? query.refetch() : Promise.resolve(undefined)),
