@@ -108,6 +108,8 @@ interface ImpressionContext {
   checkCount: number;
   dismissedCount: number;
   focusedId?: RecommendationId;
+  /** False while a finding's inputs are still loading, so the visit is not counted early. */
+  isComplete: boolean;
 }
 
 // A finding counts as shown the first time its panel renders, so an unopened category is not "seen".
@@ -117,12 +119,15 @@ export function useRecommendationImpressions({
   checkCount,
   dismissedCount,
   focusedId,
+  isComplete,
 }: ImpressionContext) {
   const visitReported = useRef(false);
   const shownReported = useRef(new Set<RecommendationId>());
 
   useEffect(() => {
-    if (visitReported.current) {
+    // The visit is reported once, so reporting it before every finder has its inputs
+    // would freeze a findingCount that is missing findings.
+    if (visitReported.current || !isComplete) {
       return;
     }
 
@@ -133,7 +138,7 @@ export function useRecommendationImpressions({
       checkCount,
       focusSource: focusedId,
     });
-  }, [visible, checkCount, dismissedCount, focusedId]);
+  }, [visible, checkCount, dismissedCount, focusedId, isComplete]);
 
   useEffect(() => {
     shown.forEach(({ id, checks }) => {

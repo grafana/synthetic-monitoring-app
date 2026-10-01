@@ -87,6 +87,10 @@
       "title": "Alerting",
       "viewInList": "View in check list"
     },
+    "calsUnavailable": {
+      "body": "Checks missing cost attribution labels are not included below. Every other finding is unaffected.",
+      "title": "Cost attribution labels could not be loaded"
+    },
     "categories": {
       "alerting": {
         "caption": "Checks that are running but would fail silently.",
@@ -138,6 +142,7 @@
       "info": "{{checkCount}} info",
       "warning": "{{checkCount}} warning"
     },
+    "loading": "Looking for findings...",
     "missingCostLabels": {
       "action": "View in check list",
       "description": "These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.",

@@ -797,6 +797,35 @@ describe('Recommendations tab', () => {
 
       expect(await screen.findByText(/nothing needs your attention/i)).toBeInTheDocument();
     });
+
+    it('says the labels could not be loaded rather than that nothing needs attention', async () => {
+      mockFeatureToggles({ [FeatureName.CALs]: true });
+      server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ status: 500, json: {} }) }));
+
+      await renderTab([
+        buildCheck({ job: 'unattributed', alertSensitivity: AlertSensitivity.High, target: 'https://a.com' }),
+      ]);
+
+      expect(await screen.findByTestId(RECOMMENDATIONS_TEST_ID.calsUnavailable)).toBeInTheDocument();
+      expect(screen.queryByText(/nothing needs your attention/i)).not.toBeInTheDocument();
+    });
+
+    it('waits for the labels before counting the visit, so the cost finding is in findingCount', async () => {
+      const reportInteraction = mockReportInteraction();
+      mockFeatureToggles({ [FeatureName.CALs]: true });
+      withCalNames(['team']);
+
+      await renderTab([
+        buildCheck({ job: 'unattributed', alertSensitivity: AlertSensitivity.High, target: 'https://a.com' }),
+      ]);
+
+      await waitFor(() =>
+        expect(reportInteraction).toHaveBeenCalledWith(
+          expect.stringContaining('recommendations_tab_viewed'),
+          expect.objectContaining({ findingCount: 1 })
+        )
+      );
+    });
   });
 
   describe('dismissing a finding', () => {
