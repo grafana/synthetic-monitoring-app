@@ -24,10 +24,10 @@ import { getCheckType } from 'utils';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbesWithMetadata } from 'data/useProbes';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useDefaultProbeId } from 'hooks/useDefaultProbeId';
 import { useDOMId } from 'hooks/useDOMId';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CenteredSpinner } from 'components/CenteredSpinner';
-import { getAvailableProbes } from 'components/CheckEditor/ProbeOptions';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
@@ -78,29 +78,6 @@ export interface ChecksterProviderProps extends PropsWithChildren {
 interface StashedValues {
   root: Omit<CheckFormValues, 'settings'>;
   settings: Record<string, unknown> | undefined;
-}
-
-function getDefaultProbeId(probes: ProbeWithMetadata[], checkType: CheckType) {
-  const availableProbes = getAvailableProbes(probes, checkType).filter((probe) => !probe.deprecated);
-  const onlineProbes = availableProbes.filter((probe) => probe.online);
-  const defaultProbe = onlineProbes.find((probe) => probe.public) ?? onlineProbes[0] ?? availableProbes[0];
-
-  return defaultProbe?.id;
-}
-
-// Picked once per checkType and then left alone: probes refetch every 10s, and re-deriving
-// this from live online status on every poll would silently swap the preselected probe out
-// from under the user while they're still filling in the form.
-function useDefaultProbeId(probesWithMetadata: ProbeWithMetadata[], checkType: CheckType) {
-  const lockedRef = useRef<{ checkType: CheckType; probeId: number | undefined } | undefined>(undefined);
-
-  if (!lockedRef.current || lockedRef.current.checkType !== checkType) {
-    lockedRef.current = { checkType, probeId: getDefaultProbeId(probesWithMetadata, checkType) };
-  } else if (lockedRef.current.probeId === undefined) {
-    lockedRef.current.probeId = getDefaultProbeId(probesWithMetadata, checkType);
-  }
-
-  return lockedRef.current.probeId;
 }
 
 function useFormValuesMeta(

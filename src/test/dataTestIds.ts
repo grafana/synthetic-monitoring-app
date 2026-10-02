@@ -23,6 +23,7 @@ export const CHECKS_TEST_ID = {
   card: 'checks card',
   emptyState: 'checks empty-state',
   groupCard: 'checks group-card',
+  templateCard: 'checks template-card',
   usage: 'checks usage',
   form: {
     chooseType: 'checks form choose-type',

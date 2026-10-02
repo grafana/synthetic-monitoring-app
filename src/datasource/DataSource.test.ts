@@ -256,3 +256,13 @@ describe('SMDataSource', () => {
     });
   });
 });
+
+it('keeps default request error alerts for check creation unless explicitly overridden', async () => {
+  const datasource = new SMDataSource(SM_DATASOURCE);
+  const fetch = jest.spyOn(datasource, 'fetchAPI');
+  await datasource.addCheck(BASIC_HTTP_CHECK);
+  expect(fetch.mock.calls[0][1]).not.toHaveProperty('showErrorAlert');
+
+  await datasource.addCheck(BASIC_HTTP_CHECK, { showErrorAlert: false });
+  expect(fetch.mock.calls[1][1]).toMatchObject({ showErrorAlert: false });
+});
