@@ -75,7 +75,7 @@ function DevToolsComponent({ children }: DevToolsProps) {
           </div>
 
           <div className={styles.rightAside}>
-            <h3 className={styles.h3}>Feature flags</h3>
+            <h3 className={styles.h3}>Feature toggles</h3>
             <div className={styles.featureToggles.container}>
               {featureToggles.map(([feature, value]) => (
                 <div className={styles.featureToggles.row} key={feature}>
