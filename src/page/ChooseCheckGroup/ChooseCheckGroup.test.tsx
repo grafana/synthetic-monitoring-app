@@ -4,11 +4,13 @@ import { screen } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsHGFreeUserOverLimit } from 'test/utils';
+import { mockFeatureToggles, runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
 
 import { FeatureName } from 'types';
 
 import { ChooseCheckGroup } from './ChooseCheckGroup';
+
+jest.mock('features/tracking/checkTemplateEvents');
 
 async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = {}) {
   server.use(
@@ -32,12 +34,40 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
 }
 
 it('shows check type options correctly', async () => {
+  mockFeatureToggles({ [FeatureName.CheckTemplates]: false });
   await renderChooseCheckGroup();
 
   expect(screen.queryByRole('link', { name: `API Endpoint` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Multi Step` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Scripted` })).toBeInTheDocument();
   expect(screen.queryByRole('link', { name: `Browser` })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Detect broken links' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Check SSL certificate' })).not.toBeInTheDocument();
+});
+
+it('opens the broken links drawer from its card and no longer offers SSL', async () => {
+  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
+  const { user } = await renderChooseCheckGroup();
+  await user.click(await screen.findByRole('button', { name: 'Detect broken links' }));
+  expect(await screen.findByRole('textbox', { name: 'Page URL' })).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Create check' })).toBeInTheDocument();
+  expect(screen.queryByText('Check SSL certificate')).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.queryByRole('textbox', { name: 'Page URL' })).not.toBeInTheDocument();
+});
+
+it('disables the template when the check limit is reached', async () => {
+  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
+  await renderChooseCheckGroup({ checkLimit: 1 });
+  await screen.findByText(/You have reached your check limit of /);
+  expect(screen.getByRole('group', { name: 'Detect broken links' })).toHaveAttribute('aria-disabled', 'true');
+});
+
+it('disables the template for viewers', async () => {
+  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
+  runTestAsViewer();
+  await renderChooseCheckGroup();
+  expect(await screen.findByRole('group', { name: 'Detect broken links' })).toHaveAttribute('aria-disabled', 'true');
 });
 
 it(`doesn't show gRPC option by default`, async () => {
