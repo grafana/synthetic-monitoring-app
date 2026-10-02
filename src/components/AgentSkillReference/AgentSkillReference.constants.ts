@@ -68,7 +68,7 @@ export const AGENT_SKILL_PROMPTS: Array<{
 export const AGENT_SKILL_DEFAULT_COPY = {
   title: 'Author checks with your coding agent',
   description:
-    'The Synthetic Monitoring skill teaches coding agents to pick the simplest sufficient check type, author scripted and browser checks that assert correctly, and validate them locally with k6 run. Paste the resulting script into the check editor, or let your agent deploy it via Terraform or the API.',
+    'Teaches your agent to pick the right check type, write checks that assert correctly, and validate them locally before you deploy.',
 };
 
 export const AGENT_SKILL_TERRAFORM_COPY = {

@@ -55,7 +55,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
   return (
     <Stack direction="column" gap={2}>
       <Stack direction="row" alignItems="center" gap={1}>
-        <div>Or author checks with your coding agent</div>
+        <div>Create checks with your coding agent</div>
         {askForFeedback && (
           <Feedback
             feature={AGENT_SKILL_FEEDBACK_FEATURE}
@@ -113,7 +113,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
           </Stack>
           <Stack direction="column" gap={0.5}>
             <Text variant="h6" element="h4">
-              2. Describe what you want monitored
+              2. Tell your agent what to build
             </Text>
             <AgentSkillPrompts source={source} tool={selectedTool.id} />
           </Stack>

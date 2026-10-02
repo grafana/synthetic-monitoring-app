@@ -21,7 +21,6 @@ export const ChooseCheckGroup = () => {
     <PluginPage layout={PageLayoutType.Standard} pageNav={{ text: 'Create a new check' }}>
       <div className={styles.wrapper}>
         <Stack direction="column" gap={1.5}>
-          <div>Choose a check type to monitor your services.</div>
           <OverLimitAlert />
           <div className={cx(styles.container, styles.afterTiles)} data-testid={CHECKS_TEST_ID.form.chooseType}>
             {options.map((group) => {
