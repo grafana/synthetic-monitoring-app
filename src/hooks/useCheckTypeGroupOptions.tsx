@@ -97,9 +97,9 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `globe`,
     protocols: [
       {
-        label: `HTTP`,
+        label: `Actions`,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
-        onClick: () => trackAndStartUserAction(CheckTypeGroup.Browser, `HTTP`),
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.Browser, `Actions`),
       },
     ],
   },
