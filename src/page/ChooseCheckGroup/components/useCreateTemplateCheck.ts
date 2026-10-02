@@ -7,19 +7,21 @@ import { Check } from 'types';
 import { FaroEvent } from 'faro';
 import { getCheckType } from 'utils';
 import { AddCheckResult } from 'datasource/responses.types';
+import { getUserPermissions } from 'data/permissions';
 import { useSMDS } from 'hooks/useSMDS';
 
 import { getAvailableCheckName } from './checkNames';
 
 export function useCreateTemplateCheck() {
   const smDS = useSMDS();
+  const { canReadChecks } = getUserPermissions();
 
   return useMutation<AddCheckResult, Error, Check>({
     mutationFn: async (check) => {
       try {
         const conflictingNames = new Set<string>();
         for (let attempt = 0; ; attempt++) {
-          const checks = await smDS.listChecks();
+          const checks = canReadChecks ? await smDS.listChecks() : [];
           const job = getAvailableCheckName(check, checks, conflictingNames);
           try {
             // The mutation reports final failures. Keep recoverable conflicts quiet.
