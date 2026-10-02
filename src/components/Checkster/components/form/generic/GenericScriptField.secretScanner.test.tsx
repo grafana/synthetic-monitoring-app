@@ -9,6 +9,14 @@ import { FeatureName } from 'types';
 
 import { GenericScriptField } from './GenericScriptField';
 
+jest.mock('components/Checkster/contexts/ChecksterContext', () => ({
+  useChecksterContext: () => ({ checkType: 'scripted' }),
+}));
+
+jest.mock('components/Checkster/contexts/FeatureTabsContext', () => ({
+  useFeatureTabsContext: () => ({ setActive: jest.fn() }),
+}));
+
 const SCRIPT_WITH_SECRET = `const password = 'he110-w0rlD'
 export default function () {}`;
 const SCRIPT_WITHOUT_SECRET = `import http from 'k6/http';

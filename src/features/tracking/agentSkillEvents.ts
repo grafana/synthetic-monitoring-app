@@ -4,30 +4,30 @@ const agentSkillEvents = createSMEventFactory('agent_skill');
 
 interface AgentSkillEvent extends TrackingEventProps {
   /** Where in the app the agent skill reference was interacted with. */
-  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab';
+  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab' | 'script-editor-toolbar-scripted' | 'script-editor-toolbar-browser';
 }
 
 interface AgentSkillInstallCommandEvent extends TrackingEventProps {
   /** Where in the app the agent skill reference was interacted with. */
-  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab';
+  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab' | 'script-editor-toolbar-scripted' | 'script-editor-toolbar-browser';
   /** Which install command was copied. */
   command: 'npx' | 'claude-plugin';
 }
 
 interface AgentSkillToolEvent extends TrackingEventProps {
   /** Where in the app the agent skill reference was interacted with. */
-  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab';
+  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab' | 'script-editor-toolbar-scripted' | 'script-editor-toolbar-browser';
   /** Which coding agent tool card the user selected. */
   tool: 'claude-code' | 'agent-skills';
 }
 
 interface AgentSkillPromptEvent extends TrackingEventProps {
   /** Where in the app the agent skill reference was interacted with. */
-  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab';
+  source: 'docs-panel-scripted' | 'docs-panel-browser' | 'choose-check-type' | 'terraform-tab' | 'script-editor-toolbar-scripted' | 'script-editor-toolbar-browser';
   /** Which coding agent tool card the user selected. Absent on surfaces without a tool picker. */
   tool?: 'claude-code' | 'agent-skills';
   /** Which example prompt variant was copied. */
-  prompt: 'site' | 'api-spec' | 'terraform-import';
+  prompt: 'site' | 'api-spec' | 'terraform-import' | 'toolbar-scripted' | 'toolbar-scripted-api-spec' | 'toolbar-browser';
 }
 
 /** Tracks when the agent skill reference content is shown, at most once per source per page load: on render in the docs panels, on first reveal (expand or tool selection) elsewhere. */

@@ -14,9 +14,9 @@ Tracks when the agent skill reference content is shown, at most once per source 
 
 ##### Properties
 
-| name   | type                                                                                      | description                                                     |
-| ------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
+| name   | type                                                                                                                                                             | description                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab" \| "script-editor-toolbar-scripted" \| "script-editor-toolbar-browser"` | Where in the app the agent skill reference was interacted with. |
 
 #### synthetic-monitoring_agent_skill_link_clicked
 
@@ -24,9 +24,9 @@ Tracks when the agent skill repository link is clicked.
 
 ##### Properties
 
-| name   | type                                                                                      | description                                                     |
-| ------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
+| name   | type                                                                                                                                                             | description                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab" \| "script-editor-toolbar-scripted" \| "script-editor-toolbar-browser"` | Where in the app the agent skill reference was interacted with. |
 
 #### synthetic-monitoring_agent_skill_install_command_copied
 
@@ -34,10 +34,10 @@ Tracks when one of the agent skill install commands is copied to the clipboard.
 
 ##### Properties
 
-| name    | type                                                                                      | description                                                     |
-| ------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| source  | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
-| command | `"npx" \| "claude-plugin"`                                                                | Which install command was copied.                               |
+| name    | type                                                                                                                                                             | description                                                     |
+| ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source  | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab" \| "script-editor-toolbar-scripted" \| "script-editor-toolbar-browser"` | Where in the app the agent skill reference was interacted with. |
+| command | `"npx" \| "claude-plugin"`                                                                                                                                       | Which install command was copied.                               |
 
 #### synthetic-monitoring_agent_skill_tool_selected
 
@@ -45,10 +45,10 @@ Tracks when a coding agent tool card is selected in the agent skill picker.
 
 ##### Properties
 
-| name   | type                                                                                      | description                                                     |
-| ------ | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with. |
-| tool   | `"claude-code" \| "agent-skills"`                                                         | Which coding agent tool card the user selected.                 |
+| name   | type                                                                                                                                                             | description                                                     |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab" \| "script-editor-toolbar-scripted" \| "script-editor-toolbar-browser"` | Where in the app the agent skill reference was interacted with. |
+| tool   | `"claude-code" \| "agent-skills"`                                                                                                                                | Which coding agent tool card the user selected.                 |
 
 #### synthetic-monitoring_agent_skill_prompt_copied
 
@@ -56,11 +56,11 @@ Tracks when one of the example authoring prompts is copied to the clipboard.
 
 ##### Properties
 
-| name   | type                                                                                      | description                                                                               |
-| ------ | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab"` | Where in the app the agent skill reference was interacted with.                           |
-| tool   | `undefined \| "claude-code" \| "agent-skills"`                                            | Which coding agent tool card the user selected. Absent on surfaces without a tool picker. |
-| prompt | `"site" \| "api-spec" \| "terraform-import"`                                              | Which example prompt variant was copied.                                                  |
+| name   | type                                                                                                                                                             | description                                                                               |
+| ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| source | `"docs-panel-scripted" \| "docs-panel-browser" \| "choose-check-type" \| "terraform-tab" \| "script-editor-toolbar-scripted" \| "script-editor-toolbar-browser"` | Where in the app the agent skill reference was interacted with.                           |
+| tool   | `undefined \| "claude-code" \| "agent-skills"`                                                                                                                   | Which coding agent tool card the user selected. Absent on surfaces without a tool picker. |
+| prompt | `"site" \| "api-spec" \| "terraform-import" \| "toolbar-scripted" \| "toolbar-scripted-api-spec" \| "toolbar-browser"`                                           | Which example prompt variant was copied.                                                  |
 
 ### check_creation
 

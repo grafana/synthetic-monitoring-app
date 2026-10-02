@@ -1,29 +1,23 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Button, useStyles2, useTheme2 } from '@grafana/ui';
-import { css } from '@emotion/css';
-import { trackNeedHelpScriptsButtonClicked } from 'features/tracking/checkFormEvents';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { useTheme2 } from '@grafana/ui';
 
-import { CheckType } from '../../../../../types';
-import { K6ChannelSelect } from 'components/CheckEditor/FormComponents/K6ChannelSelect';
-import { useChecksterContext } from 'components/Checkster/contexts/ChecksterContext';
-import { useFeatureTabsContext } from 'components/Checkster/contexts/FeatureTabsContext';
+import { CheckFormValues, CheckType, K6Channel } from '../../../../../types';
 
 import { ExampleScript } from '../../../../ScriptExamplesMenu/constants';
 import { SCRIPT_EXAMPLES } from '../../../../WelcomeTabs/constants';
-import { FIELD_SPACING, SECONDARY_CONTAINER_ID } from '../../../constants';
-import { ScriptExamples } from '../../ScriptExamples';
+import { FIELD_SPACING } from '../../../constants';
 import { Column } from '../../ui/Column';
 import { SectionContent } from '../../ui/SectionContent';
 import { FormFolderField } from '../FormFolderField';
 import { FormInstanceField } from '../FormInstanceField';
 import { FormJobField } from '../FormJobField';
-import { FormTabContent, FormTabs } from '../FormTabs';
 import { GenericScriptField } from '../generic/GenericScriptField';
 
 interface ScriptedCheckSectionProps {
   scriptField?: `settings.${CheckType.Scripted | CheckType.Browser}.script`;
   examples?: ExampleScript[];
+  scriptDescription?: string;
 }
 
 export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'folderUid', 'channels.k6', 'settings.scripted.script'];
@@ -32,70 +26,31 @@ export const SCRIPTED_CHECK_FIELDS = ['job', 'target', 'folderUid', 'channels.k6
 export function ScriptedCheckContent({
   examples = SCRIPT_EXAMPLES,
   scriptField = 'settings.scripted.script',
+  scriptDescription = 'Define the requests and assertions to run, using Grafana k6.',
 }: ScriptedCheckSectionProps) {
   const theme = useTheme2();
-  const hasExamples = examples && examples?.length > 0;
-  const styles = useStyles2(getStyles);
+  const { control } = useFormContext<CheckFormValues>();
+  const k6Channel = useWatch({ control, name: 'channels.k6' }) as K6Channel | undefined;
+  const isDeprecatedChannel = !!k6Channel && new Date(k6Channel.deprecatedAfter) < new Date();
 
   return (
     <SectionContent noWrapper>
       <Column gap={FIELD_SPACING} padding={theme.spacing(0, 2)}>
         <FormJobField field="job" />
         <FormInstanceField field="target" />
-        <K6ChannelSelect />
         <FormFolderField />
       </Column>
-      <Column fill>
-        <FormTabs actions={<HelpButton />}>
-          <FormTabContent label="Script" fillVertical vanilla>
-            <GenericScriptField field={scriptField} />
-          </FormTabContent>
-          {hasExamples && (
-            <FormTabContent label="Examples" fillVertical vanilla className={styles.codeSnippetWrapper}>
-              <ScriptExamples examples={examples} />
-            </FormTabContent>
-          )}
-        </FormTabs>
+      <Column fill padding={theme.spacing(0, 2)}>
+        <GenericScriptField
+          field={scriptField}
+          examples={examples}
+          description={scriptDescription}
+          runtimeChannelId={k6Channel?.id}
+          warningMessage={
+            isDeprecatedChannel ? 'This k6 version is no longer supported. Switch to a supported channel.' : undefined
+          }
+        />
       </Column>
     </SectionContent>
   );
-}
-
-const HelpButton = () => {
-  const { setActive } = useFeatureTabsContext();
-  const { checkType } = useChecksterContext();
-  const source = `${checkType}_check`;
-
-  return (
-    <Button
-      type="button"
-      onClick={() => {
-        setActive('Docs', true);
-        document.getElementById(SECONDARY_CONTAINER_ID)?.focus();
-        trackNeedHelpScriptsButtonClicked({ source });
-      }}
-      fill="text"
-      icon="k6"
-      tooltip="Synthetic Monitoring scripts are built on top of Grafana k6. Click to learn more about authoring scripts."
-    >
-      Need help writing scripts?
-    </Button>
-  );
-};
-
-function getStyles(theme: GrafanaTheme2) {
-  return {
-    codeSnippetWrapper: css`
-      // Handle code snippet border
-      & > div,
-      & > div > div {
-        border: none;
-      }
-
-      // Change code snippet menu background
-      & section > div > div {
-        background-color: ${theme.colors.background.primary};
-      }
-    `,
-  };
 }
