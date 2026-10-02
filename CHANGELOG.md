@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.64.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.63.0...v1.64.0) (2026-10-02)
+
+
+### Features
+
+* add RudderStack event for cloud-setup CLI command copy ([#1896](https://github.com/grafana/synthetic-monitoring-app/issues/1896)) ([5c879e2](https://github.com/grafana/synthetic-monitoring-app/commit/5c879e25c67848eaff47ab46be7ae4183f4015a4))
+* **label-migration:** find prefixed label usages with Assistant ([#1907](https://github.com/grafana/synthetic-monitoring-app/issues/1907)) ([001ab97](https://github.com/grafana/synthetic-monitoring-app/commit/001ab97525e87e98be280ad85835a45d80f86fe5))
+
+
+### Fixes
+
+* **checks:** require typing the count before deleting more than 5 checks ([#1893](https://github.com/grafana/synthetic-monitoring-app/issues/1893)) ([500096e](https://github.com/grafana/synthetic-monitoring-app/commit/500096eeae85a9741637592ec5d8fb2ef2f5b634))
+* Disable Reliability Inbox banned if Assistant is disabled ([#1903](https://github.com/grafana/synthetic-monitoring-app/issues/1903)) ([eb85db2](https://github.com/grafana/synthetic-monitoring-app/commit/eb85db299c69488bd114049d676db65f66f3b5c6))
+* **knowledge-graph:** include service neighbours and time range in graph link ([#1906](https://github.com/grafana/synthetic-monitoring-app/issues/1906)) ([0ccf0fb](https://github.com/grafana/synthetic-monitoring-app/commit/0ccf0fb8724ab881e4ab1a7ce011f5abba33d48c))
+* respect homepage check visibility and populate label filters ([#1898](https://github.com/grafana/synthetic-monitoring-app/issues/1898)) ([41b9d19](https://github.com/grafana/synthetic-monitoring-app/commit/41b9d19752f3ed957659cb8a71679649b466725d))
+
 ## [1.63.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.62.0...v1.63.0) (2026-09-29)
 
 
