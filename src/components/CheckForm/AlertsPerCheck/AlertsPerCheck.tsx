@@ -10,6 +10,7 @@ import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { AlertsList } from './AlertsList';
 import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { ContactPointPrototype } from './ContactPointPrototype';
 
 export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
@@ -96,6 +97,10 @@ export const AlertsPerCheck = () => {
             </TextLink>{' '}
             to define where your alerts will be routed.
           </p>
+        </div>
+
+        <div className={styles.marginBottom}>
+          <ContactPointPrototype />
         </div>
 
         <Field>
