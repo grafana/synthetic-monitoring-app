@@ -72,3 +72,19 @@ export async function runInBatches<T, R>(
 
   return results;
 }
+
+export interface AlertPlan {
+  check: Check;
+  alerts: RecommendedAlert[];
+}
+
+/**
+ * The checks this finding can actually act on. A check slower than the longest alert period has
+ * no valid default alert, and one in a folder the user cannot edit would 403. Shared so the
+ * landing row's call to action and the panel's bulk apply cannot promise different things.
+ */
+export function getAlertPlans(checks: Check[], canWrite: (check: Check) => boolean): AlertPlan[] {
+  return checks
+    .map((check) => ({ check, alerts: getRecommendedAlerts(check) }))
+    .filter((plan) => plan.alerts.length > 0 && canWrite(plan.check));
+}

@@ -8,8 +8,9 @@ import {
   RecommendationId,
   RecommendationSeverity,
 } from './Recommendations.types';
+import { Check } from 'types';
 
-import { getRecommendedAlerts } from './Recommendations.alerts';
+import { getAlertPlans } from './Recommendations.alerts';
 import { getDismissedCheckIds } from './Recommendations.utils';
 
 export interface RecommendationCopy {
@@ -111,11 +112,17 @@ export function getRecommendationSummary({ id, checks, groups }: Recommendation,
 }
 
 // Mirrors each finding's header button, so the landing view promises what the panel offers.
-export function getRecommendationActionLabel({ id, checks }: Recommendation, dismissedCheckIds: number[]): string {
+export function getRecommendationActionLabel(
+  { id, checks }: Recommendation,
+  dismissedCheckIds: number[],
+  canWrite: (check: Check) => boolean
+): string {
   switch (id) {
     case RecommendationId.AlertingGaps: {
-      const applicableCount = checks.filter(
-        (check) => !dismissedCheckIds.includes(check.id!) && getRecommendedAlerts(check).length > 0
+      // Same rule the panel applies, so the row cannot offer an action the panel withholds.
+      const applicableCount = getAlertPlans(
+        checks.filter((check) => !dismissedCheckIds.includes(check.id!)),
+        canWrite
       ).length;
 
       return applicableCount > 1
@@ -177,12 +184,17 @@ export function getCategoryCopy(id: RecommendationCategoryId): CategoryCopy {
 export function getCategoryRowCopy(
   { findings, checkCount }: CategorySummary,
   totalCheckCount: number,
-  dismissedChecks: DismissedChecks
+  dismissedChecks: DismissedChecks,
+  canWrite: (check: Check) => boolean
 ) {
   if (findings.length === 1) {
     return {
       summary: getRecommendationSummary(findings[0], totalCheckCount),
-      action: getRecommendationActionLabel(findings[0], getDismissedCheckIds(dismissedChecks, findings[0].id)),
+      action: getRecommendationActionLabel(
+        findings[0],
+        getDismissedCheckIds(dismissedChecks, findings[0].id),
+        canWrite
+      ),
     };
   }
 

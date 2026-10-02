@@ -22,6 +22,7 @@ import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import { useGetCheckPermissions } from 'contexts/CheckFolderAccessContext';
 
 import { getLegend } from './Recommendations.categories';
 import { ROWS_PER_PAGE } from './Recommendations.constants';
@@ -88,7 +89,8 @@ export function AttentionRow({ summary, totalCheckCount, dismissedChecks, onSele
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const { label } = getCategoryCopy(summary.category.id);
-  const row = getCategoryRowCopy(summary, totalCheckCount, dismissedChecks);
+  const getPermissions = useGetCheckPermissions();
+  const row = getCategoryRowCopy(summary, totalCheckCount, dismissedChecks, (check) => getPermissions(check).canWrite);
 
   return (
     <button
