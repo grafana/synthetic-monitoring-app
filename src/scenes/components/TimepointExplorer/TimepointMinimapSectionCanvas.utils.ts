@@ -1,10 +1,13 @@
+import { colorManipulator } from '@grafana/data';
+
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { PARTIAL_FAILURE_SEGMENT_ALPHA } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   StatefulTimepoint,
   TimepointStatus,
   TimepointVizOption,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import { getEntryHeight, getFailureRatio } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface DrawTimepointProps {
   ctx: CanvasRenderingContext2D;
@@ -29,8 +32,10 @@ export function drawUptimeTimepoint({
 }: DrawTimepointProps) {
   const { status } = statefulTimepoint;
   const vizOption = vizOptionColors[status];
+  const failureRatio = status === 'success' ? getFailureRatio(statefulTimepoint.probeResults) : 0;
+  const showPartialFailure = failureRatio > 0 && vizDisplay.includes('failure');
 
-  if (vizDisplay && !vizDisplay.includes(status)) {
+  if (vizDisplay && !vizDisplay.includes(status) && !showPartialFailure) {
     return;
   }
 
@@ -45,8 +50,26 @@ export function drawUptimeTimepoint({
   if (vizOption.backgroundColor !== 'transparent') {
     ctx.fillRect(x, y, width, height);
   }
-  if (vizOption.border !== 'transparent') {
+  if (vizOption.border !== 'transparent' && !showPartialFailure) {
     ctx.strokeRect(x, y, width, height);
+  }
+
+  if (showPartialFailure && height > 0 && width > 0) {
+    const failureHeight = height * failureRatio;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, canvasHeight - failureHeight, width, failureHeight);
+    ctx.clip();
+    ctx.strokeStyle = colorManipulator.alpha(vizOptionColors.failure.statusColor, PARTIAL_FAILURE_SEGMENT_ALPHA);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    // Match the main bar's 2px diagonal stripes, spaced 8px perpendicular to the lines.
+    for (let offset = -failureHeight; offset <= width + 2; offset += 8 * Math.SQRT2) {
+      ctx.moveTo(x + offset, canvasHeight);
+      ctx.lineTo(x + offset + failureHeight, canvasHeight - failureHeight);
+    }
+    ctx.stroke();
+    ctx.restore();
   }
 }
 
