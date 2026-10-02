@@ -7,11 +7,14 @@ import { useExternalDependencies } from 'contexts/ExternalDependenciesContext';
 import { useChecks } from 'data/useChecks';
 
 import { SLO_APP_API_EXTENSION_POINT_ID } from './grafanaSLOApp.constants';
-import { buildSLOCheckLinkMap } from './useSLOCheckLinks.utils';
+import { buildSLOCheckLinkMap, SLOCheckLinkMap } from './useSLOCheckLinks.utils';
 
 export const sloQueryKeys = {
   all: ['slos'] as const,
 };
+
+// Shared so consumers' memos hold while there's no SLO data.
+const NO_SLOS: SLO[] = [];
 
 /** The SLO app registers a getter that resolves to the API object, not the API itself. */
 type GetSLOApi = () => Promise<SLOApiV1>;
@@ -76,14 +79,24 @@ export function useAllSLOs() {
   });
 
   return {
-    slos: query.data ?? [],
+    slos: query.data ?? NO_SLOS,
     isLoading: pluginCheckLoading || functionsLoading || (canFetch && query.isLoading),
+    isFetching: canFetch && query.isFetching,
     error: query.error ? toError(query.error) : undefined,
+    isAccessDenied: getErrorStatus(query.error) === 403,
+    refetch: query.refetch,
   };
 }
 
 export function useSLOCheckLinkMap() {
-  const { slos, isLoading: slosLoading, error: slosError } = useAllSLOs();
+  const {
+    slos,
+    isLoading: slosLoading,
+    isFetching: slosFetching,
+    error: slosError,
+    isAccessDenied: isSLOAccessDenied,
+    refetch: refetchSLOs,
+  } = useAllSLOs();
   const { data: checks, isLoading: checksLoading, error: checksError } = useChecks();
 
   const map = useMemo(() => buildSLOCheckLinkMap(slos, checks ?? []), [slos, checks]);
@@ -92,13 +105,21 @@ export function useSLOCheckLinkMap() {
     map,
     isLoading: slosLoading || checksLoading,
     error: slosError ?? (checksError instanceof Error ? checksError : undefined),
+    sloError: slosError,
+    isSLOAccessDenied,
+    isSLOsFetching: slosFetching,
+    refetchSLOs,
   };
 }
 
+export function getSLOsForCheck(map: SLOCheckLinkMap, checkId: number | undefined): SLO[] {
+  return checkId !== undefined ? (map.slosByCheckId.get(checkId) ?? []) : [];
+}
+
 export function useSLOsForCheck(checkId: number | undefined) {
-  const { map, isLoading, error } = useSLOCheckLinkMap();
-  const slos = checkId !== undefined ? (map.slosByCheckId.get(checkId) ?? []) : [];
-  return { slos, isLoading, error };
+  const { map, isLoading, error, isSLOAccessDenied } = useSLOCheckLinkMap();
+  const slos = getSLOsForCheck(map, checkId);
+  return { slos, isLoading, error, isAccessDenied: isSLOAccessDenied };
 }
 
 function useSLOPluginApi() {

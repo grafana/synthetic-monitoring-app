@@ -45,6 +45,7 @@ import {
   FolderNotProvisionedBanner,
   FolderPermissionBanner,
 } from 'page/CheckList/components/FolderBanners';
+import { getSLOsForCheck, useSLOCheckLinkMap } from 'scenes/Common/useSLOCheckLinks';
 
 export const CheckList = () => {
   const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
@@ -98,6 +99,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     refetch: refetchAlertStates,
   } = useChecksAlertStates(checks);
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
+  const { map: sloCheckLinkMap, isSLOsFetching, sloError, isSLOAccessDenied, refetchSLOs } = useSLOCheckLinkMap();
   const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
@@ -335,6 +337,9 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
         alertStatesFetching={isAlertStatesFetching}
         alertStatesError={isAlertStatesError}
         onRetryAlertStates={refetchAlertStates}
+        sloStatesFetching={isSLOsFetching}
+        sloStatesError={Boolean(sloError) && !isSLOAccessDenied}
+        onRetrySLOStates={refetchSLOs}
         calNames={calNames}
       />
       {foldersUnavailable &&
@@ -362,6 +367,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
           onRetryFolders={refetchFolders}
           defaultFolderUid={defaultFolderUid}
           checkAlertStates={checkAlertStates}
+          sloCheckLinkMap={sloCheckLinkMap}
           calNames={calNames}
           onLabelSelect={handleLabelSelect}
           onStatusSelect={handleStatusSelect}
@@ -386,6 +392,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
                     onTypeSelect={handleTypeSelect}
                     onToggleCheckbox={handleCheckSelect}
                     runtimeAlertState={getCheckRuntimeAlertState(checkAlertStates, check)}
+                    slos={getSLOsForCheck(sloCheckLinkMap, check.id)}
                     selected={selectedCheckIds.has(check.id!)}
                     viewType={effectiveViewType}
                   />

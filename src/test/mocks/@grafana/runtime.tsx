@@ -223,6 +223,9 @@ jest.mock('@grafana/runtime', () => {
     useAppPluginInstalled: jest.fn(() => ({ loading: false, error: undefined, value: false })),
     // Defaults to "no exposed component"; tests can override via (usePluginComponent as jest.Mock).mockReturnValue(...)
     usePluginComponent: jest.fn(() => ({ component: null, isLoading: false })),
+    // Defaults to "no exposed function"; tests can override via jest.spyOn or spyUsePluginFunctionsForSLOs.
+    // Not a jest.fn, so jest.spyOn wraps it and mockRestore() restores this default.
+    usePluginFunctions: () => ({ isLoading: false, functions: [] }),
     config: {
       ...actual.config,
       datasources: {
