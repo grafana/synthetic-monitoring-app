@@ -1,5 +1,5 @@
 import { createOpenFeatureLocalStorageProvider, createOpenFeatureOFREPWebProvider } from '@grafana/runtime';
-import { type Client, MultiProvider, OpenFeature } from '@openfeature/web-sdk';
+import { type Client, MultiProvider, OpenFeature, ProviderEvents } from '@openfeature/web-sdk';
 import pluginJson from 'plugin.json';
 
 import { FeatureName } from 'types';
@@ -23,6 +23,13 @@ export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
 
 let initPromise: Promise<void> | undefined;
 let client: Client | undefined;
+let localStorageProvider: ReturnType<typeof createOpenFeatureLocalStorageProvider> | undefined;
+
+// Must match the prefix of Grafana's own localStorage provider, which createOpenFeatureLocalStorageProvider proxies.
+const BROWSER_OVERRIDE_PREFIX = 'grafana.openfeature.';
+
+// Grafana's provider has no public setter, so overrides are written to localStorage directly.
+export const getBrowserFlagOverrideStorageKey = (key: string) => `${BROWSER_OVERRIDE_PREFIX}${key}`;
 
 export function initOpenFeature(): Promise<void> {
   if (!initPromise) {
@@ -39,12 +46,11 @@ export function initOpenFeature(): Promise<void> {
 }
 
 async function doInit(): Promise<void> {
+  localStorageProvider = createOpenFeatureLocalStorageProvider();
+
   await OpenFeature.setProviderAndWait(
     SM_OPEN_FEATURE_DOMAIN,
-    new MultiProvider([
-      { provider: createOpenFeatureLocalStorageProvider() },
-      { provider: createOpenFeatureOFREPWebProvider() },
-    ])
+    new MultiProvider([{ provider: localStorageProvider }, { provider: createOpenFeatureOFREPWebProvider() }])
   );
 
   client = OpenFeature.getClient(SM_OPEN_FEATURE_DOMAIN);
@@ -54,4 +60,28 @@ async function doInit(): Promise<void> {
 // so avoid module-scope reads (the value would never update).
 export function getBooleanFlag(key: string, defaultValue = false): boolean {
   return client?.getBooleanValue(key, defaultValue) ?? defaultValue;
+}
+
+export function getBrowserFlagOverride(key: string): boolean | undefined {
+  const value = localStorage.getItem(getBrowserFlagOverrideStorageKey(key));
+
+  return value === 'true' ? true : value === 'false' ? false : undefined;
+}
+
+// Overrides this browser only, ahead of the rollout value. Pass undefined to remove the override.
+export function setBrowserFlagOverride(key: string, value: boolean | undefined): void {
+  const storageKey = getBrowserFlagOverrideStorageKey(key);
+
+  if (value === undefined) {
+    localStorage.removeItem(storageKey);
+  } else {
+    localStorage.setItem(storageKey, String(value));
+  }
+
+  // Writing localStorage emits nothing, so signal the change; MultiProvider forwards it to
+  // the client, which makes useIsFeatureEnabled re-evaluate without a reload.
+  localStorageProvider?.events.emit(ProviderEvents.ConfigurationChanged, {
+    message: 'Browser flag override changed',
+    flagsChanged: [key],
+  });
 }
