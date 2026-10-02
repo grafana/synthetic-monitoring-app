@@ -329,6 +329,19 @@ Tracks when a new folder is created via the folder selector.
 
 Tracks when "Move folder" is picked from a folder's Actions menu. Kept to measure whether the option is used at all: if this tends to zero we can remove the option and leave folder reorganisation to Dashboards > Folders.
 
+### label_migration
+
+#### synthetic-monitoring_label_migration_find_prefixed_labels_with_assistant_clicked
+
+Tracks when a user asks Grafana Assistant to find objects that still use prefixed check labels.
+
+##### Properties
+
+| name          | type                           | description                                                                                                                                   |
+| ------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| labelKeyCount | `number`                       | Number of distinct check label keys named in the prompt. The keys themselves are tenant authored, so they are customer data and not reported. |
+| labelMode     | `"dual_write" \| "unprefixed"` | The tenant's label mode when the search was started.                                                                                          |
+
 ### link
 
 #### synthetic-monitoring_link_clicked

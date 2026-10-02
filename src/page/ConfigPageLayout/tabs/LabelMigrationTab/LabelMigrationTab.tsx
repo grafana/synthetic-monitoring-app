@@ -12,6 +12,7 @@ import { ContactAdminAlert } from 'page/ContactAdminAlert';
 
 import { ConfigContent } from '../../ConfigContent';
 import { CollidingLabelRename } from './CollidingLabelRename';
+import { FindPrefixedLabelsWithAssistant } from './FindPrefixedLabelsWithAssistant';
 import { ImpactedChecksWarning } from './ImpactedChecksWarning';
 import { getMigrationCooldown } from './migrationCooldown';
 import { SeriesPreview } from './SeriesPreview';
@@ -300,6 +301,10 @@ export function LabelMigrationTab() {
               </>
             )}
           </ConfigContent.Section>
+
+          {(state.mode === LabelMode.DualWrite || state.mode === LabelMode.Unprefixed) && (
+            <FindPrefixedLabelsWithAssistant mode={state.mode} checks={checks} checksError={checksError} />
+          )}
 
           <ConfigContent.Section title="How your labels appear right now">
             <Space v={1} />
