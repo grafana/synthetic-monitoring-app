@@ -125,8 +125,8 @@ it('uses library defaults when optional settings are empty and preselects a prob
   expect(screen.queryByRole('switch', { name: 'Fail on broken links' })).not.toBeInTheDocument();
   expect(screen.getByRole('spinbutton', { name: /^Link limit/ })).toHaveValue(null);
   expect(screen.getByRole('spinbutton', { name: /^Timeout/ })).toHaveValue(null);
-  expect(screen.getByText('Create a browser check')).toBeInTheDocument();
   expect(screen.getByText('Check a page for broken links on a regular schedule.')).toBeInTheDocument();
+  expect(screen.getByText('Creates a browser check. You can manually edit it afterward.')).toBeInTheDocument();
   expect(screen.queryByText('Accepted status codes')).not.toBeInTheDocument();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
