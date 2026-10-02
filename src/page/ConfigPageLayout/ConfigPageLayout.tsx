@@ -57,6 +57,12 @@ export function ConfigPageLayout() {
           url: getConfigTabUrl('terraform'),
           active: activeTab('terraform'),
         },
+        {
+          icon: 'ai-sparkle',
+          text: 'AI features',
+          url: getConfigTabUrl('ai'),
+          active: activeTab('ai'),
+        },
       ],
     };
 
