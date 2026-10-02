@@ -7,13 +7,14 @@ import { trackInboxExposure, trackReviewEntryClicked } from 'features/tracking/r
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
-import { useCachedReliabilityInboxSuggestions } from './data';
+import { useAIAllowed, useCachedReliabilityInboxSuggestions } from './data';
 
 const CONTAINER_NAME = 'reliabilityInboxBanner';
 
 export function ReliabilityInboxBanner() {
   const styles = useStyles2(getStyles);
   const { data: opportunities = [] } = useCachedReliabilityInboxSuggestions();
+  const { allowed } = useAIAllowed();
   const exposureTracked = useRef(false);
   const topOpportunity = opportunities[0];
   const suggestionSummary = `${opportunities.length} ${
@@ -21,7 +22,7 @@ export function ReliabilityInboxBanner() {
   } ready to review · turn traffic signals into proactive monitoring`;
 
   useEffect(() => {
-    if (!topOpportunity || exposureTracked.current) {
+    if (!allowed || !topOpportunity || exposureTracked.current) {
       return;
     }
 
@@ -30,7 +31,12 @@ export function ReliabilityInboxBanner() {
       opportunityCount: opportunities.length,
       topOpportunityId: topOpportunity.id,
     });
-  }, [opportunities.length, topOpportunity]);
+  }, [allowed, opportunities.length, topOpportunity]);
+
+  // The page this links to generates with AI (see useAIAllowed).
+  if (!allowed) {
+    return null;
+  }
 
   return (
     <div className={styles.container}>
