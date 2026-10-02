@@ -26,7 +26,8 @@ function buildPrompt(
   check: Check,
   reachabilityFraction: number | undefined,
   firingAlertNames: Set<string>,
-  recentFailureLogLines: FailureLogLine[]
+  recentFailureLogLines: FailureLogLine[],
+  failingProbes: string[]
 ): string {
   const checkType = getCheckType(check.settings);
   const reachabilityText =
@@ -54,27 +55,29 @@ function buildPrompt(
   const logsText =
     recentFailureLogLines.length > 0
       ? `Recent failure reasons from execution logs, most recent first:\n${recentFailureLogLines
-          .map((line) => {
-            const tags = [line.severity === 'critical' ? 'root cause' : 'consequence', line.probe]
-              .filter(Boolean)
-              .join(', ');
-            return `- [${tags}] ${line.text}`;
-          })
+          .map((line) => `- [${line.severity === 'critical' ? 'root cause' : 'consequence'}] ${line.text}`)
           .join('\n')}`
       : 'No recent failure reasons were found in the execution logs for this check.';
+  // A separate flat fact, not tagged onto individual lines — narrows down the investigation
+  // (e.g. "from Paris" suggests a regional network issue) when it names exactly one probe.
+  const probesText =
+    failingProbes.length === 1
+      ? `Only the "${failingProbes[0]}" probe is failing; every other probe is reachable.`
+      : failingProbes.length > 1
+        ? `Multiple probes are failing: ${failingProbes.join(', ')}.`
+        : '';
 
   return (
     `A Grafana Synthetic Monitoring ${checkType} check named "${check.job}" targeting "${check.target}" ` +
-    `is showing problems: ${reachabilityText}, and ${alertsText}.${enabledText}\n\n${logsText}\n\n` +
+    `is showing problems: ${reachabilityText}, and ${alertsText}.${enabledText} ${probesText}\n\n${logsText}\n\n` +
     `Using the failure reasons as the primary evidence, explain in one short, plain-English sentence the ` +
     `most likely root cause of this failure. Only state a specific cause (e.g. a TLS/certificate error, a ` +
     `DNS failure, a specific script step) if it is directly supported by the evidence above — do not guess ` +
     `a plausible-sounding cause the check type commonly has if the evidence doesn't back it up. If the ` +
     `evidence is too thin or generic to point to a specific cause, say that plainly instead. Start the ` +
     `sentence with the specific fact itself — no "the check failed because" or "the script encountered ` +
-    `an error due to" lead-in at all. Say what happened, not that something happened. If the failure reasons ` +
-    `are all tagged with the same single probe, mention that probe/location by name (e.g. "from Paris") — ` +
-    `but don't mention a probe at all if the evidence spans multiple probes or doesn't name one.`
+    `an error due to" lead-in at all. Say what happened, not that something happened. Only mention a ` +
+    `probe/location by name if exactly one probe is failing — don't name one when several are.`
   );
 }
 
@@ -117,7 +120,8 @@ export function useCheckFailureExplanation(check: Check) {
     },
     staleTime: STANDARD_REFRESH_INTERVAL,
   });
-  const recentFailureLogLines = logsQuery.data ?? [];
+  const recentFailureLogLines = logsQuery.data?.lines ?? [];
+  const failingProbes = logsQuery.data?.failingProbes ?? [];
 
   // Whether a non-interactive completion is actually usable right now — mirrors the gate
   // grafana-k6-app's own inline generation uses for its "Generate test" button
@@ -143,13 +147,14 @@ export function useCheckFailureExplanation(check: Check) {
       reachabilityFraction === undefined ? null : Math.round(reachabilityFraction * 1000),
       Array.from(firingAlertNames).sort().join(','),
       recentFailureLogLines,
+      failingProbes,
     ],
     // generate() (from useInlineAssistant) never rejects — success and failure both arrive via
     // the onComplete/onError callbacks — so this always resolves rather than throwing.
     queryFn: () =>
       new Promise<string | null>((resolve) => {
         generate({
-          prompt: buildPrompt(check, reachabilityFraction, firingAlertNames, recentFailureLogLines),
+          prompt: buildPrompt(check, reachabilityFraction, firingAlertNames, recentFailureLogLines, failingProbes),
           origin: ASSISTANT_INLINE_ORIGIN,
           systemPrompt: EXPLANATION_SYSTEM_PROMPT,
           onComplete: (text) => resolve(text.trim() || null),
@@ -195,6 +200,7 @@ export function useCheckFailureExplanation(check: Check) {
       reachabilityFraction,
       firingAlertNames,
       recentFailureLogLines,
+      failingProbes,
     },
   };
 }

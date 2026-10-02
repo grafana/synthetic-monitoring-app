@@ -45,9 +45,16 @@ export interface FailureLogLine {
   // itself. See the QUERY_LIMIT comment above: the root cause often sits earlier in the stream
   // than the assertion failures it triggers.
   severity: 'critical' | 'context';
-  // The probe/location this line came from (the `probe` stream label), when Loki returns one —
-  // narrows down the investigation (e.g. "timing out from Paris" vs. every probe failing).
-  probe?: string;
+}
+
+export interface RecentFailureEvidence {
+  lines: FailureLogLine[];
+  // Every probe/location seen failing in the query window (the `probe` stream label), deduped —
+  // kept as one flat summary rather than tagging it onto individual lines, since the same
+  // message often comes from several probes at once and repeating it per probe (or merging
+  // probes into the one line's attribution) just made the evidence panel noisier without
+  // adding anything a single "failing from: X, Y, Z" line doesn't already say.
+  failingProbes: string[];
 }
 
 /**
@@ -65,13 +72,13 @@ export interface FailureLogLine {
  */
 const ASSERTION_FAILURE_PREFIX = 'Failed assertion: ';
 
-function summarizeFailureLine(line: string, probe: string | undefined): FailureLogLine | null {
+function summarizeFailureLine(line: string): FailureLogLine | null {
   const fields = parseLogfmtFields(line);
 
   if (fields.msg === 'check result') {
     return fields.value === '1'
       ? null
-      : { text: `${ASSERTION_FAILURE_PREFIX}"${fields.check ?? 'unknown check'}"`, severity: 'context', probe };
+      : { text: `${ASSERTION_FAILURE_PREFIX}"${fields.check ?? 'unknown check'}"`, severity: 'context' };
   }
 
   const detail = fields.error ?? fields.msg;
@@ -81,7 +88,23 @@ function summarizeFailureLine(line: string, probe: string | undefined): FailureL
 
   const isError = fields.level === 'error' || Boolean(fields.error);
   const text = fields.level ? `${fields.level}: ${detail}` : detail;
-  return { text: text.slice(0, MAX_LOG_LINE_LENGTH), severity: isError ? 'critical' : 'context', probe };
+  return { text: text.slice(0, MAX_LOG_LINE_LENGTH), severity: isError ? 'critical' : 'context' };
+}
+
+/**
+ * Drops nulls (passing assertions) and repeats of the same failure reason — the same message
+ * showing up on several probes at once is already captured by `failingProbes` above, so a line
+ * doesn't need to be kept (or repeated) per probe here. Keeps most-recent-first order.
+ */
+function dedupeByText(lines: Array<FailureLogLine | null>): FailureLogLine[] {
+  const seenText = new Set<string>();
+  return lines.filter((line): line is FailureLogLine => {
+    if (!line || seenText.has(line.text)) {
+      return false;
+    }
+    seenText.add(line.text);
+    return true;
+  });
 }
 
 // Generic wrapper messages that show up around the actual error rather than describing it —
@@ -164,9 +187,9 @@ export async function fetchRecentFailureLogLines(
   check: Check,
   startSeconds: number,
   endSeconds: number
-): Promise<FailureLogLine[]> {
+): Promise<RecentFailureEvidence> {
   if (!logsUrl) {
-    return [];
+    return { lines: [], failingProbes: [] };
   }
 
   try {
@@ -198,32 +221,26 @@ export async function fetchRecentFailureLogLines(
         return diff > BigInt(0) ? 1 : diff < BigInt(0) ? -1 : 0;
       });
 
-    const seenKeys = new Set<string>();
+    // From every raw entry, not just the summarized/capped lines below — a probe that only
+    // ever produced lines cut off by MAX_LOG_LINES should still show up as currently failing.
+    const failingProbes = Array.from(new Set(rawEntries.map((entry) => entry.probe).filter(Boolean)));
+
     const summarized = promoteAssertionsWhenNoOtherCriticalLine(
-      deprioritizeGenericCriticalLines(
-        rawEntries
-          .map((entry) => summarizeFailureLine(entry.line, entry.probe))
-          .filter((line): line is FailureLogLine => line !== null)
-          // Keyed on text+probe, not just text: the same message from two different probes is
-          // evidence the failure isn't localized, so collapsing it down to one probe would lie.
-          .filter((line) => {
-            const key = `${line.text}\0${line.probe ?? ''}`;
-            return seenKeys.has(key) ? false : (seenKeys.add(key), true);
-          })
-      )
+      deprioritizeGenericCriticalLines(dedupeByText(rawEntries.map((entry) => summarizeFailureLine(entry.line))))
     );
 
     if (summarized.length > 0) {
-      return selectTopLines(summarized);
+      return { lines: selectTopLines(summarized), failingProbes };
     }
 
     // Nothing matched the expected shape (unexpected log format for this check type) — fall
     // back to raw lines so the model still gets *something*, even if it's noisier. Unstructured,
     // so we can't confidently call any of them the root cause — treat them all as context.
-    return rawEntries
+    const fallbackLines = rawEntries
       .slice(0, MAX_LOG_LINES)
-      .map((entry) => ({ text: entry.line.slice(0, MAX_LOG_LINE_LENGTH), severity: 'context' as const, probe: entry.probe }));
+      .map((entry) => ({ text: entry.line.slice(0, MAX_LOG_LINE_LENGTH), severity: 'context' as const }));
+    return { lines: fallbackLines, failingProbes };
   } catch {
-    return [];
+    return { lines: [], failingProbes: [] };
   }
 }

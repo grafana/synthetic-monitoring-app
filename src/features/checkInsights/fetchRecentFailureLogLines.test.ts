@@ -48,7 +48,7 @@ function mockLokiResponseFromEntries(entries: Array<{ probe?: string; line: stri
 it('returns nothing when there is no logs datasource', async () => {
   const result = await fetchRecentFailureLogLines('', BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([]);
+  expect(result).toEqual({ lines: [], failingProbes: [] });
 });
 
 it('drops passing assertions and summarizes failing ones, most recent first', async () => {
@@ -60,7 +60,7 @@ it('drops passing assertions and summarizes failing ones, most recent first', as
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([
+  expect(result.lines).toEqual([
     { text: 'error: x509: certificate signed by unknown authority', severity: 'critical' },
     { text: 'Failed assertion: "Click element"', severity: 'context' },
   ]);
@@ -75,7 +75,7 @@ it('treats level=info lines as context, not critical, even though they carry a m
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([
+  expect(result.lines).toEqual([
     { text: 'error: Uncaught (in promise) waiting for navigation: timed out after 10s', severity: 'critical' },
     { text: 'info: Check will be run with resolved k6 version', severity: 'context' },
     { text: 'info: Beginning check', severity: 'context' },
@@ -92,7 +92,9 @@ it('deduplicates the same failure reason repeated across executions', async () =
 
   // Promoted to 'critical': with no other error line in the logs, the assertion is the only
   // evidence there is, not a consequence of some other line.
-  expect(result).toEqual([{ text: 'Failed assertion: "Click element"', severity: 'critical' }]);
+  expect(result.lines).toEqual([
+    { text: 'Failed assertion: "Click element"', severity: 'critical' },
+  ]);
 });
 
 it('keeps a failed assertion as context when a more specific critical line explains it', async () => {
@@ -103,7 +105,7 @@ it('keeps a failed assertion as context when a more specific critical line expla
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([
+  expect(result.lines).toEqual([
     { text: 'error: x509: certificate signed by unknown authority', severity: 'critical' },
     { text: 'Failed assertion: "Click element"', severity: 'context' },
   ]);
@@ -119,7 +121,7 @@ it('demotes a generic wrapper error in favor of the specific cause underneath it
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([
+  expect(result.lines).toEqual([
     { text: 'error: Uncaught (in promise) waiting for navigation: timed out after 10s', severity: 'critical' },
     { text: 'error: check failed', severity: 'context' },
   ]);
@@ -139,8 +141,8 @@ it('keeps the critical root-cause line even when more recent context lines would
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toHaveLength(5);
-  expect(result).toContainEqual({
+  expect(result.lines).toHaveLength(5);
+  expect(result.lines).toContainEqual({
     text: 'error: x509: certificate signed by unknown authority',
     severity: 'critical',
   });
@@ -151,7 +153,9 @@ it('falls back to a raw, truncated line when nothing recognizable is found', asy
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([{ text: 'some unstructured line with no fields', severity: 'context' }]);
+  expect(result.lines).toEqual([
+    { text: 'some unstructured line with no fields', severity: 'context' },
+  ]);
 });
 
 it('returns an empty list when the request fails', async () => {
@@ -159,26 +163,33 @@ it('returns an empty list when the request fails', async () => {
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([]);
+  expect(result).toEqual({ lines: [], failingProbes: [] });
 });
 
-it('tags each line with the probe it came from', async () => {
+it('reports the probe a failure came from as a failing probe, without tagging the line itself', async () => {
   mockLokiResponseFromEntries([{ probe: 'Paris', line: 'level=error msg="context deadline exceeded"' }]);
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toEqual([{ text: 'error: context deadline exceeded', severity: 'critical', probe: 'Paris' }]);
+  expect(result.lines).toEqual([
+    { text: 'error: context deadline exceeded', severity: 'critical' },
+  ]);
+  expect(result.failingProbes).toEqual(['Paris']);
 });
 
-it('keeps the same failure reason from different probes as separate lines, not one merged line', async () => {
+it('reports every distinct failing probe, deduped, even when the same message repeats across them', async () => {
   mockLokiResponseFromEntries([
     { probe: 'Paris', line: 'level=error msg="context deadline exceeded"' },
+    { probe: 'Tokyo', line: 'level=error msg="context deadline exceeded"' },
     { probe: 'Tokyo', line: 'level=error msg="context deadline exceeded"' },
   ]);
 
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
-  expect(result).toHaveLength(2);
-  expect(result).toContainEqual({ text: 'error: context deadline exceeded', severity: 'critical', probe: 'Paris' });
-  expect(result).toContainEqual({ text: 'error: context deadline exceeded', severity: 'critical', probe: 'Tokyo' });
+  // The repeated message collapses to one line (as it always did, pre-probes) — the probes it
+  // came from are reported once each as a separate, flat fact instead.
+  expect(result.lines).toEqual([
+    { text: 'error: context deadline exceeded', severity: 'critical' },
+  ]);
+  expect(result.failingProbes).toEqual(['Tokyo', 'Paris']);
 });

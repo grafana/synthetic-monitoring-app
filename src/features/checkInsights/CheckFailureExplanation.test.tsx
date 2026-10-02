@@ -3,7 +3,7 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { InlineAssistantOptions, useAssistant, useInlineAssistant, useLimits, useTerms } from '@grafana/assistant';
 import { usePluginComponent } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
-import { FailureLogLine } from 'features/checkInsights/fetchRecentFailureLogLines';
+import { RecentFailureEvidence } from 'features/checkInsights/fetchRecentFailureLogLines';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_META } from 'test/fixtures/meta';
 import { render } from 'test/render';
@@ -52,7 +52,7 @@ const { useCheckReachabilitySuccessRate } = jest.requireMock('data/useSuccessRat
 };
 
 const { fetchRecentFailureLogLines } = jest.requireMock('features/checkInsights/fetchRecentFailureLogLines') as {
-  fetchRecentFailureLogLines: jest.MockedFunction<() => Promise<FailureLogLine[]>>;
+  fetchRecentFailureLogLines: jest.MockedFunction<() => Promise<RecentFailureEvidence>>;
 };
 
 function mockReachability(fraction: number | undefined) {
@@ -113,7 +113,7 @@ async function findGenerateOptions(generate: jest.Mock) {
 }
 
 beforeEach(() => {
-  fetchRecentFailureLogLines.mockReset().mockResolvedValue([]);
+  fetchRecentFailureLogLines.mockReset().mockResolvedValue({ lines: [], failingProbes: [] });
   // Explicit, stable defaults for every test (rather than relying on the global mocks' own
   // internal defaults) — usePluginComponent's global default already matches (no incident
   // plugin installed), but useAssistant/useInlineAssistant's global mocks create *new* mock
@@ -225,9 +225,10 @@ it('still fetches and shows the log evidence when Grafana Assistant is not avail
     closeAssistant: undefined,
     toggleAssistant: undefined,
   });
-  fetchRecentFailureLogLines.mockResolvedValue([
-    { text: 'error: x509: certificate signed by unknown authority', severity: 'critical' },
-  ]);
+  fetchRecentFailureLogLines.mockResolvedValue({
+    lines: [{ text: 'error: x509: certificate signed by unknown authority', severity: 'critical' }],
+    failingProbes: [],
+  });
 
   const { user } = renderExplanation(BASIC_HTTP_CHECK);
   await screen.findByText('Failing');
@@ -257,9 +258,10 @@ it('shows the analyzing state while the request is in flight, then the resolved 
 it('shows the one-liner explanation for a failing check, grounded in the failure logs', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  fetchRecentFailureLogLines.mockResolvedValue([
-    { text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical', probe: 'Paris' },
-  ]);
+  fetchRecentFailureLogLines.mockResolvedValue({
+    lines: [{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }],
+    failingProbes: ['Paris'],
+  });
   const generate = mockInlineAssistantManual();
 
   render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
@@ -277,9 +279,10 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
 it('keeps the supporting evidence hidden until the bar is expanded', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  fetchRecentFailureLogLines.mockResolvedValue([
-    { text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical', probe: 'Paris' },
-  ]);
+  fetchRecentFailureLogLines.mockResolvedValue({
+    lines: [{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }],
+    failingProbes: ['Paris'],
+  });
   const generate = mockInlineAssistantManual();
 
   const { user, container } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
@@ -293,7 +296,7 @@ it('keeps the supporting evidence hidden until the bar is expanded', async () =>
   await user.click(screen.getByRole('button', { name: /show evidence/i }));
 
   expect(await screen.findByText(/context deadline exceeded/)).toBeInTheDocument();
-  expect(container).toHaveTextContent('[Paris]');
+  expect(container).toHaveTextContent('Failing probe: Paris');
   expect(container).toHaveTextContent('Reachability: 50% over 3h');
   expect(container).toHaveTextContent('Firing alert: CheckHighReachability');
 });
@@ -303,7 +306,7 @@ describe('Actions menu', () => {
     return <div data-testid="fake-incident-form">{defaultTitle}</div>;
   }
 
-  it('lists ask assistant, start investigation, and create incident when both integrations are available', async () => {
+  it('lists start investigation and create incident when both integrations are available', async () => {
     mockReachability(0.5);
     mockAlertStates([]);
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
@@ -311,9 +314,8 @@ describe('Actions menu', () => {
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
     await screen.findByText('Failing');
 
-    await user.click(await screen.findByRole('button', { name: /actions \(3\)/i }));
+    await user.click(await screen.findByRole('button', { name: /actions \(2\)/i }));
 
-    expect(screen.getByRole('menuitem', { name: /ask assistant/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /start investigation/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /create incident/i })).toBeInTheDocument();
   });
@@ -330,6 +332,7 @@ describe('Actions menu', () => {
       toggleAssistant: jest.fn(),
     });
 
+    // Only the incident integration is available at first (assistant unavailable), so count 1.
     const { rerender } = renderExplanation(BASIC_HTTP_CHECK);
     expect(await screen.findByRole('button', { name: /actions \(1\)/i })).toBeInTheDocument();
 
@@ -337,27 +340,6 @@ describe('Actions menu', () => {
     rerender(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
 
     await waitFor(() => expect(screen.queryByRole('button', { name: /actions/i })).not.toBeInTheDocument());
-  });
-
-  it('opens the assistant in assistant mode without auto-sending when "Ask assistant" is clicked', async () => {
-    mockReachability(0.5);
-    mockAlertStates(['CheckHighReachability']);
-    const openAssistant = jest.fn();
-    jest.mocked(useAssistant).mockReturnValue({
-      isAvailable: true,
-      isLoading: false,
-      openAssistant,
-      closeAssistant: jest.fn(),
-      toggleAssistant: jest.fn(),
-    });
-
-    const { user } = renderExplanation(BASIC_HTTP_CHECK);
-    await user.click(await screen.findByRole('button', { name: /actions \(2\)/i }));
-    await user.click(screen.getByRole('menuitem', { name: /ask assistant/i }));
-
-    expect(openAssistant).toHaveBeenCalledWith(
-      expect.objectContaining({ mode: 'assistant', autoSend: false, prompt: expect.stringContaining(BASIC_HTTP_CHECK.job) })
-    );
   });
 
   it('opens the assistant in investigation mode with auto-send when "Start investigation" is clicked', async () => {
@@ -373,10 +355,16 @@ describe('Actions menu', () => {
     });
 
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
-    await user.click(await screen.findByRole('button', { name: /actions \(2\)/i }));
+    await user.click(await screen.findByRole('button', { name: /actions \(1\)/i }));
     await user.click(screen.getByRole('menuitem', { name: /start investigation/i }));
 
-    expect(openAssistant).toHaveBeenCalledWith(expect.objectContaining({ mode: 'investigation', autoSend: true }));
+    expect(openAssistant).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mode: 'investigation',
+        autoSend: true,
+        prompt: expect.stringContaining(BASIC_HTTP_CHECK.job),
+      })
+    );
   });
 
   it('opens the incident form when "Create incident" is clicked', async () => {
@@ -385,7 +373,7 @@ describe('Actions menu', () => {
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
 
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
-    await user.click(await screen.findByRole('button', { name: /actions \(3\)/i }));
+    await user.click(await screen.findByRole('button', { name: /actions \(2\)/i }));
     await user.click(screen.getByRole('menuitem', { name: /create incident/i }));
 
     expect(await screen.findByTestId('fake-incident-form')).toHaveTextContent(BASIC_HTTP_CHECK.job);
@@ -404,6 +392,6 @@ describe('Actions menu', () => {
     const options = await findGenerateOptions(generate);
     options.onComplete?.('Explanation.');
 
-    expect(await screen.findByRole('button', { name: /actions \(2\)/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /actions \(1\)/i })).toBeInTheDocument();
   });
 });

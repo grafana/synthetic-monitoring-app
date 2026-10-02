@@ -57,7 +57,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
   const styles = useStyles2(getStyles);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isIncidentOpen, setIsIncidentOpen] = useState(false);
-  const { reachabilityFraction, firingAlertNames, recentFailureLogLines } = facts;
+  const { reachabilityFraction, firingAlertNames, recentFailureLogLines, failingProbes } = facts;
 
   const { component: DeclareIncidentForm } = usePluginComponent<{
     onDismiss?: () => void;
@@ -70,7 +70,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
   const hasAlerts = facts.firingAlertNames.size > 0;
   const showExplanationSegment = showAiExplanation && (isLoading || explanation || explanationUnavailableReason);
   const isAssistantActionAvailable = Boolean(isAssistantAvailable && openAssistant);
-  const actionsCount = (isAssistantActionAvailable ? 2 : 0) + (DeclareIncidentForm ? 1 : 0);
+  const actionsCount = (isAssistantActionAvailable ? 1 : 0) + (DeclareIncidentForm ? 1 : 0);
   const hasActions = actionsCount > 0;
 
   // Nothing to draw attention to unless the check is actually failing — stay silent rather
@@ -92,6 +92,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
       firingAlertNames.size > 0
         ? `Firing alert(s): ${Array.from(firingAlertNames).join(', ')}.`
         : 'No alerts are currently firing.',
+      failingProbes.length > 0 ? `Failing probe(s): ${failingProbes.join(', ')}.` : '',
     ].join(' ');
 
   const buildInvestigationContext = () => [
@@ -101,24 +102,11 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
         check: { job: check.job, target: check.target },
         reachabilityFraction,
         firingAlertNames: Array.from(firingAlertNames),
-        recentFailureLogLines: recentFailureLogLines.map((line) => ({ text: line.text, probe: line.probe })),
+        failingProbes,
+        recentFailureLogLines: recentFailureLogLines.map((line) => line.text),
       },
     }),
   ];
-
-  const askAssistant = () => {
-    if (!openAssistant) {
-      return;
-    }
-
-    openAssistant({
-      origin: ASSISTANT_ORIGIN,
-      mode: 'assistant',
-      prompt: buildInvestigationPrompt(),
-      context: buildInvestigationContext(),
-      autoSend: false,
-    });
-  };
 
   const startInvestigation = () => {
     if (!openAssistant) {
@@ -160,9 +148,6 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
                 <Dropdown
                   overlay={
                     <Menu>
-                      {isAssistantActionAvailable && (
-                        <Menu.Item label="Ask assistant" icon="ai-sparkle" onClick={askAssistant} />
-                      )}
                       {isAssistantActionAvailable && (
                         <Menu.Item label="Start investigation" icon="compass" onClick={startInvestigation} />
                       )}
@@ -215,7 +200,7 @@ function FailureFacts({
   facts: ReturnType<typeof useCheckFailureExplanation>['facts'];
 }) {
   const styles = useStyles2(getStyles);
-  const { reachabilityFraction, firingAlertNames, recentFailureLogLines } = facts;
+  const { reachabilityFraction, firingAlertNames, recentFailureLogLines, failingProbes } = facts;
 
   return (
     <div className={styles.facts}>
@@ -239,6 +224,12 @@ function FailureFacts({
           'No alerts firing.'
         )}
       </Text>
+      {failingProbes.length > 0 && (
+        <Text variant="bodySmall">
+          Failing probe{failingProbes.length > 1 ? 's' : ''}:{' '}
+          <span className={styles.secondaryInline}>{failingProbes.join(', ')}</span>
+        </Text>
+      )}
       {!checkHasAlerting(check) && check.id !== undefined && (
         <Stack alignItems="center" gap={1}>
           <Text variant="bodySmall">This check has no alerting configured.</Text>
@@ -253,7 +244,6 @@ function FailureFacts({
           <pre className={styles.logBlock}>
             {recentFailureLogLines.map((line, index) => (
               <React.Fragment key={index}>
-                {line.probe && <span className={styles.logLineProbe}>[{line.probe}] </span>}
                 <span className={line.severity === 'critical' ? styles.logLineCritical : undefined}>
                   {line.text}
                 </span>
@@ -442,10 +432,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
   // failures) also shown alongside them as context.
   logLineCritical: css({
     color: theme.colors.error.text,
-  }),
-  // Quiet by design — it's context for the line next to it, not a second thing competing for
-  // attention the way the critical/context color coding already is.
-  logLineProbe: css({
-    color: theme.colors.text.secondary,
   }),
 });
