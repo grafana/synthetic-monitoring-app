@@ -58,8 +58,8 @@ export function AiCheckExplanationsSetting() {
             one here, so this text has to be a direct child instead, or it silently vanishes. */}
         <Stack direction="column" gap={1}>
           <Text variant="bodySmall" color="secondary">
-            Ask Grafana Assistant for a one-sentence explanation whenever a failing check's dashboard is opened.
-            Applies org-wide, and counts against your organization's Grafana Assistant usage.
+            {"Ask Grafana Assistant for a one-sentence explanation whenever a failing check's dashboard is opened. " +
+              "Applies org-wide, and counts against your organization's Grafana Assistant usage."}
           </Text>
           <Stack direction="row" alignItems="center" gap={1.5}>
             <Switch

@@ -257,7 +257,9 @@ it('shows the analyzing state while the request is in flight, then the resolved 
 it('shows the one-liner explanation for a failing check, grounded in the failure logs', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  fetchRecentFailureLogLines.mockResolvedValue([{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }]);
+  fetchRecentFailureLogLines.mockResolvedValue([
+    { text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical', probe: 'Paris' },
+  ]);
   const generate = mockInlineAssistantManual();
 
   render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
@@ -265,6 +267,7 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
   const options = await findGenerateOptions(generate);
   expect(options.prompt).toContain('context deadline exceeded');
   expect(options.prompt).toContain('CheckHighReachability');
+  expect(options.prompt).toContain('Paris');
 
   options.onComplete?.('The target is timing out on every probe request.');
 
@@ -274,7 +277,9 @@ it('shows the one-liner explanation for a failing check, grounded in the failure
 it('keeps the supporting evidence hidden until the bar is expanded', async () => {
   mockReachability(0.5);
   mockAlertStates(['CheckHighReachability']);
-  fetchRecentFailureLogLines.mockResolvedValue([{ text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical' }]);
+  fetchRecentFailureLogLines.mockResolvedValue([
+    { text: 'probe_success=0 msg="context deadline exceeded"', severity: 'critical', probe: 'Paris' },
+  ]);
   const generate = mockInlineAssistantManual();
 
   const { user, container } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
@@ -288,6 +293,7 @@ it('keeps the supporting evidence hidden until the bar is expanded', async () =>
   await user.click(screen.getByRole('button', { name: /show evidence/i }));
 
   expect(await screen.findByText(/context deadline exceeded/)).toBeInTheDocument();
+  expect(container).toHaveTextContent('[Paris]');
   expect(container).toHaveTextContent('Reachability: 50% over 3h');
   expect(container).toHaveTextContent('Firing alert: CheckHighReachability');
 });

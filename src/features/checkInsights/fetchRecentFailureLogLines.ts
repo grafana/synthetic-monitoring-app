@@ -45,6 +45,9 @@ export interface FailureLogLine {
   // itself. See the QUERY_LIMIT comment above: the root cause often sits earlier in the stream
   // than the assertion failures it triggers.
   severity: 'critical' | 'context';
+  // The probe/location this line came from (the `probe` stream label), when Loki returns one —
+  // narrows down the investigation (e.g. "timing out from Paris" vs. every probe failing).
+  probe?: string;
 }
 
 /**
@@ -62,13 +65,13 @@ export interface FailureLogLine {
  */
 const ASSERTION_FAILURE_PREFIX = 'Failed assertion: ';
 
-function summarizeFailureLine(line: string): FailureLogLine | null {
+function summarizeFailureLine(line: string, probe: string | undefined): FailureLogLine | null {
   const fields = parseLogfmtFields(line);
 
   if (fields.msg === 'check result') {
     return fields.value === '1'
       ? null
-      : { text: `${ASSERTION_FAILURE_PREFIX}"${fields.check ?? 'unknown check'}"`, severity: 'context' };
+      : { text: `${ASSERTION_FAILURE_PREFIX}"${fields.check ?? 'unknown check'}"`, severity: 'context', probe };
   }
 
   const detail = fields.error ?? fields.msg;
@@ -78,7 +81,7 @@ function summarizeFailureLine(line: string): FailureLogLine | null {
 
   const isError = fields.level === 'error' || Boolean(fields.error);
   const text = fields.level ? `${fields.level}: ${detail}` : detail;
-  return { text: text.slice(0, MAX_LOG_LINE_LENGTH), severity: isError ? 'critical' : 'context' };
+  return { text: text.slice(0, MAX_LOG_LINE_LENGTH), severity: isError ? 'critical' : 'context', probe };
 }
 
 // Generic wrapper messages that show up around the actual error rather than describing it —
@@ -183,24 +186,30 @@ export async function fetchRecentFailureLogLines(
       })
     )) as FetchResponse<LokiQueryRangeResponse>;
 
-    const rawLines = response.data.data.result
-      .flatMap((stream) => stream.values)
+    // Each Loki stream carries its own label set — the `probe` label from the query selector
+    // above — so it has to be captured here, per entry, before flattening throws it away.
+    const rawEntries = response.data.data.result
+      .flatMap((stream) => stream.values.map(([timestamp, line]) => ({ timestamp, line, probe: stream.stream.probe })))
       // Loki timestamps are nanosecond epoch strings (19 digits) — well past Number's 2^53 safe
       // integer range, so `Number(a) - Number(b)` silently loses the precision that actually
       // orders same-execution log lines. BigInt keeps the comparison exact.
       .sort((a, b) => {
-        const diff = BigInt(b[0]) - BigInt(a[0]);
+        const diff = BigInt(b.timestamp) - BigInt(a.timestamp);
         return diff > BigInt(0) ? 1 : diff < BigInt(0) ? -1 : 0;
-      })
-      .map(([, line]) => line);
+      });
 
-    const seenText = new Set<string>();
+    const seenKeys = new Set<string>();
     const summarized = promoteAssertionsWhenNoOtherCriticalLine(
       deprioritizeGenericCriticalLines(
-        rawLines
-          .map(summarizeFailureLine)
+        rawEntries
+          .map((entry) => summarizeFailureLine(entry.line, entry.probe))
           .filter((line): line is FailureLogLine => line !== null)
-          .filter((line) => (seenText.has(line.text) ? false : (seenText.add(line.text), true)))
+          // Keyed on text+probe, not just text: the same message from two different probes is
+          // evidence the failure isn't localized, so collapsing it down to one probe would lie.
+          .filter((line) => {
+            const key = `${line.text}\0${line.probe ?? ''}`;
+            return seenKeys.has(key) ? false : (seenKeys.add(key), true);
+          })
       )
     );
 
@@ -211,9 +220,9 @@ export async function fetchRecentFailureLogLines(
     // Nothing matched the expected shape (unexpected log format for this check type) — fall
     // back to raw lines so the model still gets *something*, even if it's noisier. Unstructured,
     // so we can't confidently call any of them the root cause — treat them all as context.
-    return rawLines
+    return rawEntries
       .slice(0, MAX_LOG_LINES)
-      .map((line) => ({ text: line.slice(0, MAX_LOG_LINE_LENGTH), severity: 'context' as const }));
+      .map((entry) => ({ text: entry.line.slice(0, MAX_LOG_LINE_LENGTH), severity: 'context' as const, probe: entry.probe }));
   } catch {
     return [];
   }

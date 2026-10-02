@@ -27,6 +27,24 @@ function mockLokiResponse(lines: string[]) {
   );
 }
 
+/** One Loki stream per entry, so each line can carry its own `probe` label. */
+function mockLokiResponseFromEntries(entries: Array<{ probe?: string; line: string }>) {
+  server.use(
+    http.get(`${LOGS_URL}/loki/api/v1/query_range`, () =>
+      HttpResponse.json({
+        data: {
+          result: entries.map((entry, index) => ({
+            stream: entry.probe ? { probe: entry.probe } : {},
+            // Ascending timestamps (oldest first); fetchRecentFailureLogLines sorts
+            // most-recent-first itself, so the last entry here comes back first.
+            values: [[String(BigInt('1700000000000000000') + BigInt(index)), entry.line]],
+          })),
+        },
+      })
+    )
+  );
+}
+
 it('returns nothing when there is no logs datasource', async () => {
   const result = await fetchRecentFailureLogLines('', BASIC_HTTP_CHECK, 0, 1);
 
@@ -142,4 +160,25 @@ it('returns an empty list when the request fails', async () => {
   const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
 
   expect(result).toEqual([]);
+});
+
+it('tags each line with the probe it came from', async () => {
+  mockLokiResponseFromEntries([{ probe: 'Paris', line: 'level=error msg="context deadline exceeded"' }]);
+
+  const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
+
+  expect(result).toEqual([{ text: 'error: context deadline exceeded', severity: 'critical', probe: 'Paris' }]);
+});
+
+it('keeps the same failure reason from different probes as separate lines, not one merged line', async () => {
+  mockLokiResponseFromEntries([
+    { probe: 'Paris', line: 'level=error msg="context deadline exceeded"' },
+    { probe: 'Tokyo', line: 'level=error msg="context deadline exceeded"' },
+  ]);
+
+  const result = await fetchRecentFailureLogLines(LOGS_URL, BASIC_HTTP_CHECK, 0, 1);
+
+  expect(result).toHaveLength(2);
+  expect(result).toContainEqual({ text: 'error: context deadline exceeded', severity: 'critical', probe: 'Paris' });
+  expect(result).toContainEqual({ text: 'error: context deadline exceeded', severity: 'critical', probe: 'Tokyo' });
 });

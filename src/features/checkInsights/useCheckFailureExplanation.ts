@@ -54,7 +54,12 @@ function buildPrompt(
   const logsText =
     recentFailureLogLines.length > 0
       ? `Recent failure reasons from execution logs, most recent first:\n${recentFailureLogLines
-          .map((line) => `- [${line.severity === 'critical' ? 'root cause' : 'consequence'}] ${line.text}`)
+          .map((line) => {
+            const tags = [line.severity === 'critical' ? 'root cause' : 'consequence', line.probe]
+              .filter(Boolean)
+              .join(', ');
+            return `- [${tags}] ${line.text}`;
+          })
           .join('\n')}`
       : 'No recent failure reasons were found in the execution logs for this check.';
 
@@ -67,7 +72,9 @@ function buildPrompt(
     `a plausible-sounding cause the check type commonly has if the evidence doesn't back it up. If the ` +
     `evidence is too thin or generic to point to a specific cause, say that plainly instead. Start the ` +
     `sentence with the specific fact itself — no "the check failed because" or "the script encountered ` +
-    `an error due to" lead-in at all. Say what happened, not that something happened.`
+    `an error due to" lead-in at all. Say what happened, not that something happened. If the failure reasons ` +
+    `are all tagged with the same single probe, mention that probe/location by name (e.g. "from Paris") — ` +
+    `but don't mention a probe at all if the evidence spans multiple probes or doesn't name one.`
   );
 }
 

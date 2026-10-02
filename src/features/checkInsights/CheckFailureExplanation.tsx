@@ -101,7 +101,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
         check: { job: check.job, target: check.target },
         reachabilityFraction,
         firingAlertNames: Array.from(firingAlertNames),
-        recentFailureLogLines: recentFailureLogLines.map((line) => line.text),
+        recentFailureLogLines: recentFailureLogLines.map((line) => ({ text: line.text, probe: line.probe })),
       },
     }),
   ];
@@ -253,6 +253,7 @@ function FailureFacts({
           <pre className={styles.logBlock}>
             {recentFailureLogLines.map((line, index) => (
               <React.Fragment key={index}>
+                {line.probe && <span className={styles.logLineProbe}>[{line.probe}] </span>}
                 <span className={line.severity === 'critical' ? styles.logLineCritical : undefined}>
                   {line.text}
                 </span>
@@ -441,5 +442,10 @@ const getStyles = (theme: GrafanaTheme2) => ({
   // failures) also shown alongside them as context.
   logLineCritical: css({
     color: theme.colors.error.text,
+  }),
+  // Quiet by design — it's context for the line next to it, not a second thing competing for
+  // attention the way the critical/context color coding already is.
+  logLineProbe: css({
+    color: theme.colors.text.secondary,
   }),
 });
