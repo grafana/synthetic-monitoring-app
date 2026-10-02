@@ -5,10 +5,8 @@ import { Stack, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
-import { FeatureName } from 'types';
 import { useCheckTypeGroupOptions } from 'hooks/useCheckTypeGroupOptions';
 import { AgentSkillPicker } from 'components/AgentSkillReference/AgentSkillPicker';
-import { FeatureFlag } from 'components/FeatureFlag';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { CheckGroupCard } from './components/CheckGroupCard';
@@ -33,20 +31,12 @@ export const ChooseCheckGroup = () => {
               return <CheckGroupCard key={group.label} group={group} />;
             })}
           </div>
-          <FeatureFlag name={FeatureName.CheckTemplates}>
-            {({ isEnabled }) =>
-              isEnabled ? (
-                <>
-                  <div>Start from a template</div>
-                  <div className={cx(styles.container, styles.afterTiles)}>
-                    {CHECK_TEMPLATES.map((template) => (
-                      <CheckTemplate key={template.id} template={template} />
-                    ))}
-                  </div>
-                </>
-              ) : null
-            }
-          </FeatureFlag>
+          <div>Start from a template</div>
+          <div className={cx(styles.container, styles.afterTiles)}>
+            {CHECK_TEMPLATES.map((template) => (
+              <CheckTemplate key={template.id} template={template} />
+            ))}
+          </div>
           <AgentSkillPicker source="choose-check-type" />
         </Stack>
       </div>

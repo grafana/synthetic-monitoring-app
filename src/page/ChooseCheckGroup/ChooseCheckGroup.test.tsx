@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
+import { runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -45,7 +45,6 @@ it('shows check type options correctly', async () => {
 });
 
 it('shows a start from a template section', async () => {
-  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
   await renderChooseCheckGroup();
 
   expect(screen.getByText('Start from a template')).toBeInTheDocument();
@@ -93,18 +92,16 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
   });
 });
 
-it('hides templates when the feature flag is disabled', async () => {
-  mockFeatureToggles({ [FeatureName.CheckTemplates]: false });
-  await renderChooseCheckGroup();
-  expect(screen.queryByText('Start from a template')).not.toBeInTheDocument();
-});
-
-it('opens the template drawer from the redesigned card', async () => {
-  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
+it('opens the template drawer and tracks selection without a feature flag', async () => {
+  const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
   const { user } = await renderChooseCheckGroup();
   const card = await screen.findByRole('button', { name: 'Detect broken links' });
   await waitFor(() => expect(card).toBeEnabled());
   await user.click(card);
+  expect(reportInteraction).toHaveBeenCalledWith(
+    'synthetic-monitoring_check_templates_template_selected',
+    expect.objectContaining({ check_template_id: 'broken_links' })
+  );
   expect(await screen.findByRole('textbox', { name: /^Page URL/ })).toBeInTheDocument();
   expect(screen.queryByRole('textbox', { name: 'Check name' })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
@@ -112,14 +109,12 @@ it('opens the template drawer from the redesigned card', async () => {
 });
 
 it('disables templates when the check limit is reached', async () => {
-  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
   await renderChooseCheckGroup({ checkLimit: 1 });
   await screen.findByText(/You have reached your check limit of /);
   expect(screen.getByRole('button', { name: 'Detect broken links' })).toBeDisabled();
 });
 
 it('disables templates for viewers', async () => {
-  mockFeatureToggles({ [FeatureName.CheckTemplates]: true });
   runTestAsViewer();
   await renderChooseCheckGroup();
   expect(await screen.findByRole('button', { name: 'Detect broken links' })).toBeDisabled();
