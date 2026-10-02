@@ -1,13 +1,11 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Button, Drawer, Field, Input, Stack, Text, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Alert, Button, Drawer, Field, Input, Stack, Text } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
 import { CheckType, FeatureName } from 'types';
 import { getUserPermissions } from 'data/permissions';
-import { QUERY_KEYS, useCreateCheck } from 'data/useChecks';
+import { QUERY_KEYS } from 'data/useChecks';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbes, useProbesWithMetadata } from 'data/useProbes';
 import { useDefaultProbeId } from 'hooks/useDefaultProbeId';
@@ -18,6 +16,7 @@ import { FolderSelector } from 'components/FolderSelector/FolderSelector';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { createBrokenLinksCheck } from './brokenLinks';
+import { useCreateTemplateCheck } from './useCreateTemplateCheck';
 
 export function BrokenLinksDrawer({ onClose }: { onClose: () => void }) {
   return (
@@ -29,9 +28,7 @@ export function BrokenLinksDrawer({ onClose }: { onClose: () => void }) {
 
 function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; foldersEnabled: boolean }) {
   const [url, setUrl] = useState('');
-  const styles = useStyles2(getStyles);
   const [maxLinks, setMaxLinks] = useState('');
-  const [timeout, setLinkTimeout] = useState('');
   const [folderUid, setFolderUid] = useState<string>();
   const [folderChanged, setFolderChanged] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,7 +41,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
   const selectedFolder = folderChanged ? folderUid : preselectUid;
   const { canWriteChecks } = getUserPermissions();
   const isOverlimit = useIsOverlimit(false, CheckType.Browser);
-  const mutation = useCreateCheck();
+  const mutation = useCreateTemplateCheck();
   const queryClient = useQueryClient();
   const navigateToCheck = useNavigateToCheckDashboard();
   useTrackingScope({ check_template_id: 'broken_links' });
@@ -73,9 +70,9 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     if (maxLinks.trim() && (!Number.isSafeInteger(Number(maxLinks)) || Number(maxLinks) < 1)) {
       nextErrors.maxLinks = 'Enter a positive whole number.';
     }
-    if (timeout.trim() && (!Number.isFinite(Number(timeout)) || Number(timeout) <= 0 || Number(timeout) > 60)) {
-      nextErrors.timeout = 'Enter a timeout greater than 0 and at most 60 seconds.';
-    }
+    const options = {
+      maxLinks: maxLinks.trim() ? Number(maxLinks) : undefined,
+    };
     if (foldersEnabled && folderStatus === 'available' && !selectedFolder) {
       nextErrors.folder = 'Choose a folder.';
     }
@@ -84,12 +81,9 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
       return;
     }
 
+    const check = createBrokenLinksCheck(parsed, options);
     submitting.current = true;
     try {
-      const check = createBrokenLinksCheck(parsed, {
-        maxLinks: maxLinks.trim() ? Number(maxLinks) : undefined,
-        timeout: timeout.trim() ? `${Number(timeout)}s` : undefined,
-      });
       const result = await mutation.mutateAsync({
         ...check,
         probes: [probeId],
@@ -147,43 +141,23 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
                 />
               </Field>
             )}
-            <div className={styles.options}>
-              <Field
-                label="Link limit"
-                htmlFor="template-max-links"
-                description="Maximum links per run."
-                error={errors.maxLinks}
-                invalid={!!errors.maxLinks}
-              >
-                <Input
-                  id="template-max-links"
-                  type="number"
-                  min={1}
-                  step={1}
-                  placeholder="10"
-                  value={maxLinks}
-                  onChange={(event) => setMaxLinks(event.currentTarget.value)}
-                />
-              </Field>
-              <Field
-                label="Timeout"
-                description="Wait time per link."
-                htmlFor="template-timeout"
-                error={errors.timeout}
-                invalid={!!errors.timeout}
-              >
-                <Input
-                  id="template-timeout"
-                  suffix="seconds"
-                  type="number"
-                  min={0.1}
-                  max={60}
-                  placeholder="10"
-                  value={timeout}
-                  onChange={(event) => setLinkTimeout(event.currentTarget.value)}
-                />
-              </Field>
-            </div>
+            <Field
+              label="Link limit"
+              htmlFor="template-max-links"
+              description="Maximum links per run."
+              error={errors.maxLinks}
+              invalid={!!errors.maxLinks}
+            >
+              <Input
+                id="template-max-links"
+                type="number"
+                min={1}
+                step={1}
+                placeholder="10"
+                value={maxLinks}
+                onChange={(event) => setMaxLinks(event.currentTarget.value)}
+              />
+            </Field>
           </fieldset>
           {!probesLoading && !probesError && probeId === undefined && (
             <Alert title="No compatible probe available" severity="error">
@@ -214,11 +188,3 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     </Drawer>
   );
 }
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  options: css({
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))',
-    columnGap: theme.spacing(2),
-  }),
-});
