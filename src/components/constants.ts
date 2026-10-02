@@ -30,6 +30,7 @@ import {
 } from 'types';
 
 import { AssertionConditionVariant, AssertionSubjectVariant } from './MultiHttp/MultiHttpTypes';
+import WEBSOCKET_API_SCRIPT from './ScriptExamplesMenu/snippets/websocket_api.js?raw';
 
 export const DNS_RESPONSE_CODES = Object.values(DnsResponseCodesEnum).map((responseCode) => ({
   label: responseCode,
@@ -179,6 +180,9 @@ export default async function main() {
   check(resp, { 'status should be 200': (r) => r.status === 200 });
 
 }`);
+
+// Reuses the same snippet shown in the "Script examples" menu so the two never drift apart.
+export const EXAMPLE_SCRIPT_WEBSOCKET = btoa(WEBSOCKET_API_SCRIPT);
 
 export const EXAMPLE_SCRIPT_BROWSER = btoa(`import { browser } from "k6/browser";
 import { expect } from "https://jslib.k6.io/k6-testing/0.5.0/index.js";

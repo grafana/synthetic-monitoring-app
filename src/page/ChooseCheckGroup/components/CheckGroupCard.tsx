@@ -129,6 +129,12 @@ const getStyles = (theme: GrafanaTheme2) => ({
     '> div:first-of-type': {
       height: '100%',
     },
+
+    // Only the button and protocol pills navigate, not the card body — don't imply otherwise.
+    '&&:hover': {
+      background: theme.colors.background.secondary,
+      zIndex: 'auto',
+    },
   }),
   groupName: css({
     color: theme.colors.text.primary,

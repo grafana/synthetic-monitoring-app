@@ -102,7 +102,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
   return (
     <Drawer
       title="Detect broken links"
-      subtitle="Create a browser check"
+      subtitle="Check a page for broken links on a regular schedule."
       size="md"
       closeOnMaskClick={!mutation.isPending}
       onClose={() => {
@@ -113,7 +113,6 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     >
       <form onSubmit={createCheck} autoComplete="off" noValidate>
         <Stack direction="column" gap={2}>
-          <Text>Check a page for broken links on a regular schedule.</Text>
           <fieldset
             disabled={mutation.isPending}
             style={{ border: 0, padding: 0, margin: 0, minWidth: 0, width: '100%' }}
@@ -174,7 +173,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
               {mutation.error?.message || 'Please try again.'}
             </Alert>
           )}
-          <Text color="secondary">You can fine-tune the check after creating it.</Text>
+          <Text color="secondary">Creates a browser check. You can manually edit it afterward.</Text>
           <Stack gap={1}>
             <Button type="submit" disabled={disabled} icon={mutation.isPending ? 'fa fa-spinner' : undefined}>
               Create check

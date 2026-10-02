@@ -15,7 +15,7 @@ export const AGENT_SKILL_TOOLS = [
     id: 'claude-code' as const,
     trackingId: 'claude-plugin' as const,
     name: 'Claude Code',
-    cardDescription: 'Install the Synthetic Monitoring skill as a Claude Code plugin.',
+    cardDescription: 'Install our skill as a Claude Code plugin.',
     installCommand: 'claude plugin install grafana-cloud@grafana-skills',
     installLabel: 'Claude Code plugin',
   },
@@ -23,7 +23,7 @@ export const AGENT_SKILL_TOOLS = [
     id: 'agent-skills' as const,
     trackingId: 'npx' as const,
     name: 'Cursor, Codex & other agents',
-    cardDescription: 'Install via the Agent Skills CLI — works with any compatible coding agent.',
+    cardDescription: 'Install our skill via the Agent Skills CLI.',
     installCommand: 'npx skills add grafana/skills',
     installLabel: 'Any Agent Skills compatible tool (Claude Code, Cursor, Codex, ...)',
   },
@@ -68,7 +68,7 @@ export const AGENT_SKILL_PROMPTS: Array<{
 export const AGENT_SKILL_DEFAULT_COPY = {
   title: 'Author checks with your coding agent',
   description:
-    'The Synthetic Monitoring skill teaches coding agents to pick the simplest sufficient check type, author scripted and browser checks that assert correctly, and validate them locally with k6 run. Paste the resulting script into the check editor, or let your agent deploy it via Terraform or the API.',
+    'Teaches your agent to pick the right check type, write checks that assert correctly, and validate them locally before you deploy.',
 };
 
 export const AGENT_SKILL_TERRAFORM_COPY = {
