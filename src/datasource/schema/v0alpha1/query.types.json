@@ -2,7 +2,7 @@
   "kind": "QueryTypeDefinitionList",
   "apiVersion": "datasource.grafana.app/v0alpha1",
   "metadata": {
-    "resourceVersion": "1790107514260"
+    "resourceVersion": "1790965535599"
   },
   "items": [
     {
@@ -112,6 +112,37 @@
           "$schema": "https://json-schema.org/draft-04/schema",
           "additionalProperties": false,
           "description": "TenantWideQuery has no parameters: the query is computed across the whole tenant.",
+          "type": "object"
+        }
+      }
+    },
+    {
+      "metadata": {
+        "name": "checks_latency",
+        "resourceVersion": "1790965535599",
+        "creationTimestamp": "2026-10-02T18:25:35Z"
+      },
+      "spec": {
+        "discriminators": [
+          {
+            "field": "queryType",
+            "value": "checks_latency"
+          }
+        ],
+        "description": "Average latency across all checks in the tenant of the given check type, grouped by job and instance. checkType selects a metric name, not a label value, from the app's CheckType enum (src/types.ts).",
+        "schema": {
+          "$schema": "https://json-schema.org/draft-04/schema",
+          "additionalProperties": false,
+          "description": "CheckTypeQuery carries a check type, mirroring the app's own getQuery(job, target, type) signature (src/data/useLatency.ts).",
+          "properties": {
+            "checkType": {
+              "description": "CheckType is one of the app's CheckType enum values (src/types.ts),\nlowercase, e.g. \"http\" or \"scripted\".",
+              "type": "string"
+            }
+          },
+          "required": [
+            "checkType"
+          ],
           "type": "object"
         }
       }
