@@ -68,14 +68,19 @@ describe('buildServiceNeighbourhoodQuery', () => {
 
 describe('getCheckGraphUrl', () => {
   it('anchors the KG entity graph on the check, connected to the services it monitors', () => {
-    const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/');
+    const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/', 1000, 2000);
 
     expect(url.startsWith('/a/grafana-asserts-app/entities?')).toBe(true);
     // A space in the check name encodes as %20, not the form-encoded +.
     expect(url).toContain('grafana.com%20homepage');
+    const params = paramsOf(url);
+    expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
+    expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
+    expect(params.get('filterCriteria[1][propertyMatchers][0][op]')).toBe('IS NOT NULL');
+    expect(params.get('start')).toBe('1000');
+    expect(params.get('end')).toBe('2000');
 
-    // Anchoring on the monitored service instead would open that service's own neighbourhood,
-    // which is a wider set than the services this check monitors.
+    // The first criterion still anchors the search on this check.
     expectGraphSearch(
       paramsOf(url),
       'SyntheticCheck',
@@ -84,4 +89,3 @@ describe('getCheckGraphUrl', () => {
     );
   });
 });
-
