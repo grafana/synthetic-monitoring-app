@@ -210,6 +210,33 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
     ],
   },
   {
+    id: 'sm-check-recommendations',
+    route: AppRoutes.CheckRecommendations,
+    urlPattern: `${root}/checks/recommendations`,
+    createContextItems: () => [
+      structured('Synthetic Monitoring recommendations', {
+        name: 'Check recommendations',
+        pageType: 'sm-check-recommendations',
+        capabilities: ['alerting-gaps', 'cost-attribution', 'redundant-checks', 'paused-checks'],
+        help: 'Fleet-level findings derived from check configuration alone: checks running without any alerting, checks missing cost attribution labels, targets covered by duplicate or overlapping checks, and checks left paused. Each finding links to the check list filtered to the checks it refers to. Help with: deciding which findings are worth acting on, setting up alerting across many checks at once, labelling checks for cost attribution, and judging whether overlapping coverage is deliberate.',
+      }),
+    ],
+    createQuestions: () => [
+      question(
+        'Where should I start?',
+        'Given the findings on this page, which should I act on first and why? Consider risk of unnoticed failures against wasted spend.'
+      ),
+      question(
+        'Alert across many checks',
+        'What is the fastest way to add alerting to a large number of checks that currently have none, and what thresholds should I start with?'
+      ),
+      question(
+        'Is this overlap deliberate?',
+        'How do I tell whether a target covered by several check types is redundant or intentional defence in depth?'
+      ),
+    ],
+  },
+  {
     id: 'sm-choose-check-group',
     route: AppRoutes.ChooseCheckGroup,
     urlPattern: chooseCheckGroupRegex,

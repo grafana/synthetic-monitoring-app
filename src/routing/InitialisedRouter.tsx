@@ -15,6 +15,8 @@ import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
+import { ChecksPageLayout } from 'page/ChecksPageLayout';
+import { RecommendationsTab } from 'page/ChecksPageLayout/tabs/Recommendations';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
@@ -26,7 +28,7 @@ import { DashboardPage } from 'page/DashboardPage';
 import { EditProbe } from 'page/EditProbe';
 import { NewProbe } from 'page/NewProbe';
 import { CheckNotFound } from 'page/NotFound/CheckNotFound';
-import { PluginPageNotFound } from 'page/NotFound/NotFound';
+import { NotFound, PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
@@ -42,6 +44,9 @@ export const InitialisedRouter = () => {
     FeatureName.CheckSuggestions
   );
   const { isEnabled: isLabelMigrationEnabled } = useFeatureFlag(FeatureName.LabelMigration);
+  const { isEnabled: isRecommendationsEnabled, isReady: isRecommendationsReady } = useFeatureFlag(
+    FeatureName.Recommendations
+  );
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
   const page = urlSearchParams.get('page');
@@ -76,7 +81,26 @@ export const InitialisedRouter = () => {
       />
 
       <Route path={AppRoutes.Checks}>
-        <Route index element={<CheckList />} />
+        {/* Only the tabbed routes sit under the layout; the editor and dashboard keep their own chrome. */}
+        <Route element={<ChecksPageLayout />}>
+          <Route index element={<CheckList />} />
+          {/* Always registered so an async flag can't drop the route mid-resolution. */}
+          <Route
+            path="recommendations"
+            element={
+              !isRecommendationsReady ? (
+                <Spinner />
+              ) : isRecommendationsEnabled ? (
+                <RecommendationsTab />
+              ) : (
+                <NotFound>
+                  The page you are looking for does not exist. Here is a working link to{' '}
+                  <TextLink href={getRoute(AppRoutes.Checks)}>checks listing</TextLink>.
+                </NotFound>
+              )
+            }
+          />
+        </Route>
         <Route path=":id">
           <Route
             index
