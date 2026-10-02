@@ -2,8 +2,9 @@
 
 Synthetic Monitoring's feature flags are [OpenFeature](https://openfeature.dev/) flags, evaluated
 through Grafana's OFREP endpoint and defined with Go Feature Flag (GOFF) in `deployment_tools`.
-Legacy Grafana feature toggles (`config.featureToggles`) are no longer read anywhere in this app;
-Grafana core is deprecating reads of that map for plugins.
+Legacy Grafana feature toggles (`config.featureToggles`) are no longer read anywhere in this app and
+must not be reintroduced: Grafana core is deprecating those reads for plugins
+(`grafana.frontendLegacyFeatureToggleHandling`, which can block them outright).
 
 ## How it works
 
@@ -26,18 +27,46 @@ Grafana core is deprecating reads of that map for plugins.
   initialising. Because of the gate above it is effectively always `true` inside the app; it exists
   for consumers that might render outside `SMOpenFeatureProvider`.
 
+### Waves
+
+| Wave      | Who is in it                                                | Verify on                        |
+| --------- | ----------------------------------------------------------- | -------------------------------- |
+| `dev`     | Staff stacks on `grafana-dev.net`                           | your own `*.grafana-dev.net`     |
+| `staging` | `ops.grafana-ops.net` and staff stacks on `grafana-ops.com` | `ops.grafana-ops.net`            |
+| `canary`  | Mostly free instances, a few paid                           | a stack in a prod-canary cluster |
+| `prod`    | Everyone else, including the largest customers              | a `*.grafana.net` stack          |
+
+A `deployment_tools` merge reaches a wave in roughly 10–15 minutes (kube-manifests export, Flux
+sync, GOFF re-reads its ConfigMap every minute, Grafana core re-fetches the bulk response every
+30 s). Unlike legacy toggles, no instance restart is involved.
+
 ## Adding a flag
 
-1. Define the key in GOFF for each wave, in the files above. Follow the `deployment_tools`
-   [feature-toggles README](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/feature-toggles/README.md):
-   roll out `dev` → `staging` → `canary` → `prod`, one PR per wave, with the flag off in waves it
-   isn't rolling out to yet. Reviewed by `@grafana-feature-flags`.
+1. Add the key to **all four** wave files, on in the waves it is rolling out to and off elsewhere.
+   The `synthetic-monitoring` folder is already registered in every `goff-{env}.libsonnet`
+   aggregator, so a new key is one line per file. Keep the files sorted by key.
 
    ```jsonnet
-   'synthetic-monitoring.my-feature': goff.BooleanFlag(true) + goff.Public(),
+   'synthetic-monitoring.my-feature': goff.BooleanFlag(true) + goff.Public(),   // dev.libsonnet
+   'synthetic-monitoring.my-feature': goff.BooleanFlag(false) + goff.Public(),  // staging, canary, prod
    ```
 
-2. Verify the key resolves. Browser console on a stack in the wave (`targetingKey` is required):
+   Check the rendered output before opening the PR (from the `deployment_tools` root):
+
+   ```sh
+   jsonnetfmt -i ksonnet/environments/hosted-grafana/waves/feature-toggles/goff/synthetic-monitoring/*.libsonnet
+   jsonnet -J ksonnet/lib -J ksonnet/vendor ksonnet/environments/hosted-grafana/waves/feature-toggles/goff/goff-dev.libsonnet \
+     | jq '."synthetic-monitoring.my-feature"'
+   ```
+
+   Expect `variations` of `enabled`/`disabled`, a `defaultRule`, and `metadata.public: "true"`.
+   Request review from `@grafana-feature-flags` (the folder has no CODEOWNERS entry, so nobody is
+   auto-requested). Follow the `deployment_tools`
+   [feature-toggles README](https://github.com/grafana/deployment_tools/blob/master/ksonnet/environments/hosted-grafana/waves/feature-toggles/README.md)
+   for anything not covered here.
+
+2. After the merge has rolled out, verify the key is served. Browser console on a stack in the
+   wave (`targetingKey` is required):
 
    ```js
    const { namespace, appSubUrl = '' } = grafanaBootData.settings;
@@ -48,32 +77,87 @@ Grafana core is deprecating reads of that map for plugins.
        body: JSON.stringify({ context: { targetingKey: namespace, namespace } }),
      })
    ).json();
-   body.flags.filter((f) => f.key.startsWith('synthetic-monitoring'));
+   body.flags.filter((f) => f.key.startsWith('synthetic-monitoring')).map((f) => `${f.key}=${f.value} (${f.reason})`);
    ```
 
 3. Add the `FeatureName` entry with the key as its value and consume it via `useFeatureFlag`.
    The app can ship before every wave has the definition: the flag is simply `false` where it is
-   undefined.
+   undefined. Gate tests with `mockFeatureToggles` (see [Testing](#testing)).
 
-4. When the feature is GA and permanent, remove the `FeatureName` entry and the dead code paths,
-   then the GOFF definitions.
+## Rolling out and changing values
 
-## Targeting and overrides
+Flipping a flag is a one-line change in the wave file (`BooleanFlag(false)` → `BooleanFlag(true)`),
+one PR per wave, in wave order. Verify with the snippet above after each wave and smoke test the
+feature before moving to the next. The README's rollout guidance (`dev`/`staging` for
+experimental, `canary` for private preview, `prod` with percentages for public preview) applies.
 
-- Per-stack, per-plan or percentage rollouts are targeting rules in the wave files
-  (`goff.ForSlugs`, `goff.BooleanFlag(true, 50)`, ...); see the `deployment_tools` README.
-- Per-instance overrides set through gcom belong to the legacy toggle system and have no effect on
-  these flags.
-- To try a flag in your own browser, use Grafana Feature control (below). The old `?features=`
-  URL override no longer exists.
+Partial rollouts are percentages or targeting rules on the same line. Values must be consistent
+within a wave: every stack in the wave reads the same file.
 
-### Grafana Feature control
+```jsonnet
+'synthetic-monitoring.my-feature': goff.BooleanFlag(true, 50) + goff.Public(),           // 50% of stacks
+'synthetic-monitoring.my-feature': goff.BooleanFlag(true, 50) + goff.Public() + goff.BucketByOrg(),  // 50% of orgs
+```
+
+## Targeting specific stacks
+
+Per-stack access (private preview customers, staff test stacks, disabling a feature for one stack)
+is a targeting rule on the flag, composed with `+`. Prefer stack IDs over slugs: slugs can change.
+Comment each ID with the slug so the list stays reviewable.
+
+```jsonnet
+'synthetic-monitoring.my-feature': goff.BooleanFlag(false) + goff.Public() + goff.ForStackIds([
+  '421690',  // ukg
+  '1145632',  // rapid7
+]),
+'synthetic-monitoring.other-feature': goff.BooleanFlag(true) + goff.Public() + goff.NotForStackIds([
+  '35611',  // play
+]),
+```
+
+Other helpers: `goff.ForSlugs`, `goff.ForOrgIds`, `goff.ForOrgSlugs`, `goff.ForClusters`, and the
+`NotFor*` variants. The stack ID is the number in `grafanaBootData.settings.namespace`
+(`stacks-<id>`) or the stack's gcom record.
+
+Per-instance overrides set through gcom belong to the legacy toggle system and have **no effect**
+on these flags, and MTFF only applies a stack's targeting rules when it knows the stack's
+namespace, which it does for any request made from the stack itself.
+
+## Removing a flag
+
+When a feature is GA and permanent:
+
+1. Remove the `FeatureName` entry and the code paths behind it, and ship that release to every
+   wave (`_catalog_version` in
+   `ksonnet/environments/hosted-grafana/waves/provisioned-plugins/grafana-synthetic-monitoring-app/`).
+2. Remove the key from the four wave files. Order matters only for noise: a key the app still reads
+   but GOFF no longer defines resolves to `false`, so remove the reads first.
+
+## Verifying what the app resolved
+
+The bulk snippet above shows what MTFF serves; this shows what the app's own client resolved,
+including Feature control overrides and error codes. Run it on a Synthetic Monitoring page:
+
+```js
+const client = globalThis[Symbol.for('@openfeature/web-sdk/api')].getClient('grafana-synthetic-monitoring-app');
+client.getBooleanDetails('synthetic-monitoring.my-feature', false);
+```
+
+`reason: TARGETING_MATCH`/`STATIC`/`DEFAULT` means a provider resolved it. An `errorCode` means
+neither provider did; the `errorMessage` of a `GENERAL` error names only the first provider
+(Feature control's localStorage), so "Unable to find a localStorage entry" does not mean the OFREP
+provider was skipped. If the key is missing from the bulk response, check the wave's file and the
+[Flux dashboard](https://ops.grafana-ops.net/d/f1d065daae5d7f0f5c5b3ac0504a565a/cluster-stats?orgId=1)
+for that stack's cluster, and confirm the hostname is in the wave you think it is.
+
+## Grafana Feature control
 
 Feature control overrides take precedence over server evaluations through
 `createOpenFeatureLocalStorageProvider` from `@grafana/runtime`. Open Feature control with
 `?featureControl=true` and add the exact key (the `FeatureName` value, for example
 `synthetic-monitoring.check-suggestions`). Both `true` and `false` overrides are supported.
-Changes apply without reloading; deleting an override restores the server value.
+Changes apply without reloading; deleting an override restores the server value. The old
+`?features=` URL override no longer exists.
 
 Overrides are local to the browser and Grafana origin. They also apply when Graft serves the plugin.
 
