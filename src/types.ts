@@ -751,17 +751,18 @@ export enum HTTPCompressionAlgo {
   Deflate = 'deflate',
 }
 
+// Values are the GOFF flag keys defined in deployment_tools. See docs/development/feature-flags.md.
 export enum FeatureName {
-  CALs = 'synthetic-monitoring-cost-attribution',
-  CheckSuggestions = 'synthetic-monitoring-check-suggestions',
-  Folders = 'synthetic-monitoring-folders',
-  GRPCChecks = 'grpc-checks',
-  KnowledgeGraph = 'synthetic-monitoring-knowledge-graph',
-  LabelMigration = 'synthetic-monitoring-label-migration',
-  Screenshots = 'synthetic-monitoring-screenshots',
-  SecretsManagement = 'synthetic-monitoring-secrets-management',
-  TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
-  VersionManagement = 'synthetic-monitoring-version-management',
+  CALs = 'synthetic-monitoring.cost-attribution',
+  CheckSuggestions = 'synthetic-monitoring.check-suggestions',
+  Folders = 'synthetic-monitoring.folders',
+  GRPCChecks = 'synthetic-monitoring.grpc-checks',
+  KnowledgeGraph = 'synthetic-monitoring.knowledge-graph',
+  LabelMigration = 'synthetic-monitoring.label-migration',
+  Screenshots = 'synthetic-monitoring.screenshots',
+  SecretsManagement = 'synthetic-monitoring.secrets-management',
+  TimepointExplorer = 'synthetic-monitoring.timepoint-explorer',
+  VersionManagement = 'synthetic-monitoring.version-management',
   __Turnoff = 'test-only-do-not-use',
 }
 
