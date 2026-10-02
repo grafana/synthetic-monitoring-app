@@ -71,7 +71,11 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
-      { label: `WebSockets` },
+      {
+        label: `WebSockets`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Scripted}?example=websocket`,
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.Scripted, `WebSockets`),
+      },
       // todo: we don't support these yet
       // {
       //   label: `+More`,

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
@@ -6,7 +6,7 @@ import { TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { UI_TEST_ID } from 'test/dataTestIds';
 
-import { Check, CheckFormPageParams, CheckType } from 'types';
+import { Check, CheckFormPageParams, CheckType, ScriptedCheck } from 'types';
 import { createNavModel, getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
@@ -17,6 +17,7 @@ import { useIsOverlimit } from 'hooks/useIsOverlimit';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { Checkster } from 'components/Checkster';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
+import { EXAMPLE_SCRIPT_WEBSOCKET } from 'components/constants';
 import { useDuplicateCheck } from 'page/NewCheck/NewCheckV2.hooks';
 import { PluginPageNotFound } from 'page/NotFound';
 
@@ -25,6 +26,10 @@ import { CHECK_TYPE_GROUP_DEFAULT_CHECK, DEFAULT_CHECK_CONFIG_MAP } from '../../
 import { getUserPermissions } from '../../data/permissions';
 
 const CHECK_TYPE_PARAM_NAME = 'checkType';
+// Query param used by the WebSockets protocol pill so the Scripted editor opens with a
+// working example instead of the generic HTTP one. Not a general-purpose mechanism —
+// extend this if more protocol-specific examples show up.
+const EXAMPLE_PARAM_NAME = 'example';
 
 /**
  * A pre-filled check draft (e.g. from the Grafana Assistant deep-link) may only
@@ -65,6 +70,7 @@ export function mergePrefilledCheck(prefill: Check, fallbackType: CheckType): Ch
 export function NewCheckV2() {
   const [params] = useSearchParams({});
   const checkType = (params.get(CHECK_TYPE_PARAM_NAME) as CheckType) ?? undefined;
+  const example = params.get(EXAMPLE_PARAM_NAME);
   const { checkTypeGroup } = useParams<CheckFormPageParams>();
   const { isLoading: isLoadingProbes, isFetched: isProbesFetched } = useProbes();
   const checkTypeGroupOption = useCheckTypeGroupOption(checkTypeGroup);
@@ -85,8 +91,15 @@ export function NewCheckV2() {
   // router state so the user only has to review and click Create.
   const prefilledCheck = (location.state as { prefilledCheck?: Check } | null)?.prefilledCheck;
   const fallbackCheckType = checkType ?? (group ? CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value] : CheckType.Http);
+  const exampleCheck = useMemo(() => {
+    if (example !== 'websocket') {
+      return undefined;
+    }
+    const base = DEFAULT_CHECK_CONFIG_MAP[CheckType.Scripted] as ScriptedCheck;
+    return { ...base, settings: { scripted: { ...base.settings.scripted, script: EXAMPLE_SCRIPT_WEBSOCKET } } };
+  }, [example]);
   const initialCheck =
-    duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck, fallbackCheckType) : undefined);
+    duplicateCheck ?? (prefilledCheck ? mergePrefilledCheck(prefilledCheck, fallbackCheckType) : exampleCheck);
 
   const handleSubmit = useHandleSubmitCheckster();
   const handleCheckTypeChange = useCallback(
