@@ -15,10 +15,11 @@ import { QUERY_KEYS } from 'data/useChecks';
 import { showAlert } from 'data/utils';
 
 import {
+  AlertPlan,
   formatAlertPeriod,
   formatAlertThreshold,
+  getAlertPlans,
   getRecommendedAlerts,
-  RecommendedAlert,
   runInBatches,
 } from '../Recommendations.alerts';
 import {
@@ -34,11 +35,6 @@ import { getChecksWithoutAlertsUrl } from '../Recommendations.links';
 import { getStyles } from '../Recommendations.styles';
 import { useFindingPanel } from './Finding.hooks';
 
-interface AlertPlan {
-  check: Check;
-  alerts: RecommendedAlert[];
-}
-
 export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
@@ -53,15 +49,7 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   const [isApplying, setIsApplying] = useState(false);
 
   const getPermissions = useGetCheckPermissions();
-  // A check slower than the longest alert period has no valid default alert, and one in a
-  // folder the user cannot edit would 403, so neither belongs in a bulk apply.
-  const plans = useMemo<AlertPlan[]>(
-    () =>
-      rows
-        .map((check) => ({ check, alerts: getRecommendedAlerts(check) }))
-        .filter((plan) => plan.alerts.length > 0 && getPermissions(plan.check).canWrite),
-    [rows, getPermissions]
-  );
+  const plans = useMemo(() => getAlertPlans(rows, (check) => getPermissions(check).canWrite), [rows, getPermissions]);
   const totalAlertCount = plans.reduce((sum, plan) => sum + plan.alerts.length, 0);
 
   // Returns the checks it succeeded on. Failures toast via the mutation's meta.

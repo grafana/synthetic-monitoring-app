@@ -842,6 +842,17 @@ describe('Recommendations tab', () => {
       expect(within(section).queryByRole('button', { name: /set up alerts for all/i })).not.toBeInTheDocument();
     });
 
+    it('does not advertise a bulk action on the landing row that the panel will not offer', async () => {
+      runTestAsSMViewer();
+
+      await renderTab([UNALERTED(), UNALERTED()]);
+
+      const [alerting] = await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+
+      expect(alerting).not.toHaveTextContent(/set up alerts for all/i);
+      expect(alerting).toHaveTextContent(/view in check list/i);
+    });
+
     it('offers no way to resume a paused check a viewer cannot write', async () => {
       runTestAsSMViewer();
 
