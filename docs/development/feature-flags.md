@@ -2,9 +2,6 @@
 
 Synthetic Monitoring's feature flags are [OpenFeature](https://openfeature.dev/) flags, evaluated
 through Grafana's OFREP endpoint and defined with Go Feature Flag (GOFF) in `deployment_tools`.
-Legacy Grafana feature toggles (`config.featureToggles`) are no longer read anywhere in this app and
-must not be reintroduced: Grafana core is deprecating those reads for plugins
-(`grafana.frontendLegacyFeatureToggleHandling`, which can block them outright).
 
 ## How it works
 
@@ -38,7 +35,7 @@ must not be reintroduced: Grafana core is deprecating those reads for plugins
 
 A `deployment_tools` merge reaches a wave in roughly 10–15 minutes (kube-manifests export, Flux
 sync, GOFF re-reads its ConfigMap every minute, Grafana core re-fetches the bulk response every
-30 s). Unlike legacy toggles, no instance restart is involved.
+30 s). No instance restart is involved.
 
 ## Adding a flag
 
@@ -119,9 +116,9 @@ Other helpers: `goff.ForSlugs`, `goff.ForOrgIds`, `goff.ForOrgSlugs`, `goff.ForC
 `NotFor*` variants. The stack ID is the number in `grafanaBootData.settings.namespace`
 (`stacks-<id>`) or the stack's gcom record.
 
-Per-instance overrides set through gcom belong to the legacy toggle system and have **no effect**
-on these flags, and MTFF only applies a stack's targeting rules when it knows the stack's
-namespace, which it does for any request made from the stack itself.
+Per-instance overrides set through gcom have **no effect** on these flags; a targeting rule is the
+only way to change a flag for one stack. MTFF applies a stack's targeting rules when it knows the
+stack's namespace, which it does for any request made from the stack itself.
 
 ## Removing a flag
 
@@ -156,8 +153,7 @@ Feature control overrides take precedence over server evaluations through
 `createOpenFeatureLocalStorageProvider` from `@grafana/runtime`. Open Feature control with
 `?featureControl=true` and add the exact key (the `FeatureName` value, for example
 `synthetic-monitoring.check-suggestions`). Both `true` and `false` overrides are supported.
-Changes apply without reloading; deleting an override restores the server value. The old
-`?features=` URL override no longer exists.
+Changes apply without reloading; deleting an override restores the server value.
 
 Overrides are local to the browser and Grafana origin. They also apply when Graft serves the plugin.
 
