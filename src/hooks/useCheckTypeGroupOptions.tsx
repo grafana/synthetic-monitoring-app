@@ -35,7 +35,7 @@ function trackAndStartUserAction(checkTypeGroup: CheckTypeGroup, protocol: strin
 export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   {
     label: 'API Endpoint',
-    description: 'Monitor service, website, or API availability and performance with different request types.',
+    description: 'Monitor website or API availability and performance.',
     value: CheckTypeGroup.ApiTest,
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
@@ -47,7 +47,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   },
   {
     label: 'Multi Step',
-    description: 'Run multiple requests in sequence, using the response data from one request to the next.',
+    description: 'Chain requests, using response data in the next request.',
     value: CheckTypeGroup.MultiStep,
     icon: `gf-interpolation-step-after`,
     protocols: [
@@ -60,7 +60,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   },
   {
     label: 'Scripted',
-    description: 'Write a custom script to run any number of requests with custom checks and assertions.',
+    description: 'Script custom requests, checks, and assertions.',
     value: CheckTypeGroup.Scripted,
     icon: `k6`,
     protocols: [
@@ -92,7 +92,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
   },
   {
     label: `Browser`,
-    description: `Monitor the availability and performance of a website using a real browser.`,
+    description: `Monitor a website with a real browser.`,
     value: CheckTypeGroup.Browser,
     icon: `globe`,
     protocols: [

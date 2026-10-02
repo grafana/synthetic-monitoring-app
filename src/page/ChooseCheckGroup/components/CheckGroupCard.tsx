@@ -40,7 +40,7 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
 
   return (
     <Card key={group.label} className={styles.checkCard} data-testid={`${CHECKS_TEST_ID.groupCard}-${group.value}`}>
-      <Stack alignItems="flex-start" direction="column" gap={2}>
+      <Stack alignItems="flex-start" direction="column" gap={1.5}>
         <Stack alignItems="center" direction="row" gap={1} wrap="wrap">
           <Icon name={group.icon} size="lg" />
           <Card.Heading variant="h5">
@@ -135,10 +135,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   footer: css({
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    gap: theme.spacing(2),
-    marginTop: 'auto',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing(1.5),
     width: '100%',
   }),
   protocols: css({
