@@ -1,4 +1,14 @@
 import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { StatefulTimepoint, UnixTimestamp } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+
+export type RumAvailability = 'unknown' | 'present' | 'absent';
+
+export type RumAvailabilityEvent =
+  | { type: 'passive-success' }
+  | { type: 'probe-result'; result: 'present' | 'absent' }
+  | { type: 'probe-error' };
+
+export const FARO_RUM_PROBE_EXECUTION_ID_CAP = 50;
 
 /**
  * Builds a LogQL expression that finds the Faro web events for a specific check
@@ -12,6 +22,85 @@ import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
  */
 export function buildFaroSessionByExecutionIdLogQL(executionId: string): string {
   return `{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true" | k6_testRunId="sm:${executionId}"`;
+}
+
+/**
+ * Existence probe across a capped set of execution ids for the current check.
+ * Uses a regex OR so one Loki query can tell us whether *any* of these runs
+ * produced Faro sessions (check-level RUM availability).
+ */
+export function buildFaroSessionProbeLogQL(executionIds: string[]): string {
+  const uniqueIds = [...new Set(executionIds.filter(Boolean))].slice(0, FARO_RUM_PROBE_EXECUTION_ID_CAP);
+  if (uniqueIds.length === 0) {
+    return '';
+  }
+
+  const escaped = uniqueIds.map(escapeLogQLRegex).join('|');
+  return `{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true" | k6_testRunId=~"sm:(${escaped})"`;
+}
+
+function escapeLogQLRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function collectExecutionIdsFromListLogsMap(
+  listLogsMap: Record<UnixTimestamp, StatefulTimepoint>,
+  cap = FARO_RUM_PROBE_EXECUTION_ID_CAP
+): { executionIds: string[]; from: number; to: number } {
+  const ids: string[] = [];
+  const seen = new Set<string>();
+  let from = Number.POSITIVE_INFINITY;
+  let to = 0;
+
+  const timepoints = Object.values(listLogsMap).sort((a, b) => b.adjustedTime - a.adjustedTime);
+
+  for (const timepoint of timepoints) {
+    const executions = Object.values(timepoint.probeResults ?? {}).flat();
+    for (const execution of executions) {
+      const executionId = execution.labels?.execution_id;
+      if (!executionId || seen.has(executionId)) {
+        continue;
+      }
+
+      seen.add(executionId);
+      ids.push(executionId);
+      from = Math.min(from, timepoint.adjustedTime);
+      to = Math.max(to, timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency);
+
+      if (ids.length >= cap) {
+        return { executionIds: ids, from, to };
+      }
+    }
+  }
+
+  if (ids.length === 0) {
+    return { executionIds: [], from: 0, to: 0 };
+  }
+
+  return { executionIds: ids, from, to };
+}
+
+/**
+ * Check-level RUM availability. `present` is sticky for the explorer session —
+ * neither a later empty probe nor a probe error can demote it.
+ */
+export function reduceRumAvailability(
+  current: RumAvailability,
+  event: RumAvailabilityEvent
+): RumAvailability {
+  if (current === 'present') {
+    return 'present';
+  }
+
+  if (event.type === 'passive-success') {
+    return 'present';
+  }
+
+  if (event.type === 'probe-result') {
+    return event.result;
+  }
+
+  return current;
 }
 
 interface FaroSessionIds {
