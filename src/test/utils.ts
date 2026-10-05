@@ -311,6 +311,22 @@ export function runTestAsRBACEditor() {
   });
 }
 
+export function runTestAsCheckWriterWithoutRead() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, 'config', {
+    ...config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: {
+          ...FULL_WRITER_ACCESS,
+          'grafana-synthetic-monitoring-app.checks:read': false,
+        },
+      },
+    },
+  });
+}
+
 export function runTestAsRBACWriterNoDelete() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {

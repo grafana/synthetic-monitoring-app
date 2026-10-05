@@ -1,13 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Card, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Icon, Stack, styleMixins, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { css, cx } from '@emotion/css';
 import {
   trackAgentSkillInstallCommandCopied,
   trackAgentSkillLinkClicked,
   trackAgentSkillToolSelected,
 } from 'features/tracking/agentSkillEvents';
 
+import { Card } from 'components/Card';
 import { Clipboard } from 'components/Clipboard';
 import { Feedback } from 'components/Feedback';
 
@@ -21,6 +22,7 @@ import {
   AgentSkillToolId,
 } from './AgentSkillReference.constants';
 import { useAgentSkillFeedback, useTrackAgentSkillSectionViewed } from './AgentSkillReference.hooks';
+import { ClaudeIcon } from './ClaudeIcon';
 
 type AgentSkillTool = (typeof AGENT_SKILL_TOOLS)[number];
 
@@ -38,19 +40,22 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
 
   const handleSelect = useCallback(
     (tool: AgentSkillTool) => {
+      if (selectedId === tool.id) {
+        setSelectedId(null);
+        return;
+      }
+
       setSelectedId(tool.id);
       trackAgentSkillToolSelected({ source, tool: tool.id });
       trackView();
     },
-    [source, trackView]
+    [selectedId, source, trackView]
   );
 
   return (
-    <Stack direction="column" gap={1}>
+    <Stack direction="column" gap={2}>
       <Stack direction="row" alignItems="center" gap={1}>
-        <Text variant="body" weight="medium" element="h3">
-          Or author checks with your coding agent
-        </Text>
+        <div>Create checks with your coding agent</div>
         {askForFeedback && (
           <Feedback
             feature={AGENT_SKILL_FEEDBACK_FEATURE}
@@ -62,14 +67,24 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
       <div className={styles.cardRow}>
         {AGENT_SKILL_TOOLS.map((tool) => (
           <div key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
-            <Card
-              noMargin
-              isSelected={selectedId === tool.id}
-              onClick={() => handleSelect(tool)}
-              className={styles.toolCard}
-            >
-              <Card.Heading>{tool.name}</Card.Heading>
-              <Card.Description>{tool.cardDescription}</Card.Description>
+            <Card className={cx(styles.toolCard, selectedId === tool.id && styles.toolCardSelected)}>
+              <Stack alignItems="flex-start" direction="column" gap={1}>
+                <Stack alignItems="center" direction="row" gap={1}>
+                  {tool.id === 'claude-code' && <ClaudeIcon />}
+                  {tool.id === 'agent-skills' && <Icon name="ai-sparkle" size="lg" aria-hidden="true" />}
+                  <Card.Heading variant="h5">
+                    <button
+                      type="button"
+                      className={styles.action}
+                      aria-expanded={selectedId === tool.id}
+                      onClick={() => handleSelect(tool)}
+                    >
+                      {tool.name}
+                    </button>
+                  </Card.Heading>
+                </Stack>
+                <Text color="secondary">{tool.cardDescription}</Text>
+              </Stack>
             </Card>
           </div>
         ))}
@@ -98,7 +113,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
           </Stack>
           <Stack direction="column" gap={0.5}>
             <Text variant="h6" element="h4">
-              2. Describe what you want monitored
+              2. Tell your agent what to build
             </Text>
             <AgentSkillPrompts source={source} tool={selectedTool.id} />
           </Stack>
@@ -124,7 +139,23 @@ const getStyles = (theme: GrafanaTheme2) => ({
     gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
     gap: theme.spacing(2),
   }),
+  action: css({
+    all: 'unset',
+    '&::after': {
+      content: "''",
+      position: 'absolute',
+      inset: 0,
+      borderRadius: theme.shape.radius.default,
+      cursor: 'pointer',
+    },
+    '&:focus-visible::after': styleMixins.getFocusStyles(theme),
+  }),
   toolCard: css({
     height: '100%',
+    minWidth: 0,
+    textAlign: 'left',
+  }),
+  toolCardSelected: css({
+    boxShadow: `inset 0 0 0 1px ${theme.colors.primary.border}`,
   }),
 });

@@ -48,6 +48,7 @@ describe('AgentSkillPicker', () => {
     for (const { name } of AGENT_SKILL_TOOLS) {
       expect(await screen.findByRole('button', { name: new RegExp(name) })).toBeInTheDocument();
     }
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
     expect(screen.queryByText(/Install the skill/)).not.toBeInTheDocument();
     expect(trackAgentSkillSectionViewed).not.toHaveBeenCalled();
   });
@@ -66,6 +67,18 @@ describe('AgentSkillPicker', () => {
     await user.click(screen.getByRole('button', { name: new RegExp(AGENT_SKILLS.name) }));
     expect(await screen.findByText(AGENT_SKILLS.installCommand)).toBeInTheDocument();
     expect(trackAgentSkillSectionViewed).toHaveBeenCalledTimes(1);
+  });
+
+  it('deselects a tool on a second click and hides the install steps', async () => {
+    const { user } = render(<AgentSkillPicker source={SOURCE} />);
+    const claudeTile = await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) });
+
+    await user.click(claudeTile);
+    expect(await screen.findByText(/Install the skill/)).toBeInTheDocument();
+
+    await user.click(claudeTile);
+    expect(screen.queryByText(/Install the skill/)).not.toBeInTheDocument();
+    expect(trackAgentSkillToolSelected).toHaveBeenCalledTimes(1);
   });
 
   it('tracks copying the install command and remembers it for feedback', async () => {

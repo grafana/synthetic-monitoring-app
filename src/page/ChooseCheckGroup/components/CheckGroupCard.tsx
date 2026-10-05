@@ -1,6 +1,6 @@
 import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, LinkButton, Stack, useStyles2 } from '@grafana/ui';
+import { Icon, LinkButton, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackAddCheckTypeGroupButtonClicked } from 'features/tracking/checkCreationEvents';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
@@ -19,6 +19,13 @@ import { FaroUserAction } from '../../../faro';
 import { trackFaroUserAction } from '../../../features/tracking/userAction';
 import { Protocol } from './Protocol';
 
+const CHECK_GROUP_BUTTON_LABELS: Record<CheckTypeGroup, string> = {
+  [CheckTypeGroup.ApiTest]: 'API Endpoint',
+  [CheckTypeGroup.MultiStep]: 'Multi Step',
+  [CheckTypeGroup.Scripted]: 'Scripted',
+  [CheckTypeGroup.Browser]: 'Browser',
+};
+
 export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const styles = useStyles2(getStyles);
   const limits = useLimits();
@@ -26,51 +33,52 @@ export const CheckGroupCard = ({ group }: { group: CheckTypeGroupOption }) => {
   const checkOptions = useCheckTypeOptions().filter((option) => option.group === group.value);
   const checksWithStatus = checkOptions.filter((option) => option.status);
   const shouldShowStatus = checksWithStatus.length === checkOptions.length;
+  const buttonLabel = CHECK_GROUP_BUTTON_LABELS[group.value];
 
   const tooltip = getTooltip(limits, group.value);
   const disabled = Boolean(tooltip);
 
   return (
-    <Card key={group.label} data-testid={`${CHECKS_TEST_ID.groupCard}-${group.value}`} className={styles.checkCard}>
-      <Stack direction={`column`} justifyContent={`center`} gap={2}>
-        <Stack justifyContent={`center`}>
-          <Icon name={group.icon} size="xxxl" />
+    <Card key={group.label} className={styles.checkCard} data-testid={`${CHECKS_TEST_ID.groupCard}-${group.value}`}>
+      <Stack alignItems="flex-start" direction="column" gap={2}>
+        <Stack alignItems="center" direction="row" gap={1} wrap="wrap">
+          <Icon name={group.icon} size="lg" />
+          <Card.Heading variant="h5">
+            <span className={styles.groupName}>{group.label}</span>
+          </Card.Heading>
           {shouldShowStatus && checksWithStatus[0].status && (
-            <NewStatusBadge status={checksWithStatus[0].status.value} className={styles.newBadge} />
+            <>
+              <NewStatusBadge status={checksWithStatus[0].status.value} />
+              <CheckStatusInfo {...checksWithStatus[0].status} />
+            </>
           )}
         </Stack>
-        <Card.Heading variant="h5">
-          <Stack justifyContent={'center'}>
-            <div className={styles.groupName}>{group.label}</div>
-            {shouldShowStatus && checksWithStatus[0].status && <CheckStatusInfo {...checksWithStatus[0].status} />}
-          </Stack>
-        </Card.Heading>
-        <div>{group.description}</div>
-        <div className={styles.cardButton}>
+        <Text color="secondary">{group.description}</Text>
+        <div className={styles.footer}>
+          <div className={styles.protocols}>
+            {group.protocols.map((protocol) => (
+              <Protocol
+                key={protocol.label}
+                {...protocol}
+                href={disabled ? undefined : protocol.href}
+                onClick={protocol.onClick}
+              />
+            ))}
+          </div>
           <LinkButton
-            icon={!isReady ? 'fa fa-spinner' : undefined}
             disabled={disabled}
             href={`${getRoute(AppRoutes.NewCheck)}/${group.value}`}
-            tooltip={getTooltip(limits, group.value)}
+            icon={!isReady ? 'fa fa-spinner' : undefined}
+            tooltip={tooltip}
+            variant="primary"
             onClick={() => {
               trackAddCheckTypeGroupButtonClicked({ checkTypeGroup: group.value });
               trackFaroUserAction(FaroUserAction.SelectCheckTypeClicked, { checkTypeGroup: group.value });
             }}
           >
-            {group.label}
+            {buttonLabel}
+            {isReady && <Icon name="arrow-right" />}
           </LinkButton>
-        </div>
-        <div className={styles.protocols}>
-          <Stack direction={`column`} gap={2}>
-            <div className={styles.cardFooter}>
-              {group.protocols.map((protocol, index) => (
-                <span key={protocol.label}>
-                  <Protocol {...protocol} href={disabled ? undefined : protocol.href} onClick={protocol.onClick} />
-                  {index < group.protocols.length - 1 && ', '}
-                </span>
-              ))}
-            </div>
-          </Stack>
         </div>
       </Stack>
     </Card>
@@ -111,46 +119,39 @@ function getTooltip(
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  newBadge: css({
-    position: 'absolute',
-    right: 0,
-    marginRight: theme.spacing(3),
-    marginTop: theme.spacing(2),
-    height: '26px',
-  }),
-
-  cardButton: css({
-    marginTop: 'auto',
-  }),
-
-  cardFooter: css({
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: '4px',
-    marginTop: theme.spacing(1),
-  }),
-
   checkCard: css({
     minWidth: '0',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'wrap',
+    textAlign: 'left',
 
     '> div:first-of-type': {
       height: '100%',
     },
-  }),
-  desc: css({
-    color: theme.colors.text.secondary,
+
+    // Only the button and protocol pills navigate, not the card body — don't imply otherwise.
+    '&&:hover': {
+      background: theme.colors.background.secondary,
+      zIndex: 'auto',
+    },
   }),
   groupName: css({
     color: theme.colors.text.primary,
   }),
-  protocols: css({
-    borderTop: `1px solid ${theme.colors.border.weak}`,
-    color: theme.colors.text.primary,
+  footer: css({
     display: 'flex',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(2),
+    marginTop: 'auto',
+    width: '100%',
+  }),
+  protocols: css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: theme.spacing(0.5),
   }),
 });
