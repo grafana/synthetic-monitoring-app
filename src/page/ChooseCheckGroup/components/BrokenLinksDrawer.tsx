@@ -52,6 +52,7 @@ function BrokenLinksForm({
   const [folderChanged, setFolderChanged] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const submitting = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: probes = [], isLoading: probesLoading } = useProbesWithMetadata();
   const { isError: probesError } = useProbes();
   const probeId = useDefaultProbeId(probes, CheckType.Browser);
@@ -64,7 +65,7 @@ function BrokenLinksForm({
   const alertMutation = useUpdateAlertsForCheck();
   const { canWriteAlerts } = useAlertAccessControl();
   const [createdCheck, setCreatedCheck] = useState<AddCheckResult>();
-  const busy = mutation.isPending || alertMutation.isPending;
+  const busy = isSubmitting || mutation.isPending || alertMutation.isPending;
   const queryClient = useQueryClient();
   const navigateToCheck = useNavigateToCheckDashboard();
   useTrackingScope({ check_template_id: 'broken_links' });
@@ -94,6 +95,20 @@ function BrokenLinksForm({
     viewCheck(check);
   }
 
+  async function retryAlerts(check: AddCheckResult) {
+    if (submitting.current || !canWriteAlerts) {
+      return;
+    }
+    submitting.current = true;
+    setIsSubmitting(true);
+    try {
+      await enableAlerts(check);
+    } finally {
+      submitting.current = false;
+      setIsSubmitting(false);
+    }
+  }
+
   async function createCheck(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     if (disabled || submitting.current || createdCheck || probeId === undefined) {
@@ -120,6 +135,7 @@ function BrokenLinksForm({
 
     const check = createBrokenLinksCheck(parsed, options);
     submitting.current = true;
+    setIsSubmitting(true);
     try {
       const result = await mutation.mutateAsync({
         ...check,
@@ -137,6 +153,7 @@ function BrokenLinksForm({
       // The mutation exposes the API error below and preserves the user's inputs for retry.
     } finally {
       submitting.current = false;
+      setIsSubmitting(false);
     }
   }
 
@@ -221,9 +238,9 @@ function BrokenLinksForm({
           ) : null}
           {!createdCheck && <TemplateAlerting />}
           <Stack gap={1}>
-            {createdCheck ? (
+            {createdCheck && alertMutation.isError ? (
               <>
-                <Button type="button" disabled={busy || !canWriteAlerts} onClick={() => enableAlerts(createdCheck)}>
+                <Button type="button" disabled={busy || !canWriteAlerts} onClick={() => retryAlerts(createdCheck)}>
                   Retry enabling alerting
                 </Button>
                 <Button type="button" variant="secondary" disabled={busy} onClick={() => viewCheck(createdCheck)}>

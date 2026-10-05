@@ -1,6 +1,6 @@
 import React from 'react';
 import { getBackendSrv, locationService } from '@grafana/runtime';
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { decode } from 'js-base64';
 import { COMPLEX_BROWSER_CHECK } from 'test/fixtures/checks';
 import { ONLINE_PROBE } from 'test/fixtures/probes';
@@ -25,6 +25,14 @@ beforeEach(() => {
     })
   );
 });
+
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
 
 async function openDrawer() {
   const onClose = jest.fn();
@@ -242,6 +250,60 @@ it.each([500, 409] as const)('does not retry an unrelated creation error with st
   expect(requests).toHaveLength(1);
 });
 
+it('keeps creation busy through list refreshes and alert setup', async () => {
+  const beforeAlerts = deferred();
+  const alertResponse = deferred();
+  const afterAlerts = deferred();
+  const alerts = getServerRequests();
+  server.use(
+    apiRoute(
+      'updateAlertsForCheck',
+      {
+        result: async () => {
+          await alertResponse.promise;
+          return { json: null };
+        },
+      },
+      alerts.record
+    )
+  );
+  const { user, onClose, queryClient } = await openDrawer();
+  const invalidate = jest
+    .spyOn(queryClient, 'invalidateQueries')
+    .mockImplementationOnce(() => beforeAlerts.promise)
+    .mockImplementationOnce(() => afterAlerts.promise);
+
+  const expectBusy = () => {
+    expect(screen.getByRole('button', { name: 'Create check' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Retry enabling alerting' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'View check' })).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  };
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(1));
+  expectBusy();
+  expect(alerts.requests).toHaveLength(0);
+  await user.keyboard('{Escape}');
+  expect(onClose).not.toHaveBeenCalled();
+
+  await act(async () => beforeAlerts.resolve());
+  await waitFor(() => expect(alerts.requests).toHaveLength(1));
+  expectBusy();
+
+  await act(async () => alertResponse.resolve());
+  await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(2));
+  expectBusy();
+  await user.keyboard('{Escape}');
+  expect(onClose).not.toHaveBeenCalled();
+
+  await act(async () => afterAlerts.resolve());
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(alerts.requests).toHaveLength(1);
+  expect(locationService.getLocation().pathname).toContain('/checks/123');
+});
+
 it('retries alert setup after partial success without creating another check', async () => {
   const checks = getServerRequests();
   const alerts = getServerRequests();
@@ -257,7 +319,7 @@ it('retries alert setup after partial success without creating another check', a
       alerts.record
     )
   );
-  const { user, onClose } = await openDrawer();
+  const { user, onClose, queryClient } = await openDrawer();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   expect(await screen.findByText('Check created, but alerting couldn’t be enabled')).toBeInTheDocument();
@@ -265,8 +327,17 @@ it('retries alert setup after partial success without creating another check', a
   expect(checks.requests).toHaveLength(1);
   expect(screen.getByRole('textbox', { name: /^Page URL/ })).toBeDisabled();
   expect(screen.queryByRole('button', { name: 'Create check' })).not.toBeInTheDocument();
+  const refreshed = deferred();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries').mockImplementationOnce(() => refreshed.promise);
   server.use(apiRoute('updateAlertsForCheck', {}, alerts.record));
   await user.click(screen.getByRole('button', { name: 'Retry enabling alerting' }));
+  await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(1));
+  expect(screen.getByRole('button', { name: 'Create check' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Retry enabling alerting' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'View check' })).not.toBeInTheDocument();
+  await user.keyboard('{Escape}');
+  expect(onClose).not.toHaveBeenCalled();
+  await act(async () => refreshed.resolve());
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   expect(checks.requests).toHaveLength(1);
   expect(alerts.requests).toHaveLength(2);
