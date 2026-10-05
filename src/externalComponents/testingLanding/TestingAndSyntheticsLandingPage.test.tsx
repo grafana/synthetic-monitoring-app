@@ -3,26 +3,22 @@ import { type NavModelItem } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
 import { screen, within } from '@testing-library/react';
 import {
-  trackAgenticCreateButtonClicked,
-  trackAgenticLearnMoreButtonClicked,
   trackOpenLinkClicked,
   trackPerformanceBrowseProjectsButtonClicked,
   trackPerformanceStartTestingButtonClicked,
   trackSyntheticsTileClicked,
   trackTestingSyntheticsLandingViewed,
 } from 'features/tracking/testingSyntheticsLandingEvents';
-import { NAV_AGENTIC_K6, NAV_BOTH_PLUGINS, NAV_K6_ONLY, NAV_SM_ONLY } from 'test/fixtures/testingSyntheticsNav';
+import { NAV_BOTH_PLUGINS, NAV_K6_ONLY, NAV_SM_ONLY } from 'test/fixtures/testingSyntheticsNav';
 import { render } from 'test/render';
 
 import { TestingAndSyntheticsLandingPage } from './TestingAndSyntheticsLandingPage';
-import { AGENTIC_URLS, K6_URLS, SM_URLS } from './TestingAndSyntheticsLandingPage.constants';
+import { K6_URLS, SM_URLS } from './TestingAndSyntheticsLandingPage.constants';
 import { TESTING_LANDING_TEST_IDS } from './TestingAndSyntheticsLandingPage.testIds';
 
 jest.mock('features/tracking/testingSyntheticsLandingEvents', () => ({
   ...jest.requireActual('features/tracking/testingSyntheticsLandingEvents'),
   trackTestingSyntheticsLandingViewed: jest.fn(),
-  trackAgenticLearnMoreButtonClicked: jest.fn(),
-  trackAgenticCreateButtonClicked: jest.fn(),
   trackOpenLinkClicked: jest.fn(),
   trackPerformanceBrowseProjectsButtonClicked: jest.fn(),
   trackPerformanceStartTestingButtonClicked: jest.fn(),
@@ -42,74 +38,22 @@ describe('TestingAndSyntheticsLandingPage', () => {
       expect(screen.queryByRole('heading', { level: 1, name: 'Testing & synthetics' })).not.toBeInTheDocument();
     });
 
-    it('shows Agentic, Performance, and SM when all plugins installed', async () => {
+    it('shows Performance and SM when both plugins installed', async () => {
       await renderLanding(NAV_BOTH_PLUGINS);
-      expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard)).toBeInTheDocument();
       expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.performancePanel)).toBeInTheDocument();
       expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.syntheticsPanel)).toBeInTheDocument();
     });
 
-    it('hides Agentic card when agentic plugin is not in nav', async () => {
-      await renderLanding(NAV_K6_ONLY);
-      expect(screen.queryByTestId(TESTING_LANDING_TEST_IDS.agenticCard)).not.toBeInTheDocument();
-      expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.performancePanel)).toBeInTheDocument();
-    });
-
     it('shows only SM panel when k6 not in nav', async () => {
       await renderLanding(NAV_SM_ONLY);
-      expect(screen.queryByTestId(TESTING_LANDING_TEST_IDS.agenticCard)).not.toBeInTheDocument();
       expect(screen.queryByTestId(TESTING_LANDING_TEST_IDS.performancePanel)).not.toBeInTheDocument();
       expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.syntheticsPanel)).toBeInTheDocument();
     });
 
     it('shows Performance but not SM when SM not in nav', async () => {
-      await renderLanding(NAV_AGENTIC_K6);
-      expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard)).toBeInTheDocument();
+      await renderLanding(NAV_K6_ONLY);
       expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.performancePanel)).toBeInTheDocument();
       expect(screen.queryByTestId(TESTING_LANDING_TEST_IDS.syntheticsPanel)).not.toBeInTheDocument();
-    });
-  });
-
-  describe('Agentic featured card', () => {
-    it('Agentic Open link points to agentic home', async () => {
-      await renderLanding(NAV_AGENTIC_K6);
-      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
-      const open = within(card).getByRole('link', { name: /Open/i });
-      expect(open).toHaveAttribute('href', AGENTIC_URLS.home);
-    });
-
-    it('Agentic Learn more link points to agentic home', async () => {
-      await renderLanding(NAV_AGENTIC_K6);
-      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
-      const learnMore = within(card).getByRole('link', { name: /Learn more/i });
-      expect(learnMore).toHaveAttribute('href', AGENTIC_URLS.home);
-    });
-
-    it('Agentic Create link points to agentic new', async () => {
-      await renderLanding(NAV_AGENTIC_K6);
-      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
-      const create = within(card).getByRole('link', { name: /Create a test/i });
-      expect(create).toHaveAttribute('href', AGENTIC_URLS.create);
-    });
-
-    it('clicking Create navigates to agentic new', async () => {
-      const { user } = await renderLanding(NAV_AGENTIC_K6);
-      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
-      const create = within(card).getByRole('link', { name: /Create a test/i });
-      await user.click(create);
-      expect(locationService.push).toHaveBeenCalledWith(AGENTIC_URLS.create);
-    });
-
-    it('clicking Learn more navigates to agentic home', async () => {
-      const { user } = await renderLanding(NAV_AGENTIC_K6);
-      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
-      await user.click(within(card).getByRole('link', { name: /Learn more/i }));
-      expect(locationService.push).toHaveBeenCalledWith(AGENTIC_URLS.home);
-    });
-
-    it('renders accent bar', async () => {
-      await renderLanding(NAV_AGENTIC_K6);
-      expect(screen.getByTestId(TESTING_LANDING_TEST_IDS.accentBar)).toBeInTheDocument();
     });
   });
 
@@ -189,21 +133,9 @@ describe('TestingAndSyntheticsLandingPage', () => {
     it('tracks page view with installed plugin flags', async () => {
       await renderLanding(NAV_BOTH_PLUGINS);
       expect(trackTestingSyntheticsLandingViewed).toHaveBeenCalledWith({
-        hasAgentic: true,
         hasK6: true,
         hasSynthetics: true,
       });
-    });
-
-    it('tracks Agentic learn more and create interactions', async () => {
-      const { user } = await renderLanding(NAV_AGENTIC_K6);
-      const card = screen.getByTestId(TESTING_LANDING_TEST_IDS.agenticCard);
-
-      await user.click(within(card).getByRole('link', { name: /Learn more/i }));
-      expect(trackAgenticLearnMoreButtonClicked).toHaveBeenCalled();
-
-      await user.click(within(card).getByRole('link', { name: /Create a test/i }));
-      expect(trackAgenticCreateButtonClicked).toHaveBeenCalled();
     });
 
     it('tracks Performance panel interactions', async () => {
