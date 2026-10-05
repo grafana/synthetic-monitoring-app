@@ -11,7 +11,6 @@ import {
   useTimepointVizOptions,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint, TimepointVizOption } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getFailureRatio } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { TimepointListEntryBar } from 'scenes/components/TimepointExplorer/TimepointListEntryBar';
 
 interface TimepointListEntryProps {
@@ -20,14 +19,13 @@ interface TimepointListEntryProps {
 
 export const TimepointListEntryUptime = ({ timepoint }: TimepointListEntryProps) => {
   const statefulTimepoint = useStatefulTimepoint(timepoint);
-  const { status } = statefulTimepoint;
+  const { status, failureRatio } = statefulTimepoint;
   const { vizDisplay } = useTimepointExplorerContext();
   const failureVizOption = useTimepointVizOptions('failure');
   const styles = useStyles2(getStyles, failureVizOption);
   const isSuccess = status === 'success';
   const isFailure = status === 'failure';
-  const failureRatio = isSuccess ? getFailureRatio(statefulTimepoint.probeResults) : 0;
-  const showPartialFailure = failureRatio > 0 && vizDisplay.includes('failure');
+  const showPartialFailure = failureRatio > 0 && failureRatio < 1 && vizDisplay.includes('failure');
   // a success bar with partial failures counts as a failure result when filtering
   const isVisible = vizDisplay.includes(status) || showPartialFailure;
 

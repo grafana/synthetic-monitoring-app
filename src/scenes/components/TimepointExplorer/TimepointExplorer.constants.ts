@@ -46,5 +46,7 @@ export const ANNOTATION_COLOR_ALERTS_FIRING = `red`;
 // Selection styling constants
 export const NON_SELECTED_BAR_OPACITY = 0.7;
 export const PARTIAL_FAILURE_SEGMENT_ALPHA = 0.8;
+// Minimap bars are short enough that a 1-of-N hatch can land below a pixel.
+export const MIN_PARTIAL_FAILURE_HEIGHT_PX = 4;
 export const SELECTED_BAR_BORDER_WIDTH = 3;
 export const BAR_BORDER_WIDTH = 2;

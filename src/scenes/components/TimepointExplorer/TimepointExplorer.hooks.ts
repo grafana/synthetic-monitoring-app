@@ -321,6 +321,7 @@ export function useStatefulTimepoint(timepoint: StatelessTimepoint) {
       probeResults: {},
       index: timepoint.index,
       maxProbeDuration: yAxisMax / 3,
+      failureRatio: 0,
       timepointDuration: timepoint.timepointDuration,
       status: couldBePending ? 'pending' : 'missing',
     };
@@ -516,7 +517,6 @@ export function useIsInitialised({
 
   return !persistedIsLoading;
 }
-
 
 export function useSelectedProbeNames(statefulTimepoint: StatefulTimepoint) {
   const { check, checkConfigs } = useTimepointExplorerContext();

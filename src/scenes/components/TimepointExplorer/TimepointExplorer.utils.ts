@@ -6,6 +6,7 @@ import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
   ANNOTATION_COLOR_CHECK_UPDATED,
   ANNOTATION_COLOR_NO_DATA,
+  MIN_PARTIAL_FAILURE_HEIGHT_PX,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
@@ -115,11 +116,21 @@ export function getFailureRatio(probeResults: ProbeResults): number {
     return 0;
   }
 
-  const failedExecutions = executions.filter(
-    (execution) => execution[LokiFieldNames.Labels].probe_success === '0'
-  );
+  const failedExecutions = executions.filter((execution) => execution[LokiFieldNames.Labels].probe_success === '0');
 
   return failedExecutions.length / executions.length;
+}
+
+export function getPartialFailureDisplayHeight(barHeight: number, failureRatio: number): number {
+  if (failureRatio <= 0 || barHeight <= 0) {
+    return 0;
+  }
+
+  if (failureRatio >= 1) {
+    return barHeight;
+  }
+
+  return Math.min(barHeight, Math.max(barHeight * failureRatio, MIN_PARTIAL_FAILURE_HEIGHT_PX));
 }
 
 export function getMaxProbeDuration(probeResults: ProbeResults) {
@@ -353,6 +364,7 @@ export function buildlistLogsMap({ logs, timepoints }: BuildlistLogsMapProps) {
       probeResults,
       status,
       maxProbeDuration: getMaxProbeDuration(probeResults),
+      failureRatio: getFailureRatio(probeResults),
       index: timepoint.index,
     };
 
