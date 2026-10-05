@@ -112,6 +112,14 @@ func TestRegistryExpressions(t *testing.T) {
 			target:  targetMetrics,
 			instant: true,
 		},
+		{
+			name:    "checks_latency browser also uses the fallback branch",
+			query:   queryChecksLatency,
+			params:  `{"checkType":"browser"}`,
+			expr:    `sum by (job, instance) ((rate(probe_all_duration_seconds_sum{probe=~".*"}[3h]) OR rate(probe_duration_seconds_sum{probe=~".*"}[3h]))) / sum by (job, instance) ((rate(probe_all_duration_seconds_count{probe=~".*"}[3h]) OR rate(probe_duration_seconds_count{probe=~".*"}[3h])))`,
+			target:  targetMetrics,
+			instant: true,
+		},
 	}
 
 	for _, tt := range tests {

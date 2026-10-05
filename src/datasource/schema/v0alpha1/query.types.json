@@ -119,7 +119,7 @@
     {
       "metadata": {
         "name": "checks_latency",
-        "resourceVersion": "1790965535599",
+        "resourceVersion": "1791226312132",
         "creationTimestamp": "2026-10-02T18:25:35Z"
       },
       "spec": {
@@ -129,15 +129,27 @@
             "value": "checks_latency"
           }
         ],
-        "description": "Average latency across all checks in the tenant of the given check type, grouped by job and instance. checkType selects a metric name, not a label value, from the app's CheckType enum (src/types.ts).",
+        "description": "Average latency for every check in the tenant, grouped by job and instance. checkType picks the latency metric the app uses for that check type, so read each check's row from the call made with its own type.",
         "schema": {
           "$schema": "https://json-schema.org/draft-04/schema",
           "additionalProperties": false,
-          "description": "CheckTypeQuery carries a check type, mirroring the app's own getQuery(job, target, type) signature (src/data/useLatency.ts).",
+          "description": "CheckTypeQuery carries a check type.",
           "properties": {
             "checkType": {
-              "description": "CheckType is one of the app's CheckType enum values (src/types.ts),\nlowercase, e.g. \"http\" or \"scripted\".",
-              "type": "string"
+              "description": "CheckType is the type of check whose latency metric to use: one of\nbrowser, dns, grpc, http, multihttp, ping, scripted, tcp or traceroute.\n\n\nPossible enum values:\n - `\"browser\"` \n - `\"dns\"` \n - `\"grpc\"` \n - `\"http\"` \n - `\"multihttp\"` \n - `\"ping\"` \n - `\"scripted\"` \n - `\"tcp\"` \n - `\"traceroute\"` ",
+              "enum": [
+                "browser",
+                "dns",
+                "grpc",
+                "http",
+                "multihttp",
+                "ping",
+                "scripted",
+                "tcp",
+                "traceroute"
+              ],
+              "type": "string",
+              "x-enum-description": {}
             }
           },
           "required": [

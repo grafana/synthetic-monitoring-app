@@ -34,7 +34,7 @@ var querySchemas = map[string]namedQuerySchema{
 		goType:      reflect.TypeFor[*TenantWideQuery](),
 	},
 	queryChecksLatency: {
-		description: "Average latency across all checks in the tenant of the given check type, grouped by job and instance. checkType selects a metric name, not a label value, from the app's CheckType enum (src/types.ts).",
+		description: "Average latency for every check in the tenant, grouped by job and instance. checkType picks the latency metric the app uses for that check type, so read each check's row from the call made with its own type.",
 		goType:      reflect.TypeFor[*CheckTypeQuery](),
 	},
 }

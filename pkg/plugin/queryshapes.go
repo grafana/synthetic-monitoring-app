@@ -64,28 +64,43 @@ func (q CheckFrequencyQuery) intervalFromFrequency() (string, error) {
 	return fmt.Sprintf("%ds", q.Frequency/int(time.Second/time.Millisecond)), nil
 }
 
-// checkTypes is the closed set of check types the app's CheckType enum
-// (src/types.ts) defines. CheckTypeQuery.CheckType selects a metric name, not
-// a label value, so it is validated against this set rather than escaped.
-var checkTypes = map[string]bool{
-	"browser":    true,
-	"dns":        true,
-	"grpc":       true,
-	"http":       true,
-	"multihttp":  true,
-	"ping":       true,
-	"scripted":   true,
-	"tcp":        true,
-	"traceroute": true,
+// CheckType is the type of a check, e.g. "http" or "scripted".
+//
+//	+enum
+type CheckType string
+
+const (
+	CheckTypeBrowser    CheckType = "browser"
+	CheckTypeDNS        CheckType = "dns"
+	CheckTypeGRPC       CheckType = "grpc"
+	CheckTypeHTTP       CheckType = "http"
+	CheckTypeMultiHTTP  CheckType = "multihttp"
+	CheckTypePing       CheckType = "ping"
+	CheckTypeScripted   CheckType = "scripted"
+	CheckTypeTCP        CheckType = "tcp"
+	CheckTypeTraceroute CheckType = "traceroute"
+)
+
+// checkTypes is the closed set of CheckType values. CheckTypeQuery.CheckType
+// selects a metric name, not a label value, so it is validated against this set
+// rather than escaped.
+var checkTypes = map[CheckType]bool{
+	CheckTypeBrowser:    true,
+	CheckTypeDNS:        true,
+	CheckTypeGRPC:       true,
+	CheckTypeHTTP:       true,
+	CheckTypeMultiHTTP:  true,
+	CheckTypePing:       true,
+	CheckTypeScripted:   true,
+	CheckTypeTCP:        true,
+	CheckTypeTraceroute: true,
 }
 
-// CheckTypeQuery carries a check type, mirroring the app's own
-// getQuery(job, target, type) signature (src/data/useLatency.ts). Matches
-// "checks_latency".
+// CheckTypeQuery carries a check type. Matches "checks_latency".
 type CheckTypeQuery struct {
-	// CheckType is one of the app's CheckType enum values (src/types.ts),
-	// lowercase, e.g. "http" or "scripted".
-	CheckType string `json:"checkType"`
+	// CheckType is the type of check whose latency metric to use: one of
+	// browser, dns, grpc, http, multihttp, ping, scripted, tcp or traceroute.
+	CheckType CheckType `json:"checkType"`
 }
 
 // latencyMetric identifies which Prometheus metric family measures a check
@@ -107,7 +122,7 @@ func (q CheckTypeQuery) latencyMetric() (latencyMetric, error) {
 		return 0, fmt.Errorf("unknown check type %q", q.CheckType)
 	}
 
-	if q.CheckType == "multihttp" || q.CheckType == "scripted" {
+	if q.CheckType == CheckTypeMultiHTTP || q.CheckType == CheckTypeScripted {
 		return latencyMetricScripted, nil
 	}
 
