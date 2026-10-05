@@ -15,23 +15,28 @@ export function ReliabilityInboxBanner() {
   const styles = useStyles2(getStyles);
   const { data: opportunities = [] } = useCachedReliabilityInboxSuggestions();
   const { allowed } = useAIAllowed();
-  const exposureTracked = useRef(false);
   const topOpportunity = opportunities[0];
+  const hasSuggestions = Boolean(topOpportunity);
+  // Reported with or without suggestions: a first visit offers "Generate
+  // suggestions", the entry the funnel most needs to see. Once per kind of
+  // banner rather than once per visit, because while it is open it switches to
+  // "Review suggestions" if a generation started on the inbox page finishes.
+  const exposedWithSuggestions = useRef<boolean | undefined>(undefined);
   const suggestionSummary = `${opportunities.length} ${
     opportunities.length === 1 ? 'suggestion is' : 'suggestions are'
   } ready to review · turn traffic signals into proactive monitoring`;
 
   useEffect(() => {
-    if (!allowed || !topOpportunity || exposureTracked.current) {
+    if (!allowed || exposedWithSuggestions.current === hasSuggestions) {
       return;
     }
 
-    exposureTracked.current = true;
+    exposedWithSuggestions.current = hasSuggestions;
     trackInboxExposure({
       opportunityCount: opportunities.length,
-      topOpportunityId: topOpportunity.id,
+      topOpportunityId: topOpportunity?.id,
     });
-  }, [allowed, opportunities.length, topOpportunity]);
+  }, [allowed, hasSuggestions, opportunities.length, topOpportunity]);
 
   // The page this links to generates with AI (see useAIAllowed).
   if (!allowed) {
@@ -63,11 +68,7 @@ export function ReliabilityInboxBanner() {
             variant="primary"
             fill="outline"
             href={generateRoutePath(AppRoutes.ReliabilityInbox)}
-            onClick={() => {
-              if (topOpportunity) {
-                trackReviewEntryClicked({ opportunityId: topOpportunity.id });
-              }
-            }}
+            onClick={() => trackReviewEntryClicked({ opportunityId: topOpportunity?.id })}
           >
             {topOpportunity ? 'Review suggestions' : 'Generate suggestions'}
           </LinkButton>

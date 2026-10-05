@@ -46,11 +46,11 @@ describe('ReliabilityInboxBanner', () => {
     expect(trackReviewEntryClicked).toHaveBeenCalledWith({ opportunityId: 'http-suggestion' });
   });
 
-  it('does not generate suggestions when the cache is empty', async () => {
+  it('offers to generate without generating, and still reports the visit and the click', async () => {
     const request = jest.fn(() => ({ json: { suggestions: [], warnings: [] } }));
     server.use(apiRoute('reliabilityInboxSuggestions', { result: request }));
 
-    render(<ReliabilityInboxBanner />);
+    const { user } = render(<ReliabilityInboxBanner />);
 
     expect(await screen.findByRole('heading', { name: 'Check Suggestions' })).toBeInTheDocument();
     expect(
@@ -62,6 +62,10 @@ describe('ReliabilityInboxBanner', () => {
     );
     expect(screen.queryByText(/turn traffic signals into proactive monitoring/)).not.toBeInTheDocument();
     expect(request).not.toHaveBeenCalled();
-    expect(trackInboxExposure).not.toHaveBeenCalled();
+    expect(trackInboxExposure).toHaveBeenCalledTimes(1);
+    expect(trackInboxExposure).toHaveBeenCalledWith({ opportunityCount: 0, topOpportunityId: undefined });
+
+    await user.click(screen.getByRole('link', { name: 'Generate suggestions' }));
+    expect(trackReviewEntryClicked).toHaveBeenCalledWith({ opportunityId: undefined });
   });
 });
