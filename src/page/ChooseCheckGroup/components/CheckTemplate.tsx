@@ -24,7 +24,7 @@ export function CheckTemplate({ template }: { template: CheckTemplateDefinition 
           setIsOpen(true);
         }}
       />
-      {isOpen && <template.Drawer onClose={() => setIsOpen(false)} />}
+      {isOpen && <template.Drawer alerts={template.alerts} onClose={() => setIsOpen(false)} />}
     </>
   );
 }

@@ -1,9 +1,10 @@
 import { ComponentType } from 'react';
 import { IconName } from '@grafana/ui';
 
-import { CheckType } from 'types';
+import { CheckAlertDraft, CheckType } from 'types';
 
 import { BrokenLinksDrawer } from './BrokenLinksDrawer';
+import { BROKEN_LINKS_ALERTS } from './templateAlerts';
 
 export interface CheckTemplateDefinition {
   id: 'broken_links';
@@ -11,7 +12,8 @@ export interface CheckTemplateDefinition {
   icon: IconName;
   description: string;
   checkType: CheckType;
-  Drawer: ComponentType<{ onClose: () => void }>;
+  alerts: CheckAlertDraft[];
+  Drawer: ComponentType<{ onClose: () => void; alerts: CheckAlertDraft[] }>;
 }
 
 export const CHECK_TEMPLATES: CheckTemplateDefinition[] = [
@@ -22,5 +24,6 @@ export const CHECK_TEMPLATES: CheckTemplateDefinition[] = [
     description: 'Check a page for links that no longer work.',
     checkType: CheckType.Browser,
     Drawer: BrokenLinksDrawer,
+    alerts: BROKEN_LINKS_ALERTS,
   },
 ];

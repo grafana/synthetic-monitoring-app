@@ -1,13 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Drawer, Field, Input, Stack, Text } from '@grafana/ui';
+import { Alert, Button, Drawer, Field, Input, Stack } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
-import { CheckType, FeatureName } from 'types';
+import { CheckAlertDraft, CheckType, FeatureName } from 'types';
+import { AddCheckResult } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
+import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS } from 'data/useChecks';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbes, useProbesWithMetadata } from 'data/useProbes';
+import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useDefaultProbeId } from 'hooks/useDefaultProbeId';
 import { useIsOverlimit } from 'hooks/useIsOverlimit';
 import { useNavigateToCheckDashboard } from 'hooks/useNavigateToCheckDashboard';
@@ -16,17 +19,33 @@ import { FolderSelector } from 'components/FolderSelector/FolderSelector';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { createBrokenLinksCheck } from './brokenLinks';
+import { TemplateAlerting } from './TemplateAlerting';
+import { BROKEN_LINKS_ALERTS } from './templateAlerts';
 import { useCreateTemplateCheck } from './useCreateTemplateCheck';
 
-export function BrokenLinksDrawer({ onClose }: { onClose: () => void }) {
+export function BrokenLinksDrawer({
+  onClose,
+  alerts = BROKEN_LINKS_ALERTS,
+}: {
+  onClose: () => void;
+  alerts?: CheckAlertDraft[];
+}) {
   return (
     <FeatureFlag name={FeatureName.Folders}>
-      {({ isEnabled }) => <BrokenLinksForm onClose={onClose} foldersEnabled={isEnabled} />}
+      {({ isEnabled }) => <BrokenLinksForm onClose={onClose} foldersEnabled={isEnabled} alerts={alerts} />}
     </FeatureFlag>
   );
 }
 
-function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; foldersEnabled: boolean }) {
+function BrokenLinksForm({
+  onClose,
+  foldersEnabled,
+  alerts,
+}: {
+  onClose: () => void;
+  foldersEnabled: boolean;
+  alerts: CheckAlertDraft[];
+}) {
   const [url, setUrl] = useState('');
   const [maxLinks, setMaxLinks] = useState('');
   const [folderUid, setFolderUid] = useState<string>();
@@ -42,11 +61,14 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
   const { canWriteChecks } = getUserPermissions();
   const isOverlimit = useIsOverlimit(false, CheckType.Browser);
   const mutation = useCreateTemplateCheck();
+  const alertMutation = useUpdateAlertsForCheck();
+  const { canWriteAlerts } = useAlertAccessControl();
+  const [createdCheck, setCreatedCheck] = useState<AddCheckResult>();
+  const busy = mutation.isPending || alertMutation.isPending;
   const queryClient = useQueryClient();
   const navigateToCheck = useNavigateToCheckDashboard();
   useTrackingScope({ check_template_id: 'broken_links' });
-  const disabled =
-    !canWriteChecks || isOverlimit !== false || mutation.isPending || probeId === undefined || !isPreselectReady;
+  const disabled = !canWriteChecks || isOverlimit !== false || busy || probeId === undefined || !isPreselectReady;
 
   function parseUrl() {
     try {
@@ -57,9 +79,24 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
     }
   }
 
+  function viewCheck(check: AddCheckResult) {
+    navigateToCheck(check, true);
+    onClose();
+  }
+
+  async function enableAlerts(check: AddCheckResult) {
+    try {
+      await alertMutation.mutateAsync({ checkId: check.id!, alerts });
+    } catch {
+      return; // Preserve the created check so retry only updates its alerts.
+    }
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
+    viewCheck(check);
+  }
+
   async function createCheck(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (disabled || submitting.current || probeId === undefined) {
+    if (disabled || submitting.current || createdCheck || probeId === undefined) {
       return;
     }
     const parsed = parseUrl();
@@ -89,9 +126,13 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
         probes: [probeId],
         ...(foldersEnabled && selectedFolder ? { folderUid: selectedFolder } : {}),
       });
+      setCreatedCheck(result);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-      navigateToCheck(result, true);
-      onClose();
+      if (canWriteAlerts) {
+        await enableAlerts(result);
+      } else {
+        viewCheck(result);
+      }
     } catch {
       // The mutation exposes the API error below and preserves the user's inputs for retry.
     } finally {
@@ -104,9 +145,9 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
       title="Detect broken links"
       subtitle="Check a page for broken links on a regular schedule."
       size="md"
-      closeOnMaskClick={!mutation.isPending}
+      closeOnMaskClick={!busy}
       onClose={() => {
-        if (!mutation.isPending) {
+        if (!busy) {
           onClose();
         }
       }}
@@ -114,7 +155,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
       <form onSubmit={createCheck} autoComplete="off" noValidate>
         <Stack direction="column" gap={2}>
           <fieldset
-            disabled={mutation.isPending}
+            disabled={busy || !!createdCheck}
             style={{ border: 0, padding: 0, margin: 0, minWidth: 0, width: '100%' }}
           >
             <Field label="Page URL" required htmlFor="template-url" error={errors.url} invalid={!!errors.url}>
@@ -132,7 +173,7 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
               <Field label="Folder" error={errors.folder} invalid={!!errors.folder}>
                 <FolderSelector
                   value={selectedFolder}
-                  disabled={mutation.isPending}
+                  disabled={busy || !!createdCheck}
                   onChange={(value) => {
                     setFolderChanged(true);
                     setFolderUid(value);
@@ -173,14 +214,32 @@ function BrokenLinksForm({ onClose, foldersEnabled }: { onClose: () => void; fol
               {mutation.error?.message || 'Please try again.'}
             </Alert>
           )}
-          <Text color="secondary">Creates a browser check. You can manually edit it afterward.</Text>
+          {createdCheck && alertMutation.isError ? (
+            <Alert title="Check created, but alerting couldn’t be enabled" severity="warning">
+              {alertMutation.error?.message || 'Try enabling alerting again, or open the check to configure it later.'}
+            </Alert>
+          ) : null}
+          {!createdCheck && <TemplateAlerting />}
           <Stack gap={1}>
-            <Button type="submit" disabled={disabled} icon={mutation.isPending ? 'fa fa-spinner' : undefined}>
-              Create check
-            </Button>
-            <Button type="button" variant="secondary" disabled={mutation.isPending} onClick={onClose}>
-              Cancel
-            </Button>
+            {createdCheck ? (
+              <>
+                <Button type="button" disabled={busy || !canWriteAlerts} onClick={() => enableAlerts(createdCheck)}>
+                  Retry enabling alerting
+                </Button>
+                <Button type="button" variant="secondary" disabled={busy} onClick={() => viewCheck(createdCheck)}>
+                  View check
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button type="submit" disabled={disabled} icon={busy ? 'fa fa-spinner' : undefined}>
+                  Create check
+                </Button>
+                <Button type="button" variant="secondary" disabled={busy} onClick={onClose}>
+                  Cancel
+                </Button>
+              </>
+            )}
           </Stack>
         </Stack>
       </form>
