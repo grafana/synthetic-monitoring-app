@@ -490,24 +490,24 @@ Tracks when a private probe's token is reset.
 
 #### synthetic-monitoring_reliability_inbox_exposed
 
-Tracks when the compact Reliability Inbox entry point is shown.
+Tracks when the compact Reliability Inbox entry point is shown, whether or not it has suggestions yet.
 
 ##### Properties
 
-| name             | type     | description                                                           |
-| ---------------- | -------- | --------------------------------------------------------------------- |
-| opportunityCount | `number` | Number of reviewable recommendations shown by the inbox entry point.  |
-| topOpportunityId | `string` | Identifier for the highest-priority recommendation shown on exposure. |
+| name             | type                  | description                                                                                             |
+| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| opportunityCount | `number`              | Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. |
+| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.   |
 
 #### synthetic-monitoring_reliability_inbox_review_entry_clicked
 
-Tracks when a user enters the dedicated review surface.
+Tracks when a user enters the dedicated review surface, to generate suggestions or to review them.
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type                  | description                                                                                          |
+| ------------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
+| opportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown; absent for a "Generate suggestions" click. |
 
 #### synthetic-monitoring_reliability_inbox_recommendation_reviewed
 

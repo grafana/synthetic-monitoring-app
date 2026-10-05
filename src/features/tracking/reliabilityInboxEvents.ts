@@ -3,10 +3,15 @@ import { createSMEventFactory, TrackingEventProps } from 'features/tracking/util
 const reliabilityInboxEvents = createSMEventFactory('reliability_inbox');
 
 interface InboxExposureEvent extends TrackingEventProps {
-  /** Number of reviewable recommendations shown by the inbox entry point. */
+  /** Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. */
   opportunityCount: number;
-  /** Identifier for the highest-priority recommendation shown on exposure. */
-  topOpportunityId: string;
+  /** Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet. */
+  topOpportunityId?: string;
+}
+
+interface ReviewEntryClickedEvent extends TrackingEventProps {
+  /** Identifier for the highest-priority recommendation shown; absent for a "Generate suggestions" click. */
+  opportunityId?: string;
 }
 
 interface RecommendationEvent extends TrackingEventProps {
@@ -21,10 +26,10 @@ interface NamespaceFilterEvent extends TrackingEventProps {
   cleared: boolean;
 }
 
-/** Tracks when the compact Reliability Inbox entry point is shown. */
+/** Tracks when the compact Reliability Inbox entry point is shown, whether or not it has suggestions yet. */
 export const trackInboxExposure = reliabilityInboxEvents<InboxExposureEvent>('exposed');
-/** Tracks when a user enters the dedicated review surface. */
-export const trackReviewEntryClicked = reliabilityInboxEvents<RecommendationEvent>('review_entry_clicked');
+/** Tracks when a user enters the dedicated review surface, to generate suggestions or to review them. */
+export const trackReviewEntryClicked = reliabilityInboxEvents<ReviewEntryClickedEvent>('review_entry_clicked');
 /** Tracks when a recommendation becomes selected for review. */
 export const trackRecommendationReviewed = reliabilityInboxEvents<RecommendationEvent>('recommendation_reviewed');
 /** Tracks when a user explicitly hands a recommendation to Assistant for guided setup. */
@@ -39,5 +44,4 @@ export const trackCreateManually = reliabilityInboxEvents<RecommendationEvent>('
  * question this feature exists to answer — needs only the count and whether
  * the filter was set or cleared.
  */
-export const trackNamespaceFilterChanged =
-  reliabilityInboxEvents<NamespaceFilterEvent>('namespace_filter_changed');
+export const trackNamespaceFilterChanged = reliabilityInboxEvents<NamespaceFilterEvent>('namespace_filter_changed');
