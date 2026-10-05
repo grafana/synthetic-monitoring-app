@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FolderPicker } from '@grafana/runtime';
-import { Alert, Button, Field, Input, LoadingPlaceholder, Modal, Stack } from '@grafana/ui';
+import { Alert, Button, Field, Icon, Input, Modal, Spinner, Stack } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackFolderCreated, trackFolderSelected } from 'features/tracking/folderEvents';
 
@@ -61,10 +61,6 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
     setShowCreateModal(false);
   };
 
-  if (isLoading) {
-    return <LoadingPlaceholder text="Loading folders..." />;
-  }
-
   if (disabled) {
     const valueState = value ? folderDetailsByUid.get(value) : undefined;
     const title = valueState?.type === 'accessible' ? valueState.folder?.title : value;
@@ -74,12 +70,30 @@ export function FolderSelector({ value, onChange, disabled }: FolderSelectorProp
   return (
     <Stack gap={1.5} alignItems="center" wrap="wrap" minWidth={0}>
       <div className={folderPickerStyles}>
-        <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
+        {isLoading ? (
+          <Input
+            disabled
+            aria-label="Folder"
+            aria-busy
+            placeholder="Loading folders..."
+            prefix={<Icon name="folder" />}
+            suffix={<Spinner />}
+          />
+        ) : (
+          <FolderPicker value={value} onChange={handleChange} showRootFolder={false} />
+        )}
       </div>
       {canCreateFolders && (
         <Stack gap={1.5} alignItems="center" shrink={0}>
           <span>or</span>
-          <Button variant="secondary" size="md" icon="plus" onClick={() => setShowCreateModal(true)} type="button">
+          <Button
+            variant="secondary"
+            size="md"
+            icon="plus"
+            onClick={() => setShowCreateModal(true)}
+            type="button"
+            disabled={isLoading}
+          >
             Create folder
           </Button>
         </Stack>

@@ -1,15 +1,15 @@
 import React from 'react';
 import { getBackendSrv, locationService } from '@grafana/runtime';
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import { decode } from 'js-base64';
 import { COMPLEX_BROWSER_CHECK } from 'test/fixtures/checks';
 import { ONLINE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureToggles, runTestAsCheckWriterWithoutAlertWrite } from 'test/utils';
 
-import { FeatureName } from 'types';
+import { CheckAlertType, FeatureName } from 'types';
 import { ONE_HOUR_IN_MS } from 'utils.constants';
 
 import { BrokenLinksDrawer } from './BrokenLinksDrawer';
@@ -26,6 +26,14 @@ beforeEach(() => {
   );
 });
 
+function deferred() {
+  let resolve!: () => void;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
+
 async function openDrawer() {
   const onClose = jest.fn();
   const result = render(<BrokenLinksDrawer onClose={onClose} />);
@@ -35,6 +43,8 @@ async function openDrawer() {
 
 it('creates an hourly check directly with library options and an online probe', async () => {
   const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
+  const alertRequests = getServerRequests();
+  server.use(apiRoute('updateAlertsForCheck', {}, alertRequests.record));
   const { record, read } = getServerRequests();
   server.use(
     apiRoute(
@@ -53,6 +63,12 @@ it('creates an hourly check directly with library options and an online probe', 
   await user.type(maxLinks, '25');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(alertRequests.requests).toHaveLength(1);
+  const alertRequest = await alertRequests.read();
+  expect(alertRequest.request.url).toContain('/sm/check/123/alerts');
+  expect(alertRequest.body).toEqual({
+    alerts: [{ name: CheckAlertType.ProbeFailedExecutionsTooHigh, threshold: 1, period: '1h' }],
+  });
   const { body } = await read();
   expect(body).toMatchObject({
     job: 'Detect broken links on https://grafana.com/',
@@ -124,7 +140,8 @@ it('uses library defaults when optional settings are empty and preselects a prob
   expect(screen.getByRole('spinbutton', { name: /^Link limit/ })).toHaveValue(null);
   expect(screen.queryByRole('spinbutton', { name: /^Timeout/ })).not.toBeInTheDocument();
   expect(screen.getByText('Check a page for broken links on a regular schedule.')).toBeInTheDocument();
-  expect(screen.getByText('Creates a browser check. You can manually edit it afterward.')).toBeInTheDocument();
+  expect(screen.getByText(/Creates a browser check with alerts on failure, routed through your/)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'notification policies' })).toHaveAttribute('href', '/alerting/routes');
   expect(screen.queryByText('Accepted status codes')).not.toBeInTheDocument();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
@@ -231,4 +248,123 @@ it.each([500, 409] as const)('does not retry an unrelated creation error with st
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   expect(await screen.findByText('Unable to create check')).toBeInTheDocument();
   expect(requests).toHaveLength(1);
+});
+
+it('keeps creation busy through list refreshes and alert setup', async () => {
+  const beforeAlerts = deferred();
+  const alertResponse = deferred();
+  const afterAlerts = deferred();
+  const alerts = getServerRequests();
+  server.use(
+    apiRoute(
+      'updateAlertsForCheck',
+      {
+        result: async () => {
+          await alertResponse.promise;
+          return { json: null };
+        },
+      },
+      alerts.record
+    )
+  );
+  const { user, onClose, queryClient } = await openDrawer();
+  const invalidate = jest
+    .spyOn(queryClient, 'invalidateQueries')
+    .mockImplementationOnce(() => beforeAlerts.promise)
+    .mockImplementationOnce(() => afterAlerts.promise);
+
+  const expectBusy = () => {
+    expect(screen.getByRole('button', { name: 'Create check' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Retry enabling alerting' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'View check' })).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+  };
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(1));
+  expectBusy();
+  expect(alerts.requests).toHaveLength(0);
+  await user.keyboard('{Escape}');
+  expect(onClose).not.toHaveBeenCalled();
+
+  await act(async () => beforeAlerts.resolve());
+  await waitFor(() => expect(alerts.requests).toHaveLength(1));
+  expectBusy();
+
+  await act(async () => alertResponse.resolve());
+  await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(2));
+  expectBusy();
+  await user.keyboard('{Escape}');
+  expect(onClose).not.toHaveBeenCalled();
+
+  await act(async () => afterAlerts.resolve());
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(alerts.requests).toHaveLength(1);
+  expect(locationService.getLocation().pathname).toContain('/checks/123');
+});
+
+it('retries alert setup after partial success without creating another check', async () => {
+  const checks = getServerRequests();
+  const alerts = getServerRequests();
+  server.use(
+    apiRoute(
+      'addCheck',
+      { result: async (req) => ({ json: { ...COMPLEX_BROWSER_CHECK, ...(await req.json()), id: 123 } }) },
+      checks.record
+    ),
+    apiRoute(
+      'updateAlertsForCheck',
+      { result: () => ({ status: 500, json: { err: 'Alert service unavailable' } }) },
+      alerts.record
+    )
+  );
+  const { user, onClose, queryClient } = await openDrawer();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  expect(await screen.findByText('Check created, but alerting couldn’t be enabled')).toBeInTheDocument();
+  expect(onClose).not.toHaveBeenCalled();
+  expect(checks.requests).toHaveLength(1);
+  expect(screen.getByRole('textbox', { name: /^Page URL/ })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Create check' })).not.toBeInTheDocument();
+  const refreshed = deferred();
+  const invalidate = jest.spyOn(queryClient, 'invalidateQueries').mockImplementationOnce(() => refreshed.promise);
+  server.use(apiRoute('updateAlertsForCheck', {}, alerts.record));
+  await user.click(screen.getByRole('button', { name: 'Retry enabling alerting' }));
+  await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(1));
+  expect(screen.getByRole('button', { name: 'Create check' })).toBeDisabled();
+  expect(screen.queryByRole('button', { name: 'Retry enabling alerting' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'View check' })).not.toBeInTheDocument();
+  await user.keyboard('{Escape}');
+  expect(onClose).not.toHaveBeenCalled();
+  await act(async () => refreshed.resolve());
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(checks.requests).toHaveLength(1);
+  expect(alerts.requests).toHaveLength(2);
+  expect((await alerts.read(1)).request.url).toContain('/sm/check/123/alerts');
+});
+
+it('allows opening the created check after alert setup fails', async () => {
+  server.use(apiRoute('updateAlertsForCheck', { result: () => ({ status: 500, json: { err: 'Unavailable' } }) }));
+  const { user, onClose } = await openDrawer();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await screen.findByText('Check created, but alerting couldn’t be enabled');
+  await user.click(screen.getByRole('button', { name: 'View check' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(locationService.getLocation().pathname).toContain('/checks/123');
+});
+
+it('explains missing alert permissions and still creates the check without alert requests', async () => {
+  runTestAsCheckWriterWithoutAlertWrite();
+  const alerts = getServerRequests();
+  server.use(apiRoute('updateAlertsForCheck', {}, alerts.record));
+  const { user, onClose } = await openDrawer();
+  expect(
+    screen.getByText(/Creates a browser check without alerts. You don’t have permission to configure alerts/)
+  ).toBeInTheDocument();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(alerts.requests).toHaveLength(0);
 });

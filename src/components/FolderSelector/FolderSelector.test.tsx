@@ -13,6 +13,34 @@ import { useFolderSelection } from './FolderSelector.hooks';
 // the runtime mock as a native select (labelled "Folder picker") backed by
 // the same MSW folders API, including server-side permission filtering.
 describe('FolderSelector', () => {
+  it('keeps the folder controls in place while loading', async () => {
+    let finishLoading!: () => void;
+    const loading = new Promise<void>((resolve) => {
+      finishLoading = resolve;
+    });
+    server.use(
+      apiRoute('getFolder', {
+        result: async () => {
+          await loading;
+          return { json: DEFAULT_FOLDER };
+        },
+      })
+    );
+
+    render(<FolderSelector onChange={jest.fn()} />);
+
+    expect(await screen.findByPlaceholderText('Loading folders...')).toBeDisabled();
+    const createButton = screen.getByRole('button', { name: 'Create folder' });
+    expect(createButton).toBeDisabled();
+
+    finishLoading();
+
+    expect(await screen.findByLabelText('Folder picker')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Create folder' })).toBe(createButton);
+    expect(createButton).toBeEnabled();
+    expect(screen.queryByPlaceholderText('Loading folders...')).not.toBeInTheDocument();
+  });
+
   it('renders the folder picker without selecting anything by itself', async () => {
     const onChange = jest.fn();
     render(<FolderSelector onChange={onChange} />);
