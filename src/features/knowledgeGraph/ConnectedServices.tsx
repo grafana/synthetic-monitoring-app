@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
+import { useTimeRange } from '@grafana/scenes-react';
 import { Icon, IconButton, LinkButton, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -16,13 +17,12 @@ import {
   CONNECTED_SERVICES_TITLE,
 } from './ConnectedServices.constants';
 import { getCheckGraphUrl } from './ConnectedServices.utils';
-import { ConnectedServicesMiniGraph, ExposedMiniGraphComponent, useExposedMiniGraph } from './ConnectedServicesMiniGraph';
 import {
-  findLabelValue,
-  getSyntheticCheckEntityName,
-  KG_PLUGIN_ID,
-  KG_SERVICE_NAME_LABEL,
-} from './knowledgeGraph';
+  ConnectedServicesMiniGraph,
+  ExposedMiniGraphComponent,
+  useExposedMiniGraph,
+} from './ConnectedServicesMiniGraph';
+import { findLabelValue, getSyntheticCheckEntityName, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 
 interface ConnectedServicesProps {
@@ -63,6 +63,7 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
   // Expanded on load: the graph is the point of the section, and the KG query only runs for a
   // check that is actually linked to a service.
   const [isOpen, setIsOpen] = useState(true);
+  const [timeRange] = useTimeRange();
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
 
@@ -89,7 +90,11 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
             variant="secondary"
             size="sm"
             icon="external-link-alt"
-            href={getCheckGraphUrl(getSyntheticCheckEntityName(check))}
+            href={getCheckGraphUrl(
+              getSyntheticCheckEntityName(check),
+              timeRange.from.valueOf(),
+              timeRange.to.valueOf()
+            )}
             target="_blank"
           >
             Open in Knowledge Graph

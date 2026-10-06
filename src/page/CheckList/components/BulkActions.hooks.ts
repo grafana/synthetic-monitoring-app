@@ -12,6 +12,9 @@ interface UseBulkActionsOptions {
 /** Matched case-insensitively by ConfirmModal before it enables the confirm button. */
 export const DELETE_CONFIRMATION_TEXT = 'Delete';
 
+/** Above this many selected checks, typing the bare word "Delete" is too easy to do on autopilot. */
+export const DELETE_CONFIRMATION_COUNT_THRESHOLD = 5;
+
 export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
   const { canWriteAll, canDeleteAll } = useBulkCheckPermissions(checks);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -50,6 +53,9 @@ export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
   const checkCount = checks.length;
   const checksLabel = `${checkCount} check${checkCount !== 1 ? 's' : ''}`;
 
+  const confirmationText =
+    checkCount > DELETE_CONFIRMATION_COUNT_THRESHOLD ? `Delete ${checkCount}` : DELETE_CONFIRMATION_TEXT;
+
   const deleteModalProps = useMemo(
     () => ({
       title: `Delete ${checksLabel}`,
@@ -58,9 +64,9 @@ export function useBulkActions({ checks, onResolved }: UseBulkActionsOptions) {
       body: `Are you sure you want to delete ${checksLabel}?`,
       description: 'This action cannot be undone.',
       confirmText: 'Delete checks',
-      confirmationText: DELETE_CONFIRMATION_TEXT,
+      confirmationText,
     }),
-    [checksLabel]
+    [checksLabel, confirmationText]
   );
 
   return {

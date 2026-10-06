@@ -1,10 +1,10 @@
 import React from 'react';
 import { config } from '@grafana/runtime';
-import { screen } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsHGFreeUserOverLimit } from 'test/utils';
+import { runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -26,7 +26,7 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
     })
   );
   const res = render(<ChooseCheckGroup />);
-  await screen.findByText('Choose a check type');
+  await screen.findByText('Create a new check');
 
   return res;
 }
@@ -34,10 +34,22 @@ async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10 } = 
 it('shows check type options correctly', async () => {
   await renderChooseCheckGroup();
 
-  expect(screen.queryByRole('link', { name: `API Endpoint` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Multi Step` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Scripted` })).toBeInTheDocument();
-  expect(screen.queryByRole('link', { name: `Browser` })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'API Endpoint' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Multi Step' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Scripted' })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: 'Browser' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^api endpoint$/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^multi step$/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^scripted$/i })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /^browser$/i })).toBeInTheDocument();
+});
+
+it('shows a start from a template section', async () => {
+  await renderChooseCheckGroup();
+
+  expect(screen.getByText('Start from a template')).toBeInTheDocument();
+  expect(screen.getByText('Detect broken links')).toBeInTheDocument();
+  expect(screen.getByText('Check a page for links that no longer work.')).toBeInTheDocument();
 });
 
 it(`doesn't show gRPC option by default`, async () => {
@@ -68,13 +80,42 @@ it(`shows an error alert when user is HG Free user with over 100k execution limi
   const alert = await screen.findByText(/You have reached your monthly execution limit of/);
   expect(alert).toBeInTheDocument();
 
-  const apiEndPointButton = screen.getByRole('link', { name: `API Endpoint` });
-  const multiStepButton = screen.getByRole('link', { name: `Multi Step` });
-  const scriptedButton = screen.getByRole('link', { name: `Scripted` });
-  const browserButton = screen.getByRole('link', { name: `Browser` });
+  const tileButtons = [
+    screen.getByRole('link', { name: /^api endpoint$/i }),
+    screen.getByRole('link', { name: /^multi step$/i }),
+    screen.getByRole('link', { name: /^scripted$/i }),
+    screen.getByRole('link', { name: /^browser$/i }),
+  ];
 
-  expect(apiEndPointButton).toHaveAttribute(`aria-disabled`, `true`);
-  expect(multiStepButton).toHaveAttribute(`aria-disabled`, `true`);
-  expect(scriptedButton).toHaveAttribute(`aria-disabled`, `true`);
-  expect(browserButton).toHaveAttribute(`aria-disabled`, `true`);
+  tileButtons.forEach((button) => {
+    expect(button).toHaveAttribute(`aria-disabled`, `true`);
+  });
+});
+
+it('opens the template drawer and tracks selection without a feature flag', async () => {
+  const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
+  const { user } = await renderChooseCheckGroup();
+  const card = await screen.findByRole('button', { name: 'Detect broken links' });
+  await waitFor(() => expect(card).toBeEnabled());
+  await user.click(card);
+  expect(reportInteraction).toHaveBeenCalledWith(
+    'synthetic-monitoring_check_templates_template_selected',
+    expect.objectContaining({ check_template_id: 'broken_links' })
+  );
+  expect(await screen.findByRole('textbox', { name: /^Page URL/ })).toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: 'Check name' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  expect(screen.queryByRole('textbox', { name: /^Page URL/ })).not.toBeInTheDocument();
+});
+
+it('disables templates when the check limit is reached', async () => {
+  await renderChooseCheckGroup({ checkLimit: 1 });
+  await screen.findByText(/You have reached your check limit of /);
+  expect(screen.getByRole('button', { name: 'Detect broken links' })).toBeDisabled();
+});
+
+it('disables templates for viewers', async () => {
+  runTestAsViewer();
+  await renderChooseCheckGroup();
+  expect(await screen.findByRole('button', { name: 'Detect broken links' })).toBeDisabled();
 });

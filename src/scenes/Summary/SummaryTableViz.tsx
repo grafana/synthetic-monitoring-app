@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { CustomTransformOperator, DataFrame, DataTransformerID, Field, MappingType } from '@grafana/data';
 import { VizConfigBuilders } from '@grafana/scenes';
 import {
@@ -16,12 +16,15 @@ import {
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
+import { Check } from 'types';
+import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { DEFAULT_QUERY_FROM_TIME_TEXT } from 'components/constants';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 import { getCheckTypeTitle } from './SummaryDashboard.utils';
+import { filterChecksById } from './SummaryTableViz.utils';
 
 const FIELD_TRANSFORMATIONS = [
   { from: 'id (lastNotNull)', to: 'id' },
@@ -57,7 +60,14 @@ const customOrganize: CustomTransformOperator = () => (source: Observable<DataFr
   );
 };
 
-export const SummaryTableViz = () => {
+export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
+  const { visibleChecks, isResolving } = useCheckFolderAccess(checks);
+  const filterVisibleChecks = useMemo<CustomTransformOperator>(() => {
+    const visibleIds = new Set(
+      isResolving ? [] : visibleChecks.flatMap((check) => (check.id === undefined ? [] : [String(check.id)]))
+    );
+    return () => (source) => source.pipe(map((frames) => filterChecksById(frames, visibleIds)));
+  }, [visibleChecks, isResolving]);
   const metricsDS = useMetricsDS();
   const smDS = useSMDS();
   const [currentTimeRange] = useTimeRange();
@@ -288,6 +298,7 @@ export const SummaryTableViz = () => {
         },
       },
       customOrganize,
+      filterVisibleChecks,
     ],
     data: dataProvider,
   });

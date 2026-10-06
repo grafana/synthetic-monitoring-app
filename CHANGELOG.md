@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.63.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.62.0...v1.63.0) (2026-09-29)
+
+
+### Features
+
+* add @grafana/cloud-setup instructions ([#1883](https://github.com/grafana/synthetic-monitoring-app/issues/1883)) ([33d1ba5](https://github.com/grafana/synthetic-monitoring-app/commit/33d1ba548c105b1273dd230d3d5221eac3a0f3b4))
+* implement two new named queries ([#1878](https://github.com/grafana/synthetic-monitoring-app/issues/1878)) ([e5f17bb](https://github.com/grafana/synthetic-monitoring-app/commit/e5f17bbc0c8ad34d87b504cad8e79ea08d6a9515))
+* **knowledgeGraph:** render Connected services with the KG's exposed mini graph ([#1874](https://github.com/grafana/synthetic-monitoring-app/issues/1874)) ([9276eb2](https://github.com/grafana/synthetic-monitoring-app/commit/9276eb25d83d9de22e41e380cd5f7e0623e6f98a))
+* route the legacy feature flags through OpenFeature ([#1886](https://github.com/grafana/synthetic-monitoring-app/issues/1886)) ([378d1de](https://github.com/grafana/synthetic-monitoring-app/commit/378d1de0623eaa993c9968e945b3ce11eba84244))
+* set up fallback to legacy toggles for OpenFeature flags without a definition ([#1877](https://github.com/grafana/synthetic-monitoring-app/issues/1877)) ([69c6235](https://github.com/grafana/synthetic-monitoring-app/commit/69c62357db2e64bdf2aa31ce3ef5f11c67cc7365))
+* **slo-integration:** add tracking for SLO drawer, wizard, and delete actions ([#1887](https://github.com/grafana/synthetic-monitoring-app/issues/1887)) ([4877888](https://github.com/grafana/synthetic-monitoring-app/commit/4877888e3ef1b74b9507c1a7fd44c4a363339511))
+
+
+### Fixes
+
+* explain why the create check button is disabled for viewers ([#1892](https://github.com/grafana/synthetic-monitoring-app/issues/1892)) ([c189c8a](https://github.com/grafana/synthetic-monitoring-app/commit/c189c8a90b36ac8c0baa68988b8b48d8e375b8a6))
+* **knowledgeGraph:** preserve services without CALLS neighbours ([#1885](https://github.com/grafana/synthetic-monitoring-app/issues/1885)) ([5f10b85](https://github.com/grafana/synthetic-monitoring-app/commit/5f10b85f3e36467bdefa953d059f6e964d4b8547))
+* remove OSS repo link from cloud setup CLI panel ([#1891](https://github.com/grafana/synthetic-monitoring-app/issues/1891)) ([bb481fb](https://github.com/grafana/synthetic-monitoring-app/commit/bb481fb20a09338fcce96a6c11913b44ff0d8fae))
+* scene time zone selection ([#1890](https://github.com/grafana/synthetic-monitoring-app/issues/1890)) ([77f2600](https://github.com/grafana/synthetic-monitoring-app/commit/77f2600cdd24374f503c1026684910bf5b11b1a8))
+* update create datasource handling in the mock service worker to pass create datasource API call ([#1880](https://github.com/grafana/synthetic-monitoring-app/issues/1880)) ([411b58f](https://github.com/grafana/synthetic-monitoring-app/commit/411b58f081b15890c75ea2a603cae75dd22461df))
+
 ## [1.62.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.61.0...v1.62.0) (2026-09-23)
 
 

@@ -3,6 +3,7 @@
 package plugin
 
 import (
+	"reflect"
 	"sort"
 	"testing"
 
@@ -33,6 +34,7 @@ func TestUpdateSchema(t *testing.T) {
 				CodePath:    "./",
 			},
 		},
+		Enums: []reflect.Type{reflect.TypeFor[CheckType]()},
 	})
 	require.NoError(t, err)
 
