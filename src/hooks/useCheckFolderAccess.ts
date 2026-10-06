@@ -59,27 +59,38 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
   const { folderDetailsByUid } = useFolderPermissions(folderUids);
   const smPerms = useUserPermissions();
 
-  const visibleChecks = useMemo(() => {
-    if (!isFoldersAvailable) {
-      return checks;
-    }
+  // One rule, two readers: whether a check is visible, and whether we know yet. Keeping them
+  // apart meant a folder that could never change visibility still counted as "still deciding".
+  const resolveVisibility = useCallback(
+    (check: Pick<Check, 'folderUid'>): 'visible' | 'hidden' | 'unknown' => {
+      if (!isFoldersAvailable) {
+        return 'visible';
+      }
 
-    return checks.filter((check) => {
       const effectiveUid = check.folderUid || defaultFolderUid;
-      if (!effectiveUid) {
-        return true;
+      if (!effectiveUid || accessibleFolderUids.has(effectiveUid)) {
+        return 'visible';
       }
-      if (accessibleFolderUids.has(effectiveUid)) {
-        return true;
-      }
+
       // Folders outside the default subtree: `accessible` means the folder
       // exists and the user can read it (a first-class location under open
       // folder assignment), so its checks must stay visible. `orphaned` (404)
       // checks are shown too. Only `forbidden` (403) hides a check.
       const folderState = folderDetailsByUid.get(effectiveUid);
-      return folderState?.type === 'orphaned' || folderState?.type === 'accessible';
-    });
-  }, [checks, isFoldersAvailable, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]);
+      if (folderState?.type === 'orphaned' || folderState?.type === 'accessible') {
+        return 'visible';
+      }
+
+      // No answer yet, so this check may still appear.
+      return folderState === undefined || folderState.type === 'loading' ? 'unknown' : 'hidden';
+    },
+    [isFoldersAvailable, accessibleFolderUids, folderDetailsByUid, defaultFolderUid]
+  );
+
+  const visibleChecks = useMemo(
+    () => checks.filter((check) => resolveVisibility(check) === 'visible'),
+    [checks, resolveVisibility]
+  );
 
   // Readable folders referenced by checks but living outside the default
   // folder's subtree (at the Grafana root level, inside a team folder, etc.).
@@ -118,11 +129,11 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     [smPerms, getFolderStatus]
   );
 
-  // visibleChecks hides a check until its folder has answered, so an empty list means
-  // "not known yet" rather than "none" while any folder request is still in flight.
+  // Only checks that could still appear count. The permission map also covers folders no check
+  // references, and those resolving must not send a consumer back to a loading state.
   const isVisibilitySettling = useMemo(
-    () => folderStatus === 'loading' || [...folderDetailsByUid.values()].some((state) => state.type === 'loading'),
-    [folderStatus, folderDetailsByUid]
+    () => folderStatus === 'loading' || checks.some((check) => resolveVisibility(check) === 'unknown'),
+    [folderStatus, checks, resolveVisibility]
   );
 
   return {
