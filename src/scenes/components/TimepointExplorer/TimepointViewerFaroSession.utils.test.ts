@@ -1,8 +1,12 @@
 import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { StatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import {
   buildFaroSessionByExecutionIdLogQL,
   buildFaroSessionHref,
+  buildFaroSessionProbeLogQL,
+  collectExecutionIdsFromListLogsMap,
   getFaroSessionFromLogs,
+  reduceRumAvailability,
 } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.utils';
 
 describe('buildFaroSessionByExecutionIdLogQL', () => {
@@ -109,5 +113,86 @@ describe('buildFaroSessionHref', () => {
         sessionId: 'a/b',
       })
     ).toBe('/a/grafana-kowalski-app/apps/with%20space/sessions/a%2Fb');
+  });
+});
+
+describe('buildFaroSessionProbeLogQL', () => {
+  it('returns an empty string when there are no execution ids', () => {
+    expect(buildFaroSessionProbeLogQL([])).toBe('');
+  });
+
+  it('ORs unique execution ids into a single regex match', () => {
+    expect(buildFaroSessionProbeLogQL(['exec-1', 'exec-2', 'exec-1'])).toBe(
+      '{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true" | k6_testRunId=~"sm:(exec-1|exec-2)"'
+    );
+  });
+
+  it('escapes regex metacharacters in execution ids', () => {
+    expect(buildFaroSessionProbeLogQL(['exec.1+2'])).toContain('sm:(exec\\.1\\+2)');
+  });
+});
+
+describe('collectExecutionIdsFromListLogsMap', () => {
+  const makeTimepoint = (
+    adjustedTime: number,
+    executionIds: string[]
+  ): StatefulTimepoint => ({
+    adjustedTime,
+    timepointDuration: 1000,
+    status: 'success',
+    index: 0,
+    config: { frequency: 60000, from: adjustedTime, to: adjustedTime + 60000 },
+    maxProbeDuration: 1000,
+    probeResults: {
+      probeA: executionIds.map((execution_id) => ({
+        labels: { execution_id },
+      })) as StatefulTimepoint['probeResults'][string],
+    },
+  });
+
+  it('collects unique execution ids newest-first and returns a time window', () => {
+    const listLogsMap = {
+      3000: makeTimepoint(3000, ['exec-new']),
+      1000: makeTimepoint(1000, ['exec-old', 'exec-new']),
+    };
+
+    expect(collectExecutionIdsFromListLogsMap(listLogsMap)).toEqual({
+      executionIds: ['exec-new', 'exec-old'],
+      from: 1000,
+      to: 3000 + 1000 + 60000,
+    });
+  });
+
+  it('respects the execution id cap', () => {
+    const listLogsMap = {
+      1000: makeTimepoint(
+        1000,
+        Array.from({ length: 5 }, (_, i) => `exec-${i}`)
+      ),
+    };
+
+    expect(collectExecutionIdsFromListLogsMap(listLogsMap, 2).executionIds).toEqual(['exec-0', 'exec-1']);
+  });
+});
+
+describe('reduceRumAvailability', () => {
+  it('promotes to present on passive success', () => {
+    expect(reduceRumAvailability('unknown', { type: 'passive-success' })).toBe('present');
+    expect(reduceRumAvailability('absent', { type: 'passive-success' })).toBe('present');
+  });
+
+  it('applies probe present/absent when not already present', () => {
+    expect(reduceRumAvailability('unknown', { type: 'probe-result', result: 'present' })).toBe('present');
+    expect(reduceRumAvailability('unknown', { type: 'probe-result', result: 'absent' })).toBe('absent');
+  });
+
+  it('never demotes present', () => {
+    expect(reduceRumAvailability('present', { type: 'probe-result', result: 'absent' })).toBe('present');
+    expect(reduceRumAvailability('present', { type: 'probe-error' })).toBe('present');
+  });
+
+  it('leaves availability unchanged on probe error', () => {
+    expect(reduceRumAvailability('unknown', { type: 'probe-error' })).toBe('unknown');
+    expect(reduceRumAvailability('absent', { type: 'probe-error' })).toBe('absent');
   });
 });
