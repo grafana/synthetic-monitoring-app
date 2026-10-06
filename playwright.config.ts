@@ -66,8 +66,22 @@ if (process.env.SM_E2E_FARO_COLLECTOR_URL) {
 const pluginE2eAuth = `${dirname(require.resolve('@grafana/plugin-e2e'))}/auth`;
 
 export default defineConfig<PluginOptions>({
+  // Playwright's top-level `rootDir` option is NOT user-overridable -- it's
+  // hardcoded to always equal the resolved `testDir`
+  // (playwright/lib/common/index.js: `rootDir: pathResolve(configDir,
+  // userConfig.testDir) || configDir`). @grafana-cloud/test-observability's
+  // reporter relativizes each test's `source_file` against that `rootDir`,
+  // so pointing `testDir` straight at `tests/playwright` made every
+  // source_file collapse to a bare filename (relativizing a file against its
+  // own directory strips the whole path) -- which the e2e o11y viewer's
+  // "Suggest fix" button can't tell apart from a project with no real path
+  // info at all, and silently prefixes with a hardcoded guess that's wrong
+  // for this repo. Routing discovery through `testMatch` instead keeps
+  // `testDir`/`rootDir` at the actual repo root, so source_file comes out as
+  // the real relative path (tests/playwright/foo.spec.ts).
   globalSetup: require.resolve('@grafana-cloud/test-observability/run-setup'),
-  testDir: './tests/playwright',
+  testDir: '.',
+  testMatch: 'tests/playwright/**/*.spec.ts',
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
