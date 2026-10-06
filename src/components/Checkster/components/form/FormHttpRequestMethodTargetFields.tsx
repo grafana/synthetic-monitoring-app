@@ -6,6 +6,8 @@ import { css, cx } from '@emotion/css';
 
 import { CheckFormValues, HttpMethod } from 'types';
 import { getMethodColor } from 'utils';
+import { getHttpUrlProtocolSuggestions } from 'validation';
+import { ProtocolSuggestionHint } from 'components/ProtocolSuggestionHint';
 
 import { ALLOWED_HTTP_REQUEST_METHODS, DEFAULT_EXAMPLE_HOSTNAME } from '../../constants';
 import { getFieldErrorProps } from '../../utils/form';
@@ -48,6 +50,12 @@ export function FormHttpRequestMethodTargetFields({
     setValue(field, newUrl, { shouldDirty: true });
   };
 
+  const protocolSuggestions = getHttpUrlProtocolSuggestions(targetValue);
+
+  const handleSelectProtocolSuggestion = (suggestion: string) => {
+    setValue(field, suggestion, { shouldDirty: true, shouldValidate: true });
+  };
+
   return (
     <Stack direction="column" gap={1}>
       <StyledField
@@ -82,6 +90,11 @@ export function FormHttpRequestMethodTargetFields({
           }
         />
       </StyledField>
+      <ProtocolSuggestionHint
+        suggestions={protocolSuggestions}
+        disabled={disabled}
+        onSelect={handleSelectProtocolSuggestion}
+      />
       {showQueryParams && (
         <Indent>
           <SecondaryContainer>

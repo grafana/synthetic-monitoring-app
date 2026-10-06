@@ -4,6 +4,7 @@ import { Alert, Button, Drawer, Field, Input, Stack } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
 import { CheckAlertDraft, CheckType, FeatureName } from 'types';
+import { getHttpUrlProtocolSuggestions } from 'validation';
 import { AddCheckResult } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -17,11 +18,14 @@ import { useNavigateToCheckDashboard } from 'hooks/useNavigateToCheckDashboard';
 import { FeatureFlag } from 'components/FeatureFlag';
 import { FolderSelector } from 'components/FolderSelector/FolderSelector';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
+import { ProtocolSuggestionHint } from 'components/ProtocolSuggestionHint';
 
 import { createBrokenLinksCheck } from './brokenLinks';
 import { TemplateAlerting } from './TemplateAlerting';
 import { BROKEN_LINKS_ALERTS } from './templateAlerts';
 import { useCreateTemplateCheck } from './useCreateTemplateCheck';
+
+const URL_FORMAT_ERROR = 'Enter a valid URL starting with https:// or http://.';
 
 export function BrokenLinksDrawer({
   onClose,
@@ -80,6 +84,10 @@ function BrokenLinksForm({
     }
   }
 
+  const protocolSuggestions = getHttpUrlProtocolSuggestions(url);
+  const urlFormatError = url.trim() && !parseUrl() ? URL_FORMAT_ERROR : undefined;
+  const urlError = url.trim() ? urlFormatError : errors.url;
+
   function viewCheck(check: AddCheckResult) {
     navigateToCheck(check, true);
     onClose();
@@ -117,7 +125,7 @@ function BrokenLinksForm({
     const parsed = parseUrl();
     const nextErrors: Record<string, string> = {};
     if (!parsed) {
-      nextErrors.url = 'Enter a valid URL starting with https:// or http://.';
+      nextErrors.url = URL_FORMAT_ERROR;
     }
     if (maxLinks.trim() && (!Number.isSafeInteger(Number(maxLinks)) || Number(maxLinks) < 1)) {
       nextErrors.maxLinks = 'Enter a positive whole number.';
@@ -175,7 +183,7 @@ function BrokenLinksForm({
             disabled={busy || !!createdCheck}
             style={{ border: 0, padding: 0, margin: 0, minWidth: 0, width: '100%' }}
           >
-            <Field label="Page URL" required htmlFor="template-url" error={errors.url} invalid={!!errors.url}>
+            <Field label="Page URL" required htmlFor="template-url" error={urlError} invalid={!!urlError}>
               <Input
                 id="template-url"
                 type="url"
@@ -186,6 +194,12 @@ function BrokenLinksForm({
                 onChange={(event) => setUrl(event.currentTarget.value)}
               />
             </Field>
+            <ProtocolSuggestionHint
+              suggestions={protocolSuggestions}
+              onSelect={setUrl}
+              disabled={busy || !!createdCheck}
+              marginBottom={2}
+            />
             {foldersEnabled && (
               <Field label="Folder" error={errors.folder} invalid={!!errors.folder}>
                 <FolderSelector
