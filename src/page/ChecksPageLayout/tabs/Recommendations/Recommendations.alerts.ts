@@ -1,6 +1,6 @@
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 
-import { Check, CheckAlertDraft } from 'types';
+import { Check, CheckAlertDraft, CheckAlertType } from 'types';
 import { getCheckType } from 'utils';
 import {
   ALERT_PERIODS,
@@ -19,10 +19,25 @@ export interface RecommendedAlert {
 // be at least the check's frequency (the editor greys out shorter ones); none qualifying means no alert.
 export function getRecommendedAlerts(check: Check): RecommendedAlert[] {
   return PREDEFINED_ALERTS[getCheckType(check.settings)].flatMap((definition) => {
+    if (!isAlertEligible(definition, check)) {
+      return [];
+    }
+
     const draft = toDraft(definition, check.frequency);
 
     return draft ? [{ definition, draft }] : [];
   });
+}
+
+// Mirrors the editor's refinements: an alert the form would reject must not be offered here
+// either. A TCP check without TLS collects no certificate metrics, so the expiry alert cannot
+// fire (see tcpTLSTargetCertificateCloseToExpiringRefinement in schemas/general/CheckAlerts.ts).
+function isAlertEligible(definition: PredefinedAlertInterface, check: Check): boolean {
+  if (definition.type !== CheckAlertType.TLSTargetCertificateCloseToExpiring) {
+    return true;
+  }
+
+  return !('tcp' in check.settings) || Boolean(check.settings.tcp.tls);
 }
 
 function toDraft(definition: PredefinedAlertInterface, frequency: number): CheckAlertDraft | undefined {
@@ -57,15 +72,29 @@ export function formatAlertThreshold({ definition, draft }: RecommendedAlert) {
   return definition.unit === 'no.' ? String(draft.threshold) : `${draft.threshold}${definition.unit}`;
 }
 
-// One request per check against a single-replica API, so a large tenant must not fire hundreds at once.
+// One request per check against a single-replica API, so a large tenant must not fire hundreds at
+// once. `isCancelled` stops scheduling further batches once the caller has gone away: in-flight
+// requests still finish, but a panel that unmounted mid-run leaves no loop behind it to collide
+// with the next one. Items never submitted are reported as rejected so callers do not count them
+// as done.
 export async function runInBatches<T, R>(
   items: T[],
   batchSize: number,
-  task: (item: T) => Promise<R>
+  task: (item: T) => Promise<R>,
+  isCancelled: () => boolean = () => false
 ): Promise<Array<PromiseSettledResult<R>>> {
   const results: Array<PromiseSettledResult<R>> = [];
 
   for (let index = 0; index < items.length; index += batchSize) {
+    if (isCancelled()) {
+      const remaining = items.length - results.length;
+
+      return [
+        ...results,
+        ...Array.from({ length: remaining }, () => ({ status: 'rejected' as const, reason: new Error('cancelled') })),
+      ];
+    }
+
     const batch = items.slice(index, index + batchSize);
     results.push(...(await Promise.allSettled(batch.map(task))));
   }

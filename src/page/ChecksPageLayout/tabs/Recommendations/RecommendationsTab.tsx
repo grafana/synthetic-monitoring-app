@@ -5,7 +5,7 @@ import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
 import { FeatureName } from 'types';
-import { CheckFolderAccessProvider } from 'contexts/CheckFolderAccessContext';
+import { CheckFolderAccessProvider, useVisibleChecks } from 'contexts/CheckFolderAccessContext';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -53,7 +53,9 @@ function RecommendationsTabChecks() {
 
 function RecommendationsTabContent() {
   const styles = useStyles2(getStyles);
-  const { data: checks } = useSuspenseChecks();
+  // Visible, not all: a check in a folder the user cannot read is hidden on the Checks page, so
+  // its job and target must not reach a finding here either.
+  const checks = useVisibleChecks();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData, isLoading: isCALsLoading, isError: isCALsError } = useTenantCostAttributionLabels();
   const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);

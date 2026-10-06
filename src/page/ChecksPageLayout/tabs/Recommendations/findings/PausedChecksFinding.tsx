@@ -40,18 +40,25 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
   const selectedCount = selection.selected.length;
 
   const handleResumeSelected = async () => {
-    const checkCount = selection.selected.length;
+    // Captured up front: anything ticked while the request is in flight was never submitted,
+    // so clearing the whole selection afterwards would silently drop it.
+    const submitted = selection.selected;
 
     try {
-      await bulkUpdateChecks(selection.selected.map((check) => ({ ...check, enabled: true })));
+      await bulkUpdateChecks(submitted.map((check) => ({ ...check, enabled: true })));
     } catch {
       // The mutation's meta raises the error toast; the selection stays for a retry.
       return;
     }
 
-    trackRecommendationActionCompleted({ finding: id, action: 'check_resumed', checkCount, scope: 'selection' });
+    trackRecommendationActionCompleted({
+      finding: id,
+      action: 'check_resumed',
+      checkCount: submitted.length,
+      scope: 'selection',
+    });
     await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-    selection.clear();
+    selection.deselect(submitted);
   };
 
   return (

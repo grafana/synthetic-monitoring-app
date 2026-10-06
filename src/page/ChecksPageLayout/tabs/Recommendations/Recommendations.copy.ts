@@ -45,7 +45,7 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
         // Matching ignores probes and frequency; the copy has to say so.
         tooltip: t(
           'recommendations.duplicateChecks.description',
-          'Same target, same check type, more than one check. Matched on target and type only, so compare the frequency and probes shown on each row before deciding. Each duplicate bills at full rate. Safe to delete down to one unless you are deliberately running from different probe sets.'
+          'Same target, same check type, more than one check. Potential duplicates only: matching ignores everything else these checks can differ on, such as request method, authentication, assertions or script contents, as well as frequency and probes. Each one bills at full rate, so they are worth reviewing, but compare the full configuration in the editor before deleting any of them.'
         ),
       };
 

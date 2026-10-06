@@ -42,9 +42,7 @@ function findMissingCostLabels({ checks, calNames }: RecommendationInputs): Reco
 }
 
 function findDuplicateChecks({ checks }: RecommendationInputs): Recommendation | undefined {
-  const byTypeAndTarget = groupBy(checks, (check) => `${getCheckType(check.settings)}\u0000${check.target}`);
-
-  const groups = Object.values(byTypeAndTarget)
+  const groups = groupBy(checks, (check) => `${getCheckType(check.settings)}\u0000${check.target}`)
     .filter((group) => group.length > 1)
     .map<RecommendationGroup>((group) => {
       const type = getCheckType(group[0].settings);
@@ -56,9 +54,7 @@ function findDuplicateChecks({ checks }: RecommendationInputs): Recommendation |
 }
 
 function findOverlappingTargets({ checks }: RecommendationInputs): Recommendation | undefined {
-  const byTarget = groupBy(checks, (check) => check.target);
-
-  const groups = Object.values(byTarget)
+  const groups = groupBy(checks, (check) => check.target)
     .map<{ group: Check[]; types: CheckType[] }>((group) => ({
       group,
       types: uniq(group.map((check) => getCheckType(check.settings))),
@@ -143,14 +139,24 @@ function sortChecks(checks: Check[]) {
   return [...checks].sort((a, b) => a.job.localeCompare(b.job));
 }
 
-function groupBy<T>(items: T[], getKey: (item: T) => string): Record<string, T[]> {
-  return items.reduce<Record<string, T[]>>((acc, item) => {
-    const key = getKey(item);
-    acc[key] = acc[key] ?? [];
-    acc[key].push(item);
+// A Map, not an object: check targets and scripted instance names are user-supplied, and a
+// target of `__proto__` or `constructor` resolves to an inherited property on an object
+// accumulator, which has no push and takes the whole tab down.
+function groupBy<T>(items: T[], getKey: (item: T) => string): T[][] {
+  const groups = new Map<string, T[]>();
 
-    return acc;
-  }, {});
+  for (const item of items) {
+    const key = getKey(item);
+    const group = groups.get(key);
+
+    if (group) {
+      group.push(item);
+    } else {
+      groups.set(key, [item]);
+    }
+  }
+
+  return [...groups.values()];
 }
 
 function uniq<T>(items: T[]): T[] {

@@ -204,3 +204,19 @@ describe('describeProbes', () => {
     expect(describeProbes(buildCheck({ probes: [1, 2] }), [])).toBe('2 probes');
   });
 });
+
+describe('grouping by user-supplied values', () => {
+  // Scripted and browser checks take a free-text instance name as their target, so a target can
+  // be any string, including one that names a property on Object.prototype.
+  it.each(['__proto__', 'constructor', 'toString'])('groups checks targeting %s without throwing', (target) => {
+    const checks = [
+      DB.check.build({ job: 'one', target }, { transient: { type: CheckType.Http } }),
+      DB.check.build({ job: 'two', target }, { transient: { type: CheckType.Http } }),
+    ];
+
+    const findings = computeRecommendations({ checks, calNames: [] });
+    const duplicates = findings.find(({ id }) => id === RecommendationId.DuplicateChecks);
+
+    expect(duplicates?.groups?.[0].checks).toHaveLength(2);
+  });
+});

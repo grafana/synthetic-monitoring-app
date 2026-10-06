@@ -434,7 +434,12 @@ export function GroupRow({
         </a>
         <span className={styles.rowDetail}>{detail}</span>
       </div>
-      {isExpanded && <div className={styles.nestedRows}>{checks.map(renderCheck)}</div>}
+      {/* Paged like the outer list: one target can be shared by more checks than a page holds. */}
+      {isExpanded && (
+        <div className={styles.nestedRows}>
+          <PaginatedRows items={checks} renderItem={renderCheck} />
+        </div>
+      )}
     </div>
   );
 }

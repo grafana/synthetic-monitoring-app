@@ -722,15 +722,34 @@ describe('Recommendations tab', () => {
       );
     });
 
-    it('links each duplicate group to the check list filtered to that target and type', async () => {
+    it('links each duplicate group to the check list filtered to that exact target and type', async () => {
       await renderCategory(DUPLICATES(), RecommendationCategoryId.Redundancy);
 
       const section = await findSection(/are duplicates/);
 
+      // An exact target, not a search: the generic search would also match longer targets
+      // sharing this prefix, and anything at all once the target contains an `=`.
       expect(within(section).getByRole('link', { name: 'Show these checks in the check list' })).toHaveAttribute(
         'href',
-        expect.stringContaining('search=https%3A%2F%2Fgrafana.com&type=http')
+        expect.stringContaining('target=https%3A%2F%2Fgrafana.com&type=http')
       );
+    });
+
+    it('dismisses one copy of a duplicate pair without hiding the finding', async () => {
+      const { user } = await renderCategory(
+        [
+          ...DUPLICATES(),
+          buildCheck({ job: 'third', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
+        ],
+        RecommendationCategoryId.Redundancy
+      );
+
+      const section = await findSection(/are duplicates/);
+      await user.click(within(section).getByRole('button', { name: 'https://grafana.com' }));
+      await user.click(within(section).getByRole('button', { name: /dismiss copy from this finding/i }));
+
+      expect(await within(section).findByText(/1 check dismissed/)).toBeInTheDocument();
+      expect(within(section).getByRole('button', { name: /show dismissed checks/i })).toBeEnabled();
     });
 
     it('reports a target covered by more than one check type', async () => {

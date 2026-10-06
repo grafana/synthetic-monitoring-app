@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { t, Trans } from '@grafana/i18n';
 import { LinkButton } from '@grafana/ui';
 import { trackRecommendationActioned } from 'features/tracking/recommendationEvents';
 
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
-import { formatDuration } from 'utils';
+import { formatDuration, getCheckType } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
 
-import { CheckRow, GroupRow, PaginatedRows, RecommendationSection } from '../Recommendations.components';
+import { CheckRow, GroupRow, PaginatedRows, PanelFooter, RecommendationSection } from '../Recommendations.components';
 import { getChecksByTargetUrl } from '../Recommendations.links';
 import { describeProbes } from '../Recommendations.utils';
 import { useFindingPanel } from './Finding.hooks';
@@ -19,7 +19,25 @@ import { useFindingPanel } from './Finding.hooks';
 // link to the editor. Deleting stays with the check list, which each group links to.
 export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
   const { id, groups = [] } = recommendation;
-  const { severity, header } = useFindingPanel({ recommendation, totalCheckCount, isSolo });
+  const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
+    recommendation,
+    totalCheckCount,
+    isSolo,
+  });
+
+  // Dismissing a deliberate copy takes it out of its group. A duplicate group needs two checks
+  // to still be a duplicate; an overlapping group needs two check types.
+  const visibleGroups = useMemo(() => {
+    const kept = new Set(rows.map((check) => check.id));
+
+    return groups
+      .map((group) => ({ ...group, checks: group.checks.filter((check) => kept.has(check.id)) }))
+      .filter((group) =>
+        group.type
+          ? group.checks.length > 1
+          : new Set(group.checks.map((check) => getCheckType(check.settings))).size > 1
+      );
+  }, [groups, rows]);
   // Not suspended on; counts stand in until names arrive.
   const { data: probes = [] } = useProbes();
 
@@ -39,6 +57,7 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
               probes: describeProbes(check, probes),
             })
       }
+      onDismiss={dismissCheck}
       // Editing is the action here.
       showEditButton={false}
       action={
@@ -58,9 +77,15 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
   );
 
   return (
-    <RecommendationSection {...header} severity={severity} isFocused={isFocused} onDismiss={onDismiss}>
+    <RecommendationSection
+      {...header}
+      severity={severity}
+      isFocused={isFocused}
+      onDismiss={onDismiss}
+      footer={<PanelFooter dismissedCount={dismissedCount} onRestore={restoreChecks} />}
+    >
       <PaginatedRows
-        items={groups}
+        items={visibleGroups}
         renderItem={(group) => (
           <GroupRow
             key={group.key}

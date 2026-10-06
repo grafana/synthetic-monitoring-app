@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { t, Trans } from '@grafana/i18n';
 import { Button, ConfirmModal, LinkButton, Stack, useStyles2 } from '@grafana/ui';
@@ -47,6 +47,10 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   const selection = useRowSelection(rows);
   const [isConfirmingAll, setIsConfirmingAll] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  // The panel unmounts when the category changes, but a bulk apply keeps looping. Stop
+  // scheduling batches once it has gone, so a second visit cannot start a parallel loop.
+  const isUnmounted = useRef(false);
+  useEffect(() => () => void (isUnmounted.current = true), []);
 
   const getPermissions = useGetCheckPermissions();
   const plans = useMemo(() => getAlertPlans(rows, (check) => getPermissions(check).canWrite), [rows, getPermissions]);
@@ -56,8 +60,11 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   const applyTo = async (targets: AlertPlan[], scope: 'finding' | 'selection'): Promise<Check[]> => {
     setIsApplying(true);
 
-    const results = await runInBatches(targets, BULK_ACTION_BATCH_SIZE, ({ check, alerts }) =>
-      updateAlerts({ alerts: alerts.map((alert) => alert.draft), checkId: check.id! })
+    const results = await runInBatches(
+      targets,
+      BULK_ACTION_BATCH_SIZE,
+      ({ check, alerts }) => updateAlerts({ alerts: alerts.map((alert) => alert.draft), checkId: check.id! }),
+      () => isUnmounted.current
     );
     const succeeded = targets.filter((_, index) => results[index].status === 'fulfilled').map((plan) => plan.check);
 

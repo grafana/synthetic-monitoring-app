@@ -11,6 +11,22 @@ function buildCheck(frequency: number, type: CheckType): Check {
 }
 
 describe('getRecommendedAlerts', () => {
+  it('omits certificate expiry for a TCP check without TLS, which the editor rejects', () => {
+    const check = DB.check.build({ frequency: MINUTE }, { transient: { type: CheckType.Tcp } });
+
+    if (!('tcp' in check.settings)) {
+      throw new Error('expected a TCP check');
+    }
+
+    const withoutTls: Check = { ...check, settings: { tcp: { ...check.settings.tcp, tls: false } } };
+    const withTls: Check = { ...check, settings: { tcp: { ...check.settings.tcp, tls: true } } };
+
+    const names = (c: Check) => getRecommendedAlerts(c).map(({ draft }) => draft.name);
+
+    expect(names(withoutTls)).not.toContain(CheckAlertType.TLSTargetCertificateCloseToExpiring);
+    expect(names(withTls)).toContain(CheckAlertType.TLSTargetCertificateCloseToExpiring);
+  });
+
   it('recommends the editor defaults for the check type', () => {
     const alerts = getRecommendedAlerts(buildCheck(MINUTE, CheckType.Http));
 

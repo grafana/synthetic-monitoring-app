@@ -138,11 +138,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
   const [folders, setFolders] = filters.folders;
+  const [target] = filters.target;
 
   const checkFiltersWithStatus: CheckFiltersType = useMemo(
     () => ({
       labels,
       search,
+      target,
       type,
       alerts,
       status:
@@ -152,7 +154,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       probes,
       folders: isFoldersAvailable ? folders : [],
     }),
-    [labels, search, type, alerts, status, probes, folders, isFoldersAvailable]
+    [labels, search, target, type, alerts, status, probes, folders, isFoldersAvailable]
   );
 
   const [currentPage, setCurrentPage] = useState(1);

@@ -141,13 +141,18 @@ export function useRecommendationImpressions({
   }, [visible, checkCount, dismissedCount, focusedId, isComplete]);
 
   useEffect(() => {
+    // While inputs are loading the tab renders a placeholder, so nothing has been seen yet.
+    if (!isComplete) {
+      return;
+    }
+
     shown.forEach(({ id, checks }) => {
       if (!shownReported.current.has(id)) {
         shownReported.current.add(id);
         trackRecommendationShown({ finding: id, affectedCheckCount: checks.length });
       }
     });
-  }, [shown]);
+  }, [shown, isComplete]);
 }
 
 export const ATTENTION_VIEW = 'attention';

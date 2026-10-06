@@ -22,7 +22,9 @@ export function getPausedChecksUrl() {
   return getCheckListUrl({ status: 'disabled' });
 }
 
+// An exact target filter, not a search: the generic search splits on `=` and substring-matches
+// across target, job and labels, so it would pull in checks outside the group being cleaned up.
 // Duplicates narrow to one type; overlapping targets span several by definition.
 export function getChecksByTargetUrl(target: string, type?: CheckType) {
-  return getCheckListUrl(type ? { search: target, type } : { search: target });
+  return getCheckListUrl(type ? { target, type } : { target });
 }
