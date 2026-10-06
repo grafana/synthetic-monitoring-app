@@ -28,7 +28,12 @@ export function AiCheckExplanationsSetting() {
   // to accept terms or that they're capped when the real problem is the status check itself.
   const hasAssistantStatusError = Boolean(termsError || limitsError);
   const isAssistantReady = isAssistantAvailable && termsAccepted && !isLimitReached && !hasAssistantStatusError;
-  const canToggle = canWriteSM && isAssistantReady;
+  // Turning it off is always safe and should always be available to anyone with write access —
+  // only turning it *on* needs Assistant to actually be usable. Gating both the same way would
+  // mean an org that's missing terms, over its limit, or without Assistant at the time this
+  // defaults to on could never opt out, and the setting would silently start working the moment
+  // Assistant became ready, with no one having chosen that.
+  const canToggle = canWriteSM && (isEnabled || isAssistantReady);
 
   const mutation = useMutation({
     mutationFn: (nextValue: boolean) => setAiCheckExplanationsEnabled(meta, nextValue),

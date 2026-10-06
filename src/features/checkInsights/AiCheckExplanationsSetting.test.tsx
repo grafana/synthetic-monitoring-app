@@ -77,41 +77,52 @@ it('defaults to on when the org has never set the value', async () => {
   expect(await screen.findByRole('switch')).toBeChecked();
 });
 
-it('is disabled, with an explanation, when Grafana Assistant is not available', async () => {
+it('stays togglable (to turn off), with an explanation, when Grafana Assistant is not available', async () => {
   mockAssistantReady({ isAssistantAvailable: false });
   renderSetting(undefined);
 
-  expect(await screen.findByRole('switch')).toBeDisabled();
+  // Defaults to on; turning it off has to stay possible even though Assistant isn't available,
+  // or an org in this state could never opt out — see "cannot be turned on" below for the
+  // complementary half of this behavior.
+  expect(await screen.findByRole('switch')).not.toBeDisabled();
   expect(screen.getByText(/requires grafana assistant to be enabled/i)).toBeInTheDocument();
 });
 
-it('is disabled, with an explanation, when the usage limit has been reached', async () => {
+it('stays togglable (to turn off), with an explanation, when the usage limit has been reached', async () => {
   mockAssistantReady({ isLimitReached: true });
   renderSetting(undefined);
 
-  expect(await screen.findByRole('switch')).toBeDisabled();
+  expect(await screen.findByRole('switch')).not.toBeDisabled();
   expect(screen.getByText(/usage limit has been reached/i)).toBeInTheDocument();
 });
 
-it('is disabled, with a status-check error, when the terms check fails, not an accept-terms prompt', async () => {
+it('stays togglable (to turn off), with a status-check error, when the terms check fails, not an accept-terms prompt', async () => {
   mockAssistantReady({ termsAccepted: false, termsError: 'network error' });
   renderSetting(undefined);
 
-  expect(await screen.findByRole('switch')).toBeDisabled();
+  expect(await screen.findByRole('switch')).not.toBeDisabled();
   expect(screen.getByText(/couldn't check grafana assistant's status/i)).toBeInTheDocument();
   expect(screen.queryByText(/accept the grafana assistant terms and conditions/i)).not.toBeInTheDocument();
 });
 
-it('is disabled, and offers to open Assistant, when the terms and conditions are not accepted', async () => {
+it('stays togglable (to turn off), and offers to open Assistant, when the terms and conditions are not accepted', async () => {
   const openAssistant = jest.fn();
   mockAssistantReady({ termsAccepted: false, openAssistant });
   const { user } = renderSetting(undefined);
 
-  expect(await screen.findByRole('switch')).toBeDisabled();
+  expect(await screen.findByRole('switch')).not.toBeDisabled();
   expect(screen.getByText(/accept the grafana assistant terms and conditions/i)).toBeInTheDocument();
 
   await user.click(screen.getByRole('button', { name: /open assistant/i }));
   expect(openAssistant).toHaveBeenCalled();
+});
+
+it('cannot be turned on while Grafana Assistant is not available', async () => {
+  mockAssistantReady({ isAssistantAvailable: false });
+  renderSetting(false);
+
+  expect(await screen.findByRole('switch')).not.toBeChecked();
+  expect(await screen.findByRole('switch')).toBeDisabled();
 });
 
 it('saves immediately, without confirmation, when turning the setting off', async () => {

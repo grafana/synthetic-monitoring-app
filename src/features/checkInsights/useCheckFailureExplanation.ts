@@ -167,9 +167,18 @@ export function useCheckFailureExplanation(check: Check) {
           onError: (error) => reject(error),
         });
       }),
-    // Waits for logs to finish loading (isFetched, not just !isLoading, so a still-pending first
-    // fetch doesn't slip through) so the model sees the real evidence instead of an empty array.
-    enabled: showAiExplanation && isAssistantReady && logsQuery.isFetched,
+    // Waits for every piece of evidence to finish loading (isFetched, not just !isLoading, so a
+    // still-pending first fetch doesn't slip through) — not just logs. `isCheckFailing` above
+    // can flip true from whichever of reachability/alerts resolves first, which used to let a
+    // completion fire with the other one still empty (e.g. no alert names yet), and then fire
+    // *again* once it arrived and changed the query key. Each of those is a real billed
+    // completion, so this waits for the whole picture instead of firing once per arrival.
+    enabled:
+      showAiExplanation &&
+      isAssistantReady &&
+      reachabilityQuery.isFetched &&
+      alertStatesQuery.isFetched &&
+      logsQuery.isFetched,
     staleTime: STANDARD_REFRESH_INTERVAL,
     retry: false,
     // Each run of this query is a real Assistant completion, charged against the org's usage
@@ -180,11 +189,17 @@ export function useCheckFailureExplanation(check: Check) {
 
   // Covers the whole investigation, not just the completion call: the moment the check is
   // confirmed failing we're already "investigating" from the user's perspective, so this stays
-  // true through the log fetch and the Assistant availability/terms/limits checks too, not just
-  // once the actual explanation request starts.
+  // true through the evidence fetch and the Assistant availability/terms/limits checks too, not
+  // just once the actual explanation request starts. But not once an explanation is already
+  // cached from an earlier fetch: useAssistant/useTerms/useLimits all reset to "loading" on
+  // every mount, which would otherwise replace an already-known answer with a skeleton every
+  // time someone revisits the same failing check's dashboard.
+  const hasCachedExplanation = explanationQuery.data !== undefined;
+  const isEvidenceFetched = reachabilityQuery.isFetched && alertStatesQuery.isFetched && logsQuery.isFetched;
   const isLoading =
     showAiExplanation &&
-    (isAssistantGateLoading || (isAssistantReady && (logsQuery.isLoading || explanationQuery.isLoading)));
+    !hasCachedExplanation &&
+    (isAssistantGateLoading || (isAssistantReady && (!isEvidenceFetched || explanationQuery.isLoading)));
 
   // Rather than silently showing nothing when the org has opted in but Assistant can't actually
   // produce anything, say so — same three reasons, and same "open assistant to fix it" path

@@ -59,6 +59,7 @@ function mockReachability(fraction: number | undefined) {
   useCheckReachabilitySuccessRate.mockReturnValue({
     data: fraction === undefined ? undefined : ({ value: [0, String(fraction)] } as MetricCheckSuccess),
     isLoading: false,
+    isFetched: true,
   } as any);
 }
 
@@ -71,6 +72,7 @@ function mockAlertStates(firingAlertNames: string[] = []) {
       },
     },
     isLoading: false,
+    isFetched: true,
   } as any);
 }
 
@@ -284,6 +286,49 @@ it('shows the analyzing state while the request is in flight, then the resolved 
 
   expect(await screen.findByText(/Resolved explanation\.$/)).toBeInTheDocument();
   expect(screen.queryByText(/grafana ai is analyzing/i)).not.toBeInTheDocument();
+});
+
+it('waits for alert state to finish loading too, not just logs, before generating an explanation', async () => {
+  // Alerts haven't resolved yet even though reachability already shows failing — isCheckFailing
+  // can flip true from whichever metric arrives first.
+  mockReachability(0.5);
+  useChecksAlertStates.mockReturnValue({ data: {}, isLoading: true, isFetched: false } as any);
+  const generate = mockInlineAssistantAutoResolve();
+
+  const { rerender } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+  await screen.findByText('Failing');
+
+  await waitFor(() => expect(generate).not.toHaveBeenCalled());
+
+  mockAlertStates(['CheckHighReachability']);
+  rerender(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+
+  await waitFor(() => expect(generate).toHaveBeenCalled());
+});
+
+it('keeps showing an already-cached explanation instead of a skeleton while the Assistant gate reloads', async () => {
+  mockReachability(0.5);
+  mockAlertStates(['CheckHighReachability']);
+  const generate = mockInlineAssistantManual();
+
+  const { rerender } = render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+  const options = await findGenerateOptions(generate);
+  options.onComplete?.('Cached explanation.');
+  await screen.findByText(/Cached explanation\.$/);
+
+  // useAssistant/useTerms/useLimits reset to "loading" on every real mount, even though the
+  // explanation itself is already cached from the fetch above (same check, same evidence).
+  jest.mocked(useAssistant).mockReturnValue({
+    isAvailable: true,
+    isLoading: true,
+    openAssistant: undefined,
+    closeAssistant: undefined,
+    toggleAssistant: undefined,
+  });
+  rerender(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+
+  expect(screen.getByText(/Cached explanation\.$/)).toBeInTheDocument();
+  expect(screen.queryByTestId('explanation-skeleton')).not.toBeInTheDocument();
 });
 
 it('shows the one-liner explanation for a failing check, grounded in the failure logs', async () => {
