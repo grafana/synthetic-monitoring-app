@@ -259,6 +259,10 @@ Tracks selection of a template card, before its configuration drawer opens.
 
 ### cloud_setup
 
+#### synthetic-monitoring_cloud_setup_cli_panel_shown
+
+Tracks when the cloud-setup CLI panel is shown, once per mount.
+
 #### synthetic-monitoring_cloud_setup_cli_command_copied
 
 Tracks when the cloud-setup CLI command is copied to the clipboard.
