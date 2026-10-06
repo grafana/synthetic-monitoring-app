@@ -25,5 +25,13 @@ jobs:
       # Node.js version to use
       node-version: 22
 
-      # Disabled - no Playwright tests configured
-      run-playwright: false
+      npm-registry-auth: true
+
+      run-playwright: true
+      playwright-docker-compose-file: tests/playwright/docker-compose.yml
+      playwright-secrets: |
+        SM_E2E_API_HOST=e2e:api_host
+        SM_E2E_ACCESS_TOKEN=e2e:access_token
+        SM_E2E_RESULTS_API_URL=e2e:results_api_url
+        SM_E2E_RESULTS_STACK_ID=e2e:results_stack_id
+        SM_E2E_RESULTS_API_TOKEN=e2e:results_api_token

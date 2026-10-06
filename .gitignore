@@ -34,6 +34,8 @@ artifacts/
 work/
 ci/
 e2e-results/
+playwright/.auth/
+.env
 
 temp/
 .eslintcache
