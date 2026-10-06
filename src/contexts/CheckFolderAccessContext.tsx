@@ -9,6 +9,8 @@ import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 
 interface CheckFolderAccessContextValue {
   visibleChecks: Check[];
+  /** True while a folder request is still in flight, so visibleChecks may still grow. */
+  isVisibilitySettling: boolean;
   getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   getFolderStatus: (check: Pick<Check, 'folderUid'>) => CheckFolderStatus;
   isFoldersAvailable: boolean;
@@ -49,6 +51,10 @@ export function CheckFolderAccessValueProvider({
 
 export function useVisibleChecks() {
   return useCheckFolderAccessContext().visibleChecks;
+}
+
+export function useIsVisibilitySettling() {
+  return useCheckFolderAccessContext().isVisibilitySettling;
 }
 
 export function useCheckPermissions(check: Pick<Check, 'folderUid'>): CheckPermissions {

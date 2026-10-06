@@ -3,6 +3,7 @@ import { t, Trans } from '@grafana/i18n';
 import { LinkButton } from '@grafana/ui';
 import { trackRecommendationActioned } from 'features/tracking/recommendationEvents';
 
+import { RecommendationGroup } from '../Recommendations.types';
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
 import { formatDuration, getCheckType } from 'utils';
@@ -19,25 +20,36 @@ import { useFindingPanel } from './Finding.hooks';
 // link to the editor. Deleting stays with the check list, which each group links to.
 export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
   const { id, groups = [] } = recommendation;
-  const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
+  const { severity, header, rows, dismissedCount, dismissChecks, restoreChecks } = useFindingPanel({
     recommendation,
     totalCheckCount,
     isSolo,
   });
 
-  // Dismissing a deliberate copy takes it out of its group. A duplicate group needs two checks
-  // to still be a duplicate; an overlapping group needs two check types.
+  // A duplicate group needs two checks to still be a duplicate; an overlapping group needs two
+  // check types.
+  const isRedundant = (group: RecommendationGroup) =>
+    group.type
+      ? group.checks.length > 1
+      : new Set(group.checks.map((check) => getCheckType(check.settings))).size > 1;
+
   const visibleGroups = useMemo(() => {
     const kept = new Set(rows.map((check) => check.id));
 
     return groups
       .map((group) => ({ ...group, checks: group.checks.filter((check) => kept.has(check.id)) }))
-      .filter((group) =>
-        group.type
-          ? group.checks.length > 1
-          : new Set(group.checks.map((check) => getCheckType(check.settings))).size > 1
-      );
+      .filter(isRedundant);
   }, [groups, rows]);
+
+  // Dismissing one of a pair settles the pair: what is left is no longer redundant, so it goes
+  // with it rather than lingering as a row the finding can no longer explain.
+  const dismissFromGroup = (check: Check) => {
+    const group = visibleGroups.find(({ checks }) => checks.some(({ id: checkId }) => checkId === check.id));
+    const remaining = group?.checks.filter(({ id: checkId }) => checkId !== check.id) ?? [];
+    const staysRedundant = group ? isRedundant({ ...group, checks: remaining }) : false;
+
+    dismissChecks(staysRedundant ? [check] : [check, ...remaining]);
+  };
   // Not suspended on; counts stand in until names arrive.
   const { data: probes = [] } = useProbes();
 
@@ -57,7 +69,7 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
               probes: describeProbes(check, probes),
             })
       }
-      onDismiss={dismissCheck}
+      onDismiss={dismissFromGroup}
       // Editing is the action here.
       showEditButton={false}
       action={

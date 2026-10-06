@@ -735,6 +735,18 @@ describe('Recommendations tab', () => {
       );
     });
 
+    it('takes the whole pair when dismissing one of two, since one check is not a duplicate', async () => {
+      const { user } = await renderCategory(DUPLICATES(), RecommendationCategoryId.Redundancy);
+
+      const section = await findSection(/are duplicates/);
+      await user.click(within(section).getByRole('button', { name: 'https://grafana.com' }));
+      await user.click(within(section).getByRole('button', { name: /dismiss copy from this finding/i }));
+
+      // Leaving 'primary' rendered would be a row the finding can no longer explain.
+      expect(await within(section).findByText(/2 checks dismissed/)).toBeInTheDocument();
+      expect(within(section).queryByRole('button', { name: 'https://grafana.com' })).not.toBeInTheDocument();
+    });
+
     it('dismisses one copy of a duplicate pair without hiding the finding', async () => {
       const { user } = await renderCategory(
         [

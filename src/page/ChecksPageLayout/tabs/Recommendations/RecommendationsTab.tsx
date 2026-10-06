@@ -5,7 +5,7 @@ import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
 import { FeatureName } from 'types';
-import { CheckFolderAccessProvider, useVisibleChecks } from 'contexts/CheckFolderAccessContext';
+import { CheckFolderAccessProvider, useIsVisibilitySettling, useVisibleChecks } from 'contexts/CheckFolderAccessContext';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -56,6 +56,9 @@ function RecommendationsTabContent() {
   // Visible, not all: a check in a folder the user cannot read is hidden on the Checks page, so
   // its job and target must not reach a finding here either.
   const checks = useVisibleChecks();
+  // An empty list reads as "no checks created" below, which is only true once every folder
+  // has answered: until then a tenant whose checks all live in folders looks like a new one.
+  const isVisibilitySettling = useIsVisibilitySettling();
   const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData, isLoading: isCALsLoading, isError: isCALsError } = useTenantCostAttributionLabels();
   const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);
@@ -63,6 +66,7 @@ function RecommendationsTabContent() {
   // query to settle before deciding what to show. Otherwise the cost finding is missing
   // from the first render, the empty state and the one-shot visit impression.
   const isCALsUnresolved = isCALsEnabled && isCALsLoading;
+  const isSettling = isCALsUnresolved || isVisibilitySettling;
   const isCALsUnavailable = isCALsEnabled && isCALsError;
 
   const recommendations = useMemo(() => computeRecommendations({ checks, calNames }), [checks, calNames]);
@@ -85,15 +89,16 @@ function RecommendationsTabContent() {
     checkCount: checks.length,
     dismissedCount,
     focusedId,
-    isComplete: !isCALsUnresolved,
+    isComplete: !isSettling,
   });
+
+  // Before the empty state: an incomplete list must not be mistaken for an empty one.
+  if (isSettling) {
+    return <LoadingPlaceholder text={t('recommendations.loading', 'Looking for findings...')} />;
+  }
 
   if (checks.length === 0) {
     return <ChecksEmptyState />;
-  }
-
-  if (isCALsUnresolved) {
-    return <LoadingPlaceholder text={t('recommendations.loading', 'Looking for findings...')} />;
   }
 
   return (

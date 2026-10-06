@@ -118,8 +118,16 @@ export function useCheckFolderAccess<T extends Pick<Check, 'folderUid'>>(checks:
     [smPerms, getFolderStatus]
   );
 
+  // visibleChecks hides a check until its folder has answered, so an empty list means
+  // "not known yet" rather than "none" while any folder request is still in flight.
+  const isVisibilitySettling = useMemo(
+    () => folderStatus === 'loading' || [...folderDetailsByUid.values()].some((state) => state.type === 'loading'),
+    [folderStatus, folderDetailsByUid]
+  );
+
   return {
     visibleChecks,
+    isVisibilitySettling,
     outsideFolders,
     getPermissions,
     getFolderStatus,

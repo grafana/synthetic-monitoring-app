@@ -57,24 +57,33 @@ export function useDismissedChecks(finding: RecommendationId) {
   const [stored, setStored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
   const dismissedIds = useMemo(() => getDismissedCheckIds(stored, finding), [stored, finding]);
 
-  const dismissCheck = useCallback(
-    (check: Check) => {
+  // Takes a list because one dismissal can resolve several checks at once, and that is one
+  // user action: one write, one event.
+  const dismissChecks = useCallback(
+    (checks: Check[]) => {
+      if (checks.length === 0) {
+        return;
+      }
+
       setStored((current) => {
         const ids = getDismissedCheckIds(current, finding);
+        const added = checks.map((check) => check.id!).filter((id) => !ids.includes(id));
 
-        return ids.includes(check.id!) ? current : { ...current, [finding]: [...ids, check.id!] };
+        return added.length === 0 ? current : { ...current, [finding]: [...ids, ...added] };
       });
       trackRecommendationDismissed({ finding, scope: 'check' });
     },
     [finding, setStored]
   );
 
+  const dismissCheck = useCallback((check: Check) => dismissChecks([check]), [dismissChecks]);
+
   const restoreChecks = useCallback(() => {
     setStored(({ [finding]: _removed, ...rest } = {}) => rest);
     trackRecommendationRestored({ finding, scope: 'check' });
   }, [finding, setStored]);
 
-  return { dismissedIds, dismissCheck, restoreChecks };
+  return { dismissedIds, dismissCheck, dismissChecks, restoreChecks };
 }
 
 export function useRowSelection(checks: Check[]) {

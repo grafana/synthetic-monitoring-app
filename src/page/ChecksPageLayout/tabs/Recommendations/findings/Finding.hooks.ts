@@ -14,7 +14,7 @@ export function useFindingPanel(
   const { title, tooltip } = getRecommendationCopy(id, calNames);
   const severity = getFindingSeverity(id);
   const summary = getRecommendationSummary(recommendation, totalCheckCount);
-  const { dismissedIds, dismissCheck, restoreChecks } = useDismissedChecks(id);
+  const { dismissedIds, dismissCheck, dismissChecks, restoreChecks } = useDismissedChecks(id);
 
   const rows = useMemo(() => checks.filter((check) => !dismissedIds.includes(check.id!)), [checks, dismissedIds]);
   // A stale dismissal of a check since fixed is nothing to restore.
@@ -27,6 +27,7 @@ export function useFindingPanel(
     rows,
     dismissedCount,
     dismissCheck,
+    dismissChecks,
     restoreChecks,
   };
 }
