@@ -1,25 +1,12 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, PopoverContent, Tooltip, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Badge, Tooltip } from '@grafana/ui';
 
-interface DeprecationNoticeProps {
-  tooltipContent: string | PopoverContent;
-}
-
-export const DeprecationNotice = ({ tooltipContent }: DeprecationNoticeProps) => {
-  const styles = useStyles2(getStyles);
-
+export function DeprecationNotice() {
   return (
-    <Tooltip interactive={true} content={tooltipContent}>
-      <Icon title="deprecation-notice" name="exclamation-triangle" size="md" className={styles.deprecationWarning} />
+    <Tooltip content="This probe is deprecated and cannot be added to checks. Move existing checks to another location.">
+      <span tabIndex={0}>
+        <Badge color="orange" text="Deprecated" />
+      </span>
     </Tooltip>
   );
-};
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  deprecationWarning: css({
-    marginLeft: theme.spacing(1),
-    color: theme.colors.warning.text,
-  }),
-});
+}

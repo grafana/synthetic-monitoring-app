@@ -9,7 +9,6 @@ import {
   IconButton,
   IconName,
   Legend,
-  TextLink,
   useStyles2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -70,22 +69,7 @@ export const ProbeStatus = ({ probe, onReset, readOnly }: ProbeStatusProps) => {
           <span className={!probe.online ? styles.badgeIconFix : undefined}>
             <Badge color={badgeStatus.color} icon={badgeStatus.icon} text={badgeStatus.text} />
           </span>
-          {probe.deprecated && (
-            <DeprecationNotice
-              tooltipContent={
-                <div>
-                  This probe is deprecated and will be removed soon. For more information{' '}
-                  <TextLink
-                    variant={'bodySmall'}
-                    href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
-                    external
-                  >
-                    click here.
-                  </TextLink>
-                </div>
-              }
-            />
-          )}
+          {probe.deprecated && <DeprecationNotice />}
           <IconButton
             tooltip="Get the probe's latest status"
             name={isFetching ? 'fa fa-spinner' : 'sync'}

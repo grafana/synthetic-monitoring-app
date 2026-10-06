@@ -40,6 +40,7 @@ import { BulkActions } from 'page/CheckList/components/BulkActions';
 import { CheckListFolderView } from 'page/CheckList/components/CheckListFolderView';
 import { CheckListHeader } from 'page/CheckList/components/CheckListHeader';
 import { CheckListItem } from 'page/CheckList/components/CheckListItem';
+import { DeprecatedProbesBanner } from 'page/CheckList/components/DeprecatedProbesBanner';
 import {
   FolderErrorBanner,
   FolderNotProvisionedBanner,
@@ -350,6 +351,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
             <FolderPermissionBanner onDismiss={() => setFolderBannerDismissed(true)} />
           ))
         ))}
+      <DeprecatedProbesBanner
+        checks={unfilteredOutsideAccess.visibleChecks}
+        getPermissions={unfilteredOutsideAccess.getPermissions}
+      />
       <CostAttributionBanner checkCount={checks.length} />
       {isFolderView ? (
         <CheckListFolderView

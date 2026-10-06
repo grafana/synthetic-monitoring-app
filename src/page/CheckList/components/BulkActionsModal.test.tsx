@@ -2,7 +2,7 @@ import React from 'react';
 import { screen } from '@testing-library/react';
 import { PROBES_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK } from 'test/fixtures/checks';
-import { DEFAULT_PROBES, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { DEFAULT_PROBES, DEPRECATED_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -95,10 +95,6 @@ test('Does not add duplicated probes', async () => {
 
   expect(body).toEqual([
     {
-      ...BASIC_HTTP_CHECK,
-      probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id],
-    },
-    {
       ...BASIC_PING_CHECK,
       probes: [PUBLIC_PROBE.id, PRIVATE_PROBE.id],
     },
@@ -160,4 +156,34 @@ test('shows an error alert when the bulk update fails', async () => {
   expect(errorAlert).toHaveTextContent('Bulk update failed');
   expect(errorAlert).toHaveTextContent('The update operation failed');
   expect(onDismiss).not.toHaveBeenCalled();
+});
+
+test('prevents adding a deprecated probe', async () => {
+  server.use(apiRoute('listProbes', { result: () => ({ json: [DEPRECATED_PROBE, PRIVATE_PROBE] }) }));
+  renderBulkEditModal('add', [{ ...BASIC_HTTP_CHECK, probes: [PRIVATE_PROBE.id!] }]);
+  expect(await screen.findByRole('button', { name: 'UAE' })).toHaveAttribute('aria-disabled', 'true');
+  expect(screen.getByRole('button', { name: 'Add probes' })).toBeDisabled();
+});
+
+test('removes deprecated probes and explicitly skips checks with no replacement', async () => {
+  server.use(apiRoute('listProbes', { result: () => ({ json: [DEPRECATED_PROBE, PRIVATE_PROBE] }) }));
+  const { record, read } = getServerRequests();
+  server.use(apiRoute('bulkUpdateChecks', {}, record));
+  const { user } = renderBulkEditModal('remove', [
+    { ...BASIC_HTTP_CHECK, probes: [DEPRECATED_PROBE.id!] },
+    { ...BASIC_PING_CHECK, probes: [DEPRECATED_PROBE.id!, PRIVATE_PROBE.id!] },
+  ]);
+  await user.click(await screen.findByRole('button', { name: 'UAE' }));
+  expect(await screen.findByText('1 check will be skipped')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Remove probes' }));
+  const { body } = await read();
+  expect(body).toEqual([{ ...BASIC_PING_CHECK, probes: [PRIVATE_PROBE.id!] }]);
+});
+
+test('does not submit when every check would lose its last probe', async () => {
+  server.use(apiRoute('listProbes', { result: () => ({ json: [DEPRECATED_PROBE] }) }));
+  const { user } = renderBulkEditModal('remove', [{ ...BASIC_HTTP_CHECK, probes: [DEPRECATED_PROBE.id!] }]);
+  await user.click(await screen.findByRole('button', { name: 'UAE' }));
+  expect(await screen.findByText('1 check will be skipped')).toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Remove probes' })).toBeDisabled();
 });
