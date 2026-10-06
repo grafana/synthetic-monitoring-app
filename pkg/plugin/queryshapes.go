@@ -63,3 +63,68 @@ func (q CheckFrequencyQuery) intervalFromFrequency() (string, error) {
 
 	return fmt.Sprintf("%ds", q.Frequency/int(time.Second/time.Millisecond)), nil
 }
+
+// CheckType is the type of a check, e.g. "http" or "scripted".
+//
+//	+enum
+type CheckType string
+
+const (
+	CheckTypeBrowser    CheckType = "browser"
+	CheckTypeDNS        CheckType = "dns"
+	CheckTypeGRPC       CheckType = "grpc"
+	CheckTypeHTTP       CheckType = "http"
+	CheckTypeMultiHTTP  CheckType = "multihttp"
+	CheckTypePing       CheckType = "ping"
+	CheckTypeScripted   CheckType = "scripted"
+	CheckTypeTCP        CheckType = "tcp"
+	CheckTypeTraceroute CheckType = "traceroute"
+)
+
+// checkTypes is the closed set of CheckType values. CheckTypeQuery.CheckType
+// selects a metric name, not a label value, so it is validated against this set
+// rather than escaped.
+var checkTypes = map[CheckType]bool{
+	CheckTypeBrowser:    true,
+	CheckTypeDNS:        true,
+	CheckTypeGRPC:       true,
+	CheckTypeHTTP:       true,
+	CheckTypeMultiHTTP:  true,
+	CheckTypePing:       true,
+	CheckTypeScripted:   true,
+	CheckTypeTCP:        true,
+	CheckTypeTraceroute: true,
+}
+
+// CheckTypeQuery carries a check type. Matches "checks_latency".
+type CheckTypeQuery struct {
+	// CheckType is the type of check whose latency metric to use: one of
+	// browser, dns, grpc, http, multihttp, ping, scripted, tcp or traceroute.
+	CheckType CheckType `json:"checkType"`
+}
+
+// latencyMetric identifies which Prometheus metric family measures a check
+// type's latency. Scripted and MultiHttp checks execute via k6 and emit
+// probe_http_total_duration_seconds; every other check type uses the
+// blackbox-exporter-style probe_all_duration_seconds / probe_duration_seconds
+// fallback -- see src/data/useLatency.ts (getQuery).
+type latencyMetric int
+
+const (
+	latencyMetricNetwork  latencyMetric = iota // probe_all_duration_seconds / probe_duration_seconds fallback
+	latencyMetricScripted                      // probe_http_total_duration_seconds
+)
+
+// latencyMetric reports which metric family this check type's latency comes
+// from.
+func (q CheckTypeQuery) latencyMetric() (latencyMetric, error) {
+	if !checkTypes[q.CheckType] {
+		return 0, fmt.Errorf("unknown check type %q", q.CheckType)
+	}
+
+	if q.CheckType == CheckTypeMultiHTTP || q.CheckType == CheckTypeScripted {
+		return latencyMetricScripted, nil
+	}
+
+	return latencyMetricNetwork, nil
+}
