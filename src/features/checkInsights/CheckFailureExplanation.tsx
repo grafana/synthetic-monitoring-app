@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createAssistantContextItem, useAssistant } from '@grafana/assistant';
+import { createAssistantContextItem } from '@grafana/assistant';
 import { GrafanaTheme2 } from '@grafana/data';
 import { usePluginComponent } from '@grafana/runtime';
 import {
@@ -52,26 +52,39 @@ function getFailingStatusBadge(hasAlerts: boolean): { color: 'red'; text: string
 // useCheckFailureExplanation) — rather than being the reason the bar exists. Clicking it
 // expands to show the full explanation sentence and the evidence behind it.
 export function CheckFailureExplanation({ check }: CheckFailureExplanationProps) {
-  const { isCheckFailing, showAiExplanation, explanation, explanationUnavailableReason, isLoading, facts } =
-    useCheckFailureExplanation(check);
+  const {
+    isCheckFailing,
+    showAiExplanation,
+    explanation,
+    explanationUnavailableReason,
+    isLoading,
+    isAssistantAvailable,
+    isAssistantLoading,
+    openAssistant,
+    facts,
+  } = useCheckFailureExplanation(check);
   const styles = useStyles2(getStyles);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isIncidentOpen, setIsIncidentOpen] = useState(false);
   const { reachabilityFraction, firingAlertNames, recentFailureLogLines, failingProbes } = facts;
 
-  const { component: DeclareIncidentForm } = usePluginComponent<{
+  const { component: DeclareIncidentForm, isLoading: isIncidentFormLoading } = usePluginComponent<{
     onDismiss?: () => void;
     attachURL?: string;
     attachCaption?: string;
     defaultTitle?: string;
   }>(DECLARE_INCIDENT_COMPONENT_ID);
-  const { isAvailable: isAssistantAvailable, openAssistant } = useAssistant();
 
   const hasAlerts = facts.firingAlertNames.size > 0;
   const showExplanationSegment = showAiExplanation && (isLoading || explanation || explanationUnavailableReason);
   const isAssistantActionAvailable = Boolean(isAssistantAvailable && openAssistant);
   const actionsCount = (isAssistantActionAvailable ? 1 : 0) + (DeclareIncidentForm ? 1 : 0);
-  const hasActions = actionsCount > 0;
+  // Either integration can still resolve to "available" a moment after mount (Assistant's own
+  // availability check, and the IRM plugin's lazily-loaded component) — showing the real
+  // button/count before both have settled would mean it can silently gain an item moments
+  // after first appearing, with no skeleton covering that specific transition.
+  const isActionsResolving = isAssistantLoading || isIncidentFormLoading;
+  const hasActions = actionsCount > 0 || isActionsResolving;
 
   // Nothing to draw attention to unless the check is actually failing — stay silent rather
   // than taking up space with a badge that never has anything more to say. `isCheckFailing`
@@ -142,7 +155,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
           </div>
           <div className={styles.statusRight}>
             {hasActions &&
-              (isLoading ? (
+              (isLoading || isActionsResolving ? (
                 <div className={styles.actionsSkeleton} aria-hidden="true" />
               ) : (
                 <Dropdown
@@ -158,7 +171,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
                   }
                 >
                   <Button size="sm" variant="secondary" icon="angle-down">
-                    {`Actions (${actionsCount})`}
+                    Actions
                   </Button>
                 </Dropdown>
               ))}

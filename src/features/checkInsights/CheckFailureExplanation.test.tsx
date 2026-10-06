@@ -214,6 +214,19 @@ it('shows why the explanation is unavailable when the usage limit has been reach
   expect(generate).not.toHaveBeenCalled();
 });
 
+it('shows a message when the explanation call genuinely fails, not when it just had nothing to say', async () => {
+  mockReachability(0.5);
+  mockAlertStates([]);
+  const generate = mockInlineAssistantManual();
+
+  render(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+
+  const options = await findGenerateOptions(generate);
+  options.onError?.(new Error('boom'));
+
+  expect(await screen.findByText(/couldn't generate an explanation right now\.$/i)).toBeInTheDocument();
+});
+
 it('still fetches and shows the log evidence when Grafana Assistant is not available', async () => {
   mockReachability(0.5);
   mockAlertStates([]);
@@ -314,13 +327,13 @@ describe('Actions menu', () => {
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
     await screen.findByText('Failing');
 
-    await user.click(await screen.findByRole('button', { name: /actions \(2\)/i }));
+    await user.click(await screen.findByRole('button', { name: /^actions$/i }));
 
     expect(screen.getByRole('menuitem', { name: /start investigation/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /create incident/i })).toBeInTheDocument();
   });
 
-  it('counts only the available integrations, and hides the button entirely when none are', async () => {
+  it('shows the button when at least one integration is available, and hides it entirely when none are', async () => {
     mockReachability(0.5);
     mockAlertStates([]);
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
@@ -332,14 +345,40 @@ describe('Actions menu', () => {
       toggleAssistant: jest.fn(),
     });
 
-    // Only the incident integration is available at first (assistant unavailable), so count 1.
+    // Only the incident integration is available at first (assistant unavailable).
     const { rerender } = renderExplanation(BASIC_HTTP_CHECK);
-    expect(await screen.findByRole('button', { name: /actions \(1\)/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^actions$/i })).toBeInTheDocument();
 
     jest.mocked(usePluginComponent).mockReturnValue({ component: null, isLoading: false });
     rerender(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
 
     await waitFor(() => expect(screen.queryByRole('button', { name: /actions/i })).not.toBeInTheDocument());
+  });
+
+  it('keeps the Actions button as a skeleton while the incident plugin is still loading, rather than showing an undercounted button first', async () => {
+    mockReachability(0.5);
+    mockAlertStates([]);
+    mockInlineAssistantAutoResolve();
+    jest.mocked(useAssistant).mockReturnValue({
+      isAvailable: false,
+      isLoading: false,
+      openAssistant: undefined,
+      closeAssistant: jest.fn(),
+      toggleAssistant: jest.fn(),
+    });
+    jest.mocked(usePluginComponent).mockReturnValue({ component: null, isLoading: true });
+
+    const { rerender } = renderExplanation(BASIC_HTTP_CHECK);
+    await screen.findByText('Failing');
+
+    // Assistant is unavailable and the incident plugin hasn't resolved yet — no button at all
+    // yet, resolved or otherwise, since we don't know if it'll end up with an action to offer.
+    await waitFor(() => expect(screen.queryByRole('button', { name: /actions/i })).not.toBeInTheDocument());
+
+    jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
+    rerender(<CheckFailureExplanation check={BASIC_HTTP_CHECK} />);
+
+    expect(await screen.findByRole('button', { name: /^actions$/i })).toBeInTheDocument();
   });
 
   it('opens the assistant in investigation mode with auto-send when "Start investigation" is clicked', async () => {
@@ -355,7 +394,7 @@ describe('Actions menu', () => {
     });
 
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
-    await user.click(await screen.findByRole('button', { name: /actions \(1\)/i }));
+    await user.click(await screen.findByRole('button', { name: /^actions$/i }));
     await user.click(screen.getByRole('menuitem', { name: /start investigation/i }));
 
     expect(openAssistant).toHaveBeenCalledWith(
@@ -373,7 +412,7 @@ describe('Actions menu', () => {
     jest.mocked(usePluginComponent).mockReturnValue({ component: FakeDeclareIncidentForm, isLoading: false });
 
     const { user } = renderExplanation(BASIC_HTTP_CHECK);
-    await user.click(await screen.findByRole('button', { name: /actions \(2\)/i }));
+    await user.click(await screen.findByRole('button', { name: /^actions$/i }));
     await user.click(screen.getByRole('menuitem', { name: /create incident/i }));
 
     expect(await screen.findByTestId('fake-incident-form')).toHaveTextContent(BASIC_HTTP_CHECK.job);
@@ -392,6 +431,6 @@ describe('Actions menu', () => {
     const options = await findGenerateOptions(generate);
     options.onComplete?.('Explanation.');
 
-    expect(await screen.findByRole('button', { name: /actions \(1\)/i })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: /^actions$/i })).toBeInTheDocument();
   });
 });

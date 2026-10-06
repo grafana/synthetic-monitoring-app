@@ -48,10 +48,9 @@ function buildPrompt(
   // just restating a "consequence" (e.g. a downstream assertion failure) as if it were the cause.
   // Log text can originate from whatever the monitored target sent back, so it's untrusted —
   // low-risk here since the model's reply is only ever rendered as plain text in the UI, never
-  // executed or fed into a tool-using flow. (The Actions menu's "Ask assistant"/"Start
-  // investigation" keep the same lines out of the freeform prompt entirely, passing them only as
-  // tagged structured `data`, not instructions — see buildInvestigationContext in
-  // CheckFailureExplanation.tsx.)
+  // executed or fed into a tool-using flow. (The Actions menu's "Start investigation" keeps the
+  // same lines out of the freeform prompt entirely, passing them only as tagged structured
+  // `data`, not instructions — see buildInvestigationContext in CheckFailureExplanation.tsx.)
   const logsText =
     recentFailureLogLines.length > 0
       ? `Recent failure reasons from execution logs, most recent first:\n${recentFailureLogLines
@@ -128,7 +127,7 @@ export function useCheckFailureExplanation(check: Check) {
   // (NewTestPromptForm.tsx): Assistant has to be available, its terms accepted, and the org's
   // monthly usage limit not already hit. More orgs have Assistant enabled than have the Grafana
   // LLM app configured, so this is checked instead of `llm.enabled()`.
-  const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading } = useAssistant();
+  const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
   const { accepted: termsAccepted, loading: termsLoading } = useTerms();
   const { isLimitReached, loading: limitsLoading } = useLimits();
   const { generate } = useInlineAssistant();
@@ -149,16 +148,18 @@ export function useCheckFailureExplanation(check: Check) {
       recentFailureLogLines,
       failingProbes,
     ],
-    // generate() (from useInlineAssistant) never rejects — success and failure both arrive via
-    // the onComplete/onError callbacks — so this always resolves rather than throwing.
+    // generate() (from useInlineAssistant) itself never rejects — but we reject here on
+    // onError, rather than resolving to null like a legitimate "nothing to say" completion,
+    // so a real failure is distinguishable (explanationQuery.isError below) instead of looking
+    // identical to the model having no comment.
     queryFn: () =>
-      new Promise<string | null>((resolve) => {
+      new Promise<string | null>((resolve, reject) => {
         generate({
           prompt: buildPrompt(check, reachabilityFraction, firingAlertNames, recentFailureLogLines, failingProbes),
           origin: ASSISTANT_INLINE_ORIGIN,
           systemPrompt: EXPLANATION_SYSTEM_PROMPT,
           onComplete: (text) => resolve(text.trim() || null),
-          onError: () => resolve(null),
+          onError: (error) => reject(error),
         });
       }),
     // Waits for logs to finish loading (isFetched, not just !isLoading, so a still-pending first
@@ -180,15 +181,21 @@ export function useCheckFailureExplanation(check: Check) {
   // produce anything, say so — same three reasons, and same "open assistant to fix it" path
   // (via the Actions menu), that grafana-k6-app's own "Generate test" button uses
   // (NewTestPromptForm.tsx: createButtonTooltip / TermsRow). Undefined while still loading, or
-  // once Assistant is ready — a ready-but-still-failed completion stays silent, same as before.
+  // once Assistant is ready and the call is still in flight or hasn't run yet. A ready call that
+  // genuinely completed with nothing to say also stays silent — only a real failure (isError,
+  // now that onError rejects instead of resolving to null) gets a reason here.
   const explanationUnavailableReason =
-    showAiExplanation && !isAssistantGateLoading && !isAssistantReady
-      ? !isAssistantAvailable
-        ? 'Grafana Assistant is not available.'
-        : isLimitReached
-          ? "Grafana Assistant's usage limit has been reached."
-          : "Accept Grafana Assistant's terms and conditions to see an explanation."
-      : undefined;
+    !showAiExplanation || isAssistantGateLoading
+      ? undefined
+      : !isAssistantReady
+        ? !isAssistantAvailable
+          ? 'Grafana Assistant is not available.'
+          : isLimitReached
+            ? "Grafana Assistant's usage limit has been reached."
+            : "Accept Grafana Assistant's terms and conditions to see an explanation."
+        : explanationQuery.isError
+          ? "Couldn't generate an explanation right now."
+          : undefined;
 
   return {
     isCheckFailing,
@@ -196,6 +203,13 @@ export function useCheckFailureExplanation(check: Check) {
     explanation: explanationQuery.data ?? undefined,
     explanationUnavailableReason,
     isLoading,
+    // Exposed so CheckFailureExplanation's Actions menu doesn't need its own separate
+    // useAssistant() subscription — one live subscription per page instead of two, and it means
+    // the Actions button's assistant-availability state resolves in lockstep with this hook's
+    // own isLoading (both read the same values) instead of settling independently.
+    isAssistantAvailable,
+    isAssistantLoading,
+    openAssistant,
     facts: {
       reachabilityFraction,
       firingAlertNames,
