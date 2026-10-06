@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type Page, type TestInfo } from '@playwright/test';
 
 // Mirrors of the data-testid constants in src/test/dataTestIds.ts. Duplicated
 // (not imported) because these tests run outside the src/ TS program — keep in
@@ -14,6 +14,7 @@ export const TEST_IDS = {
     jobInput: 'checkEditor form job',
     probeCheckbox: 'checkEditor form probeCheckbox',
   },
+  probesListPublic: 'probes list public',
 } as const;
 
 export const PLUGIN_ID = 'grafana-synthetic-monitoring-app';
@@ -22,10 +23,22 @@ export function appUrl(path: string) {
   return `/a/${PLUGIN_ID}/${path}`;
 }
 
-/** Fills in the minimum fields needed to save a new HTTP check and picks the first available probe. */
-export async function fillMinimalHttpCheck(page: Page, jobName: string) {
+/**
+ * Named checkpoint screenshot, attached to the test result (not just on
+ * failure) -- the @grafana-cloud/test-observability reporter's `recording`
+ * bundles every attachment, so these end up visible wherever that run's
+ * evidence is viewed. Playwright's own `screenshot: 'only-on-failure'`
+ * config setting only covers failures; this is for the happy path too.
+ */
+export async function attachScreenshot(page: Page, testInfo: TestInfo, name: string) {
+  const body = await page.screenshot({ fullPage: true });
+  await testInfo.attach(name, { body, contentType: 'image/png' });
+}
+
+/** Fills in the minimum fields needed to save a new check and picks the first available probe. */
+export async function fillMinimalCheck(page: Page, jobName: string, target: string) {
   await page.getByTestId(TEST_IDS.checksterForm.jobInput).fill(jobName);
-  await page.getByLabel('Request target').fill('https://grafana.com/');
+  await page.getByLabel('Request target').fill(target);
 
   await page.getByTestId(TEST_IDS.checksterForm.navigationExecution).click();
   await page.getByTestId(TEST_IDS.checksterForm.probeCheckbox).first().check();
