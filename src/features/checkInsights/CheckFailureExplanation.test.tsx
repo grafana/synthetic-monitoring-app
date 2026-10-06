@@ -194,6 +194,24 @@ it('shows why the explanation is unavailable when the terms and conditions are n
   expect(generate).not.toHaveBeenCalled();
 });
 
+it('shows a status-check error, not an accept-terms prompt, when the terms check itself fails', async () => {
+  mockReachability(0.5);
+  mockAlertStates([]);
+  const generate = mockInlineAssistantAutoResolve();
+  jest.mocked(useTerms).mockReturnValue({
+    accepted: false,
+    termsType: 'termsAndConditions',
+    loading: false,
+    error: 'network error',
+  });
+
+  renderExplanation(BASIC_HTTP_CHECK);
+
+  expect(await screen.findByText(/couldn't check grafana assistant's status\./i)).toBeInTheDocument();
+  expect(screen.queryByText(/accept grafana assistant's terms and conditions/i)).not.toBeInTheDocument();
+  expect(generate).not.toHaveBeenCalled();
+});
+
 it('shows why the explanation is unavailable when the usage limit has been reached', async () => {
   mockReachability(0.5);
   mockAlertStates([]);
@@ -247,7 +265,7 @@ it('still fetches and shows the log evidence when Grafana Assistant is not avail
   await screen.findByText('Failing');
 
   await waitFor(() => expect(fetchRecentFailureLogLines).toHaveBeenCalled());
-  await user.click(screen.getByRole('button', { name: /show evidence/i }));
+  await user.click(screen.getByRole('button', { name: 'Evidence' }));
 
   expect(await screen.findByText(/x509: certificate signed by unknown authority/)).toBeInTheDocument();
 });
@@ -306,7 +324,7 @@ it('keeps the supporting evidence hidden until the bar is expanded', async () =>
 
   expect(screen.queryByText(/context deadline exceeded/)).not.toBeInTheDocument();
 
-  await user.click(screen.getByRole('button', { name: /show evidence/i }));
+  await user.click(screen.getByRole('button', { name: 'Evidence' }));
 
   expect(await screen.findByText(/context deadline exceeded/)).toBeInTheDocument();
   expect(container).toHaveTextContent('Failing probe: Paris');

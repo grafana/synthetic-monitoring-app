@@ -128,10 +128,15 @@ export function useCheckFailureExplanation(check: Check) {
   // monthly usage limit not already hit. More orgs have Assistant enabled than have the Grafana
   // LLM app configured, so this is checked instead of `llm.enabled()`.
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
-  const { accepted: termsAccepted, loading: termsLoading } = useTerms();
-  const { isLimitReached, loading: limitsLoading } = useLimits();
+  const { accepted: termsAccepted, loading: termsLoading, error: termsError } = useTerms();
+  const { isLimitReached, loading: limitsLoading, error: limitsError } = useLimits();
   const { generate } = useInlineAssistant();
-  const isAssistantReady = isAssistantAvailable && termsAccepted && !isLimitReached;
+  // A failed terms/limits check isn't "not accepted" or "limit reached", it's "we don't know" -
+  // treated as not ready so nothing fires on a guess, but reported as its own reason below
+  // instead of telling someone to accept terms or that they're capped when the real problem is
+  // that the status check itself failed.
+  const hasAssistantStatusError = Boolean(termsError || limitsError);
+  const isAssistantReady = isAssistantAvailable && termsAccepted && !isLimitReached && !hasAssistantStatusError;
   const isAssistantGateLoading = isAssistantLoading || termsLoading || limitsLoading;
 
   const explanationQuery = useQuery({
@@ -167,6 +172,10 @@ export function useCheckFailureExplanation(check: Check) {
     enabled: showAiExplanation && isAssistantReady && logsQuery.isFetched,
     staleTime: STANDARD_REFRESH_INTERVAL,
     retry: false,
+    // Each run of this query is a real Assistant completion, charged against the org's usage
+    // limit, not a free metrics refresh. The default refetchOnWindowFocus would re-run it every
+    // time someone tabs back in after staleTime passes, with no new failure data to justify it.
+    refetchOnWindowFocus: false,
   });
 
   // Covers the whole investigation, not just the completion call: the moment the check is
@@ -190,9 +199,11 @@ export function useCheckFailureExplanation(check: Check) {
       : !isAssistantReady
         ? !isAssistantAvailable
           ? 'Grafana Assistant is not available.'
-          : isLimitReached
-            ? "Grafana Assistant's usage limit has been reached."
-            : "Accept Grafana Assistant's terms and conditions to see an explanation."
+          : hasAssistantStatusError
+            ? "Couldn't check Grafana Assistant's status. Try again shortly."
+            : isLimitReached
+              ? "Grafana Assistant's usage limit has been reached."
+              : "Accept Grafana Assistant's terms and conditions to see an explanation."
         : explanationQuery.isError
           ? "Couldn't generate an explanation right now."
           : undefined;

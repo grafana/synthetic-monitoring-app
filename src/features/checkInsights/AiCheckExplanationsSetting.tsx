@@ -17,13 +17,17 @@ export function AiCheckExplanationsSetting() {
   const meta = useMeta();
   const { canWriteSM } = getUserPermissions();
   const { isAvailable: isAssistantAvailable, isLoading: isAssistantLoading, openAssistant } = useAssistant();
-  const { accepted: termsAccepted, loading: termsLoading } = useTerms();
-  const { isLimitReached, loading: limitsLoading } = useLimits();
+  const { accepted: termsAccepted, loading: termsLoading, error: termsError } = useTerms();
+  const { isLimitReached, loading: limitsLoading, error: limitsError } = useLimits();
   const [pendingEnable, setPendingEnable] = useState(false);
 
   const isEnabled = meta.jsonData.aiCheckExplanationsEnabled ?? true;
   const isStatusLoading = isAssistantLoading || termsLoading || limitsLoading;
-  const isAssistantReady = isAssistantAvailable && termsAccepted && !isLimitReached;
+  // A failed terms/limits check isn't "not accepted" or "limit reached", it's "we don't know" -
+  // keep the toggle disabled either way, but say so distinctly below instead of telling someone
+  // to accept terms or that they're capped when the real problem is the status check itself.
+  const hasAssistantStatusError = Boolean(termsError || limitsError);
+  const isAssistantReady = isAssistantAvailable && termsAccepted && !isLimitReached && !hasAssistantStatusError;
   const canToggle = canWriteSM && isAssistantReady;
 
   const mutation = useMutation({
@@ -47,9 +51,11 @@ export function AiCheckExplanationsSetting() {
   // accepting them takes an action (opening Assistant), not just an explanation.
   const statusCaption = !isAssistantAvailable
     ? 'Requires Grafana Assistant to be enabled for this organization.'
-    : isLimitReached
-      ? "Grafana Assistant's usage limit has been reached."
-      : undefined;
+    : hasAssistantStatusError
+      ? "Couldn't check Grafana Assistant's status. Try again shortly."
+      : isLimitReached
+        ? "Grafana Assistant's usage limit has been reached."
+        : undefined;
 
   return (
     <>
@@ -75,7 +81,7 @@ export function AiCheckExplanationsSetting() {
           </Stack>
         </Stack>
       </Field>
-      {!isStatusLoading && isAssistantAvailable && !isLimitReached && !termsAccepted && (
+      {!isStatusLoading && isAssistantAvailable && !hasAssistantStatusError && !isLimitReached && !termsAccepted && (
         <Stack alignItems="center" gap={1}>
           <Text variant="bodySmall" color="secondary">
             Write a message in Assistant to accept the Grafana Assistant terms and conditions.

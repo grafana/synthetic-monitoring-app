@@ -11,7 +11,9 @@ import { AiCheckExplanationsSetting } from './AiCheckExplanationsSetting';
 function mockAssistantReady({
   isAssistantAvailable = true,
   termsAccepted = true,
+  termsError = null as string | null,
   isLimitReached = false,
+  limitsError = null as string | null,
   openAssistant = jest.fn(),
 } = {}) {
   jest.mocked(useAssistant).mockReturnValue({
@@ -25,7 +27,7 @@ function mockAssistantReady({
     accepted: termsAccepted,
     termsType: 'termsAndConditions',
     loading: false,
-    error: null,
+    error: termsError,
   });
   jest.mocked(useLimits).mockReturnValue({
     count: isLimitReached ? 100 : 0,
@@ -33,7 +35,7 @@ function mockAssistantReady({
     month: '2026-01',
     isLimitReached,
     loading: false,
-    error: null,
+    error: limitsError,
     refetch: jest.fn(),
   });
 }
@@ -89,6 +91,15 @@ it('is disabled, with an explanation, when the usage limit has been reached', as
 
   expect(await screen.findByRole('switch')).toBeDisabled();
   expect(screen.getByText(/usage limit has been reached/i)).toBeInTheDocument();
+});
+
+it('is disabled, with a status-check error, when the terms check fails, not an accept-terms prompt', async () => {
+  mockAssistantReady({ termsAccepted: false, termsError: 'network error' });
+  renderSetting(undefined);
+
+  expect(await screen.findByRole('switch')).toBeDisabled();
+  expect(screen.getByText(/couldn't check grafana assistant's status/i)).toBeInTheDocument();
+  expect(screen.queryByText(/accept the grafana assistant terms and conditions/i)).not.toBeInTheDocument();
 });
 
 it('is disabled, and offers to open Assistant, when the terms and conditions are not accepted', async () => {

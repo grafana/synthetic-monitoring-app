@@ -183,6 +183,7 @@ export function CheckFailureExplanation({ check }: CheckFailureExplanationProps)
           className={styles.evidenceButton}
           onClick={() => setIsExpanded((open) => !open)}
           aria-expanded={isExpanded}
+          aria-label="Evidence"
         >
           <Icon name="angle-right" size="sm" className={cx(styles.chevron, isExpanded && styles.chevronOpen)} />
           {isExpanded ? 'Hide evidence' : 'Show evidence'}
