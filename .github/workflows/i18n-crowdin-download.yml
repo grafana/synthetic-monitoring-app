@@ -21,7 +21,7 @@ jobs:
         id: get-github-app-token
         uses: grafana/shared-workflows/actions/create-github-app-token@46f48da11e78ebdba7a8747ae456b11062fac83e # create-github-app-token/v0.3.1
         with:
-          github_app: grafana-pr-automation
+          github_app: sm-release-app
       - name: Get vault secrets
         id: vault-secrets
         uses: grafana/shared-workflows/actions/get-vault-secrets@a53fc80bc30b0a16a262520465db899fa3af08b7 # get-vault-secrets/v1.3.2
