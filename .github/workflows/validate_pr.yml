@@ -35,3 +35,4 @@ jobs:
         SM_E2E_RESULTS_API_URL=e2e:results_api_url
         SM_E2E_RESULTS_STACK_ID=e2e:results_stack_id
         SM_E2E_RESULTS_API_TOKEN=e2e:results_api_token
+        SM_E2E_FARO_COLLECTOR_URL=e2e:faro_collector_url
