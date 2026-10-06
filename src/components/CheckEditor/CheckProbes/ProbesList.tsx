@@ -156,7 +156,7 @@ export const ProbesList = ({
                         channelNameById={channelNameById}
                       />
                     )}
-                    {probe.deprecated && <DeprecationNotice />}
+                    {probe.deprecated && isCompatible && <DeprecationNotice className={styles.versionBadge} />}
                   </div>
                 </div>
               </Label>

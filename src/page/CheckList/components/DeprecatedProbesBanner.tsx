@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Alert, Stack, TextLink } from '@grafana/ui';
 
 import { Check } from 'types';
@@ -13,18 +13,23 @@ export function DeprecatedProbesBanner({
   checks: Check[];
   getPermissions: (check: Check) => CheckPermissions;
 }) {
+  const [dismissed, setDismissed] = useState(false);
   const { data: probes = [] } = useProbesWithMetadata();
   const affectedProbes = probes.filter(
     (probe) => probe.deprecated && checks.some((check) => check.probes.includes(probe.id!))
   );
   const affectedChecks = checks.filter((check) => affectedProbes.some((probe) => check.probes.includes(probe.id!)));
 
-  if (affectedChecks.length === 0) {
+  if (dismissed || affectedChecks.length === 0) {
     return null;
   }
 
   return (
-    <Alert severity="warning" title="Move your checks off deprecated probes">
+    <Alert
+      severity="warning"
+      title="Move your checks off deprecated probes"
+      onRemove={() => setDismissed(true)}
+    >
       <Stack direction="column" gap={1} alignItems="flex-start">
         <div>
           {affectedChecks.length} {affectedChecks.length === 1 ? 'check uses' : 'checks use'} deprecated probes. Choose
