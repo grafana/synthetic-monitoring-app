@@ -4,7 +4,7 @@ import { Card, Link, LinkButton, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { PROBES_TEST_ID } from 'test/dataTestIds';
 
-import { type ExtendedProbe, FeatureName, type Label } from 'types';
+import { type ExtendedProbe, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { useCanEditProbe } from 'hooks/useCanEditProbe';
@@ -26,7 +26,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   const probeEditHref = generateRoutePath(canWriteProbes ? AppRoutes.EditProbe : AppRoutes.ViewProbe, {
     id: probe.id!,
   });
-  const labelsString = labelsToString(probe.labels);
+  const hasLabels = probe.labels.length > 0;
   const styles = useStyles2(getStyles2);
 
   return (
@@ -68,7 +68,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
               />
             )}
           </FeatureFlag>
-          {labelsString && (
+          {hasLabels && (
             <div>
               Labels:{' '}
               <div className={styles.labelContainer}>
@@ -179,7 +179,3 @@ const getStyles2 = (theme: GrafanaTheme2) => {
     }),
   };
 };
-
-function labelsToString(labels: Label[]) {
-  return labels.map(({ name, value }) => `label_${name}: ${value}`).join(', ');
-}

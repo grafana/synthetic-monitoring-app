@@ -5,14 +5,58 @@ import { renderHook, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { PROBES_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { OFFLINE_PROBE, ONLINE_PROBE, PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
+import { TENANT_LABEL_MODE } from 'test/fixtures/tenants';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 import { probeToExtendedProbe, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { type ExtendedProbe } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
+import { LabelMode } from 'datasource/responses.types';
 
 import { ProbeCard } from './ProbeCard';
+
+function mockLabelMode(mode: LabelMode) {
+  server.use(
+    apiRoute('getLabelMode', {
+      result: () => ({ json: { ...TENANT_LABEL_MODE, mode } }),
+    })
+  );
+}
+
+describe('probe labels and the tenant label mode', () => {
+  const probe = probeToExtendedProbe(PRIVATE_PROBE);
+  const [firstLabel] = probe.labels;
+  const lastLabel = probe.labels[probe.labels.length - 1];
+
+  it('prefixes probe labels with label_ while the tenant is in PREFIXED mode', async () => {
+    mockLabelMode(LabelMode.Prefixed);
+    render(<ProbeCard probe={probe} />);
+
+    expect(await screen.findByText(`label_${firstLabel.name}:`, { exact: false })).toBeInTheDocument();
+  });
+
+  it('keeps the label_ prefix while the tenant is in DUAL_WRITE mode, since both forms are still written', async () => {
+    mockLabelMode(LabelMode.DualWrite);
+    render(<ProbeCard probe={probe} />);
+
+    expect(await screen.findByText(`label_${firstLabel.name}:`, { exact: false })).toBeInTheDocument();
+  });
+
+  it('shows probe labels without the label_ prefix once the tenant has moved to UNPREFIXED', async () => {
+    mockLabelMode(LabelMode.Unprefixed);
+    render(<ProbeCard probe={probe} />);
+
+    // Wait for the card to settle on the unprefixed form before asserting the prefix is gone,
+    // otherwise the loading-state default (prefixed) could make the negative assertion pass vacuously.
+    // The last label has no trailing separator, so its own text is exactly `${name}: `.
+    const label = await screen.findByText((content) => content.trim() === `${lastLabel.name}:`);
+    expect(label).toHaveTextContent(`${lastLabel.name}: ${lastLabel.value}`);
+    expect(screen.queryByText(/label_/)).not.toBeInTheDocument();
+  });
+});
 
 it(`Displays the correct information`, async () => {
   const probe = probeToExtendedProbe(ONLINE_PROBE);
