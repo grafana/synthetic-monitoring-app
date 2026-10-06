@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { colorManipulator, GrafanaTheme2 } from '@grafana/data';
 import { config } from '@grafana/runtime';
 import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { FaroEvent, FaroUserAction, reportError } from '../../faro';
-import { trackCloudSetupCliCommandCopied } from '../../features/tracking/cloudSetupEvents';
+import { trackCloudSetupCliCommandCopied, trackCloudSetupCliPanelShown } from '../../features/tracking/cloudSetupEvents';
 import { trackFaroUserAction } from '../../features/tracking/userAction';
 import { useCopyToClipboard } from '../Clipboard/useCopyToClipboard';
 
@@ -25,6 +25,15 @@ export function CloudSetupCliPanel() {
     resetAfterMs: 1500,
   });
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  // Guarded so StrictMode's double-invoked effect reports a single view.
+  const shownTrackedRef = useRef(false);
+
+  useEffect(() => {
+    if (!shownTrackedRef.current) {
+      shownTrackedRef.current = true;
+      trackCloudSetupCliPanelShown();
+    }
+  }, []);
 
   return (
     <div className={styles.wrapper}>
