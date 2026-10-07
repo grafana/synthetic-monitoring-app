@@ -1,8 +1,14 @@
 # Knowledge Graph frontend connections
 
 The optional frontend selector stores `feo11y_app_id` alongside `service_name`
-and `namespace`. Clearing it preserves service and custom labels; CAL-managed
+and `namespace`. Removing it preserves service and custom labels; CAL-managed
 values stay in their fixed CAL row. An unrelated `app` label creates no connection.
+
+**Add connection** offers missing connection types. Empty rows do not change
+labels or dirty the form. Both types have one row-level remove action; removing
+a Service clears its name and namespace together. **Any namespace** removes only
+the namespace constraint. Narrow editors stack the service fields inside the
+shared Labels scroll area. CAL inputs retain their existing per-field clearing.
 
 ## Required deployment
 

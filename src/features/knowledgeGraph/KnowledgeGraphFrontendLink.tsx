@@ -1,22 +1,22 @@
 import React from 'react';
-import { useFormContext } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Combobox, IconButton, Stack, Text } from '@grafana/ui';
+import { Button, Combobox, Stack, Text } from '@grafana/ui';
 
-import { CheckFormValues } from 'types';
 import { useDOMId } from 'hooks/useDOMId';
-import { StyledField } from 'components/Checkster/components/ui/StyledField';
 
-import { KG_FRONTEND_APP_ID_LABEL } from './knowledgeGraph';
 import { fetchFrontendApps } from './knowledgeGraphApi';
-import { useKGLinkedLabel } from './KnowledgeGraphServiceLink.hooks';
+import { KnowledgeGraphConnectionRow } from './KnowledgeGraphConnectionRow';
+import { KGLinkedLabel } from './KnowledgeGraphServiceLink.hooks';
 
-export function KnowledgeGraphFrontendLink() {
-  const inputId = useDOMId();
-  const {
-    formState: { disabled },
-  } = useFormContext<CheckFormValues>();
-  const frontend = useKGLinkedLabel(KG_FRONTEND_APP_ID_LABEL);
+interface Props {
+  frontend: KGLinkedLabel;
+  disabled?: boolean;
+  autoFocus: boolean;
+  onRemove: () => void;
+}
+
+export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRemove }: Props) {
+  const labelId = useDOMId();
   const {
     data: apps,
     isLoading,
@@ -37,46 +37,55 @@ export function KnowledgeGraphFrontendLink() {
   const selectedApp = apps?.find((app) => app.id === frontend.value);
 
   return (
-    <StyledField label="Frontend application" htmlFor={inputId}>
+    <KnowledgeGraphConnectionRow
+      label="Frontend application"
+      labelId={labelId}
+      icon="monitor"
+      disabled={disabled}
+      autoFocus={autoFocus}
+      ready={!isLoading}
+      onRemove={onRemove}
+    >
       <Stack direction="column" gap={1}>
-        <Stack alignItems="center" gap={1}>
-          <Combobox
-            id={inputId}
-            aria-label="Frontend application"
-            placeholder="Select a frontend application"
-            options={options}
-            value={selected ?? (frontend.value ? { value: frontend.value, label: `App ID ${frontend.value}` } : null)}
-            onChange={(option) => frontend.onChange(option?.value ?? '')}
-            disabled={disabled || isLoading || isError}
-            loading={isLoading}
-          />
-          <IconButton
-            name="times"
-            tooltip="Clear frontend connection"
-            disabled={disabled || !frontend.value}
-            onClick={() => frontend.onChange('')}
-          />
-        </Stack>
+        <Combobox
+          aria-labelledby={labelId}
+          placeholder="Select a frontend application"
+          options={options}
+          value={selected ?? (frontend.value ? { value: frontend.value, label: `App ID ${frontend.value}` } : null)}
+          onChange={(option) => frontend.onChange(option.value)}
+          disabled={disabled || isLoading || isError}
+          loading={isLoading}
+        />
         {isError ? (
           <Stack alignItems="center">
-            <Text color="secondary">Could not load frontend applications. Your saved selection is unchanged.</Text>
+            <Text color="secondary" variant="bodySmall">
+              Could not load frontend applications. Your saved selection is unchanged.
+            </Text>
             <Button type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
               Retry
             </Button>
           </Stack>
         ) : isLoading ? (
-          <Text color="secondary">Loading frontend applications…</Text>
+          <Text color="secondary" variant="bodySmall">
+            Loading frontend applications…
+          </Text>
         ) : selected ? (
           selectedApp &&
           selectedApp.environments.length > 1 && (
-            <Text color="secondary">This connection includes all listed environments for this application.</Text>
+            <Text color="secondary" variant="bodySmall">
+              This connection includes all listed environments for this application.
+            </Text>
           )
         ) : frontend.value ? (
-          <Text color="secondary">No matching frontend in Knowledge Graph yet.</Text>
+          <Text color="secondary" variant="bodySmall">
+            No matching frontend in Knowledge Graph yet.
+          </Text>
         ) : apps?.length === 0 ? (
-          <Text color="secondary">No frontend applications discovered in Knowledge Graph yet.</Text>
+          <Text color="secondary" variant="bodySmall">
+            No frontend applications discovered in Knowledge Graph yet.
+          </Text>
         ) : null}
       </Stack>
-    </StyledField>
+    </KnowledgeGraphConnectionRow>
   );
 }
