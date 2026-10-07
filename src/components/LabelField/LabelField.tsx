@@ -99,7 +99,7 @@ export function LimitsFetchWarning({
 }) {
   const theme = useTheme2();
   return (
-    <Alert severity="warning" title="Couldn't fetch label limits" bottomSpacing={0}>
+    <Alert severity="warning" title="Couldn't fetch label limits">
       <div className={css({ display: 'flex', gap: theme.spacing(2), alignItems: 'center' })}>
         <span>
           There was an error fetching the label limits for your account. The default minimum limits will be used.

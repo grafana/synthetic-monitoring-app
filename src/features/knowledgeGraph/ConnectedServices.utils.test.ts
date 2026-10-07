@@ -46,33 +46,26 @@ describe('escapeCypher', () => {
 });
 
 describe('buildEntityNeighbourhoodQuery', () => {
-  it('matches monitored services and frontends, expanding only service CALLS neighbours in both directions', () => {
-    const query = buildEntityNeighbourhoodQuery('vika http check.__http://grafana.com', 2000);
-
-    expect(query).toContain(
-      'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[monitored:MONITORED_BY]-(entity)'
+  it('serializes bound zero-hop and service-only one-hop branches at the selected end time', () => {
+    // This checks the query contract, not KG execution; retention also needs live API validation.
+    expect(buildEntityNeighbourhoodQuery('check"\\__https://example.com', 2000)).toBe(
+      [
+        'MATCH (sy:SyntheticCheck {name: "check\\"\\\\__https://example.com"})<-[monitored:MONITORED_BY]-(entity)',
+        'WHERE (entity:Service OR entity:Frontend)',
+        'AND (monitored._created IS NULL OR monitored._created <= 2000)',
+        'AND (monitored._expired IS NULL OR monitored._expired > 2000)',
+        'RETURN sy, entity, entity AS neighbour',
+        'UNION',
+        'MATCH (sy:SyntheticCheck {name: "check\\"\\\\__https://example.com"})<-[monitored:MONITORED_BY]-(entity)',
+        'WHERE (entity:Service OR entity:Frontend)',
+        'AND (monitored._created IS NULL OR monitored._created <= 2000)',
+        'AND (monitored._expired IS NULL OR monitored._expired > 2000)',
+        'MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)',
+        'WHERE (calls._created IS NULL OR calls._created <= 2000)',
+        'AND (calls._expired IS NULL OR calls._expired > 2000)',
+        'RETURN sy, entity, neighbour',
+      ].join('\n')
     );
-    expect(query).toContain('WHERE (entity:Service OR entity:Frontend)');
-    // The optional expansion preserves frontends and services without callers or dependencies.
-    expect(query).toContain('OPTIONAL MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)');
-    expect(query).not.toContain('->(downstream:Service)');
-    expect(query).toContain('RETURN sy, entity, neighbour');
-  });
-
-  it('excludes expired connections at the selected end time while preserving historical topology', () => {
-    const query = buildEntityNeighbourhoodQuery('banking__https://example.com', 1791373200000);
-
-    // The Cypher endpoint time-filters nodes, so relationship lifetimes must be checked here.
-    expect(query).toContain('monitored._created <= 1791373200000');
-    expect(query).toContain('(monitored._expired IS NULL OR monitored._expired > 1791373200000)');
-    expect(query).toContain('calls._created <= 1791373200000');
-    expect(query).toContain('(calls._expired IS NULL OR calls._expired > 1791373200000)');
-  });
-
-  it('escapes the entity name it interpolates', () => {
-    const query = buildEntityNeighbourhoodQuery('evil"} DETACH DELETE n //', 2000);
-
-    expect(query).toContain('{name: "evil\\"} DETACH DELETE n //"}');
   });
 });
 

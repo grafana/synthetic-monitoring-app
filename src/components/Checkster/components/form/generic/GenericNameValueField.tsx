@@ -101,7 +101,7 @@ export function GenericNameValueField({
       required={required}
       emulate
     >
-      <Stack direction="column" gap={1}>
+      <Stack direction="column" gap={0.5}>
         {fields.map((field, index) => {
           const isReserved = isReservedName(watchedRows[index]?.name);
 

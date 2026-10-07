@@ -1,5 +1,7 @@
 import React from 'react';
-import { Stack } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Stack, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import { KnowledgeGraphServiceLink } from 'features/knowledgeGraph/KnowledgeGraphServiceLink';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -18,13 +20,22 @@ export const LABEL_SECTION_FIELDS = ['labels'];
 export function LabelSection() {
   const { error, isRefetching, refetch, isLoading, customLabelLimit, description } = useLabelSectionData();
   const showNudge = useShowCostAttributionSetupNudge();
+  const styles = useStyles2(getStyles);
 
   return (
     <FormSection sectionName={FormSectionName.Labels} fields={LABEL_SECTION_FIELDS}>
+      {error && (
+        <div>
+          <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />
+        </div>
+      )}
+      {showNudge && (
+        <div className={styles.nudge}>
+          <CostAttributionSetupHint />
+        </div>
+      )}
+      <KnowledgeGraphServiceLink />
       <SectionContent>
-        {error && <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />}
-        {showNudge && <CostAttributionSetupHint />}
-        <KnowledgeGraphServiceLink />
         <Stack direction="column" gap={2} data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root}>
           <CostAttributionLabelsField />
           <GenericLabelContent description={description} isLoading={isLoading} labelLimit={customLabelLimit} />
@@ -32,4 +43,13 @@ export function LabelSection() {
       </SectionContent>
     </FormSection>
   );
+}
+
+function getStyles(theme: GrafanaTheme2) {
+  return {
+    // Matches the KnowledgeGraphServiceLink container so the hint aligns with the section content
+    nudge: css`
+      padding: ${theme.spacing(2, 2, 0, 2)};
+    `,
+  };
 }

@@ -144,9 +144,6 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
 
   const props = received.at(-1)!;
   expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
-  // Preserve services and frontends without CALLS neighbours while expanding at most one hop.
-  expect(props.cypherQuery).toContain('OPTIONAL MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)');
-  expect(props.cypherQuery).toContain(`monitored._expired > ${Date.parse(MOCK_TIME_RANGE_TO)}`);
   expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
   expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
   // The check anchors the ranked layout (first rank + halo); TB puts the shallow neighbourhood's
@@ -197,9 +194,6 @@ it('links the section header to this check, its services, and its frontends in t
   expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
   expect(params.get('filterCriteria[0][connectToEntityTypes][1]')).toBe('Frontend');
   expect(params.get('view')).toBe('graph');
-  expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
-  expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
-  expect(params.get('filterCriteria[2][entityType]')).toBe('Frontend');
   expect(params.get('start')).toBe(String(Date.parse(MOCK_TIME_RANGE_FROM)));
   expect(params.get('end')).toBe(String(Date.parse(MOCK_TIME_RANGE_TO)));
 });

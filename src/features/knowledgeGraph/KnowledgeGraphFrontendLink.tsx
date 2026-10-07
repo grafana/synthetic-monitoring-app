@@ -1,7 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Combobox, Icon, IconButton, Stack, Text } from '@grafana/ui';
+import { Button, Combobox, IconButton, Stack, Text } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
 import { useDOMId } from 'hooks/useDOMId';
@@ -11,15 +11,8 @@ import { KG_FRONTEND_APP_ID_LABEL } from './knowledgeGraph';
 import { fetchFrontendApps } from './knowledgeGraphApi';
 import { useKGLinkedLabel } from './KnowledgeGraphServiceLink.hooks';
 
-interface Props {
-  autoFocus?: boolean;
-  onRemove?: () => void;
-}
-
-export function KnowledgeGraphFrontendLink({ autoFocus = false, onRemove }: Props) {
+export function KnowledgeGraphFrontendLink() {
   const inputId = useDOMId();
-  const shouldFocus = useRef(autoFocus);
-  const retryButton = useRef<HTMLButtonElement>(null);
   const {
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
@@ -43,33 +36,8 @@ export function KnowledgeGraphFrontendLink({ autoFocus = false, onRemove }: Prop
   const selected = options.find((option) => option.value === frontend.value);
   const selectedApp = apps?.find((app) => app.id === frontend.value);
 
-  useEffect(() => {
-    if (!shouldFocus.current || isLoading || disabled) {
-      return;
-    }
-
-    // Wait until the Add connection menu has closed and restored its own focus.
-    const frame = requestAnimationFrame(() => {
-      const target = isError ? retryButton.current : document.getElementById(inputId);
-      if (target) {
-        target.focus();
-        shouldFocus.current = false;
-      }
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [disabled, inputId, isError, isLoading]);
-
   return (
-    <StyledField
-      label={
-        <Stack alignItems="center" gap={1}>
-          <Icon name="monitor" />
-          Frontend application
-        </Stack>
-      }
-      emulate
-    >
+    <StyledField label="Frontend application" htmlFor={inputId}>
       <Stack direction="column" gap={1}>
         <Stack alignItems="center" gap={1}>
           <Combobox
@@ -84,25 +52,23 @@ export function KnowledgeGraphFrontendLink({ autoFocus = false, onRemove }: Prop
           />
           <IconButton
             name="times"
-            tooltip="Remove frontend connection"
-            disabled={disabled}
-            onClick={() => {
-              frontend.onChange('');
-              onRemove?.();
-            }}
+            tooltip="Clear frontend connection"
+            disabled={disabled || !frontend.value}
+            onClick={() => frontend.onChange('')}
           />
         </Stack>
         {isError ? (
           <Stack alignItems="center">
             <Text color="secondary">Could not load frontend applications. Your saved selection is unchanged.</Text>
-            <Button ref={retryButton} type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
+            <Button type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
               Retry
             </Button>
           </Stack>
         ) : isLoading ? (
           <Text color="secondary">Loading frontend applications…</Text>
         ) : selected ? (
-          selectedApp && selectedApp.environments.length > 1 && (
+          selectedApp &&
+          selectedApp.environments.length > 1 && (
             <Text color="secondary">This connection includes all listed environments for this application.</Text>
           )
         ) : frontend.value ? (

@@ -14,19 +14,24 @@ export function escapeCypher(value: string): string {
 }
 
 /**
- * Show the services and frontends monitored by this check. Expand services to their immediate
- * callers/dependencies, retaining frontends and services that have no CALLS neighbours.
- * The Cypher endpoint time-filters returned nodes, but traverses expired relationships too.
- * Restrict traversal to the topology at the selected range's end so an unlinked service stops
- * appearing in current views while historical views can still show its former connection.
+ * Retain monitored services/frontends, then add one-hop service CALLS neighbours.
+ * Each UNION branch returns bound entities: KG drops rows with unmatched OPTIONAL MATCH
+ * variables. Filter both relationship types at the range end to preserve historical topology.
  */
 export function buildEntityNeighbourhoodQuery(checkEntityName: string, end: number): string {
-  return [
+  const monitoredEntities = [
     `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[monitored:MONITORED_BY]-(entity)`,
     `WHERE (entity:Service OR entity:Frontend)`,
     `AND (monitored._created IS NULL OR monitored._created <= ${end})`,
     `AND (monitored._expired IS NULL OR monitored._expired > ${end})`,
-    `OPTIONAL MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)`,
+  ].join('\n');
+
+  return [
+    monitoredEntities,
+    'RETURN sy, entity, entity AS neighbour',
+    'UNION',
+    monitoredEntities,
+    'MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)',
     `WHERE (calls._created IS NULL OR calls._created <= ${end})`,
     `AND (calls._expired IS NULL OR calls._expired > ${end})`,
     `RETURN sy, entity, neighbour`,
