@@ -1,5 +1,6 @@
 import React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { ComponentWrapperProps, render } from 'test/render';
 import { runTestWithoutPermissions } from 'test/utils';
 
@@ -9,19 +10,21 @@ import { getRoute } from 'routing/utils';
 import { CONFIG_TEST_ID } from '../../test/dataTestIds';
 import { ConfigPageLayout } from './ConfigPageLayout';
 
-function Wrapper({ children, initialEntries }: ComponentWrapperProps) {
+function Wrapper({ children, initialEntries, queryClient }: ComponentWrapperProps) {
   return (
-    <MemoryRouter initialEntries={initialEntries}>
-      <Routes>
-        <Route path={getRoute(AppRoutes.Config)} element={children}>
-          <Route index element={<div data-testid="indexRoute">index</div>} />
-          <Route path="access-tokens" element={<div data-testid="indexAccessTokens">access-tokens</div>} />
-          <Route path="terraform" element={<div data-testid="terraform">terraform</div>} />
-          <Route path="label-migration" element={<div data-testid="labelMigration">label-migration</div>} />
-          <Route path="alerts" element={<div data-testid="alerts">alerts</div>} />
-        </Route>
-      </Routes>
-    </MemoryRouter>
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={initialEntries}>
+        <Routes>
+          <Route path={getRoute(AppRoutes.Config)} element={children}>
+            <Route index element={<div data-testid="indexRoute">index</div>} />
+            <Route path="access-tokens" element={<div data-testid="indexAccessTokens">access-tokens</div>} />
+            <Route path="terraform" element={<div data-testid="terraform">terraform</div>} />
+            <Route path="label-migration" element={<div data-testid="labelMigration">label-migration</div>} />
+            <Route path="alerts" element={<div data-testid="alerts">alerts</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>
   );
 }
 
