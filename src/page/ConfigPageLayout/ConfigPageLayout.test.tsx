@@ -1,6 +1,6 @@
 import React from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router';
-import { render } from '@testing-library/react';
+import { ComponentWrapperProps, render } from 'test/render';
 
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
@@ -8,11 +8,11 @@ import { getRoute } from 'routing/utils';
 import { CONFIG_TEST_ID } from '../../test/dataTestIds';
 import { ConfigPageLayout } from './ConfigPageLayout';
 
-function Wrapper({ initialEntries = ['/'] }) {
+function Wrapper({ children, initialEntries }: ComponentWrapperProps) {
   return (
     <MemoryRouter initialEntries={initialEntries}>
       <Routes>
-        <Route path={getRoute(AppRoutes.Config)} element={<ConfigPageLayout />}>
+        <Route path={getRoute(AppRoutes.Config)} element={children}>
           <Route index element={<div data-testid="indexRoute">index</div>} />
           <Route path="access-tokens" element={<div data-testid="indexAccessTokens">access-tokens</div>} />
           <Route path="terraform" element={<div data-testid="terraform">terraform</div>} />
@@ -23,7 +23,7 @@ function Wrapper({ initialEntries = ['/'] }) {
 }
 
 function renderPage(path = '') {
-  return render(<Wrapper initialEntries={[getRoute(AppRoutes.Config) + path]} />);
+  return render(<ConfigPageLayout />, { wrapper: Wrapper, path: getRoute(AppRoutes.Config) + path });
 }
 
 describe('ConfigPageLayout', () => {

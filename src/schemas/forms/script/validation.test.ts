@@ -1,6 +1,11 @@
 import { RefinementCtx } from 'zod';
 
-import { UNRESOLVABLE_SPREAD_MESSAGE, validateBrowserScript } from './validation';
+import {
+  MULTIPLE_SCENARIOS_MESSAGE,
+  UNRESOLVABLE_SPREAD_MESSAGE,
+  validateBrowserScript,
+  validateNonBrowserScript,
+} from './validation';
 
 const VALID_BROWSER_SCRIPT = `
 import { browser } from 'k6/browser';
@@ -346,6 +351,73 @@ describe('validateBrowserScript', () => {
     ]);
   });
 
+  it('errors when the script defines more than one scenario', () => {
+    const script = `
+import { browser } from 'k6/browser';
+
+export const options = {
+  scenarios: {
+    ui: {
+      executor: 'shared-iterations',
+      options: {
+        browser: {
+          type: 'chromium',
+        },
+      },
+    },
+    more: {
+      executor: 'shared-iterations',
+      options: {
+        browser: {
+          type: 'chromium',
+        },
+      },
+    },
+  },
+};
+
+export default async function () {
+  const page = await browser.newPage();
+}
+`;
+
+    expect(runValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
+  });
+
+  it('errors when multiple scenarios are referenced by identifier (including shorthand)', () => {
+    const script = `
+import { browser } from 'k6/browser';
+
+const ui = {
+  executor: 'shared-iterations',
+  options: {
+    browser: {
+      type: 'chromium',
+    },
+  },
+};
+
+const api = {
+  executor: 'shared-iterations',
+  options: {
+    browser: {
+      type: 'chromium',
+    },
+  },
+};
+
+export const options = {
+  scenarios: { ui, api },
+};
+
+export default async function () {
+  const page = await browser.newPage();
+}
+`;
+
+    expect(runValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
+  });
+
   it(`errors when the script does not import { browser } from 'k6/browser'`, () => {
     const script = `
       export const options = {
@@ -367,5 +439,77 @@ describe('validateBrowserScript', () => {
     expect(runValidation(script)).toEqual([
       expect.objectContaining({ message: "Script must import { browser } from 'k6/browser'" }),
     ]);
+  });
+});
+
+describe('validateNonBrowserScript', () => {
+  function runNonBrowserValidation(script: string) {
+    const issues: Array<{ message?: string }> = [];
+    const context = {
+      addIssue: (issue: { message?: string }) => {
+        issues.push(issue);
+      },
+    } as unknown as RefinementCtx;
+
+    validateNonBrowserScript(script, context);
+    return issues;
+  }
+
+  it('passes when the script does not export any options', () => {
+    const script = `
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([]);
+  });
+
+  it('passes when the script defines a single scenario', () => {
+    const script = `
+export const options = {
+  scenarios: {
+    api: {
+      executor: 'shared-iterations',
+    },
+  },
+};
+
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([]);
+  });
+
+  it('errors when the script defines more than one scenario', () => {
+    const script = `
+export const options = {
+  scenarios: {
+    first: {
+      executor: 'shared-iterations',
+    },
+    second: {
+      executor: 'shared-iterations',
+    },
+  },
+};
+
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
+  });
+
+  it('errors when multiple non-browser scenarios use identifier shorthand', () => {
+    const script = `
+const first = { executor: 'shared-iterations' };
+const second = { executor: 'shared-iterations' };
+
+export const options = {
+  scenarios: { first, second },
+};
+
+export default function () {}
+`;
+
+    expect(runNonBrowserValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 });

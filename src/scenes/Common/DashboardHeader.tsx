@@ -1,6 +1,6 @@
 import React from 'react';
 import { AnnotationQuery, GrafanaTheme2 } from '@grafana/data';
-import { RefreshPicker, TimeRangePicker, VariableControl } from '@grafana/scenes-react';
+import { RefreshPicker, VariableControl } from '@grafana/scenes-react';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGraphInsights';
@@ -8,6 +8,7 @@ import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGr
 import { Check } from 'types';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
+import { SceneTimeRangePicker } from 'scenes/Common/SceneTimeRangePicker';
 import { SLOIntegration } from 'scenes/Common/SLOIntegration';
 
 interface DashboardHeaderProps {
@@ -30,7 +31,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
           <SLOIntegration check={check} />
           <EditCheckButton id={check.id} />
           <div className={styles.dashboardControls}>
-            <TimeRangePicker />
+            <SceneTimeRangePicker />
             <RefreshPicker />
           </div>
         </div>

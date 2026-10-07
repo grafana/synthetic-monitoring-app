@@ -1,0 +1,31 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/plugin-graft/main/pkg/graft/schemas/graft-manifest/v1.schema.json",
+  "workflows": [
+    {
+      "id": "dev",
+      "setup": [
+        {
+          "command": "node .yarn/releases/yarn-4.15.0.cjs install",
+          "conditions": { "skip": [{ "fileExists": "node_modules" }] },
+        },
+      ],
+      "watch": {
+        "commands": ["node .yarn/releases/yarn-4.15.0.cjs dev"],
+      },
+    },
+  ],
+  "units": [
+    {
+      "kind": "grafana-plugin",
+      "details": { "pluginJson": "src/plugin.json" },
+      "serve": { "root": "dist" },
+      "workflowId": "dev",
+    },
+    {
+      "kind": "grafana-plugin",
+      "details": { "pluginJson": "src/datasource/plugin.json" },
+      "serve": { "root": "dist/datasource" },
+      "workflowId": "dev",
+    },
+  ],
+}

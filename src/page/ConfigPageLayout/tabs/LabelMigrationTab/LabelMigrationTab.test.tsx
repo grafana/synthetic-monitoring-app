@@ -1,6 +1,8 @@
 import React from 'react';
+import { useAssistant } from '@grafana/assistant';
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { trackFindPrefixedLabelsWithAssistant } from 'features/tracking/labelMigrationEvents';
 import { CONFIG_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK, BASIC_PING_CHECK, BASIC_TCP_CHECK } from 'test/fixtures/checks';
 import { TENANT, TENANT_LABEL_MODE } from 'test/fixtures/tenants';
@@ -11,6 +13,7 @@ import { runTestAsSMAdmin, runTestAsSMViewer } from 'test/utils';
 
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
+import { LabelMode } from 'datasource/responses.types';
 import { queryInstantMetric } from 'data/utils';
 
 import { LabelMigrationTab } from './LabelMigrationTab';
@@ -18,6 +21,10 @@ import { LabelMigrationTab } from './LabelMigrationTab';
 jest.mock('data/utils', () => ({
   ...jest.requireActual('data/utils'),
   queryInstantMetric: jest.fn(() => Promise.reject(new Error('no live metrics in tests'))),
+}));
+
+jest.mock('features/tracking/labelMigrationEvents', () => ({
+  trackFindPrefixedLabelsWithAssistant: jest.fn(),
 }));
 
 const queryInstantMetricMock = queryInstantMetric as jest.Mock;
@@ -948,5 +955,133 @@ describe('LabelMigrationTab', () => {
     expect(screen.queryByText(/renamed on 2 checks/i)).not.toBeInTheDocument();
     expect(screen.getByTestId('rename-input-instance')).toHaveValue('');
     expect(screen.getByRole('button', { name: /Retry enabling dual-write/i })).toBeDisabled();
+  });
+
+  describe('finding prefixed label usage with Assistant', () => {
+    const FIND_WITH_ASSISTANT = /Find prefixed labels with Assistant/i;
+    const openAssistant = jest.fn();
+    const LABELLED_CHECKS = [
+      {
+        ...BASIC_HTTP_CHECK,
+        id: 301,
+        labels: [
+          { name: 'team', value: 'platform' },
+          { name: 'env', value: 'prod' },
+        ],
+      },
+      {
+        ...BASIC_PING_CHECK,
+        id: 302,
+        labels: [
+          { name: 'team', value: 'checkout' },
+          { name: 'Service', value: 'api' },
+        ],
+      },
+    ];
+
+    function mockLabelMode(mode: LabelMode) {
+      server.use(
+        apiRoute('getLabelMode', {
+          result: () => ({ json: { mode, systemLabels: TENANT_LABEL_MODE.systemLabels } }),
+        })
+      );
+    }
+
+    beforeEach(() => {
+      openAssistant.mockClear();
+      jest.mocked(trackFindPrefixedLabelsWithAssistant).mockClear();
+      jest.mocked(useAssistant).mockReturnValue({
+        isAvailable: true,
+        isLoading: false,
+        openAssistant,
+        closeAssistant: jest.fn(),
+        toggleAssistant: jest.fn(),
+      });
+      server.use(apiRoute('listChecks', { result: () => ({ json: LABELLED_CHECKS }) }));
+    });
+
+    it('asks Assistant to find prefixed label usage, naming the label keys from the tenant checks', async () => {
+      runTestAsSMAdmin();
+      mockLabelMode(LabelMode.DualWrite);
+      const { user } = await renderTab();
+
+      const button = await screen.findByRole('button', { name: FIND_WITH_ASSISTANT });
+      await waitFor(() => expect(button).toBeEnabled());
+      await user.click(button);
+
+      expect(openAssistant).toHaveBeenCalledTimes(1);
+      const { origin, prompt, autoSend } = openAssistant.mock.calls[0][0];
+      expect(origin).toBe('grafana-synthetic-monitoring-app/label-migration');
+      expect(autoSend).toBe(true);
+      expect(prompt).toContain('My check label keys: env, Service, team\n');
+      expect(prompt).toContain('Search for these exact prefixed names: label_env, label_Service, label_team\n');
+      // Left in place, these would reach Assistant as literal template text.
+      expect(prompt).not.toContain('{{labelKeys}}');
+      expect(prompt).not.toContain('{{prefixedLabelKeys}}');
+      // A Go-template reference the prompt asks Assistant to look for, not one of ours.
+      expect(prompt).toContain('{{ $labels.label_');
+      expect(trackFindPrefixedLabelsWithAssistant).toHaveBeenCalledWith({ labelKeyCount: 3, labelMode: 'dual_write' });
+    });
+
+    // Once prefixed labels stop being written, anything still using them has
+    // already stopped matching. Searching is read-only, so it is not gated on
+    // the admin permission that changing the mode needs.
+    it('is offered after finalizing, including to users who cannot change the mode', async () => {
+      runTestAsSMViewer();
+      mockLabelMode(LabelMode.Unprefixed);
+      const { user } = await renderTab();
+
+      const button = await screen.findByRole('button', { name: FIND_WITH_ASSISTANT });
+      await waitFor(() => expect(button).toBeEnabled());
+      await user.click(button);
+
+      expect(openAssistant).toHaveBeenCalledTimes(1);
+      expect(trackFindPrefixedLabelsWithAssistant).toHaveBeenCalledWith({ labelKeyCount: 3, labelMode: 'unprefixed' });
+    });
+
+    it('is not offered before dual-write is enabled', async () => {
+      runTestAsSMAdmin();
+      await renderTab();
+
+      await screen.findByRole('button', { name: /Enable dual-write/i });
+      expect(screen.queryByRole('button', { name: FIND_WITH_ASSISTANT })).not.toBeInTheDocument();
+    });
+
+    it('is not offered when Grafana Assistant is unavailable', async () => {
+      jest.mocked(useAssistant).mockReturnValue({
+        isAvailable: false,
+        isLoading: false,
+        openAssistant: undefined,
+        closeAssistant: undefined,
+        toggleAssistant: undefined,
+      });
+      runTestAsSMAdmin();
+      mockLabelMode(LabelMode.DualWrite);
+      await renderTab();
+
+      await screen.findByRole('button', { name: /Finalize migration/i });
+      expect(screen.queryByRole('button', { name: FIND_WITH_ASSISTANT })).not.toBeInTheDocument();
+    });
+
+    it('explains why it cannot search when no check has labels', async () => {
+      runTestAsSMAdmin();
+      mockLabelMode(LabelMode.DualWrite);
+      server.use(apiRoute('listChecks', { result: () => ({ json: [{ ...BASIC_HTTP_CHECK, labels: [] }] }) }));
+      await renderTab();
+
+      expect(await screen.findByText(/None of your checks have labels/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: FIND_WITH_ASSISTANT })).toBeDisabled();
+    });
+
+    // Searching with an empty key list would look like a clean result.
+    it('explains why it cannot search when the check list fails to load', async () => {
+      runTestAsSMAdmin();
+      mockLabelMode(LabelMode.DualWrite);
+      server.use(apiRoute('listChecks', { result: () => ({ status: 500, json: { msg: 'failed to list checks' } }) }));
+      await renderTab();
+
+      expect(await screen.findByText(/Your checks failed to load/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: FIND_WITH_ASSISTANT })).toBeDisabled();
+    });
   });
 });

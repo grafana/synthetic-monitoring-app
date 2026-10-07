@@ -123,6 +123,21 @@ export function getProperty(objectExpression: ObjectExpression, propPath: string
 
 // true when the object (or any nested object, following resolvable spreads) contains a spread
 // we can't statically resolve, e.g. `...importedOptions` or `...buildOptions()`
+
+export function countScenarios(objectExpression: ObjectExpression, declarations: ObjectDeclarations): number {
+  const scenarios = getPropertyValueByPath(objectExpression, ['scenarios'], declarations);
+  if (!scenarios || scenarios.type !== 'ObjectExpression') {
+    return 0;
+  }
+
+  // Count every scenario entry by key. Values may be inline objects, identifiers
+  // (including shorthand like `scenarios: { ui, api }`), or other expressions —
+  // skipping non-ObjectExpression values would let multi-scenario scripts through.
+  return expandProperties(scenarios, declarations).filter(
+    (scenario) => scenario.key.type === 'Identifier' || scenario.key.type === 'Literal'
+  ).length;
+}
+
 export function containsUnresolvableSpread(
   objectExpression: ObjectExpression,
   declarations: ObjectDeclarations,

@@ -1,4 +1,4 @@
-import React, { FormEvent, ReactNode, useEffect, useMemo, useState } from 'react';
+import React, { ChangeEvent, ReactNode, useEffect, useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -79,7 +79,7 @@ export function QueryParamsEditor({
     }
   }, [isDirty, result, url]);
 
-  const handleChange = (event: FormEvent<HTMLInputElement>, key: 'name' | 'value', index: number) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>, key: 'name' | 'value', index: number) => {
     const value = event.currentTarget.value;
 
     setParams((currentParams) => {

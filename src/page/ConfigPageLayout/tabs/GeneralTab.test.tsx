@@ -44,9 +44,9 @@ describe('GeneralTab', () => {
   it('should have a section on data sources', async () => {
     const { getByText } = await renderGeneralTab();
     expect(getByText('Data sources', { selector: 'h3' })).toBeInTheDocument();
-    expect(LinkedDatasourceView).toHaveBeenNthCalledWith(1, { type: 'synthetic-monitoring-datasource' }, {});
-    expect(LinkedDatasourceView).toHaveBeenNthCalledWith(2, { type: 'prometheus' }, {});
-    expect(LinkedDatasourceView).toHaveBeenNthCalledWith(3, { type: 'loki' }, {});
+    expect(LinkedDatasourceView).toHaveBeenNthCalledWith(1, { type: 'synthetic-monitoring-datasource' }, undefined);
+    expect(LinkedDatasourceView).toHaveBeenNthCalledWith(2, { type: 'prometheus' }, undefined);
+    expect(LinkedDatasourceView).toHaveBeenNthCalledWith(3, { type: 'loki' }, undefined);
   });
 
   it('should show plugin version', async () => {

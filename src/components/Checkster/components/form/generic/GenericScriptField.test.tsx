@@ -38,6 +38,16 @@ jest.mock('components/CodeEditor', () => ({
   )),
 }));
 
+// Secret scanner data hooks require app-level providers this lightweight renderer doesn't supply.
+jest.mock('data/permissions', () => ({
+  ...jest.requireActual('data/permissions'),
+  getUserPermissions: jest.fn(() => ({ canCreateSecrets: false, canReadSecrets: false })),
+}));
+
+jest.mock('data/useSecrets', () => ({
+  useSecrets: jest.fn(() => ({ data: [] })),
+}));
+
 const defaultProps = {
   field: 'value',
 } as any;

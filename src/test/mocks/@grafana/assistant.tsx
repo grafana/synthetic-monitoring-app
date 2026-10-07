@@ -33,6 +33,13 @@ jest.mock('@grafana/assistant', () => {
     subscribe: jest.fn(),
   }));
 
+  const useTerms = jest.fn(() => ({
+    accepted: true,
+    termsType: 'termsAndConditions',
+    loading: false,
+    error: null,
+  }));
+
   const createAssistantContextItem = jest.fn((type, params) => ({ type, ...params }));
 
   return {
@@ -42,6 +49,8 @@ jest.mock('@grafana/assistant', () => {
     useProvidePageContext,
     useAssistant,
     isAssistantAvailable,
+    useTerms,
+    TERMS_AND_CONDITIONS_REFRESH_EVENT: 'grafana-assistant-terms-and-conditions-refresh',
     createAssistantContextItem,
   };
 });

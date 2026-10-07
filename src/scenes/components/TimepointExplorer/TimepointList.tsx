@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, LoadingBar, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
-import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
+import { useResizeObserver } from '@react-hookz/web';
+import { useDebounceCallback } from 'usehooks-ts';
 import { SCENES_TEST_ID } from 'test/dataTestIds';
 
 import {
@@ -47,11 +48,8 @@ export const TimepointList = () => {
     handleListWidthChange(width, currentSectionRange);
   }, 100);
 
-  useResizeObserver({
-    ref,
-    onResize: () => {
-      onResize(ref.current?.clientWidth ?? 0);
-    },
+  useResizeObserver(ref, () => {
+    onResize(ref.current?.clientWidth ?? 0);
   });
 
   const isBeginningSection = miniMapCurrentSectionIndex === miniMapCurrentPageSections.length - 1;

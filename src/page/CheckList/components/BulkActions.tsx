@@ -122,6 +122,7 @@ export const BulkActions = ({ checks, onResolved }: BulkActionsProps) => {
         <ConfirmModal
           isOpen={showDeleteModal}
           {...deleteModalProps}
+          modalClass={styles.deleteConfirmModal}
           onConfirm={deleteChecks}
           onDismiss={() => setShowDeleteModal(false)}
         />
@@ -141,5 +142,11 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: `flex`,
     alignItems: `center`,
     gap: theme.spacing(2),
+  }),
+  // ConfirmModal's confirmation input doesn't grow with the modal, so it clips "Delete <count>".
+  deleteConfirmModal: css({
+    input: {
+      width: '30ch',
+    },
   }),
 });

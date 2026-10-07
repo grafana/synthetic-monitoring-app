@@ -11,7 +11,6 @@ import { CheckFiltersType, CheckListViewType, FilterType } from 'page/CheckList/
 import { Check, CheckEnabledStatus, CheckSort, CheckType, FeatureName, Label } from 'types';
 import { MetricCheckSuccess, Time } from 'datasource/responses.types';
 import { CheckFolderAccessValueProvider } from 'contexts/CheckFolderAccessContext';
-import { isFeatureEnabled } from 'contexts/FeatureFlagContext';
 import {
   CheckRuntimeAlertStates,
   getCheckCompositeKey,
@@ -48,7 +47,7 @@ import {
 } from 'page/CheckList/components/FolderBanners';
 
 export const CheckList = () => {
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
   const [viewType, setViewType] = useQueryParametersState<CheckListViewType>({
     key: 'view',
     initialValue: isFoldersEnabled ? CheckListViewType.Folder : CheckListViewType.Card,
@@ -81,7 +80,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
 
   useDemAssistantContext(checks);
 
-  const isFoldersEnabled = isFeatureEnabled(FeatureName.Folders);
+  const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
   const {
     folders: allFolders,
     defaultFolderUid,

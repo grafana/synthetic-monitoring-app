@@ -379,8 +379,9 @@ export class SMDataSource extends DataSourceApi<SMQuery, SMOptions> {
     });
   }
 
-  async addCheck(check: Check) {
+  async addCheck(check: Check, options?: Pick<BackendSrvRequest, 'showErrorAlert'>) {
     return this.fetchAPI<AddCheckResult>(`${this.instanceSettings.url}/sm/check/add`, {
+      ...options,
       method: 'POST',
       data: check,
     });

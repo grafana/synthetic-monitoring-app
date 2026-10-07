@@ -3,7 +3,7 @@ import { generatePath, type PathParam } from 'react-router';
 import { CheckType, CheckTypeGroup } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
-import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions';
+import { CHECK_TYPE_OPTIONS } from 'hooks/useCheckTypeOptions.constants';
 
 function checkTypeDirectFilter({ value, group }: { value: CheckType; group: CheckTypeGroup }) {
   return (group as string) !== (value as string);

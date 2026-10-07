@@ -34,6 +34,32 @@ func TestRegistryExpressions(t *testing.T) {
 			instant: true,
 		},
 		{
+			// Ported from src/data/useSuccessRates.ts (useChecksReachabilitySuccessRate).
+			name:    queryChecksReachability,
+			query:   queryChecksReachability,
+			params:  `{}`,
+			expr:    `sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			name:    "checks_reachability ignores unknown params",
+			query:   queryChecksReachability,
+			params:  `{"job":"ignored"}`,
+			expr:    `sum(rate(probe_all_success_sum[3h])) by (job, instance) / sum(rate(probe_all_success_count[3h])) by (job, instance)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			// Ported from gcx's BuildAllProbeCountQuery.
+			name:    queryChecksProbeCount,
+			query:   queryChecksProbeCount,
+			params:  `{}`,
+			expr:    `count(probe_success) by (job, instance)`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
 			// Ported from src/queries/uptime.ts -- deliberately a range query, not
 			// instant: the panel it backs plots uptime over time.
 			name:   queryChecksUptime,
@@ -48,6 +74,51 @@ func TestRegistryExpressions(t *testing.T) {
 			params: `{"job":"has \"quotes\"","instance":"x","frequency":60000}`,
 			expr:   `max by () (max_over_time(probe_success{job="has \"quotes\"", instance="x", probe=~".*"}[60s]))`,
 			target: targetMetrics,
+		},
+		{
+			// Ported from src/data/useLatency.ts (getQuery), MultiHttp/Scripted
+			// branch, tenant-wide.
+			name:    "checks_latency scripted",
+			query:   queryChecksLatency,
+			params:  `{"checkType":"scripted"}`,
+			expr:    `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds[3h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds[3h]))`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			name:    "checks_latency multihttp",
+			query:   queryChecksLatency,
+			params:  `{"checkType":"multihttp"}`,
+			expr:    `sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds[3h])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds[3h]))`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			// Ported from src/data/useLatency.ts (getQuery), fallback branch,
+			// tenant-wide: job/instance matchers dropped, `by (job, instance)`
+			// grouping added.
+			name:    "checks_latency http",
+			query:   queryChecksLatency,
+			params:  `{"checkType":"http"}`,
+			expr:    `sum by (job, instance) ((rate(probe_all_duration_seconds_sum{probe=~".*"}[3h]) OR rate(probe_duration_seconds_sum{probe=~".*"}[3h]))) / sum by (job, instance) ((rate(probe_all_duration_seconds_count{probe=~".*"}[3h]) OR rate(probe_duration_seconds_count{probe=~".*"}[3h])))`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			name:    "checks_latency ping also uses the fallback branch",
+			query:   queryChecksLatency,
+			params:  `{"checkType":"ping"}`,
+			expr:    `sum by (job, instance) ((rate(probe_all_duration_seconds_sum{probe=~".*"}[3h]) OR rate(probe_duration_seconds_sum{probe=~".*"}[3h]))) / sum by (job, instance) ((rate(probe_all_duration_seconds_count{probe=~".*"}[3h]) OR rate(probe_duration_seconds_count{probe=~".*"}[3h])))`,
+			target:  targetMetrics,
+			instant: true,
+		},
+		{
+			name:    "checks_latency browser also uses the fallback branch",
+			query:   queryChecksLatency,
+			params:  `{"checkType":"browser"}`,
+			expr:    `sum by (job, instance) ((rate(probe_all_duration_seconds_sum{probe=~".*"}[3h]) OR rate(probe_duration_seconds_sum{probe=~".*"}[3h]))) / sum by (job, instance) ((rate(probe_all_duration_seconds_count{probe=~".*"}[3h]) OR rate(probe_duration_seconds_count{probe=~".*"}[3h])))`,
+			target:  targetMetrics,
+			instant: true,
 		},
 	}
 
@@ -90,6 +161,28 @@ func TestChecksUptimeRejectsMissingParams(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if _, _, err := resolve(queryChecksUptime, json.RawMessage(tt.params)); err == nil {
+				t.Fatal("expected an error")
+			}
+		})
+	}
+}
+
+// TestChecksLatencyRejectsUnknownCheckType pins that checkType is validated
+// against the closed set in queryshapes.go, not escaped -- it selects a
+// metric name, not a label value.
+func TestChecksLatencyRejectsUnknownCheckType(t *testing.T) {
+	tests := []struct {
+		name   string
+		params string
+	}{
+		{name: "empty check type", params: `{"checkType":""}`},
+		{name: "unknown check type", params: `{"checkType":"bogus"}`},
+		{name: "wrong case", params: `{"checkType":"HTTP"}`},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if _, _, err := resolve(queryChecksLatency, json.RawMessage(tt.params)); err == nil {
 				t.Fatal("expected an error")
 			}
 		})

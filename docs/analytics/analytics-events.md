@@ -245,6 +245,28 @@ Tracks when the duplicate check button is clicked.
 | --------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | checkType | `"browser" \| "dns" \| "grpc" \| "http" \| "multihttp" \| "ping" \| "scripted" \| "tcp" \| "traceroute"` | The type of check being duplicated. |
 
+### check_templates
+
+#### synthetic-monitoring_check_templates_template_selected
+
+Tracks selection of a template card, before its configuration drawer opens.
+
+##### Properties
+
+| name              | type             | description                                                     |
+| ----------------- | ---------------- | --------------------------------------------------------------- |
+| check_template_id | `"broken_links"` | Stable template identifier. Never a URL, check name, or script. |
+
+### cloud_setup
+
+#### synthetic-monitoring_cloud_setup_cli_panel_shown
+
+Tracks when the cloud-setup CLI panel is shown, once per mount.
+
+#### synthetic-monitoring_cloud_setup_cli_command_copied
+
+Tracks when the cloud-setup CLI command is copied to the clipboard.
+
 ### cost_attribution
 
 #### synthetic-monitoring_cost_attribution_setup_banner_shown
@@ -322,6 +344,19 @@ Tracks when a new folder is created via the folder selector.
 #### synthetic-monitoring_folders_move_folder_clicked
 
 Tracks when "Move folder" is picked from a folder's Actions menu. Kept to measure whether the option is used at all: if this tends to zero we can remove the option and leave folder reorganisation to Dashboards > Folders.
+
+### label_migration
+
+#### synthetic-monitoring_label_migration_find_prefixed_labels_with_assistant_clicked
+
+Tracks when a user asks Grafana Assistant to find objects that still use prefixed check labels.
+
+##### Properties
+
+| name          | type                           | description                                                                                                                                   |
+| ------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| labelKeyCount | `number`                       | Number of distinct check label keys named in the prompt. The keys themselves are tenant authored, so they are customer data and not reported. |
+| labelMode     | `"dual_write" \| "unprefixed"` | The tenant's label mode when the search was started.                                                                                          |
 
 ### link
 
@@ -459,24 +494,24 @@ Tracks when a private probe's token is reset.
 
 #### synthetic-monitoring_reliability_inbox_exposed
 
-Tracks when the compact Reliability Inbox entry point is shown.
+Tracks when the compact Reliability Inbox entry point is shown, whether or not it has suggestions yet.
 
 ##### Properties
 
-| name             | type     | description                                                           |
-| ---------------- | -------- | --------------------------------------------------------------------- |
-| opportunityCount | `number` | Number of reviewable recommendations shown by the inbox entry point.  |
-| topOpportunityId | `string` | Identifier for the highest-priority recommendation shown on exposure. |
+| name             | type                  | description                                                                                             |
+| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| opportunityCount | `number`              | Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. |
+| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.   |
 
 #### synthetic-monitoring_reliability_inbox_review_entry_clicked
 
-Tracks when a user enters the dedicated review surface.
+Tracks when a user enters the dedicated review surface, to generate suggestions or to review them.
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type                  | description                                                                                          |
+| ------------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
+| opportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown; absent for a "Generate suggestions" click. |
 
 #### synthetic-monitoring_reliability_inbox_recommendation_reviewed
 
@@ -554,10 +589,10 @@ Tracks when the create secret button is clicked.
 
 ##### Properties
 
-| name     | type                                                                 | description                                                       |
-| -------- | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source   | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
-| location | `"empty_state" \| "header_action"`                                   | The location where the create button was clicked.                 |
+| name     | type                                                                                                          | description                                                       |
+| -------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source   | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
+| location | `"empty_state" \| "header_action"`                                                                            | The location where the create button was clicked.                 |
 
 #### synthetic-monitoring_secrets_management_edit_secret_button_clicked
 
@@ -565,9 +600,9 @@ Tracks when the edit secret button is clicked.
 
 ##### Properties
 
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+| name   | type                                                                                                          | description                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_delete_secret_button_clicked
 
@@ -575,9 +610,9 @@ Tracks when the delete secret button is clicked.
 
 ##### Properties
 
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+| name   | type                                                                                                          | description                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_secret_created
 
@@ -585,9 +620,9 @@ Tracks when a secret is successfully created.
 
 ##### Properties
 
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+| name   | type                                                                                                          | description                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_secret_updated
 
@@ -595,9 +630,9 @@ Tracks when a secret is successfully updated.
 
 ##### Properties
 
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+| name   | type                                                                                                          | description                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
 
 #### synthetic-monitoring_secrets_management_secret_deleted
 
@@ -605,9 +640,37 @@ Tracks when a secret is successfully deleted.
 
 ##### Properties
 
-| name   | type                                                                 | description                                                       |
-| ------ | -------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab"` | The source context where the secrets management UI is being used. |
+| name   | type                                                                                                          | description                                                       |
+| ------ | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| source | `"check_editor_sidepanel_feature_tabs" \| "config_page_secrets_tab" \| "check_editor_feature_secret_scanner"` | The source context where the secrets management UI is being used. |
+
+### slo_integration
+
+#### synthetic-monitoring_slo_integration_drawer_opened
+
+Tracks when the linked-SLOs button on a check dashboard is clicked to open the drawer.
+
+##### Properties
+
+| name     | type     | description                                                                |
+| -------- | -------- | -------------------------------------------------------------------------- |
+| sloCount | `number` | The number of SLOs already linked to the check when the drawer was opened. |
+
+#### synthetic-monitoring_slo_integration_wizard_completed
+
+Tracks when a new SLO is successfully created from the check dashboard wizard.
+
+#### synthetic-monitoring_slo_integration_wizard_cancelled
+
+Tracks when the new SLO wizard is cancelled from the check dashboard.
+
+#### synthetic-monitoring_slo_integration_slo_deleted
+
+Tracks when an SLO linked to a check is successfully deleted.
+
+#### synthetic-monitoring_slo_integration_slo_delete_failed
+
+Tracks when deleting an SLO linked to a check fails.
 
 ### terraform
 

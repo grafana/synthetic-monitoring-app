@@ -8,8 +8,8 @@ import { getRoute } from 'routing/utils';
 
 import { FaroUserAction } from '../faro';
 import { trackFaroUserAction } from '../features/tracking/userAction';
-import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions';
-import { useFeatureFlagContext } from './useFeatureFlagContext';
+import { CHECK_TYPE_OPTIONS } from './useCheckTypeOptions.constants';
+import { useIsFeatureEnabled } from './useFeatureFlag';
 
 export type ProtocolOption = {
   label: string;
@@ -71,7 +71,11 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
       },
       // todo: we don't support these yet
       // { label: `gRPC` },
-      { label: `WebSockets` },
+      {
+        label: `WebSockets`,
+        href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Scripted}?example=websocket`,
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.Scripted, `WebSockets`),
+      },
       // todo: we don't support these yet
       // {
       //   label: `+More`,
@@ -97,16 +101,16 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `globe`,
     protocols: [
       {
-        label: `HTTP`,
+        label: `Actions`,
         href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.Browser}`,
-        onClick: () => trackAndStartUserAction(CheckTypeGroup.Browser, `HTTP`),
+        onClick: () => trackAndStartUserAction(CheckTypeGroup.Browser, `Actions`),
       },
     ],
   },
 ];
 
 export function useCheckTypeGroupOptions() {
-  const { isFeatureEnabled } = useFeatureFlagContext();
+  const isFeatureEnabled = useIsFeatureEnabled();
 
   return CHECK_TYPE_GROUP_OPTIONS.map((option) => {
     const protocols = option.protocols.filter((protocol) =>

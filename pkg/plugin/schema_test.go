@@ -25,6 +25,18 @@ var querySchemas = map[string]namedQuerySchema{
 		description: "Uptime for a single check over its execution frequency window, as the app displays it.",
 		goType:      reflect.TypeFor[*CheckFrequencyQuery](),
 	},
+	queryChecksReachability: {
+		description: "Reachability (probe_all_success ratio) summed across all checks in the tenant, grouped by job and instance.",
+		goType:      reflect.TypeFor[*TenantWideQuery](),
+	},
+	queryChecksProbeCount: {
+		description: "Number of probes reporting for each check in the tenant, grouped by job and instance. Has no app counterpart yet; anticipates one.",
+		goType:      reflect.TypeFor[*TenantWideQuery](),
+	},
+	queryChecksLatency: {
+		description: "Average latency for every check in the tenant, grouped by job and instance. checkType picks the latency metric the app uses for that check type, so read each check's row from the call made with its own type.",
+		goType:      reflect.TypeFor[*CheckTypeQuery](),
+	},
 }
 
 // TestSchemaCoversRegistry fails if querySchemas and the real registry in

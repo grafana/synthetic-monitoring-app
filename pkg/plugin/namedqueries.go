@@ -21,6 +21,9 @@ const defaultQueryFromTime = "3h"
 const (
 	queryProbeExecutionRate = "probe_execution_rate"
 	queryChecksUptime       = "checks_uptime"
+	queryChecksReachability = "checks_reachability"
+	queryChecksProbeCount   = "checks_probe_count"
+	queryChecksLatency      = "checks_latency"
 )
 
 // built is what a named query resolves to: an expression plus the execution
@@ -101,6 +104,81 @@ var registry = map[string]namedQuery{
 				interval:      interval,
 				maxDataPoints: 8000,
 			}, nil
+		},
+	},
+
+	// Ported from src/data/useSuccessRates.ts (useChecksReachabilitySuccessRate).
+	// Tenant-wide already in the app; a verbatim port.
+	queryChecksReachability: {
+		target: targetMetrics,
+		build: func(raw json.RawMessage) (built, error) {
+			if _, err := parseParams[TenantWideQuery](raw); err != nil {
+				return built{}, err
+			}
+
+			return built{
+				expr: fmt.Sprintf(
+					`sum(rate(probe_all_success_sum[%s])) by (job, instance) / sum(rate(probe_all_success_count[%s])) by (job, instance)`,
+					defaultQueryFromTime, defaultQueryFromTime,
+				),
+				instant: true,
+			}, nil
+		},
+	},
+
+	// Ported from gcx's BuildAllProbeCountQuery. No app counterpart exists yet;
+	// this anticipates the app surfacing probe count later rather than serving
+	// gcx alone.
+	queryChecksProbeCount: {
+		target: targetMetrics,
+		build: func(raw json.RawMessage) (built, error) {
+			if _, err := parseParams[TenantWideQuery](raw); err != nil {
+				return built{}, err
+			}
+
+			return built{
+				expr:    `count(probe_success) by (job, instance)`,
+				instant: true,
+			}, nil
+		},
+	},
+
+	// Ported from src/data/useLatency.ts (getQuery), tenant-wide: the job/
+	// instance matchers are dropped and `by (job, instance)` grouping is added
+	// to the non-scripted branch (the scripted/MultiHttp branch is already
+	// grouped that way in the app). CheckType selects which branch, exactly as
+	// the app's getCheckType(settings) does.
+	queryChecksLatency: {
+		target: targetMetrics,
+		build: func(raw json.RawMessage) (built, error) {
+			p, err := parseParams[CheckTypeQuery](raw)
+			if err != nil {
+				return built{}, err
+			}
+
+			metric, err := p.latencyMetric()
+			if err != nil {
+				return built{}, err
+			}
+
+			switch metric {
+			case latencyMetricScripted:
+				return built{
+					expr: fmt.Sprintf(
+						`sum by (job, instance) (sum_over_time(probe_http_total_duration_seconds[%s])) / sum by (job, instance) (count_over_time(probe_http_total_duration_seconds[%s]))`,
+						defaultQueryFromTime, defaultQueryFromTime,
+					),
+					instant: true,
+				}, nil
+			default: // latencyMetricNetwork
+				return built{
+					expr: fmt.Sprintf(
+						`sum by (job, instance) ((rate(probe_all_duration_seconds_sum{probe=~".*"}[%s]) OR rate(probe_duration_seconds_sum{probe=~".*"}[%s]))) / sum by (job, instance) ((rate(probe_all_duration_seconds_count{probe=~".*"}[%s]) OR rate(probe_duration_seconds_count{probe=~".*"}[%s])))`,
+						defaultQueryFromTime, defaultQueryFromTime, defaultQueryFromTime, defaultQueryFromTime,
+					),
+					instant: true,
+				}, nil
+			}
 		},
 	},
 }

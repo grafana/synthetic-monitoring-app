@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import { CONFIG_TEST_ID } from 'test/dataTestIds';
 import { MOCKED_SECRETS, MOCKED_SECURE_VALUE_ITEMS } from 'test/fixtures/secrets';
@@ -273,9 +273,7 @@ describe('SecretEditModal', () => {
 
     // Wait for the modal to finish loading the existing secret so the
     // assertion below reads the same decrypters that were served to the form.
-    await waitFor(() =>
-      expect(screen.getByDisplayValue(secretMock.spec.description)).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByDisplayValue(secretMock.spec.description)).toBeInTheDocument());
 
     await user.click(screen.getByText('Save'));
 
@@ -336,5 +334,51 @@ describe('SecretEditModal', () => {
     await user.click(submitButton);
 
     expect(screen.getByText('A secret with this name already exists')).toBeInTheDocument();
+  });
+
+  it('prefills the form from initialValues', async () => {
+    await render(
+      <SecretEditModal
+        {...defaultProps}
+        initialValues={{
+          name: 'named-secret',
+          description: 'Migrated from script (NAMED SECRET)',
+          plaintext: 'he110-w0rlD',
+        }}
+      />
+    );
+
+    expect(screen.getByLabelText(/Name/)).toHaveValue('named-secret');
+    expect(screen.getByLabelText(/Description/)).toHaveValue('Migrated from script (NAMED SECRET)');
+    expect(screen.getByLabelText(/Value/)).toHaveValue('he110-w0rlD');
+  });
+
+  it('does not reset in-progress edits when initialValues is replaced', async () => {
+    function Harness() {
+      const [initialValues, setInitialValues] = useState({
+        name: 'named-secret',
+        description: 'Migrated from script (NAMED SECRET)',
+        plaintext: 'he110-w0rlD',
+      });
+
+      return (
+        <>
+          <button type="button" onClick={() => setInitialValues({ ...initialValues, name: 'named-secret-2' })}>
+            refresh-suggestion
+          </button>
+          <SecretEditModal {...defaultProps} initialValues={initialValues} />
+        </>
+      );
+    }
+
+    const { user } = await render(<Harness />);
+
+    fireEvent.change(screen.getByLabelText(/Name/), { target: { value: 'my-custom-name' } });
+    expect(screen.getByLabelText(/Name/)).toHaveValue('my-custom-name');
+
+    await user.click(screen.getByRole('button', { name: 'refresh-suggestion' }));
+
+    expect(screen.getByLabelText(/Name/)).toHaveValue('my-custom-name');
+    expect(screen.getByLabelText(/Description/)).toHaveValue('Migrated from script (NAMED SECRET)');
   });
 });

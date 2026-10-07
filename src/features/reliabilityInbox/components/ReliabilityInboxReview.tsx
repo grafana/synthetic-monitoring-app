@@ -21,7 +21,7 @@ interface ReliabilityInboxReviewProps {
 export function ReliabilityInboxReview({ suggestionsQuery }: ReliabilityInboxReviewProps) {
   const styles = useStyles2(getStyles);
   const [exitTransition, setExitTransition] = useState<'fade' | 'dismiss'>();
-  const pendingAction = useRef<(() => void) | undefined>();
+  const pendingAction = useRef<(() => void) | undefined>(undefined);
   const {
     opportunities,
     activeOpportunities,
