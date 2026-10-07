@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import { locationService } from '@grafana/runtime';
 import {
+  TabViewed,
   trackRecommendationDismissed,
   trackRecommendationRestored,
   trackRecommendationShown,
@@ -20,6 +21,7 @@ import {
   DISMISSED_FINDINGS_STORAGE_KEY,
   FOCUS_PARAM,
 } from './Recommendations.constants';
+import { getEntryPoint, RecommendationsEntryPoint, SOURCE_PARAM } from './Recommendations.links';
 import { getDismissedCheckIds } from './Recommendations.utils';
 
 // Browser-local like the app's other dismissible prompts; M1 has no server-side state.
@@ -111,43 +113,29 @@ export function useRowSelection(checks: Check[]) {
 }
 
 interface ImpressionContext {
-  visible: Recommendation[];
   /** Panels on screen right now: the active category's, or none on the landing view. */
   shown: Recommendation[];
-  checkCount: number;
-  dismissedCount: number;
-  focusedId?: RecommendationId;
+  /** Builds the visit's event when it is reported, so the duration it carries ends then. */
+  getVisit: () => TabViewed;
   /** False while a finding's inputs are still loading, so the visit is not counted early. */
   isComplete: boolean;
 }
 
 // A finding counts as shown the first time its panel renders, so an unopened category is not "seen".
-export function useRecommendationImpressions({
-  visible,
-  shown,
-  checkCount,
-  dismissedCount,
-  focusedId,
-  isComplete,
-}: ImpressionContext) {
+export function useRecommendationImpressions({ shown, getVisit, isComplete }: ImpressionContext) {
   const visitReported = useRef(false);
   const shownReported = useRef(new Set<RecommendationId>());
 
   useEffect(() => {
     // The visit is reported once, so reporting it before every finder has its inputs
-    // would freeze a findingCount that is missing findings.
+    // would freeze counts that are missing findings.
     if (visitReported.current || !isComplete) {
       return;
     }
 
     visitReported.current = true;
-    trackRecommendationsTabViewed({
-      findingCount: visible.length + dismissedCount,
-      dismissedCount,
-      checkCount,
-      focusSource: focusedId,
-    });
-  }, [visible, checkCount, dismissedCount, focusedId, isComplete]);
+    trackRecommendationsTabViewed(getVisit());
+  }, [getVisit, isComplete]);
 
   useEffect(() => {
     // While inputs are loading the tab renders a placeholder, so nothing has been seen yet.
@@ -162,6 +150,30 @@ export function useRecommendationImpressions({
       }
     });
   }, [shown, isComplete]);
+}
+
+/**
+ * How the user got onto the tab, read once on arrival. The `source` param is then dropped from the
+ * URL, so a refresh, bookmark or shared link is not counted as having arrived the same way.
+ */
+export function useEntryPoint(): RecommendationsEntryPoint {
+  const source = useURLSearchParams().get(SOURCE_PARAM);
+  const [entryPoint] = useState(() => getEntryPoint(source));
+
+  // Keyed on the param, not mount: clicking the tab while on it puts the param back.
+  useEffect(() => {
+    if (source === null) {
+      return;
+    }
+
+    const { pathname, search } = locationService.getLocation();
+    const next = new URLSearchParams(search);
+    next.delete(SOURCE_PARAM);
+    const query = next.toString();
+    locationService.replace(query ? `${pathname}?${query}` : pathname);
+  }, [source]);
+
+  return entryPoint;
 }
 
 export const ATTENTION_VIEW = 'attention';

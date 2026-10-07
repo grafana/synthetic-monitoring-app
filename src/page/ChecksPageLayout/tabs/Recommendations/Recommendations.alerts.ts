@@ -72,6 +72,17 @@ export function formatAlertThreshold({ definition, draft }: RecommendedAlert) {
   return definition.unit === 'no.' ? String(draft.threshold) : `${draft.threshold}${definition.unit}`;
 }
 
+/** The reason given for items `runInBatches` never submitted, so callers can tell them from failures. */
+export class BatchCancelledError extends Error {
+  constructor() {
+    super('cancelled');
+  }
+}
+
+export function isFailure(result: PromiseSettledResult<unknown>) {
+  return result.status === 'rejected' && !(result.reason instanceof BatchCancelledError);
+}
+
 // One request per check against a single-replica API, so a large tenant must not fire hundreds at
 // once. `isCancelled` stops scheduling further batches once the caller has gone away: in-flight
 // requests still finish, but a panel that unmounted mid-run leaves no loop behind it to collide
@@ -91,7 +102,7 @@ export async function runInBatches<T, R>(
 
       return [
         ...results,
-        ...Array.from({ length: remaining }, () => ({ status: 'rejected' as const, reason: new Error('cancelled') })),
+        ...Array.from({ length: remaining }, () => ({ status: 'rejected' as const, reason: new BatchCancelledError() })),
       ];
     }
 

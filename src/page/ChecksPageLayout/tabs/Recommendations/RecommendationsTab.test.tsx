@@ -231,6 +231,54 @@ describe('Recommendations tab', () => {
         ['synthetic-monitoring_recommendations_finding_shown', expect.objectContaining({ finding: 'alerting-gaps' })],
       ]);
     });
+
+    it('reports what each finding covered on arrival, before anything was dismissed', async () => {
+      const reportInteraction = mockReportInteraction();
+      localStorage.setItem(DISMISSED_FINDINGS_STORAGE_KEY, JSON.stringify(['paused-checks']));
+      // Check 99 no longer exists, so its dismissal is not counted.
+      localStorage.setItem(DISMISSED_CHECKS_STORAGE_KEY, JSON.stringify({ 'alerting-gaps': [1, 99] }));
+
+      await renderTab([
+        buildCheck({ id: 1, job: 'unalerted', target: 'https://a.com' }),
+        buildCheck({ id: 2, job: 'forgotten', enabled: false, alertSensitivity: AlertSensitivity.High }),
+        // Unalerted and a duplicate: in two findings, but one affected check.
+        buildCheck({ id: 3, job: 'primary', target: 'https://grafana.com' }),
+        buildCheck({ id: 4, job: 'copy', target: 'https://grafana.com', alertSensitivity: AlertSensitivity.High }),
+      ]);
+      await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_tab_viewed',
+        expect.objectContaining({
+          checkCount: 4,
+          findingCount: 3,
+          affectedCheckCount: 4,
+          alertingGapsCount: 2,
+          pausedChecksCount: 1,
+          duplicateChecksCount: 2,
+          overlappingTargetsCount: 0,
+          missingCostLabelsCount: 0,
+          dismissedCount: 1,
+          dismissedCheckCount: 1,
+          entryPoint: 'direct',
+          calsUnavailable: false,
+          durationMs: expect.any(Number),
+        })
+      );
+    });
+
+    it('records arriving from the Checks page tab, then drops that from the URL so a refresh does not', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      await renderTab([UNALERTED()], { path: 'checks/recommendations?source=tab&category=alerting' });
+
+      expect(await findSection(/have no alerts/)).toBeInTheDocument();
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_tab_viewed',
+        expect.objectContaining({ entryPoint: 'tab' })
+      );
+      await waitFor(() => expect(screen.getByTestId(ROUTER_TEST_ID.search).textContent).toBe('?category=alerting'));
+    });
   });
 
   describe('legend', () => {
@@ -367,7 +415,12 @@ describe('Recommendations tab', () => {
       expect(toasts).toHaveBeenCalledWith(expect.anything(), ['Added 3 alerts to unalerted']);
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_action_completed',
-        expect.objectContaining({ finding: 'alerting-gaps', action: 'alerts_added', checkCount: 1, scope: 'check' })
+        expect.objectContaining({
+          finding: 'alerting-gaps',
+          action: 'alerts_added',
+          checkCount: 1,
+          scope: 'check',
+        })
       );
     });
 
@@ -479,6 +532,15 @@ describe('Recommendations tab', () => {
         'synthetic-monitoring_recommendations_action_completed',
         expect.objectContaining({ finding: 'alerting-gaps', action: 'alerts_added', checkCount: 1, scope: 'selection' })
       );
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_action_failed',
+        expect.objectContaining({
+          finding: 'alerting-gaps',
+          action: 'alerts_added',
+          failedCount: 1,
+          scope: 'selection',
+        })
+      );
     });
 
     it('clears a selection without acting on it', async () => {
@@ -500,6 +562,7 @@ describe('Recommendations tab', () => {
     });
 
     it('keeps the row and reports the failure when the alerts cannot be saved', async () => {
+      const reportInteraction = mockReportInteraction();
       const toasts = spyOnToasts();
       server.use(apiRoute('updateAlertsForCheck', { result: () => ({ status: 500, json: { err: 'nope' } }) }));
 
@@ -512,6 +575,14 @@ describe('Recommendations tab', () => {
       await waitFor(() => expect(within(section).getByRole('button', { name: 'Add 3 alerts' })).toBeEnabled());
       expect(within(section).queryByText(/alerts added/i)).not.toBeInTheDocument();
       expect(toasts).not.toHaveBeenCalledWith(expect.anything(), [expect.stringMatching(/^Added/)]);
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_action_failed',
+        expect.objectContaining({ finding: 'alerting-gaps', action: 'alerts_added', failedCount: 1, scope: 'check' })
+      );
+      expect(reportInteraction).not.toHaveBeenCalledWith(
+        'synthetic-monitoring_recommendations_action_completed',
+        expect.anything()
+      );
     });
 
     it('stretches the evaluation period to fit a check that runs less often', async () => {
@@ -589,8 +660,31 @@ describe('Recommendations tab', () => {
       await waitFor(() => expect(screen.queryByRole('heading', { name: /checks are paused/ })).not.toBeInTheDocument());
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_action_completed',
-        expect.objectContaining({ finding: 'paused-checks', action: 'check_resumed', checkCount: 1 })
+        expect.objectContaining({
+          finding: 'paused-checks',
+          action: 'check_resumed',
+          checkCount: 1,
+          scope: 'check',
+        })
       );
+    });
+
+    it('keeps a check that could not be resumed and reports the failure', async () => {
+      const reportInteraction = mockReportInteraction();
+      server.use(apiRoute('updateCheck', { result: () => ({ status: 500, json: { err: 'nope' } }) }));
+
+      const { user } = await renderCategory([PAUSED()], RecommendationCategoryId.Paused);
+      const section = await findSection(/checks are paused/);
+
+      await user.click(within(section).getByRole('button', { name: 'Resume forgotten' }));
+
+      await waitFor(() =>
+        expect(reportInteraction).toHaveBeenCalledWith(
+          'synthetic-monitoring_recommendations_action_failed',
+          expect.objectContaining({ finding: 'paused-checks', action: 'check_resumed', failedCount: 1, scope: 'check' })
+        )
+      );
+      expect(within(section).getByRole('button', { name: 'Resume forgotten' })).toBeEnabled();
     });
 
     it('resumes the ticked checks in one request', async () => {
@@ -634,6 +728,38 @@ describe('Recommendations tab', () => {
           scope: 'selection',
         })
       );
+    });
+
+    it('keeps the ticked checks when resuming them fails, and reports how many failed', async () => {
+      const reportInteraction = mockReportInteraction();
+      server.use(apiRoute('bulkUpdateChecks', { result: () => ({ status: 500, json: { err: 'nope' } }) }));
+
+      const { user } = await renderCategory(
+        [
+          buildCheck({ job: 'one', id: 1, enabled: false, alertSensitivity: AlertSensitivity.High }),
+          buildCheck({ job: 'two', id: 2, enabled: false, alertSensitivity: AlertSensitivity.High }),
+        ],
+        RecommendationCategoryId.Paused
+      );
+      const section = await findSection(/checks are paused/);
+
+      await user.click(within(section).getByRole('checkbox', { name: 'Select one' }));
+      await user.click(within(section).getByRole('checkbox', { name: 'Select two' }));
+      await user.click(within(section).getByRole('button', { name: 'Resume 2 checks' }));
+
+      await waitFor(() =>
+        expect(reportInteraction).toHaveBeenCalledWith(
+          'synthetic-monitoring_recommendations_action_failed',
+          expect.objectContaining({
+            finding: 'paused-checks',
+            action: 'check_resumed',
+            failedCount: 2,
+            scope: 'selection',
+          })
+        )
+      );
+      expect(within(section).getByRole('checkbox', { name: 'Select one' })).toBeChecked();
+      expect(within(section).getByRole('checkbox', { name: 'Select two' })).toBeChecked();
     });
   });
 
@@ -841,6 +967,21 @@ describe('Recommendations tab', () => {
       expect(screen.queryByText(/nothing needs your attention/i)).not.toBeInTheDocument();
     });
 
+    it('marks the visit when the cost finding could not be worked out, so its zero is not read as none', async () => {
+      const reportInteraction = mockReportInteraction();
+      mockFeatureToggles({ [FeatureName.CALs]: true });
+      server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ status: 500, json: {} }) }));
+
+      await renderTab([UNALERTED()]);
+
+      await waitFor(() =>
+        expect(reportInteraction).toHaveBeenCalledWith(
+          'synthetic-monitoring_recommendations_tab_viewed',
+          expect.objectContaining({ calsUnavailable: true, missingCostLabelsCount: 0 })
+        )
+      );
+    });
+
     it('waits for the labels before counting the visit, so the cost finding is in findingCount', async () => {
       const reportInteraction = mockReportInteraction();
       mockFeatureToggles({ [FeatureName.CALs]: true });
@@ -1022,7 +1163,7 @@ describe('Recommendations tab', () => {
       expect(scrollIntoView).toHaveBeenCalledTimes(1);
       expect(reportInteraction).toHaveBeenCalledWith(
         'synthetic-monitoring_recommendations_tab_viewed',
-        expect.objectContaining({ focusSource: 'paused-checks' })
+        expect.objectContaining({ focusFinding: 'paused-checks' })
       );
     });
 

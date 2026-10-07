@@ -2,7 +2,7 @@ import { DB } from 'test/db';
 
 import { Check, CheckAlertType, CheckType } from 'types';
 
-import { getRecommendedAlerts, runInBatches } from './Recommendations.alerts';
+import { getRecommendedAlerts, isFailure, runInBatches } from './Recommendations.alerts';
 
 const MINUTE = 60 * 1000;
 
@@ -82,5 +82,31 @@ describe('runInBatches', () => {
       'fulfilled',
       'fulfilled',
     ]);
+  });
+
+  it('stops submitting once cancelled, without counting the unsubmitted items as failures', async () => {
+    let cancelled = false;
+    const submitted: number[] = [];
+
+    const results = await runInBatches(
+      [1, 2, 3, 4, 5],
+      2,
+      async (item) => {
+        submitted.push(item);
+        // The tab unmounting mid-way through the first batch.
+        cancelled = true;
+
+        if (item === 2) {
+          throw new Error('boom');
+        }
+
+        return item;
+      },
+      () => cancelled
+    );
+
+    expect(submitted).toEqual([1, 2]);
+    expect(results).toHaveLength(5);
+    expect(results.filter(isFailure)).toHaveLength(1);
   });
 });

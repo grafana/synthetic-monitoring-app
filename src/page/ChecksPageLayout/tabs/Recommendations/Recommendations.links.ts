@@ -3,6 +3,21 @@ import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
+/** How the user got onto the tab. */
+export const SOURCE_PARAM = 'source';
+
+/** The ways onto the tab a dashboard can tell apart. Anything without a `source` is `direct`. */
+const ENTRY_POINTS = ['tab'] as const;
+export type RecommendationsEntryPoint = (typeof ENTRY_POINTS)[number] | 'direct';
+
+export function getEntryPoint(source: string | null): RecommendationsEntryPoint {
+  return ENTRY_POINTS.find((entryPoint) => entryPoint === source) ?? 'direct';
+}
+
+export function getRecommendationsTabUrl(tabUrl: string) {
+  return `${tabUrl}?${SOURCE_PARAM}=tab`;
+}
+
 // Param names and encodings have to match what `useCheckFilters` decodes.
 function getCheckListUrl(filters: Record<string, string>) {
   const params = new URLSearchParams(filters);

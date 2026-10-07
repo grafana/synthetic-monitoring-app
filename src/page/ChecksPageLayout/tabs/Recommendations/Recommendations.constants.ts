@@ -2,6 +2,9 @@ export const DISMISSED_FINDINGS_STORAGE_KEY = 'grafana.sm.recommendations.dismis
 
 export const DISMISSED_CHECKS_STORAGE_KEY = 'grafana.sm.recommendations.dismissedChecks';
 
+// Session storage: exposure is counted once per browser session.
+export const EXPOSED_STORAGE_KEY = 'grafana.sm.recommendations.exposed';
+
 export const ROWS_PER_PAGE = 25;
 
 // The SM API is a single replica.

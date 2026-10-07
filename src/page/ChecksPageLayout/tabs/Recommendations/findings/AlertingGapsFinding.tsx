@@ -5,6 +5,7 @@ import { Button, ConfirmModal, LinkButton, Stack, useStyles2 } from '@grafana/ui
 import {
   trackRecommendationActionCompleted,
   trackRecommendationActioned,
+  trackRecommendationActionFailed,
 } from 'features/tracking/recommendationEvents';
 
 import { FindingProps } from './Finding.types';
@@ -20,6 +21,7 @@ import {
   formatAlertThreshold,
   getAlertPlans,
   getRecommendedAlerts,
+  isFailure,
   runInBatches,
 } from '../Recommendations.alerts';
 import {
@@ -67,9 +69,19 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
       () => isUnmounted.current
     );
     const succeeded = targets.filter((_, index) => results[index].status === 'fulfilled').map((plan) => plan.check);
+    const failedCount = results.filter(isFailure).length;
+
+    if (failedCount > 0) {
+      trackRecommendationActionFailed({ finding: id, action: 'alerts_added', failedCount, scope });
+    }
 
     if (succeeded.length > 0) {
-      trackRecommendationActionCompleted({ finding: id, action: 'alerts_added', checkCount: succeeded.length, scope });
+      trackRecommendationActionCompleted({
+        finding: id,
+        action: 'alerts_added',
+        checkCount: succeeded.length,
+        scope,
+      });
       showAlert(
         'success',
         succeeded.length === 1
@@ -161,7 +173,15 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
             onDismiss={dismissCheck}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             onApplied={() =>
-              trackRecommendationActionCompleted({ finding: id, action: 'alerts_added', checkCount: 1, scope: 'check' })
+              trackRecommendationActionCompleted({
+                finding: id,
+                action: 'alerts_added',
+                checkCount: 1,
+                scope: 'check',
+              })
+            }
+            onFailed={() =>
+              trackRecommendationActionFailed({ finding: id, action: 'alerts_added', failedCount: 1, scope: 'check' })
             }
           />
         )}
@@ -194,9 +214,18 @@ interface AlertSetupRowProps {
   onDismiss: (check: Check) => void;
   onEditClick: () => void;
   onApplied: () => void;
+  onFailed: () => void;
 }
 
-function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditClick, onApplied }: AlertSetupRowProps) {
+function AlertSetupRow({
+  check,
+  isSelected,
+  onSelectChange,
+  onDismiss,
+  onEditClick,
+  onApplied,
+  onFailed,
+}: AlertSetupRowProps) {
   const styles = useStyles2(getStyles);
   const queryClient = useQueryClient();
   const { mutateAsync: updateAlerts, isPending } = useUpdateAlertsForCheck();
@@ -211,6 +240,7 @@ function AlertSetupRow({ check, isSelected, onSelectChange, onDismiss, onEditCli
       await updateAlerts({ alerts: alerts.map((alert) => alert.draft), checkId: check.id! });
     } catch {
       // The mutation's meta raises the error toast; the row stays open to retry.
+      onFailed();
       return;
     }
 

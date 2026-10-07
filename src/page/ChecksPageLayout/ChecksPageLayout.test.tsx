@@ -19,7 +19,18 @@ function renderAt(route: AppRoutes) {
   return render(<InitialisedRouter />, { path: generateRoutePath(route), route: '*' });
 }
 
+function mockReportInteraction() {
+  const reportInteraction = jest.fn();
+  jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+  return reportInteraction;
+}
+
+const EXPOSED = 'synthetic-monitoring_recommendations_tab_exposed';
+
 describe('Checks page tabs', () => {
+  beforeEach(() => sessionStorage.clear());
+
   describe('with recommendations enabled', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: true }));
 
@@ -29,7 +40,8 @@ describe('Checks page tabs', () => {
       const recommendations = await screen.findByRole('tab', { name: /recommendations/i });
 
       expect(within(recommendations).getByText('NEW')).toBeInTheDocument();
-      expect(recommendations).toHaveAttribute('href', expect.stringContaining('/checks/recommendations'));
+      // Tagged so the tab can tell a click on it from a typed URL or a refresh.
+      expect(recommendations).toHaveAttribute('href', expect.stringContaining('/checks/recommendations?source=tab'));
       expect(recommendations).toHaveAttribute('aria-selected', 'false');
       expect(screen.getByRole('tab', { name: /^checks$/i })).toHaveAttribute('aria-selected', 'true');
     });
@@ -46,6 +58,19 @@ describe('Checks page tabs', () => {
       expect(await screen.findByText(/findings derived from how your checks are configured/i)).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /recommendations/i })).toHaveAttribute('aria-selected', 'true');
     });
+
+    it('counts the tab as seen once per browser session, whichever tab the page opens on', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      const { unmount } = renderAt(AppRoutes.Checks);
+      expect(await screen.findByText(/create new check/i)).toBeInTheDocument();
+      unmount();
+
+      renderAt(AppRoutes.CheckRecommendations);
+      expect(await screen.findByText(/findings derived from how your checks are configured/i)).toBeInTheDocument();
+
+      expect(reportInteraction.mock.calls.filter(([event]) => event === EXPOSED)).toHaveLength(1);
+    });
   });
 
   describe('with recommendations disabled', () => {
@@ -56,6 +81,15 @@ describe('Checks page tabs', () => {
 
       expect(await screen.findByText(/create new check/i)).toBeInTheDocument();
       expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    });
+
+    it('does not count the tab as seen', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      renderAt(AppRoutes.Checks);
+
+      expect(await screen.findByText(/create new check/i)).toBeInTheDocument();
+      expect(reportInteraction.mock.calls.filter(([event]) => event === EXPOSED)).toHaveLength(0);
     });
 
     it('shows not found on the recommendations route', async () => {

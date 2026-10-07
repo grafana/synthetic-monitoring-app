@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { t, Trans } from '@grafana/i18n';
 import { Alert, Button, EmptyState, LoadingPlaceholder, Stack, Text, useStyles2 } from '@grafana/ui';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
@@ -17,6 +17,7 @@ import { AlertingGapsFinding } from './findings/AlertingGapsFinding';
 import { MissingCostLabelsFinding } from './findings/MissingCostLabelsFinding';
 import { PausedChecksFinding } from './findings/PausedChecksFinding';
 import { RedundancyFinding } from './findings/RedundancyFinding';
+import { countDismissedChecks, getFindingSnapshot } from './Recommendations.analytics';
 import { countDistinctChecks, summariseCategories } from './Recommendations.categories';
 import { AttentionRow, CategoryRail, SeverityLegend } from './Recommendations.components';
 import { getCategoryCopy, getRecommendationCopy } from './Recommendations.copy';
@@ -24,34 +25,45 @@ import {
   ATTENTION_VIEW,
   useDismissedCheckMap,
   useDismissedRecommendations,
+  useEntryPoint,
   useRecommendationImpressions,
   useRecommendationsView,
 } from './Recommendations.hooks';
+import { RecommendationsEntryPoint } from './Recommendations.links';
 import { getStyles } from './Recommendations.styles';
 import { computeRecommendations } from './Recommendations.utils';
 
 const NO_FINDINGS: Recommendation[] = [];
 
 export function RecommendationsTab() {
+  // Read here, above the suspense boundary, so the duration covers loading the checks too.
+  const [openedAt] = useState(() => performance.now());
+  const entryPoint = useEntryPoint();
+
   return (
     <QueryErrorBoundary>
-      <RecommendationsTabChecks />
+      <RecommendationsTabChecks openedAt={openedAt} entryPoint={entryPoint} />
     </QueryErrorBoundary>
   );
 }
 
+interface VisitOrigin {
+  openedAt: number;
+  entryPoint: RecommendationsEntryPoint;
+}
+
 // Findings act on checks, so they need the same folder-level permissions the check list uses.
-function RecommendationsTabChecks() {
+function RecommendationsTabChecks(origin: VisitOrigin) {
   const { data: checks } = useSuspenseChecks();
 
   return (
     <CheckFolderAccessProvider checks={checks}>
-      <RecommendationsTabContent />
+      <RecommendationsTabContent {...origin} />
     </CheckFolderAccessProvider>
   );
 }
 
-function RecommendationsTabContent() {
+function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
   const styles = useStyles2(getStyles);
   // Visible, not all: a check in a folder the user cannot read is hidden on the Checks page, so
   // its job and target must not reach a finding here either.
@@ -83,14 +95,22 @@ function RecommendationsTabContent() {
   const active = categories.find(({ category }) => category.id === view);
   const dismissedChecks = useDismissedCheckMap();
 
-  useRecommendationImpressions({
-    visible,
-    shown: active?.findings ?? NO_FINDINGS,
-    checkCount: checks.length,
-    dismissedCount,
-    focusedId,
-    isComplete: !isSettling,
-  });
+  const getVisit = useCallback(
+    () => ({
+      findingCount: recommendations.length,
+      dismissedCount,
+      dismissedCheckCount: countDismissedChecks(recommendations, dismissedChecks),
+      checkCount: checks.length,
+      ...getFindingSnapshot(recommendations),
+      entryPoint,
+      focusFinding: focusedId,
+      durationMs: Math.round(performance.now() - openedAt),
+      calsUnavailable: isCALsUnavailable,
+    }),
+    [recommendations, dismissedCount, dismissedChecks, checks.length, entryPoint, focusedId, openedAt, isCALsUnavailable]
+  );
+
+  useRecommendationImpressions({ shown: active?.findings ?? NO_FINDINGS, getVisit, isComplete: !isSettling });
 
   // Before the empty state: an incomplete list must not be mistaken for an empty one.
   if (isSettling) {

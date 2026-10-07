@@ -6,6 +6,7 @@ import { Button, LinkButton } from '@grafana/ui';
 import {
   trackRecommendationActionCompleted,
   trackRecommendationActioned,
+  trackRecommendationActionFailed,
 } from 'features/tracking/recommendationEvents';
 
 import { FindingProps } from './Finding.types';
@@ -48,6 +49,12 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
       await bulkUpdateChecks(submitted.map((check) => ({ ...check, enabled: true })));
     } catch {
       // The mutation's meta raises the error toast; the selection stays for a retry.
+      trackRecommendationActionFailed({
+        finding: id,
+        action: 'check_resumed',
+        failedCount: submitted.length,
+        scope: 'selection',
+      });
       return;
     }
 
@@ -121,6 +128,9 @@ export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, i
                 scope: 'check',
               })
             }
+            onFailed={() =>
+              trackRecommendationActionFailed({ finding: id, action: 'check_resumed', failedCount: 1, scope: 'check' })
+            }
           />
         )}
       />
@@ -135,9 +145,18 @@ interface PausedCheckRowProps {
   onDismiss: (check: Check) => void;
   onEditClick: () => void;
   onResumed: () => void;
+  onFailed: () => void;
 }
 
-function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditClick, onResumed }: PausedCheckRowProps) {
+function PausedCheckRow({
+  check,
+  isSelected,
+  onSelectChange,
+  onDismiss,
+  onEditClick,
+  onResumed,
+  onFailed,
+}: PausedCheckRowProps) {
   const queryClient = useQueryClient();
   const { mutateAsync: updateCheck } = useUpdateCheck();
   const { canWrite } = useCheckPermissions(check);
@@ -153,6 +172,7 @@ function PausedCheckRow({ check, isSelected, onSelectChange, onDismiss, onEditCl
     } catch {
       // The mutation's meta raises the error toast.
       setIsResuming(false);
+      onFailed();
       return;
     }
 
