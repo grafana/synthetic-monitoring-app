@@ -2,9 +2,6 @@ import { createSMEventFactory, TrackingEventProps } from 'features/tracking/util
 
 const recommendationEvents = createSMEventFactory('recommendations');
 
-/** Tracks the Checks page being shown with the Recommendations tab available, once per browser session. */
-export const trackRecommendationsTabExposed = recommendationEvents('tab_exposed');
-
 export interface TabViewed extends TrackingEventProps {
   /** Findings for this tenant, dismissed ones included. */
   findingCount: number;

@@ -1,10 +1,6 @@
-import { useEffect } from 'react';
-import { trackRecommendationsTabExposed } from 'features/tracking/recommendationEvents';
-
 import { DismissedChecks, Recommendation, RecommendationId } from './Recommendations.types';
 
 import { countDistinctChecks } from './Recommendations.categories';
-import { EXPOSED_STORAGE_KEY } from './Recommendations.constants';
 
 export interface FindingSnapshot {
   affectedCheckCount: number;
@@ -41,19 +37,4 @@ export function countDismissedChecks(recommendations: Recommendation[], dismisse
 
     return total + checks.filter((check) => dismissedIds.has(check.id!)).length;
   }, 0);
-}
-
-/**
- * The denominator for adoption: sessions that could have opened the tab. Reported from the Checks
- * page, which shows the tab whichever of its tabs is open.
- */
-export function useTrackRecommendationsExposure(isEnabled: boolean) {
-  useEffect(() => {
-    if (!isEnabled || window.sessionStorage.getItem(EXPOSED_STORAGE_KEY)) {
-      return;
-    }
-
-    window.sessionStorage.setItem(EXPOSED_STORAGE_KEY, 'true');
-    trackRecommendationsTabExposed();
-  }, [isEnabled]);
 }

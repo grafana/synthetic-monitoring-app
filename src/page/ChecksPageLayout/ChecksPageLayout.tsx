@@ -10,7 +10,6 @@ import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { NewBadge } from 'components/NewStatusBadge';
 
-import { useTrackRecommendationsExposure } from './tabs/Recommendations/Recommendations.analytics';
 import { getRecommendationsTabUrl } from './tabs/Recommendations/Recommendations.links';
 
 // Only the tabbed routes sit under this; the editor and dashboards keep their own page chrome.
@@ -18,7 +17,6 @@ export function ChecksPageLayout() {
   const getChecksTabUrl = useTabUrl(AppRoutes.Checks);
   const activeTab = useActiveTab(AppRoutes.Checks);
   const { isEnabled: isRecommendationsEnabled } = useFeatureFlag(FeatureName.Recommendations);
-  useTrackRecommendationsExposure(isRecommendationsEnabled);
 
   const pageNav: NavModelItem | undefined = useMemo(() => {
     // With the only sibling tab off there is nothing to switch between.

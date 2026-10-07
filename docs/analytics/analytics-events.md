@@ -492,10 +492,6 @@ Tracks when a private probe's token is reset.
 
 ### recommendations
 
-#### synthetic-monitoring_recommendations_tab_exposed
-
-Tracks the Checks page being shown with the Recommendations tab available, once per browser session.
-
 #### synthetic-monitoring_recommendations_tab_viewed
 
 Tracks a visit to the Recommendations tab.
