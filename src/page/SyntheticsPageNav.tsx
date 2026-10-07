@@ -16,7 +16,7 @@ export enum SyntheticsTab {
 export interface SyntheticsTabVisibility {
   checks: boolean;
   probes: boolean;
-  recommendations: boolean;
+  checkSuggestions: boolean;
 }
 
 // Distinct from /home and the plugin root so Grafana does not skip the Synthetics section crumb.
@@ -59,9 +59,9 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
   }
 
   // Check Suggestions renders its own page header, so this tab is never the active one.
-  if (visibility.recommendations) {
+  if (visibility.checkSuggestions) {
     tabs.push({
-      text: 'Recommendations',
+      text: 'Check Suggestions',
       url: getRoute(AppRoutes.ReliabilityInbox),
       tabSuffix: NewFeatureTabSuffix,
     });

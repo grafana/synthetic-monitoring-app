@@ -1,5 +1,6 @@
 import React, { type ReactNode, useMemo } from 'react';
 import { PluginPage } from '@grafana/runtime';
+import { useAIAllowed } from 'features/reliabilityInbox/data';
 
 import { FeatureName } from 'types';
 import { useUserPermissions } from 'data/permissions';
@@ -14,14 +15,16 @@ interface SyntheticsPluginPageProps {
 export function SyntheticsPluginPage({ activeTab, children }: SyntheticsPluginPageProps) {
   const { canReadChecks, canReadProbes } = useUserPermissions();
   const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
+  const { allowed: isAIAllowed } = useAIAllowed();
   const pageNav = useMemo(
     () =>
       getSyntheticsPageNav(activeTab, {
         checks: canReadChecks,
         probes: canReadProbes,
-        recommendations: isCheckSuggestionsEnabled && canReadChecks,
+        // Same gate as the Check Suggestions banner, plus the permission its page needs.
+        checkSuggestions: isCheckSuggestionsEnabled && isAIAllowed && canReadChecks,
       }),
-    [activeTab, canReadChecks, canReadProbes, isCheckSuggestionsEnabled]
+    [activeTab, canReadChecks, canReadProbes, isCheckSuggestionsEnabled, isAIAllowed]
   );
 
   return (
