@@ -172,6 +172,38 @@ func TestReliabilityInboxBaseURL(t *testing.T) {
 			apiHost: "https://example.com",
 			want:    "",
 		},
+		"prod region": {
+			apiHost: "https://synthetic-monitoring-api-us-east-0.grafana.net",
+			want:    "https://k6-experiments-prod-us-east-0.grafana.net",
+		},
+		"prod us-central-0 has no region in its host": {
+			apiHost: "https://synthetic-monitoring-api.grafana.net",
+			want:    "https://k6-experiments-prod-us-central-0.grafana.net",
+		},
+		"prod eu-west drops the cell number": {
+			apiHost: "synthetic-monitoring-api-eu-west.grafana.net",
+			want:    "https://k6-experiments-prod-eu-west-0.grafana.net",
+		},
+		"prod au-southeast drops the cell number": {
+			apiHost: "synthetic-monitoring-api-au-southeast.grafana.net",
+			want:    "https://k6-experiments-prod-au-southeast-0.grafana.net",
+		},
+		"prod gb-south drops the cell number": {
+			apiHost: "synthetic-monitoring-api-gb-south.grafana.net",
+			want:    "https://k6-experiments-prod-gb-south-0.grafana.net",
+		},
+		"prod cell under a provider subdomain": {
+			apiHost: "https://synthetic-monitoring-api-eu-west-7.aws-eu-central-1-1.grafana.net",
+			want:    "https://k6-experiments-prod-eu-west-7.aws-eu-central-1-1.grafana.net",
+		},
+		"bare host outside prod has no region": {
+			apiHost: "https://synthetic-monitoring-api.grafana-ops.net",
+			want:    "",
+		},
+		"not an SM host on grafana.net": {
+			apiHost: "https://grafana.net",
+			want:    "",
+		},
 	}
 
 	for name, test := range tests {

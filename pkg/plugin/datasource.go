@@ -278,6 +278,15 @@ func (d *Datasource) handleHealth(
 	return sendResourceResponse(sender, response.StatusCode, "reliability inbox health check")
 }
 
+// prodRegionAliases maps the prod SM API hosts that drop the cell number to
+// their cell. They mirror hostnameRegionOverrides in deployment_tools'
+// ksonnet/lib/synthetic-monitoring/hostnames.libsonnet.
+var prodRegionAliases = map[string]string{
+	"au-southeast": "au-southeast-0",
+	"eu-west":      "eu-west-0",
+	"gb-south":     "gb-south-0",
+}
+
 func reliabilityInboxBaseURL(apiHost string) string {
 	trimmed := strings.TrimSpace(apiHost)
 	if trimmed == "" {
@@ -312,15 +321,32 @@ func reliabilityInboxBaseURL(apiHost string) string {
 		environment = "dev"
 	case strings.HasSuffix(hostname, ".grafana-ops.net"):
 		environment = "ops"
+	case strings.HasSuffix(hostname, ".grafana.net"):
+		environment = "prod"
 	}
 
-	if environment == "" || !strings.HasPrefix(label, apiPrefix) {
+	if environment == "" {
 		return ""
 	}
 
-	region := strings.TrimPrefix(label, apiPrefix)
+	var region string
+
+	switch {
+	// prod-us-central-0's API is the one SM host without a region at all.
+	case environment == "prod" && label == "synthetic-monitoring-api":
+		region = "us-central-0"
+	case strings.HasPrefix(label, apiPrefix):
+		region = strings.TrimPrefix(label, apiPrefix)
+	default:
+		return ""
+	}
+
 	if environment == "dev" && region == "dev" {
 		region = "us-central-0"
+	}
+
+	if cell, ok := prodRegionAliases[region]; ok && environment == "prod" {
+		region = cell
 	}
 
 	if region == "" {
