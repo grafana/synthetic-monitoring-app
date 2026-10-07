@@ -278,13 +278,17 @@ func (d *Datasource) handleHealth(
 	return sendResourceResponse(sender, response.StatusCode, "reliability inbox health check")
 }
 
-// prodRegionAliases maps the prod SM API hosts that drop the cell number to
-// their cell. They mirror hostnameRegionOverrides in deployment_tools'
-// ksonnet/lib/synthetic-monitoring/hostnames.libsonnet.
+// prodRegionAliases maps the prod SM API hosts that don't name their cell to
+// that cell. Most drop the cell number, mirroring hostnameRegionOverrides in
+// deployment_tools' ksonnet/lib/synthetic-monitoring/hostnames.libsonnet.
 var prodRegionAliases = map[string]string{
 	"au-southeast": "au-southeast-0",
 	"eu-west":      "eu-west-0",
 	"gb-south":     "gb-south-0",
+	// The legacy name of prod-us-central-7, which existing stacks may still
+	// have as their apiHost (see LEGACY_US_CENTRAL2_ENTRY in
+	// src/hooks/useProbeApiServer.ts).
+	"us-central2": "us-central-7",
 }
 
 func reliabilityInboxBaseURL(apiHost string) string {

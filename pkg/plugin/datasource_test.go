@@ -196,6 +196,10 @@ func TestReliabilityInboxBaseURL(t *testing.T) {
 			apiHost: "https://synthetic-monitoring-api-eu-west-7.aws-eu-central-1-1.grafana.net",
 			want:    "https://k6-experiments-prod-eu-west-7.aws-eu-central-1-1.grafana.net",
 		},
+		"prod legacy us-central2 is us-central-7": {
+			apiHost: "https://synthetic-monitoring-api-us-central2.grafana.net",
+			want:    "https://k6-experiments-prod-us-central-7.grafana.net",
+		},
 		"bare host outside prod has no region": {
 			apiHost: "https://synthetic-monitoring-api.grafana-ops.net",
 			want:    "",
