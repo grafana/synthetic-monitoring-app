@@ -1,0 +1,43 @@
+# Companion Knowledge Graph rule for the check editor's feo11y_app_id label.
+# Requires existing Frontend and SyntheticCheck discovery rules.
+name: synthetic-monitoring-frontend-connections
+entities:
+  - type: SyntheticCheck
+    name: sm_check_id | service
+    scope:
+      env: asserts_env
+    enrichedBy:
+      - query: |-
+          label_join(
+            label_replace(
+              group by (job, instance, frontend_app_id) (
+                label_replace(
+                  label_replace(
+                    label_replace(
+                      group by (job, instance, feo11y_app_id, label_feo11y_app_id) (
+                        sm_check_info
+                      ),
+                      "frontend_app_id", "__none__", "", ""
+                    ),
+                    "frontend_app_id", "$1", "label_feo11y_app_id", "(.+)"
+                  ),
+                  "frontend_app_id", "$1", "feo11y_app_id", "(.+)"
+                )
+              ),
+              "asserts_env", "none", "", ""
+            ),
+            "sm_check_id", "__", "job", "instance"
+          )
+        labelValues:
+          frontend_app_id: frontend_app_id
+relations:
+  - type: MONITORED_BY
+    startEntityType: Frontend
+    endEntityType: SyntheticCheck
+    definedBy:
+      source: PROPERTY_MATCH
+      startEntityProperties: [feo11y_app_id]
+      endEntityProperties: [frontend_app_id]
+      staticProperties:
+        alertBackPropagate: true
+        propagatedInsightDisplay: connected

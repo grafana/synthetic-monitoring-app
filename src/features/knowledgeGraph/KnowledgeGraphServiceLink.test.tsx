@@ -1,22 +1,26 @@
 import React, { ReactNode } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useAppPluginInstalled } from '@grafana/runtime';
-import { screen, waitFor } from '@testing-library/react';
-import { http, HttpResponse } from 'msw';
+import { act, screen, waitFor } from '@testing-library/react';
+import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
+import { KG_FRONTEND_APPS } from 'test/fixtures/knowledgeGraph';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
 
 import { CheckFormValues, FeatureName, Label } from 'types';
+import { toFormValues } from 'components/Checkster/utils/adaptors';
 
 import { KnowledgeGraphServiceLink } from './KnowledgeGraphServiceLink';
 
-const KG_API_BASE = '/api/plugins/grafana-asserts-app/resources/asserts/api-server';
-const PROPERTY_VALUES_URL = `${KG_API_BASE}/v1/entity_type/property_values`;
-const ENTITY_SEARCH_URL = `${KG_API_BASE}/v1/search`;
-const CLEAR_ICON = 'times';
-
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
+const SERVICE_LABELS: Label[] = [
+  { name: 'service_name', value: 'frontend' },
+  { name: 'namespace', value: 'otel-demo' },
+];
+const FRONTEND_LABEL: Label = { name: 'feo11y_app_id', value: '229' };
+const CUSTOM_LABEL: Label = { name: 'app', value: 'banking' };
 
 function setKgInstalled(value: boolean) {
   mockUseAppPluginInstalled.mockReturnValue({ loading: false, error: undefined, value });
@@ -30,20 +34,25 @@ interface MockKgApiOptions {
 
 function mockKgApi({ names = [], namespaces = [], matchingServices = [] }: MockKgApiOptions) {
   server.use(
-    http.post(PROPERTY_VALUES_URL, async ({ request }) => {
-      const body = (await request.json()) as { propertyName?: string };
-      const values = body?.propertyName === 'namespace' ? namespaces : names;
-      return HttpResponse.json({ values });
+    apiRoute('getKnowledgeGraphPropertyValues', {
+      result: async (request) => {
+        const body = await request.json();
+        return { json: { values: body.propertyName === 'namespace' ? namespaces : names } };
+      },
     }),
-    http.post(ENTITY_SEARCH_URL, async ({ request }) => {
-      const body = (await request.json()) as {
-        filterCriteria?: Array<{ propertyMatchers?: Array<{ op?: string; value?: string }> }>;
-      };
-      const requestedName = body?.filterCriteria?.[0]?.propertyMatchers?.find((m) => m.op === '=')?.value;
-      const entities = matchingServices
-        .filter((service) => service.name === requestedName)
-        .map((service) => ({ name: service.name, scope: { namespace: service.namespace } }));
-      return HttpResponse.json({ data: { entities } });
+    apiRoute('searchKnowledgeGraphEntities', {
+      result: async (request) => {
+        const body = await request.json();
+        const criteria = body.filterCriteria?.[0];
+        if (criteria?.entityType === 'Frontend') {
+          return { json: { data: { entities: KG_FRONTEND_APPS, lastPage: true } } };
+        }
+        const requestedName = criteria?.propertyMatchers?.find((m: { op?: string }) => m.op === '=')?.value;
+        const entities = matchingServices
+          .filter((service) => service.name === requestedName)
+          .map((service) => ({ name: service.name, scope: { namespace: service.namespace } }));
+        return { json: { data: { entities } } };
+      },
     })
   );
 }
@@ -51,17 +60,26 @@ function mockKgApi({ names = [], namespaces = [], matchingServices = [] }: MockK
 interface RenderOptions {
   labels?: Label[];
   calLabels?: Label[];
+  disabled?: boolean;
+  loadedLabels?: Promise<Label[]>;
 }
 
-function renderServiceLink({ labels = [], calLabels = [] }: RenderOptions = {}) {
+function renderServiceLink({ labels = [], calLabels = [], disabled = false, loadedLabels }: RenderOptions = {}) {
+  const defaultValues = { ...toFormValues(BASIC_HTTP_CHECK), labels, calLabels };
   const Wrapper = ({ children }: { children: ReactNode }) => {
-    const form = useForm<CheckFormValues>({ defaultValues: { labels, calLabels } });
+    const form = useForm<CheckFormValues>({
+      defaultValues: loadedLabels ? async () => ({ ...defaultValues, labels: await loadedLabels }) : defaultValues,
+      disabled,
+    });
 
     return (
       <FormProvider {...form}>
         {children}
         <div data-testid="labels-output">{JSON.stringify(form.watch('labels'))}</div>
         <div data-testid="cal-labels-output">{JSON.stringify(form.watch('calLabels'))}</div>
+        <button type="button" disabled={!form.formState.isDirty}>
+          Save labels
+        </button>
       </FormProvider>
     );
   };
@@ -73,142 +91,213 @@ function renderServiceLink({ labels = [], calLabels = [] }: RenderOptions = {}) 
   );
 }
 
+async function addConnection(user: ReturnType<typeof render>['user'], type: 'Service' | 'Frontend application') {
+  await user.click(await screen.findByRole('button', { name: 'Add connection' }));
+  await user.click(await screen.findByRole('menuitem', { name: new RegExp(`^${type}`) }));
+}
+
 beforeEach(() => {
   testUsesCombobox();
   mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  setKgInstalled(true);
 });
 
-it(`renders nothing when the Knowledge Graph app is not installed`, async () => {
+it('renders nothing when the Knowledge Graph app is not installed', async () => {
   setKgInstalled(false);
   renderServiceLink();
 
-  expect(screen.queryByText('Link to Knowledge Graph service')).not.toBeInTheDocument();
+  expect(screen.queryByText('Knowledge Graph connections')).not.toBeInTheDocument();
 });
 
-it(`renders nothing when the feature flag is disabled, even with the app installed`, async () => {
+it('renders nothing when the feature flag is disabled, even with the app installed', async () => {
   mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
-  setKgInstalled(true);
   renderServiceLink();
 
-  expect(screen.queryByPlaceholderText('Select or type a service name')).not.toBeInTheDocument();
+  expect(screen.queryByText('Knowledge Graph connections')).not.toBeInTheDocument();
 });
 
-it(`shows the service link fields directly, with no expand or remove actions`, async () => {
-  setKgInstalled(true);
-  mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
-  renderServiceLink();
+it('adds, removes, and re-adds draft connections without changing labels or dirtying the form', async () => {
+  const { user } = renderServiceLink({ labels: [CUSTOM_LABEL] });
 
-  expect(await screen.findByPlaceholderText('Select or type a service name')).toBeInTheDocument();
-  expect(screen.getByPlaceholderText('Select or type a namespace')).toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: 'Service link' })).not.toBeInTheDocument();
-  expect(screen.queryByRole('button', { name: 'Remove service link' })).not.toBeInTheDocument();
+  expect(await screen.findByText('No connections added.')).toBeInTheDocument();
+  expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+  expect(screen.getAllByText('Changes apply after saving and may take a few minutes to appear.')).toHaveLength(1);
+
+  await addConnection(user, 'Service');
+  expect(screen.getByRole('combobox', { name: 'Service name' })).toHaveValue('');
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Service name' })).toHaveFocus());
+  expect(screen.getByRole('combobox', { name: 'Namespace' })).toHaveValue('');
+  expect(screen.queryByText('No connections added.')).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Save labels' })).toBeDisabled();
+
+  await user.click(await screen.findByRole('button', { name: 'Add connection' }));
+  expect(screen.queryByRole('menuitem', { name: /^Service/ })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('menuitem', { name: /^Frontend application/ }));
+  expect(await screen.findByRole('combobox', { name: 'Frontend application' })).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Frontend application' })).toHaveFocus());
+  expect(screen.queryByRole('button', { name: 'Add connection' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Save labels' })).toBeDisabled();
+
+  await user.click(screen.getByRole('button', { name: 'Remove service connection' }));
+  expect(screen.queryByRole('combobox', { name: 'Service name' })).not.toBeInTheDocument();
+  expect(screen.getByRole('combobox', { name: 'Frontend application' })).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Add connection' })).toHaveFocus());
+  await user.click(screen.getByRole('button', { name: 'Remove frontend connection' }));
+  expect(screen.getByText('No connections added.')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole('button', { name: 'Add connection' })).toHaveFocus());
+  expect(screen.getByRole('button', { name: 'Save labels' })).toBeDisabled();
+
+  await addConnection(user, 'Frontend application');
+  expect(await screen.findByRole('combobox', { name: 'Frontend application' })).toHaveValue('');
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Frontend application' })).toHaveFocus());
+  expect(screen.getByTestId('labels-output')).toHaveTextContent(JSON.stringify([CUSTOM_LABEL]));
+  expect(screen.getByRole('button', { name: 'Save labels' })).toBeDisabled();
 });
 
-it(`pre-populates the fields from existing service_name / namespace labels`, async () => {
-  setKgInstalled(true);
-  mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
-  renderServiceLink({
-    labels: [
-      { name: 'service_name', value: 'frontend' },
-      { name: 'namespace', value: 'otel-demo' },
-    ],
+it('shows only the saved frontend and offers the missing service connection', async () => {
+  const { user } = renderServiceLink({ labels: [FRONTEND_LABEL] });
+
+  expect(await screen.findByDisplayValue('banking · production')).toBeInTheDocument();
+  expect(screen.queryByRole('combobox', { name: 'Service name' })).not.toBeInTheDocument();
+  expect(screen.queryByText(/Matching frontend found/)).not.toBeInTheDocument();
+  await user.click(await screen.findByRole('button', { name: 'Add connection' }));
+  expect(screen.getByRole('menuitem', { name: /^Service/ })).toBeInTheDocument();
+  expect(screen.queryByRole('menuitem', { name: /^Frontend application/ })).not.toBeInTheDocument();
+});
+
+it('shows saved service fields, including a connection configured only with a namespace', async () => {
+  renderServiceLink({ labels: [{ name: 'namespace', value: 'otel-demo' }] });
+
+  expect(await screen.findByRole('combobox', { name: 'Namespace' })).toHaveValue('otel-demo');
+  expect(screen.getByRole('combobox', { name: 'Service name' })).toHaveValue('');
+  expect(screen.queryByRole('combobox', { name: 'Frontend application' })).not.toBeInTheDocument();
+});
+
+it('restores connections when saved labels finish loading after the section mounts', async () => {
+  let resolveLabels!: (labels: Label[]) => void;
+  const loadedLabels = new Promise<Label[]>((resolve) => {
+    resolveLabels = resolve;
+  });
+  renderServiceLink({ loadedLabels });
+
+  expect(await screen.findByText('No connections added.')).toBeInTheDocument();
+  await act(async () => {
+    resolveLabels([...SERVICE_LABELS, FRONTEND_LABEL]);
   });
 
   expect(await screen.findByDisplayValue('frontend')).toBeInTheDocument();
   expect(screen.getByDisplayValue('otel-demo')).toBeInTheDocument();
+  expect(await screen.findByDisplayValue('banking · production')).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Add connection' })).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Save labels' })).toBeDisabled();
 });
 
-it(`writes service_name and namespace into the check labels when a service is selected`, async () => {
-  setKgInstalled(true);
+it('writes service_name and namespace into check labels when a service is selected', async () => {
   mockKgApi({ names: ['frontend', 'cartservice'], namespaces: ['otel-demo'] });
   const { user } = renderServiceLink();
 
-  const serviceInput = await screen.findByPlaceholderText('Select or type a service name');
-  await user.click(serviceInput);
+  await addConnection(user, 'Service');
+  await user.click(screen.getByRole('combobox', { name: 'Service name' }));
   await user.click(await screen.findByRole('option', { name: 'frontend' }));
-
-  await waitFor(() => {
-    expect(screen.getByTestId('labels-output')).toHaveTextContent('"name":"service_name","value":"frontend"');
-  });
-
-  const namespaceInput = screen.getByPlaceholderText('Select or type a namespace');
-  await user.click(namespaceInput);
+  await user.click(screen.getByRole('combobox', { name: 'Namespace' }));
   await user.click(await screen.findByRole('option', { name: 'otel-demo' }));
 
-  await waitFor(() => {
-    expect(screen.getByTestId('labels-output')).toHaveTextContent('"name":"namespace","value":"otel-demo"');
-  });
+  expect(screen.getByTestId('labels-output')).toHaveTextContent(JSON.stringify(SERVICE_LABELS));
+  expect(screen.getByRole('button', { name: 'Save labels' })).toBeEnabled();
 });
 
-it(`writes to calLabels instead of labels when service_name is a cost attribution label`, async () => {
-  setKgInstalled(true);
+it('adds an empty CAL-managed service connection and writes to its cost attribution field', async () => {
   mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
   const { user } = renderServiceLink({ calLabels: [{ name: 'service_name', value: '' }] });
 
-  const serviceInput = await screen.findByPlaceholderText('Select or type a service name');
-  await user.click(serviceInput);
+  expect(await screen.findByText('No connections added.')).toBeInTheDocument();
+  await addConnection(user, 'Service');
+  await user.click(screen.getByRole('combobox', { name: 'Service name' }));
   await user.click(await screen.findByRole('option', { name: 'frontend' }));
 
-  await waitFor(() => {
-    expect(screen.getByTestId('cal-labels-output')).toHaveTextContent('"name":"service_name","value":"frontend"');
-  });
+  expect(screen.getByTestId('cal-labels-output')).toHaveTextContent('"name":"service_name","value":"frontend"');
   expect(screen.getByTestId('labels-output')).not.toHaveTextContent('service_name');
 });
 
-it(`offers a clearable combobox per row as the only way to unset a value`, async () => {
-  setKgInstalled(true);
-  mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'] });
-  renderServiceLink({
-    labels: [
-      { name: 'service_name', value: 'frontend' },
-      { name: 'namespace', value: 'otel-demo' },
-    ],
+it('removes both service labels while preserving the frontend and unrelated custom labels', async () => {
+  const { user } = renderServiceLink({ labels: [...SERVICE_LABELS, FRONTEND_LABEL, CUSTOM_LABEL] });
+
+  expect(await screen.findByDisplayValue('banking · production')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Remove service connection' }));
+
+  expect(screen.queryByRole('combobox', { name: 'Service name' })).not.toBeInTheDocument();
+  expect(screen.getByRole('combobox', { name: 'Frontend application' })).toHaveValue('banking · production');
+  expect(screen.getByTestId('labels-output')).toHaveTextContent(JSON.stringify([FRONTEND_LABEL, CUSTOM_LABEL]));
+
+  await addConnection(user, 'Service');
+  expect(screen.getByRole('combobox', { name: 'Service name' })).toHaveValue('');
+  expect(screen.getByRole('combobox', { name: 'Namespace' })).toHaveValue('');
+});
+
+it('removes CAL-managed service values without deleting fixed CAL rows or other connections', async () => {
+  const { user } = renderServiceLink({
+    labels: [CUSTOM_LABEL],
+    calLabels: [...SERVICE_LABELS, FRONTEND_LABEL, { name: 'team', value: 'payments' }],
   });
 
   expect(await screen.findByDisplayValue('frontend')).toBeInTheDocument();
-  // the combobox clear affordance (its click handler is not wired up under the test's
-  // inline-svg mock, so what clearing does to the labels is covered in the hooks test)
-  expect(screen.getAllByTestId(CLEAR_ICON)).toHaveLength(2);
+  expect(await screen.findByDisplayValue('banking · production')).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Remove service connection' }));
+
+  expect(screen.getByTestId('cal-labels-output')).toHaveTextContent(
+    JSON.stringify([
+      { name: 'service_name', value: '' },
+      { name: 'namespace', value: '' },
+      FRONTEND_LABEL,
+      { name: 'team', value: 'payments' },
+    ])
+  );
+  expect(screen.getByTestId('labels-output')).toHaveTextContent(JSON.stringify([CUSTOM_LABEL]));
+  expect(screen.queryByRole('combobox', { name: 'Service name' })).not.toBeInTheDocument();
 });
 
-it(`shows a confirmation when the selected service exists in the Knowledge Graph`, async () => {
-  setKgInstalled(true);
-  mockKgApi({
-    names: ['frontend'],
-    namespaces: ['otel-demo'],
-    matchingServices: [{ name: 'frontend', namespace: 'otel-demo' }],
-  });
-  renderServiceLink({
-    labels: [
-      { name: 'service_name', value: 'frontend' },
-      { name: 'namespace', value: 'otel-demo' },
-    ],
-  });
+it('does not show a persistent success message for a matching service', async () => {
+  const requests: Request[] = [];
+  server.use(
+    apiRoute(
+      'searchKnowledgeGraphEntities',
+      {
+        result: () => ({ json: { data: { entities: [{ name: 'frontend', scope: { namespace: 'otel-demo' } }] } } }),
+      },
+      (request) => requests.push(request)
+    )
+  );
+  renderServiceLink({ labels: SERVICE_LABELS });
 
-  expect(await screen.findByText(/Will link to service frontend \(namespace otel-demo\)/)).toBeInTheDocument();
+  expect(await screen.findByDisplayValue('frontend')).toBeInTheDocument();
+  await waitFor(() => expect(requests).toHaveLength(1));
+  expect(screen.queryByText(/Matching service/)).not.toBeInTheDocument();
+  expect(screen.queryByText(/No matching service/)).not.toBeInTheDocument();
 });
 
-it(`shows a hint when no matching service exists in the Knowledge Graph yet`, async () => {
-  setKgInstalled(true);
+it('shows a hint when no matching service exists in the Knowledge Graph yet', async () => {
   mockKgApi({ names: ['frontend'], namespaces: ['otel-demo'], matchingServices: [] });
   renderServiceLink({ labels: [{ name: 'service_name', value: 'my-new-service' }] });
 
   expect(await screen.findByText(/No matching service in the Knowledge Graph yet/)).toBeInTheDocument();
 });
 
-it(`treats a namespace mismatch as no match`, async () => {
-  setKgInstalled(true);
+it('treats a namespace mismatch as no match', async () => {
   mockKgApi({
     names: ['frontend'],
     namespaces: ['otel-demo'],
     matchingServices: [{ name: 'frontend', namespace: 'other-namespace' }],
   });
-  renderServiceLink({
-    labels: [
-      { name: 'service_name', value: 'frontend' },
-      { name: 'namespace', value: 'otel-demo' },
-    ],
-  });
+  renderServiceLink({ labels: SERVICE_LABELS });
 
   expect(await screen.findByText(/No matching service in the Knowledge Graph yet/)).toBeInTheDocument();
+});
+
+it('disables service editing, removal, and adding another connection in a read-only form', async () => {
+  renderServiceLink({ labels: SERVICE_LABELS, disabled: true });
+
+  expect(await screen.findByRole('combobox', { name: 'Service name' })).toBeDisabled();
+  expect(screen.getByRole('combobox', { name: 'Namespace' })).toBeDisabled();
+  expect(screen.getByRole('button', { name: 'Remove service connection' })).toBeDisabled();
+  expect(await screen.findByRole('button', { name: 'Add connection' })).toBeDisabled();
 });

@@ -133,9 +133,9 @@ describe('useKGReservedLabels', () => {
     const { result } = renderReservedLabels();
 
     await waitForHookRender(result);
-    expect(result.current?.names).toEqual(['service_name', 'namespace']);
+    expect(result.current?.names).toEqual(['service_name', 'namespace', 'feo11y_app_id']);
     expect(result.current?.message('service_name')).toBe(
-      'service_name is used for service connections. Select a service above to connect this check, or use a different name for your custom label.'
+      'service_name is used for service connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.'
     );
   });
 
@@ -164,6 +164,6 @@ describe('useKGReservedLabels', () => {
     // user-typed custom label with that name must stay visible for the CAL-conflict
     // validation to be seen and fixed.
     await waitForHookRender(result);
-    expect(result.current?.names).toEqual(['namespace']);
+    expect(result.current?.names).toEqual(['namespace', 'feo11y_app_id']);
   });
 });

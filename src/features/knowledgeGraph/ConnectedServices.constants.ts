@@ -1,4 +1,4 @@
-export const CONNECTED_SERVICES_TITLE = 'Connected services';
+export const CONNECTED_SERVICES_TITLE = 'Connected entities';
 export const CONNECTED_SERVICES_SUBTITLE = 'Neighbourhood from the Knowledge Graph.';
 
 export const CONNECTED_SERVICES_TEST_ID = {

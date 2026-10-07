@@ -5,7 +5,7 @@ import { useTimeRange } from '@grafana/scenes-react';
 import { Check } from 'types';
 
 import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
-import { buildServiceNeighbourhoodQuery } from './ConnectedServices.utils';
+import { buildEntityNeighbourhoodQuery } from './ConnectedServices.utils';
 import {
   getSyntheticCheckEntityName,
   KG_ENTITY_GRAPH_COMPONENT_ID,
@@ -52,7 +52,7 @@ export type ExposedMiniGraphComponent = React.ComponentType<ExposedMiniGraphProp
 
 /**
  * Resolves the Knowledge Graph's exposed Mini Graph component. Null on stacks whose asserts
- * app predates the exposure — the Connected services section renders nothing there.
+ * app predates the exposure — the Connected entities section renders nothing there.
  */
 export function useExposedMiniGraph() {
   return usePluginComponent<ExposedMiniGraphProps>(KG_ENTITY_GRAPH_COMPONENT_ID);
@@ -64,7 +64,7 @@ interface ConnectedServicesMiniGraphProps {
 }
 
 /**
- * The check's service neighbourhood rendered by the Knowledge Graph's exposed Mini Graph
+ * The check's service and frontend neighbourhood rendered by the Knowledge Graph's exposed Mini Graph
  * component (the workbench minigraph style, with the check as the focus entity): the KG app owns
  * fetching, the ranked layout, insight rings (including the own-vs-connected split), the node
  * card (hover preview / click-pinned, with env + insights), and loading/error/empty states — so
@@ -78,7 +78,7 @@ export function ConnectedServicesMiniGraph({ check, MiniGraph }: ConnectedServic
   return (
     <div data-testid={CONNECTED_SERVICES_TEST_ID.exposedGraph}>
       <MiniGraph
-        cypherQuery={buildServiceNeighbourhoodQuery(getSyntheticCheckEntityName(check))}
+        cypherQuery={buildEntityNeighbourhoodQuery(getSyntheticCheckEntityName(check), timeRange.to.valueOf())}
         start={timeRange.from.valueOf()}
         end={timeRange.to.valueOf()}
         height={GRAPH_HEIGHT}
@@ -92,8 +92,8 @@ export function ConnectedServicesMiniGraph({ check, MiniGraph }: ConnectedServic
         // neighbours, ~3 ranks) but sibling-heavy, so top-to-bottom puts the sibling fan on the
         // horizontal axis. LR would stack the siblings vertically.
         rankdir="TB"
-        // Checks carry no env, so their service links fan out to every env twin of the linked
-        // service; the picker lets users isolate one environment. The check always survives it.
+        // Checks carry no env, so their links can span environments; the picker lets users
+        // isolate one environment. The check always survives it.
         showEnvFilter
       />
     </div>

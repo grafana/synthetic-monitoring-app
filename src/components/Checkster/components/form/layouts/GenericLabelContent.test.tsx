@@ -154,7 +154,7 @@ describe('GenericLabelContent', () => {
 
       expect(
         await screen.findByText(
-          'service_name is used for service connections. Select a service above to connect this check, or use a different name for your custom label.'
+          'service_name is used for service connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.'
         )
       ).toBeInTheDocument();
     });

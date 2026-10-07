@@ -5,33 +5,36 @@ import { css, cx } from '@emotion/css';
 
 type LabelProps = Pick<ComponentProps<typeof Field>, 'label' | 'description' | 'required'> & { 'aria-label'?: string };
 
+// Mirrors the spacing of the native `Label`: the gap sits below the description, not between it and the label
 function DivLabel({ label, description, required }: LabelProps) {
   const theme = useTheme2();
+
+  if (!label && !description) {
+    return null;
+  }
+
   return (
-    <div>
+    <div
+      className={css`
+        margin-bottom: ${theme.spacing(0.5)};
+      `}
+    >
       {label && (
         <div
           className={css`
-            display: flex;
-            flex-direction: column;
-            margin-bottom: ${theme.spacing(0.5)};
+            line-height: 1.25;
+            font-size: ${theme.typography.bodySmall.fontSize};
+            font-weight: ${theme.typography.fontWeightBold};
           `}
         >
-          <div
-            className={css`
-              line-height: 1.25;
-              font-size: ${theme.typography.bodySmall.fontSize};
-              font-weight: ${theme.typography.fontWeightBold};
-            `}
-          >
-            {label}
-            {required ? ' *' : ''}
-          </div>
+          {label}
+          {required ? ' *' : ''}
         </div>
       )}
       {description && (
         <div
           className={css`
+            margin-top: ${label ? theme.spacing(0.25) : 0};
             font-size: ${theme.typography.bodySmall.fontSize};
             color: ${theme.colors.text.secondary};
           `}

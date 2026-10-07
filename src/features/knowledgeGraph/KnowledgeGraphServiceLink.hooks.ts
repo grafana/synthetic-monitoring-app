@@ -4,7 +4,7 @@ import { ComboboxOption } from '@grafana/ui';
 
 import { CheckFormValues, Label } from 'types';
 
-import { findLabelValue, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import { findLabelValue, KG_FRONTEND_APP_ID_LABEL, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
 import { fetchServiceMatchExists, fetchServiceNames, fetchServiceNamespaces } from './knowledgeGraphApi';
 
@@ -14,7 +14,7 @@ export interface KGReservedLabels {
 }
 
 /**
- * The label names managed by the KG service-link section (`service_name` / `namespace`),
+ * The label names managed by the KG connections section (service, namespace, and frontend app ID),
  * for hiding them from the custom-label rows and redirecting users who type them there.
  * Returns `undefined` when the Knowledge Graph integration is not enabled (app not installed
  * or feature flag off) — the names are then ordinary custom labels and no restriction applies.
@@ -33,14 +33,16 @@ export function useKGReservedLabels(): KGReservedLabels | undefined {
     return undefined;
   }
 
-  const names = [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL].filter(
+  const names = [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL, KG_FRONTEND_APP_ID_LABEL].filter(
     (name) => !calLabels.some((label) => label.name === name)
   );
 
   return {
     names,
     message: (name: string) =>
-      `${name} is used for service connections. Select a service above to connect this check, or use a different name for your custom label.`,
+      name === KG_FRONTEND_APP_ID_LABEL
+        ? `${name} is used for frontend connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.`
+        : `${name} is used for service connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.`,
   };
 }
 
@@ -59,7 +61,7 @@ export interface KGLinkedLabel {
 }
 
 /**
- * CAL-aware accessor for a KG-linked label (`service_name` / `namespace`).
+ * CAL-aware accessor for a KG connection label.
  *
  * When the tenant declares the label as a cost attribution label its value lives in
  * `calLabels` (the row is kept and its value emptied on clear, since CAL rows are fixed);

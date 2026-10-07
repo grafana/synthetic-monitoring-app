@@ -1,4 +1,4 @@
-import { buildServiceNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedServices.utils';
+import { buildEntityNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedServices.utils';
 
 function paramsOf(url: string): URLSearchParams {
   return new URLSearchParams(url.split('?')[1]);
@@ -45,29 +45,39 @@ describe('escapeCypher', () => {
   });
 });
 
-describe('buildServiceNeighbourhoodQuery', () => {
-  it('matches the monitored service and walks CALLS in both directions', () => {
-    const query = buildServiceNeighbourhoodQuery('vika http check.__http://grafana.com');
+describe('buildEntityNeighbourhoodQuery', () => {
+  it('matches monitored services and frontends, expanding only service CALLS neighbours in both directions', () => {
+    const query = buildEntityNeighbourhoodQuery('vika http check.__http://grafana.com', 2000);
 
     expect(query).toContain(
-      'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[:MONITORED_BY]-(s1:Service)'
+      'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[monitored:MONITORED_BY]-(entity)'
     );
-    // Zero hops preserves services without CALLS neighbours; one hop includes callers and dependencies.
-    expect(query).toContain('MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)');
-    expect(query).not.toContain('OPTIONAL MATCH');
+    expect(query).toContain('WHERE (entity:Service OR entity:Frontend)');
+    // The optional expansion preserves frontends and services without callers or dependencies.
+    expect(query).toContain('OPTIONAL MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)');
     expect(query).not.toContain('->(downstream:Service)');
-    expect(query).toContain('RETURN sy, s1, neighbour');
+    expect(query).toContain('RETURN sy, entity, neighbour');
+  });
+
+  it('excludes expired connections at the selected end time while preserving historical topology', () => {
+    const query = buildEntityNeighbourhoodQuery('banking__https://example.com', 1791373200000);
+
+    // The Cypher endpoint time-filters nodes, so relationship lifetimes must be checked here.
+    expect(query).toContain('monitored._created <= 1791373200000');
+    expect(query).toContain('(monitored._expired IS NULL OR monitored._expired > 1791373200000)');
+    expect(query).toContain('calls._created <= 1791373200000');
+    expect(query).toContain('(calls._expired IS NULL OR calls._expired > 1791373200000)');
   });
 
   it('escapes the entity name it interpolates', () => {
-    const query = buildServiceNeighbourhoodQuery('evil"} DETACH DELETE n //');
+    const query = buildEntityNeighbourhoodQuery('evil"} DETACH DELETE n //', 2000);
 
     expect(query).toContain('{name: "evil\\"} DETACH DELETE n //"}');
   });
 });
 
 describe('getCheckGraphUrl', () => {
-  it('anchors the KG entity graph on the check, connected to the services it monitors', () => {
+  it('anchors the KG entity graph on the check, connected to the services and frontends it monitors', () => {
     const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/', 1000, 2000);
 
     expect(url.startsWith('/a/grafana-asserts-app/entities?')).toBe(true);
@@ -77,6 +87,11 @@ describe('getCheckGraphUrl', () => {
     expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
     expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
     expect(params.get('filterCriteria[1][propertyMatchers][0][op]')).toBe('IS NOT NULL');
+    // Both connected types need an explicit criterion: KG then expands each independently,
+    // retaining service-only and frontend-only checks instead of requiring both edges.
+    expect(params.get('filterCriteria[2][entityType]')).toBe('Frontend');
+    expect(params.get('filterCriteria[2][propertyMatchers][0][name]')).toBe('name');
+    expect(params.get('filterCriteria[2][propertyMatchers][0][op]')).toBe('IS NOT NULL');
     expect(params.get('start')).toBe('1000');
     expect(params.get('end')).toBe('2000');
 
@@ -85,7 +100,7 @@ describe('getCheckGraphUrl', () => {
       paramsOf(url),
       'SyntheticCheck',
       [['name', 'grafana.com homepage__https://grafana.com/']],
-      ['Service']
+      ['Service', 'Frontend']
     );
   });
 });

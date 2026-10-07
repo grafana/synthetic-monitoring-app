@@ -99,9 +99,9 @@ it('is expanded on load and shows the zero state for an unlinked check', async (
   await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
   expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
-  expect(screen.getByText('Connect this check to a service')).toBeInTheDocument();
-  // The CTA deep links to the Labels section of the edit form, where the KG service link lives.
-  expect(screen.getByRole('link', { name: /Add service link/ })).toHaveAttribute(
+  expect(screen.getByText('Connect this check to a service or frontend application')).toBeInTheDocument();
+  // The CTA deep links to the Labels section of the edit form, where KG connections live.
+  expect(screen.getByRole('link', { name: /Add connection/ })).toHaveAttribute(
     'href',
     expect.stringContaining('/edit?section=labels')
   );
@@ -118,7 +118,7 @@ it('renders the feature feedback widget in the section header', async () => {
 it('can be collapsed and expanded again', async () => {
   const { user } = await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
-  const toggle = screen.getByRole('button', { name: 'Connected services' });
+  const toggle = screen.getByRole('button', { name: 'Connected entities' });
   expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
   await user.click(toggle);
@@ -144,8 +144,9 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
 
   const props = received.at(-1)!;
   expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
-  // Preserve services without CALLS neighbours while expanding at most one hop.
-  expect(props.cypherQuery).toContain('MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)');
+  // Preserve services and frontends without CALLS neighbours while expanding at most one hop.
+  expect(props.cypherQuery).toContain('OPTIONAL MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)');
+  expect(props.cypherQuery).toContain(`monitored._expired > ${Date.parse(MOCK_TIME_RANGE_TO)}`);
   expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
   expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
   // The check anchors the ranked layout (first rank + halo); TB puts the shallow neighbourhood's
@@ -163,7 +164,27 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
   expect(props.onNodeClick).toBeUndefined();
 });
 
-it('links the section header to this check and its services in the KG entity graph', async () => {
+it.each([
+  ['a service', LINKED_CHECK],
+  ['a frontend application', checkWithLabels([{ name: 'feo11y_app_id', value: '229' }])],
+  ['both', checkWithLabels([...LINKED_CHECK.labels!, { name: 'feo11y_app_id', value: '229' }])],
+])('shows the graph and link for a check associated with %s', async (_, check) => {
+  await renderSection(check);
+
+  expect(screen.getByRole('heading', { name: 'Connected entities' })).toBeInTheDocument();
+  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.exposedGraph)).toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ })).toBeInTheDocument();
+});
+
+it('keeps the zero state when the frontend association is empty', async () => {
+  await renderSection(checkWithLabels([{ name: 'feo11y_app_id', value: '' }]));
+
+  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /Open in Knowledge Graph/ })).not.toBeInTheDocument();
+});
+
+it('links the section header to this check, its services, and its frontends in the KG entity graph', async () => {
   await renderSection(LINKED_CHECK);
 
   const headerLink = screen.getByRole('link', { name: /Open in Knowledge Graph/ });
@@ -174,9 +195,11 @@ it('links the section header to this check and its services in the KG entity gra
     `${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`
   );
   expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
+  expect(params.get('filterCriteria[0][connectToEntityTypes][1]')).toBe('Frontend');
   expect(params.get('view')).toBe('graph');
   expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
   expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
+  expect(params.get('filterCriteria[2][entityType]')).toBe('Frontend');
   expect(params.get('start')).toBe(String(Date.parse(MOCK_TIME_RANGE_FROM)));
   expect(params.get('end')).toBe(String(Date.parse(MOCK_TIME_RANGE_TO)));
 });
