@@ -3,293 +3,817 @@ import { getFaroSessionFromLogs } from 'scenes/components/TimepointExplorer/Time
 
 export type FaroRecord = ParsedLokiRecord<Record<string, string>, Record<string, string>>;
 
-export const WEB_VITALS = ['ttfb', 'fcp', 'lcp', 'cls', 'inp'] as const;
-export type WebVitalName = (typeof WEB_VITALS)[number];
+/*
+ * Real users are Faro sessions without the k6 fields: k6 browser (SM checks,
+ * load tests) stamps `k6_isK6Browser="true"` on every record it produces.
+ * This is the same filter Frontend Observability uses to separate synthetic
+ * traffic from real traffic.
+ */
+const REAL_USERS_FILTER = '| k6_isK6Browser=~""';
 
-export const WEB_VITAL_LABELS: Record<WebVitalName, string> = {
-  ttfb: 'TTFB',
-  fcp: 'FCP',
-  lcp: 'LCP',
-  cls: 'CLS',
-  inp: 'INP',
-};
-
-// Thresholds match the ones Frontend Observability displays (web.dev standard).
-// Time-based vitals are in milliseconds, CLS is unitless.
-const WEB_VITAL_THRESHOLDS: Record<WebVitalName, { good: number; poor: number }> = {
-  ttfb: { good: 800, poor: 1800 },
-  fcp: { good: 1800, poor: 3000 },
-  lcp: { good: 2500, poor: 4000 },
-  cls: { good: 0.1, poor: 0.25 },
-  inp: { good: 200, poor: 500 },
-};
-
-export type WebVitalRating = 'good' | 'needs-improvement' | 'poor';
-
-export function rateWebVital(name: WebVitalName, value: number): WebVitalRating {
-  const { good, poor } = WEB_VITAL_THRESHOLDS[name];
-
-  if (value <= good) {
-    return 'good';
-  }
-
-  if (value <= poor) {
-    return 'needs-improvement';
-  }
-
-  return 'poor';
-}
-
-export function formatWebVitalValue(name: WebVitalName, value: number): string {
-  if (name === 'cls') {
-    return value.toFixed(2);
-  }
-
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(2)} s`;
-  }
-
-  return `${Math.round(value)} ms`;
-}
-
-export interface FaroPageVisit {
-  pageId: string;
-  vitals: Partial<Record<WebVitalName, number>>;
-  // From faro.performance.navigation's event_data_pageLoadTime — a
-  // PerformanceNavigationTiming entry, so (like TTFB/FCP) this only exists
-  // for a hard document navigation, never a soft one. Richer than the Core
-  // Web Vitals set: closes the "k6-browser dropped page-load-timing
-  // metrics" gap without needing a k6 change, since Faro already reports it.
-  pageLoadTimeMs?: number;
-}
-
-export interface FaroException {
-  type: string;
-  message: string;
-  pageId: string;
-  timestamp: number;
-}
-
-export interface FaroHttpRequest {
-  method: string;
-  url: string;
-  // 0 means the request got no response at all (network failure, CORS, aborted)
-  statusCode: number;
-  isError: boolean;
-  durationMs?: number;
-  pageId: string;
-  traceId?: string;
-  timestamp: number;
-}
-
-export interface FaroAction {
-  // Correlation id: the faro.user.action marker carries it as `action_id`,
-  // every request that happened while the action was in progress carries the
-  // same value as `action_parent_id`. Grouping by name alone would silently
-  // merge separate instances of the same named action within one run.
-  actionId: string;
-  actionName: string;
-  pageId: string;
-  requestCount: number;
-  errorCount: number;
-  // From the SDK's own `event_data_userActionDuration` on the marker event —
-  // authoritative (start-to-settle), not a derived approximation. Undefined
-  // if the marker record didn't make it into this query's result.
-  durationMs?: number;
-  timestamp: number;
-}
-
-export interface FaroExecutionContext {
-  appId: string;
-  appName?: string;
-  appVersion?: string;
-  appEnvironment?: string;
-  sessionId: string;
-  pages: FaroPageVisit[];
-  exceptions: FaroException[];
-  requests: FaroHttpRequest[];
-  actions: FaroAction[];
-  hasSessionReplay: boolean;
-}
+// ---------------------------------------------------------------------------
+// App build
+// ---------------------------------------------------------------------------
 
 /**
- * Superset of the CTA-button query: also pulls `exception` records so a single
- * request can power the whole frontend context panel for one execution.
+ * A build is the app version plus the bundle id. The bundle id comes from the
+ * Faro bundler plugin and changes on every build, so it catches deploys that
+ * don't bump the version string (common for apps that ship `1.0.0` forever).
  */
-export function buildFaroExecutionContextLogQL(executionId: string): string {
-  return `{kind=~"event|measurement|exception"} | logfmt | k6_isK6Browser="true" | k6_testRunId="sm:${executionId}"`;
+export interface AppBuild {
+  version?: string;
+  bundleId?: string;
+  // `meta.app.gitHash`, which newer Faro bundler plugins inject from
+  // `git rev-parse HEAD`. Display only: builds are told apart by version and
+  // bundle id, which is what the build-history queries group by.
+  gitHash?: string;
+}
+
+export function getBuildKey({ version, bundleId }: AppBuild): string {
+  return `${version ?? ''}|${bundleId ?? ''}`;
+}
+
+export function hasBuildIdentity(build: AppBuild): boolean {
+  return Boolean(build.version || build.bundleId);
+}
+
+export function formatBuild({ version, bundleId }: AppBuild): string {
+  const shortBundle = bundleId?.slice(0, 7);
+
+  if (version && shortBundle) {
+    return `${version} · ${shortBundle}`;
+  }
+
+  if (version) {
+    return version;
+  }
+
+  return shortBundle ? `build ${shortBundle}` : 'unknown build';
+}
+
+const COMMIT_SHA = /^[0-9a-f]{40}$/;
+
+export interface BuildCommit {
+  sha: string;
+  // `git-hash`: the app reports it. `bundle-id`: the bundle id has the shape
+  // of a commit SHA, which pipelines that set the bundle id to the build
+  // commit produce, but nothing guarantees it.
+  source: 'git-hash' | 'bundle-id';
+}
+
+export function getBuildCommit({ gitHash, bundleId }: AppBuild): BuildCommit | undefined {
+  if (gitHash && COMMIT_SHA.test(gitHash)) {
+    return { sha: gitHash, source: 'git-hash' };
+  }
+
+  if (bundleId && COMMIT_SHA.test(bundleId)) {
+    return { sha: bundleId, source: 'bundle-id' };
+  }
+
+  return undefined;
+}
+
+function readBuild(labels: Record<string, string>): AppBuild {
+  return {
+    version: labels.app_version || undefined,
+    bundleId: labels.app_bundle_id || undefined,
+    gitHash: labels.app_git_hash || undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The check run's own Faro session
+// ---------------------------------------------------------------------------
+
+export interface RunError {
+  key: string;
+  type: string;
+  message: string;
+  // Faro's normalised message (URLs and ids replaced). Matching on it finds
+  // the same error across sessions; the raw message usually embeds
+  // per-session values that never match exactly.
+  template?: string;
+  // Frontend Observability's error group id
+  hash?: string;
+  pageId: string;
+  actionName?: string;
+  count: number;
+  timestamp: number;
+}
+
+export interface RunFailedRequest {
+  key: string;
+  method: string;
+  url: string;
+  urlTemplate?: string;
+  // 0 means the request got no response at all (network failure, CORS, aborted)
+  statusCode: number;
+  durationMs?: number;
+  pageId: string;
+  actionName?: string;
+  traceId?: string;
+  count: number;
+  timestamp: number;
+}
+
+export interface FaroRunContext {
+  appId: string;
+  appName?: string;
+  appEnvironment?: string;
+  build: AppBuild;
+  sessionId: string;
+  // page ids in the order the run first visited them
+  pages: string[];
+  errors: RunError[];
+  failedRequests: RunFailedRequest[];
+}
+
+export function buildFaroRunLogQL(executionId: string): string {
+  return `{kind=~"event|measurement|exception"} | logfmt | k6_isK6Browser="true" | k6_testRunId="sm:${escapeLogQLString(executionId)}"`;
 }
 
 const HTTP_EVENT_NAMES = ['faro.tracing.fetch', 'faro.tracing.xml-http-request'];
-const USER_ACTION_EVENT_NAME = 'faro.user.action';
 
-function isHttpErrorStatus(statusCode: number): boolean {
+function nonEmpty(value?: string): string | undefined {
+  return value === undefined || value === '' ? undefined : value;
+}
+
+/*
+ * Faro web SDK 2.x reports requests with OpenTelemetry semantic-convention
+ * names (`http.request.method`, `http.response.status_code`, `url.full`,
+ * `url.template`); 1.x used `http.method`, `http.status_code`, `http.url`.
+ * `| logfmt` folds the dots into underscores. Read both.
+ */
+function readHttpEvent(labels: Record<string, string>) {
+  const rawStatus =
+    nonEmpty(labels.event_data_http_response_status_code) ?? nonEmpty(labels.event_data_http_status_code);
+  const statusCode = rawStatus === undefined ? NaN : Number(rawStatus);
+  const durationNs = Number(labels.event_data_duration_ns);
+
+  return {
+    method: nonEmpty(labels.event_data_http_request_method) ?? nonEmpty(labels.event_data_http_method) ?? 'GET',
+    url: nonEmpty(labels.event_data_url_full) ?? nonEmpty(labels.event_data_http_url) ?? '',
+    urlTemplate: nonEmpty(labels.event_data_url_template),
+    statusCode,
+    durationMs: Number.isNaN(durationNs) ? undefined : durationNs / 1_000_000,
+  };
+}
+
+export function isFailedStatus(statusCode: number): boolean {
   return statusCode === 0 || (statusCode >= 400 && statusCode < 600);
 }
 
 /**
- * Distills the raw Faro records of a single check execution into the pieces we
- * surface in SM: the page journey, the run's own web vitals (as Faro measured
- * them — these can legitimately disagree with the k6-reported vitals since the
- * two tools measure at different points), JS exceptions, and failed HTTP calls.
+ * Distils one check run's Faro records into what matters when the run
+ * failed: which build it was served, which pages it visited, and the errors
+ * and failed requests the browser reported.
  *
- * Records are scoped to the same session the "View Frontend Session" CTA picks
- * so both features always tell the same story.
+ * Records are scoped to the session the "View Frontend Session" button links
+ * to, so both always describe the same session.
  */
-export function parseFaroExecutionContext(logs: FaroRecord[]): FaroExecutionContext | null {
+export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
   const session = getFaroSessionFromLogs(logs);
 
   if (!session) {
     return null;
   }
 
-  const records = logs.filter((record) => record.labels?.session_id === session.sessionId);
+  const records = logs
+    .filter((record) => record.labels?.session_id === session.sessionId)
+    .sort((a, b) => a.timestamp - b.timestamp);
 
-  const pages = new Map<string, FaroPageVisit>();
-  const exceptions: FaroException[] = [];
-  const requests: FaroHttpRequest[] = [];
-  const actions = new Map<string, FaroAction>();
+  const pages: string[] = [];
+  const errors = new Map<string, RunError>();
+  const failedRequests = new Map<string, RunFailedRequest>();
   let appName: string | undefined;
-  let appVersion: string | undefined;
   let appEnvironment: string | undefined;
-  let hasSessionReplay = false;
+  let build: AppBuild = {};
 
   records.forEach((record) => {
     const labels = record.labels ?? {};
     const pageId = labels.page_id ?? '';
 
-    appName = appName ?? labels.app_name;
-    appVersion = appVersion ?? labels.app_version;
-    appEnvironment = appEnvironment ?? labels.app_environment;
+    appName = appName ?? nonEmpty(labels.app_name);
+    appEnvironment = appEnvironment ?? nonEmpty(labels.app_environment);
 
-    if (pageId && !pages.has(pageId)) {
-      pages.set(pageId, { pageId, vitals: {} });
+    if (!hasBuildIdentity(build)) {
+      build = readBuild(labels);
     }
 
-    if (labels.kind === 'measurement' && pageId) {
-      const visit = pages.get(pageId)!;
-
-      WEB_VITALS.forEach((vital) => {
-        const value = Number(labels[vital]);
-
-        if (labels[vital] !== undefined && !Number.isNaN(value)) {
-          // records are sorted oldest-first so later reports (e.g. LCP updates) win
-          visit.vitals[vital] = value;
-        }
-      });
+    if (pageId && !pages.includes(pageId)) {
+      pages.push(pageId);
     }
 
     if (labels.kind === 'exception') {
-      exceptions.push({
-        type: labels.type ?? 'Error',
-        message: labels.value ?? record.body ?? '',
+      const message = labels.value ?? record.body ?? '';
+      const template = nonEmpty(labels.value_template);
+      const key = template ?? message;
+      const existing = errors.get(key);
+
+      if (existing) {
+        existing.count += 1;
+        return;
+      }
+
+      errors.set(key, {
+        key,
+        type: labels.type || 'Error',
+        message,
+        template,
+        hash: nonEmpty(labels.hash),
         pageId,
+        actionName: nonEmpty(labels.action_name),
+        count: 1,
         timestamp: record.timestamp,
       });
-    }
 
-    if (labels.kind === 'event' && labels.event_name?.includes('session_recording')) {
-      hasSessionReplay = true;
-    }
-
-    if (labels.kind === 'event' && labels.event_name === 'faro.performance.navigation' && pageId) {
-      const pageLoadTime = Number(labels.event_data_pageLoadTime);
-
-      if (!Number.isNaN(pageLoadTime)) {
-        pages.get(pageId)!.pageLoadTimeMs = pageLoadTime;
-      }
-    }
-
-    // The marker event for one action instance. Its own page_id is
-    // authoritative — it reflects wherever the action actually settled, not
-    // a stale page_id from the last hard navigation — so it always
-    // overwrites; child request events below only seed pageId as a fallback
-    // in case this marker line didn't make it into the query result.
-    if (labels.kind === 'event' && labels.event_name === USER_ACTION_EVENT_NAME) {
-      const actionId = labels.action_id;
-      const actionName = labels.action_name;
-      const durationMs = Number(labels.event_data_userActionDuration);
-
-      if (actionId && actionName) {
-        const entry = actions.get(actionId) ?? {
-          actionId,
-          actionName,
-          pageId,
-          requestCount: 0,
-          errorCount: 0,
-          timestamp: record.timestamp,
-        };
-
-        entry.pageId = pageId;
-
-        if (!Number.isNaN(durationMs)) {
-          entry.durationMs = durationMs;
-        }
-
-        entry.timestamp = Math.min(entry.timestamp, record.timestamp);
-        actions.set(actionId, entry);
-      }
+      return;
     }
 
     if (labels.kind === 'event' && HTTP_EVENT_NAMES.includes(labels.event_name ?? '')) {
-      // `| logfmt` folds `event_data_http.status_code` into underscores
-      const statusCode = Number(labels.event_data_http_status_code);
-      const durationNs = Number(labels.event_data_duration_ns);
-      const isError = !Number.isNaN(statusCode) && isHttpErrorStatus(statusCode);
+      const request = readHttpEvent(labels);
 
-      if (!Number.isNaN(statusCode)) {
-        requests.push({
-          method: labels.event_data_http_method ?? 'GET',
-          url: labels.event_data_http_url ?? '',
-          statusCode,
-          isError,
-          durationMs: !Number.isNaN(durationNs) ? durationNs / 1_000_000 : undefined,
-          pageId,
-          traceId: labels.traceID,
-          timestamp: record.timestamp,
-        });
+      if (Number.isNaN(request.statusCode) || !isFailedStatus(request.statusCode)) {
+        return;
       }
 
-      // Faro's User Actions feature: every request that happened while a
-      // named, business-level action was in progress carries the action's
-      // id back as `action_parent_id` — the same value the marker event
-      // above carries as its own `action_id`. Correlating on that id (not
-      // action_name, which repeats across separate instances of the same
-      // named action) auto-groups a much better unit than page_id for
-      // step-level detail on apps with soft navigation.
-      const actionId = labels.action_parent_id;
-      const actionName = labels.action_name;
+      const key = `${request.method} ${request.urlTemplate ?? stripQuery(request.url)} ${request.statusCode}`;
+      const existing = failedRequests.get(key);
 
-      if (actionId && actionName) {
-        const entry = actions.get(actionId) ?? {
-          actionId,
-          actionName,
-          pageId, // fallback only — overwritten if the marker event is seen
-          requestCount: 0,
-          errorCount: 0,
-          timestamp: record.timestamp,
-        };
-
-        entry.requestCount += 1;
-        entry.errorCount += isError ? 1 : 0;
-        entry.timestamp = Math.min(entry.timestamp, record.timestamp);
-        actions.set(actionId, entry);
+      if (existing) {
+        existing.count += 1;
+        return;
       }
+
+      failedRequests.set(key, {
+        key,
+        ...request,
+        pageId,
+        actionName: nonEmpty(labels.action_name),
+        traceId: nonEmpty(labels.traceID) ?? nonEmpty(labels.trace_id),
+        count: 1,
+        timestamp: record.timestamp,
+      });
     }
   });
 
   return {
     appId: session.appId,
     appName,
-    appVersion,
     appEnvironment,
+    build,
     sessionId: session.sessionId,
-    pages: [...pages.values()],
-    exceptions,
-    requests,
-    actions: [...actions.values()].sort((a, b) => a.timestamp - b.timestamp),
-    hasSessionReplay,
+    pages,
+    errors: [...errors.values()],
+    failedRequests: [...failedRequests.values()],
   };
+}
+
+// ---------------------------------------------------------------------------
+// Build history
+// ---------------------------------------------------------------------------
+
+/**
+ * Page loads per build over time, synthetic traffic included: on low-traffic
+ * apps the checks themselves are the best signal of when a build started
+ * serving. Only hard navigations carry `ttfb`, so this counts page loads,
+ * not every event.
+ */
+export function buildBuildActivityLogQL({ appId, step }: { appId: string; step: string }): string {
+  return `sum by (app_version, app_bundle_id) (count_over_time({kind="measurement", app_id="${escapeLogQLString(appId)}"} |= " ttfb=" | logfmt [${step}]))`;
+}
+
+/** Real-user page loads per build over `range`, to see which build users were actually on. */
+export function buildRealUserBuildLoadsLogQL({ appId, range }: { appId: string; range: string }): string {
+  return `sum by (app_version, app_bundle_id) (count_over_time({kind="measurement", app_id="${escapeLogQLString(appId)}"} |= " ttfb=" | logfmt ${REAL_USERS_FILTER} [${range}]))`;
+}
+
+export type SeriesPoint = [time: number, value: number];
+
+export interface LabelledSeries {
+  labels: Record<string, string>;
+  points: SeriesPoint[];
+}
+
+export interface BuildActivity {
+  key: string;
+  build: AppBuild;
+  firstSeen: number;
+  lastSeen: number;
+  loads: number;
+  points: SeriesPoint[];
+}
+
+export function getBuildActivity(series: LabelledSeries[]): BuildActivity[] {
+  const byKey = new Map<string, BuildActivity>();
+
+  series.forEach(({ labels, points }) => {
+    const build = readBuild(labels);
+    const active = points.filter(([, value]) => value > 0);
+
+    if (!hasBuildIdentity(build) || !active.length) {
+      return;
+    }
+
+    const key = getBuildKey(build);
+    const existing = byKey.get(key);
+    const entry = existing ?? { key, build, firstSeen: Infinity, lastSeen: -Infinity, loads: 0, points: [] };
+
+    active.forEach(([time, value]) => {
+      entry.firstSeen = Math.min(entry.firstSeen, time);
+      entry.lastSeen = Math.max(entry.lastSeen, time);
+      entry.loads += value;
+      entry.points.push([time, value]);
+    });
+
+    entry.points.sort((a, b) => a[0] - b[0]);
+    byKey.set(key, entry);
+  });
+
+  return [...byKey.values()].sort((a, b) => a.firstSeen - b.firstSeen);
+}
+
+function findPreviousBuild(activity: BuildActivity[], current: BuildActivity): AppBuild | undefined {
+  const candidates = activity
+    .filter((entry) => entry.key !== current.key && entry.firstSeen < current.firstSeen)
+    .sort((a, b) => b.lastSeen - a.lastSeen);
+
+  return candidates[0]?.build;
+}
+
+export interface BuildChange {
+  time: number;
+  build: AppBuild;
+  previous?: AppBuild;
+}
+
+// One-off page loads on a build are usually a stale tab or a cached bundle,
+// not a deploy.
+const MIN_LOADS_FOR_BUILD_CHANGE = 2;
+
+/**
+ * Builds that started serving inside the window. A build already serving in
+ * the window's first bucket predates the window, so it isn't a change we can
+ * date.
+ */
+export function getBuildChanges(activity: BuildActivity[]): BuildChange[] {
+  if (activity.length < 2) {
+    return [];
+  }
+
+  const windowStart = Math.min(...activity.map((entry) => entry.firstSeen));
+
+  return activity
+    .filter((entry) => entry.firstSeen > windowStart && entry.loads >= MIN_LOADS_FOR_BUILD_CHANGE)
+    .map((entry) => ({ time: entry.firstSeen, build: entry.build, previous: findPreviousBuild(activity, entry) }));
+}
+
+// ---------------------------------------------------------------------------
+// When a build went live
+// ---------------------------------------------------------------------------
+
+/** Source-map upload time per bundle id, from Frontend Observability. */
+export type SourceMapUploads = Record<string, number>;
+
+export interface BuildStart {
+  from: number;
+  to: number;
+  // `source-maps`: dated by the upload of the build's source maps, so `from`
+  // and `to` are the same moment. `page-loads`: the bucket in which Faro first
+  // saw a page load on the build.
+  source: 'source-maps' | 'page-loads';
+}
+
+/**
+ * Page-load buckets only place a build's first appearance somewhere in
+ * `(firstSeen - step, firstSeen]`. A source-map upload in or just before that
+ * bucket pins it down: pipelines that upload at deploy time land there. An
+ * upload well before the bucket was for a build deployed later, so its time
+ * says nothing about the deploy.
+ */
+export function getBuildStart({
+  firstSeen,
+  stepMs,
+  uploadedAt,
+  notAfter = Infinity,
+}: {
+  firstSeen: number;
+  stepMs: number;
+  uploadedAt?: number;
+  // the run was served this build, so it was live by then
+  notAfter?: number;
+}): BuildStart {
+  const bucketStart = firstSeen - stepMs;
+  const latest = Math.min(firstSeen, notAfter);
+
+  if (uploadedAt !== undefined && uploadedAt > bucketStart - stepMs && uploadedAt <= latest) {
+    return { from: uploadedAt, to: uploadedAt, source: 'source-maps' };
+  }
+
+  return { from: bucketStart, to: Math.max(bucketStart, latest), source: 'page-loads' };
+}
+
+// ---------------------------------------------------------------------------
+// The run's build compared with real users
+// ---------------------------------------------------------------------------
+
+export interface BuildShare {
+  build: AppBuild;
+  share: number;
+}
+
+/**
+ * - `same`: most real users were on the run's build.
+ * - `rolling-out`: the run got a newer build that went live inside the
+ *   comparison window, so most of that window's users loaded the page before
+ *   the deploy. Expected, not a problem.
+ * - `newer`: the run got a newer build that has been live for longer than the
+ *   window and most users still don't get it: a partial rollout or canary.
+ * - `older`: most real users were on a newer build than the run got: a stale
+ *   cache, CDN or instance served the check.
+ * - `different`: most users were on another build and the order is unknown.
+ */
+export type RealUserComparison = 'same' | 'rolling-out' | 'newer' | 'older' | 'different';
+
+export interface BuildInsight {
+  runBuild: AppBuild;
+  // set when the run's build started serving inside the lookback window
+  start?: BuildStart;
+  previous?: AppBuild;
+  // when the run's build's source maps were uploaded, however long ago
+  uploadedAt?: number;
+  realUsers?: {
+    loads: number;
+    runBuildShare: number;
+    dominant: BuildShare;
+    comparison: RealUserComparison;
+  };
+}
+
+function compareWithRealUsers({
+  runEntry,
+  dominantEntry,
+  isRunBuildDominant,
+  start,
+  realUserWindowFrom,
+}: {
+  runEntry?: BuildActivity;
+  dominantEntry?: BuildActivity;
+  isRunBuildDominant: boolean;
+  start?: BuildStart;
+  realUserWindowFrom: number;
+}): RealUserComparison {
+  if (isRunBuildDominant) {
+    return 'same';
+  }
+
+  if (!runEntry || !dominantEntry || runEntry.firstSeen === dominantEntry.firstSeen) {
+    return 'different';
+  }
+
+  if (runEntry.firstSeen < dominantEntry.firstSeen) {
+    return 'older';
+  }
+
+  return start && start.from >= realUserWindowFrom ? 'rolling-out' : 'newer';
+}
+
+export function getBuildInsight({
+  runBuild,
+  runTime,
+  activity,
+  stepMs,
+  realUserLoads,
+  realUserWindowFrom,
+  uploads = {},
+}: {
+  runBuild: AppBuild;
+  runTime: number;
+  activity: BuildActivity[];
+  stepMs: number;
+  realUserLoads: LabelledSeries[];
+  realUserWindowFrom: number;
+  uploads?: SourceMapUploads;
+}): BuildInsight {
+  const runKey = getBuildKey(runBuild);
+  const runEntry = activity.find((entry) => entry.key === runKey);
+  const windowStart = activity.length ? Math.min(...activity.map((entry) => entry.firstSeen)) : undefined;
+  const uploadedAt = runBuild.bundleId ? uploads[runBuild.bundleId] : undefined;
+
+  // Unlike getBuildChanges, one page load is enough: the run itself proves
+  // the build was serving, and right after a deploy it may be the only one.
+  const isNew = runEntry !== undefined && windowStart !== undefined && runEntry.firstSeen > windowStart;
+  const start = isNew
+    ? getBuildStart({ firstSeen: runEntry.firstSeen, stepMs, uploadedAt, notAfter: runTime })
+    : undefined;
+
+  const loadsByBuild = new Map<string, { build: AppBuild; loads: number }>();
+
+  realUserLoads.forEach(({ labels, points }) => {
+    const build = readBuild(labels);
+    const loads = points.at(-1)?.[1] ?? 0;
+
+    if (!hasBuildIdentity(build) || loads <= 0) {
+      return;
+    }
+
+    const key = getBuildKey(build);
+    loadsByBuild.set(key, { build, loads: (loadsByBuild.get(key)?.loads ?? 0) + loads });
+  });
+
+  const total = [...loadsByBuild.values()].reduce((sum, entry) => sum + entry.loads, 0);
+  let realUsers: BuildInsight['realUsers'];
+
+  if (total > 0) {
+    const dominant = [...loadsByBuild.values()].sort((a, b) => b.loads - a.loads)[0];
+    const dominantKey = getBuildKey(dominant.build);
+    const runBuildShare = (loadsByBuild.get(runKey)?.loads ?? 0) / total;
+
+    realUsers = {
+      loads: total,
+      runBuildShare,
+      dominant: { build: dominant.build, share: dominant.loads / total },
+      comparison: compareWithRealUsers({
+        runEntry,
+        dominantEntry: activity.find((entry) => entry.key === dominantKey),
+        isRunBuildDominant: dominantKey === runKey || runBuildShare >= 0.5,
+        start,
+        realUserWindowFrom,
+      }),
+    };
+  }
+
+  return {
+    runBuild,
+    start,
+    previous: isNew ? findPreviousBuild(activity, runEntry) : undefined,
+    uploadedAt,
+    realUsers,
+  };
+}
+
+export interface BuildSegment {
+  from: number;
+  to: number;
+  key: string | null;
+}
+
+/**
+ * Collapses per-bucket activity into contiguous segments of the build that
+ * served the most page loads in each bucket, for the build strip. `null`
+ * segments had no page loads at all.
+ */
+export function getBuildSegments(activity: BuildActivity[], from: number, to: number, stepMs: number): BuildSegment[] {
+  const segments: BuildSegment[] = [];
+
+  for (let bucketStart = from; bucketStart < to; bucketStart += stepMs) {
+    const bucketEnd = Math.min(to, bucketStart + stepMs);
+    let winner: { key: string; loads: number } | null = null;
+
+    activity.forEach((entry) => {
+      // a point at time t covers [t - step, t]
+      const loads = entry.points
+        .filter(([time]) => time > bucketStart && time <= bucketEnd)
+        .reduce((sum, [, value]) => sum + value, 0);
+
+      if (loads > 0 && (!winner || loads > winner.loads)) {
+        winner = { key: entry.key, loads };
+      }
+    });
+
+    const key = winner ? (winner as { key: string }).key : null;
+    const last = segments.at(-1);
+
+    if (last && last.key === key) {
+      last.to = bucketEnd;
+    } else {
+      segments.push({ from: bucketStart, to: bucketEnd, key });
+    }
+  }
+
+  return segments;
+}
+
+// ---------------------------------------------------------------------------
+// Blast radius: is this run's failure also hitting real users?
+// ---------------------------------------------------------------------------
+
+export type FailureSignature =
+  | { kind: 'exception'; template?: string; message: string }
+  | { kind: 'request'; method: string; url: string; urlTemplate?: string; statusCode: number };
+
+export function getErrorSignature(error: RunError): FailureSignature {
+  return { kind: 'exception', template: error.template, message: error.message };
+}
+
+export function getRequestSignature(request: RunFailedRequest): FailureSignature {
+  return {
+    kind: 'request',
+    method: request.method,
+    url: request.url,
+    urlTemplate: request.urlTemplate,
+    statusCode: request.statusCode,
+  };
+}
+
+function eitherLabel(names: string[], matcher: string): string {
+  return `| (${names.map((name) => `${name}${matcher}`).join(' or ')})`;
+}
+
+/** Log stream selecting real-user records that match the run's failure. */
+export function buildFailureStream(appId: string, signature: FailureSignature): string {
+  const app = escapeLogQLString(appId);
+
+  if (signature.kind === 'exception') {
+    const match = signature.template
+      ? `| value_template="${escapeLogQLString(signature.template)}"`
+      : `| value="${escapeLogQLString(signature.message)}"`;
+
+    return `{kind="exception", app_id="${app}"} | logfmt ${REAL_USERS_FILTER} ${match}`;
+  }
+
+  const urlMatch = signature.urlTemplate
+    ? `| event_data_url_template="${escapeLogQLString(signature.urlTemplate)}"`
+    : eitherLabel(
+        ['event_data_url_full', 'event_data_http_url'],
+        `=~"${escapeLogQLString(`^${escapeRegExp(stripQuery(signature.url))}(\\?.*)?$`)}"`
+      );
+
+  return [
+    `{kind="event", app_id="${app}"} |~ "event_name=faro.tracing.(fetch|xml-http-request)" | logfmt ${REAL_USERS_FILTER}`,
+    urlMatch,
+    eitherLabel(
+      ['event_data_http_request_method', 'event_data_http_method'],
+      `="${escapeLogQLString(signature.method)}"`
+    ),
+    eitherLabel(['event_data_http_response_status_code', 'event_data_http_status_code'], `="${signature.statusCode}"`),
+  ].join(' ');
+}
+
+export function buildFailureSessionsLogQL({
+  appId,
+  signature,
+  range,
+}: {
+  appId: string;
+  signature: FailureSignature;
+  range: string;
+}): string {
+  return `count(sum by (session_id) (count_over_time(${buildFailureStream(appId, signature)} [${range}])))`;
+}
+
+export function buildFailureTrendLogQL({
+  appId,
+  signature,
+  step,
+}: {
+  appId: string;
+  signature: FailureSignature;
+  step: string;
+}): string {
+  return `sum(count_over_time(${buildFailureStream(appId, signature)} [${step}]))`;
+}
+
+export interface FailureTrend {
+  // one value per bucket across the whole window, zero-filled
+  buckets: number[];
+  // when the failure first appeared, if that was inside the window
+  firstSeen?: number;
+}
+
+/**
+ * Loki omits empty buckets from range results; fill them so the sparkline
+ * has a constant width, and work out whether the failure started inside the
+ * window or was already happening at its start.
+ */
+export function getFailureTrend(points: SeriesPoint[], from: number, to: number, stepMs: number): FailureTrend {
+  const bucketCount = Math.max(1, Math.ceil((to - from) / stepMs));
+  const buckets = new Array<number>(bucketCount).fill(0);
+  const active = points.filter(([, value]) => value > 0).sort((a, b) => a[0] - b[0]);
+
+  active.forEach(([time, value]) => {
+    const index = Math.min(bucketCount - 1, Math.max(0, Math.ceil((time - from) / stepMs) - 1));
+    buckets[index] += value;
+  });
+
+  const firstIndex = buckets.findIndex((value) => value > 0);
+
+  return {
+    buckets,
+    firstSeen: firstIndex > 0 ? active[0]?.[0] : undefined,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Real users on the run's journey
+// ---------------------------------------------------------------------------
+
+function pagePattern(pageIds: string[]): string {
+  return escapeLogQLString(`^(${pageIds.map(escapeRegExp).join('|')})$`);
+}
+
+/** Distinct real-user sessions per page, for the pages the run visited. */
+export function buildJourneySessionsLogQL({
+  appId,
+  pageIds,
+  range,
+}: {
+  appId: string;
+  pageIds: string[];
+  range: string;
+}) {
+  return `count by (page_id) (sum by (page_id, session_id) (count_over_time({kind=~"event|measurement", app_id="${escapeLogQLString(appId)}"} | logfmt ${REAL_USERS_FILTER} | page_id=~"${pagePattern(pageIds)}" [${range}])))`;
+}
+
+/** Distinct real-user sessions per page that threw at least one JS error there. */
+export function buildJourneyErrorSessionsLogQL({
+  appId,
+  pageIds,
+  range,
+}: {
+  appId: string;
+  pageIds: string[];
+  range: string;
+}) {
+  return `count by (page_id) (sum by (page_id, session_id) (count_over_time({kind="exception", app_id="${escapeLogQLString(appId)}"} | logfmt ${REAL_USERS_FILTER} | page_id=~"${pagePattern(pageIds)}" [${range}])))`;
+}
+
+export interface JourneyStep {
+  pageId: string;
+  sessions: number;
+  errorSessions: number;
+  runFailedHere: boolean;
+  runEndedHere: boolean;
+}
+
+export function getJourneySteps({
+  run,
+  sessionsByPage,
+  errorSessionsByPage,
+}: {
+  run: Pick<FaroRunContext, 'pages' | 'errors' | 'failedRequests'>;
+  sessionsByPage: Record<string, number>;
+  errorSessionsByPage: Record<string, number>;
+}): JourneyStep[] {
+  const failedPages = new Set([
+    ...run.errors.map((error) => error.pageId),
+    ...run.failedRequests.map((request) => request.pageId),
+  ]);
+
+  return run.pages.map((pageId, index) => ({
+    pageId,
+    sessions: sessionsByPage[pageId] ?? 0,
+    // error sessions are a subset of visiting sessions; clamp in case the two
+    // instant queries saw slightly different data
+    errorSessions: Math.min(errorSessionsByPage[pageId] ?? 0, sessionsByPage[pageId] ?? 0),
+    runFailedHere: failedPages.has(pageId),
+    runEndedHere: index === run.pages.length - 1,
+  }));
+}
+
+// ---------------------------------------------------------------------------
+// Links and formatting
+// ---------------------------------------------------------------------------
+
+export function buildFaroAppHref({ pluginId, appId }: { pluginId: string; appId: string }): string {
+  return `/a/${encodeURIComponent(pluginId)}/apps/${encodeURIComponent(appId)}`;
+}
+
+/**
+ * The error group page defaults to the last 30 minutes, which is empty once an
+ * error has stopped, so the link pins the window the panel's counts cover.
+ */
+export function buildFaroErrorHref({
+  pluginId,
+  appId,
+  hash,
+  from,
+  to,
+}: {
+  pluginId: string;
+  appId: string;
+  hash: string;
+  from: number;
+  to: number;
+}): string {
+  const params = new URLSearchParams({ from: String(Math.round(from)), to: String(Math.round(to)) });
+
+  return `${buildFaroAppHref({ pluginId, appId })}/errors/${encodeURIComponent(hash)}?${params}`;
+}
+
+export function stripQuery(url: string): string {
+  const index = url.search(/[?#]/);
+
+  return index === -1 ? url : url.slice(0, index);
+}
+
+/** Compact display form for a request URL: path only. */
+export function getRequestPath(url: string): string {
+  try {
+    return new URL(url).pathname;
+  } catch {
+    return stripQuery(url);
+  }
 }
 
 export function formatDurationMs(ms: number): string {
@@ -300,715 +824,39 @@ export function formatDurationMs(ms: number): string {
   return `${Math.round(ms)} ms`;
 }
 
-/** Median request duration (ms) for a page, from this run's own requests. */
-export function getMedianRequestDuration(requests: FaroHttpRequest[], pageId: string): number | null {
-  const durations = requests
-    .filter((request) => request.pageId === pageId && request.durationMs !== undefined)
-    .map((request) => request.durationMs!)
-    .sort((a, b) => a - b);
+export function formatRelativeDuration(ms: number): string {
+  const minutes = Math.max(0, Math.round(ms / 60_000));
 
-  if (!durations.length) {
-    return null;
+  if (minutes < 1) {
+    return 'less than a minute';
   }
 
-  const mid = Math.floor(durations.length / 2);
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
 
-  return durations.length % 2 === 0 ? (durations[mid - 1] + durations[mid]) / 2 : durations[mid];
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+
+  return rest > 0 && hours < 6 ? `${hours} h ${rest} min` : `${hours} h`;
 }
 
-/** Compact display form for a request URL: path only, full URL on hover. */
-export function getRequestPath(url: string): string {
-  try {
-    const parsed = new URL(url);
-    return `${parsed.pathname}${parsed.search}`;
-  } catch {
-    return url;
+export function formatShare(share: number): string {
+  if (share > 0 && share < 0.01) {
+    return '<1%';
   }
+
+  if (share < 1 && share > 0.99) {
+    return '>99%';
+  }
+
+  return `${Math.round(share * 100)}%`;
 }
 
 export function escapeLogQLString(value: string): string {
   return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
-interface RealUserQueryParams {
-  appId: string;
-  pageId: string;
-  range: string;
-}
-
-interface RealUserActionQueryParams {
-  appId: string;
-  actionName: string;
-  range: string;
-}
-
-/**
- * Shared scaffold for every real-user baseline query below: a Faro log
- * stream for one `kind`, an optional line filter to narrow to a specific
- * event type, and the scope filter (page or action) — always preceded by
- * `k6_isK6Browser=~""`, the same filter Frontend Observability's own
- * per-route panels use to restrict results to records where the k6 field is
- * absent, i.e. real users only, no synthetic traffic.
- */
-function buildRealUserLogStream({
-  kind,
-  appId,
-  lineFilter,
-  scopeFilter,
-}: {
-  kind: string;
-  appId: string;
-  lineFilter?: string;
-  scopeFilter: string;
-}): string {
-  const parts = [`{kind="${kind}", app_id="${appId}"}`];
-
-  if (lineFilter) {
-    parts.push(lineFilter);
-  }
-
-  parts.push('| logfmt', '| k6_isK6Browser=~""', `| ${scopeFilter}`);
-
-  return parts.join(' ');
-}
-
-function pageScopeFilter(pageId: string): string {
-  return `page_id="${escapeLogQLString(pageId)}"`;
-}
-
-function actionScopeFilter(actionName: string): string {
-  return `action_name="${escapeLogQLString(actionName)}"`;
-}
-
-function quantileOverTimeP75(stream: string, unwrapField: string, range: string): string {
-  return `quantile_over_time(0.75, ${stream} | unwrap ${unwrapField} [${range}])`;
-}
-
-function sumCountOverTime(stream: string, range: string): string {
-  return `sum(count_over_time(${stream} [${range}]))`;
-}
-
-// Faro's fetch/XHR event line carries the HTTP status code as
-// `event_data_http.status_code`, folded to underscores by `| logfmt`.
-const HTTP_EVENT_LINE_FILTER =
-  '|~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request" |= "event_data_http.status_code="';
-const HTTP_ERROR_STATUS_FILTER =
-  '| (event_data_http_status_code >= 400 and event_data_http_status_code < 600) or event_data_http_status_code = 0';
-
-export function buildRealUserVitalP75LogQL({ appId, pageId, range, vital }: RealUserQueryParams & { vital: WebVitalName }): string {
-  const stream = buildRealUserLogStream({ kind: 'measurement', appId, lineFilter: `|= " ${vital}="`, scopeFilter: pageScopeFilter(pageId) });
-
-  return quantileOverTimeP75(stream, vital, range);
-}
-
-/**
- * Real-user p75 page load time — from faro.performance.navigation's
- * event_data_pageLoadTime, a PerformanceNavigationTiming entry alongside a
- * full DNS/TCP/TLS/request/response breakdown. Same restriction as TTFB/FCP:
- * only exists for a hard document navigation, never a soft one.
- */
-export function buildRealUserPageLoadTimeLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const stream = buildRealUserLogStream({
-    kind: 'event',
-    appId,
-    lineFilter: '|= "event_name=faro.performance.navigation"',
-    scopeFilter: pageScopeFilter(pageId),
-  });
-
-  return quantileOverTimeP75(stream, 'event_data_pageLoadTime', range);
-}
-
-export function buildRealUserPageLoadsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const stream = buildRealUserLogStream({ kind: 'measurement', appId, lineFilter: '|= " ttfb="', scopeFilter: pageScopeFilter(pageId) });
-
-  return sumCountOverTime(stream, range);
-}
-
-export function buildRealUserExceptionsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const stream = buildRealUserLogStream({ kind: 'exception', appId, scopeFilter: pageScopeFilter(pageId) });
-
-  return sumCountOverTime(stream, range);
-}
-
-export function buildRealUserHttpErrorsLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const stream = buildRealUserLogStream({ kind: 'event', appId, lineFilter: HTTP_EVENT_LINE_FILTER, scopeFilter: pageScopeFilter(pageId) });
-
-  return sumCountOverTime(`${stream} ${HTTP_ERROR_STATUS_FILTER}`, range);
-}
-
-/**
- * Real-user p75 request latency on a page, in nanoseconds (matching
- * event_data_duration_ns's own unit — convert to ms when consuming).
- *
- * Fallback for pages where web vitals don't exist: LCP/FCP/TTFB are tied to
- * the initial document lifecycle, so a soft-navigated page never gets a
- * fresh FCP/TTFB measurement (LCP occasionally re-fires on soft nav,
- * FCP/TTFB structurally can't). Request latency has no such restriction —
- * every fetch/XHR call reports it regardless of navigation type — so it's
- * the next best "how did this page perform" signal once vitals are empty.
- */
-export function buildRealUserRequestLatencyLogQL({ appId, pageId, range }: RealUserQueryParams): string {
-  const stream = buildRealUserLogStream({
-    kind: 'event',
-    appId,
-    lineFilter: '|~ "event_name=faro.tracing.fetch|event_name=faro.tracing.xml-http-request"',
-    scopeFilter: pageScopeFilter(pageId),
-  });
-
-  return quantileOverTimeP75(stream, 'event_data_duration_ns', range);
-}
-
-/**
- * Real-user p75 duration for a named action, straight from the SDK's own
- * `event_data_userActionDuration` on the faro.user.action marker (matches
- * userActionEndTime - userActionStartTime). Directly comparable to this
- * run's own FaroAction.durationMs.
- */
-export function buildRealUserActionDurationLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const stream = buildRealUserLogStream({
-    kind: 'event',
-    appId,
-    lineFilter: '|= "event_name=faro.user.action"',
-    scopeFilter: actionScopeFilter(actionName),
-  });
-
-  return quantileOverTimeP75(stream, 'event_data_userActionDuration', range);
-}
-
-export function buildRealUserActionCountLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const stream = buildRealUserLogStream({
-    kind: 'event',
-    appId,
-    lineFilter: '|= "event_name=faro.user.action"',
-    scopeFilter: actionScopeFilter(actionName),
-  });
-
-  return sumCountOverTime(stream, range);
-}
-
-/**
- * Real-user failed requests during a named action. Not a join — the same
- * fetch/XHR event line carries both `action_name` and the HTTP status code,
- * so this is exactly buildRealUserHttpErrorsLogQL with the filter swapped
- * from page_id to action_name.
- */
-export function buildRealUserActionHttpErrorsLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const stream = buildRealUserLogStream({ kind: 'event', appId, lineFilter: HTTP_EVENT_LINE_FILTER, scopeFilter: actionScopeFilter(actionName) });
-
-  return sumCountOverTime(`${stream} ${HTTP_ERROR_STATUS_FILTER}`, range);
-}
-
-/**
- * Real-user JS exceptions during a named action — unverified whether Faro
- * actually attaches action_name to exception records (only fetch/resource/
- * user.action events are confirmed to carry it). Low-risk to ship anyway:
- * if the label isn't there, this matches zero lines and the UI shows
- * nothing, same as any other fail-silently query here — a nonzero result is
- * its own confirmation.
- */
-export function buildRealUserActionExceptionsLogQL({ appId, actionName, range }: RealUserActionQueryParams): string {
-  const stream = buildRealUserLogStream({ kind: 'exception', appId, scopeFilter: actionScopeFilter(actionName) });
-
-  return sumCountOverTime(stream, range);
-}
-
-export function buildFaroPageHref({ pluginId, appId, pageId }: { pluginId: string; appId: string; pageId: string }): string {
-  return `/a/${encodeURIComponent(pluginId)}/apps/${encodeURIComponent(appId)}/route?var-page_performance_page_id=${encodeURIComponent(pageId)}`;
-}
-
-/**
- * Formats the difference between this run's value and the real-user p75 as a
- * signed delta, e.g. `+31 ms` (slower than real users) or `-0.04` for CLS.
- */
-export function formatWebVitalDelta(name: WebVitalName, runValue: number, baselineValue: number): string {
-  const delta = runValue - baselineValue;
-  const sign = delta > 0 ? '+' : '';
-
-  if (name === 'cls') {
-    return `${sign}${delta.toFixed(2)}`;
-  }
-
-  if (Math.abs(delta) >= 1000) {
-    return `${sign}${(delta / 1000).toFixed(2)} s`;
-  }
-
-  return `${sign}${Math.round(delta)} ms`;
-}
-
-/**
- * Fidelity is a separate axis from check pass/fail, not a rename of it — and
- * it isn't conditioned on pass/fail depending on speed at all. The claim is
- * about representativeness, not about the check "catching" a slowdown:
- * divergence in either direction means the check's result doesn't tell you
- * much about what real users experience, whatever that result is.
- * "Optimistic" is still the more useful direction to flag, because a check
- * that's unrepresentatively fast lets its own pass read as reassurance about
- * real users when it isn't — a "pessimistic" check just produces a false
- * alarm someone investigates and dismisses. Render this on its own hue —
- * never reuse success/error, which are reserved for check pass/fail.
- */
-export type FidelityRating = 'representative' | 'optimistic' | 'pessimistic' | 'insufficient-data';
-
-export interface PageComparisonVerdict {
-  text: string;
-  rating: FidelityRating;
-}
-
-// A vital has to be this much bigger than its counterpart before we call the
-// difference out — small deltas between one synthetic run and a p75 are noise.
-const VERDICT_RATIO = 1.5;
-
-/**
- * Turns the vitals comparison into a one-line, plain-English verdict so users
- * don't have to interpret the table themselves.
- */
-export function getPageComparisonVerdict(
-  runVitals: Partial<Record<WebVitalName, number>>,
-  baselineVitals: Partial<Record<WebVitalName, number>>
-): PageComparisonVerdict {
-  // Real users worse off than this run suggests — the dangerous direction.
-  let worstOptimistic: { vital: WebVitalName; ratio: number } | null = null;
-  // This run worse off than real users — a false alarm, self-correcting.
-  let worstPessimistic: { vital: WebVitalName; ratio: number } | null = null;
-  let compared = 0;
-
-  WEB_VITALS.forEach((vital) => {
-    const runValue = runVitals[vital];
-    const baselineValue = baselineVitals[vital];
-
-    if (runValue === undefined || baselineValue === undefined) {
-      return;
-    }
-
-    compared++;
-
-    if (baselineValue > runValue * VERDICT_RATIO && rateWebVital(vital, baselineValue) !== 'good') {
-      const ratio = runValue > 0 ? baselineValue / runValue : Infinity;
-
-      if (!worstOptimistic || ratio > worstOptimistic.ratio) {
-        worstOptimistic = { vital, ratio };
-      }
-    }
-
-    if (runValue > baselineValue * VERDICT_RATIO && rateWebVital(vital, runValue) !== 'good') {
-      const ratio = baselineValue > 0 ? runValue / baselineValue : Infinity;
-
-      if (!worstPessimistic || ratio > worstPessimistic.ratio) {
-        worstPessimistic = { vital, ratio };
-      }
-    }
-  });
-
-  if (compared === 0) {
-    return { text: 'Not enough comparable web vitals to judge this page', rating: 'insufficient-data' };
-  }
-
-  if (worstOptimistic !== null) {
-    const { vital, ratio } = worstOptimistic as { vital: WebVitalName; ratio: number };
-
-    return {
-      text: `${WEB_VITAL_LABELS[vital]}: this run ${formatWebVitalValue(vital, runVitals[vital]!)} vs real users' p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} (${ratio.toFixed(1)}x faster).`,
-      rating: 'optimistic',
-    };
-  }
-
-  if (worstPessimistic !== null) {
-    const { vital, ratio } = worstPessimistic as { vital: WebVitalName; ratio: number };
-
-    return {
-      text: `${WEB_VITAL_LABELS[vital]}: this run ${formatWebVitalValue(vital, runVitals[vital]!)} vs real users' p75 ${formatWebVitalValue(vital, baselineVitals[vital]!)} (${ratio.toFixed(1)}x slower).`,
-      rating: 'pessimistic',
-    };
-  }
-
-  return { text: 'In line with what real users experienced', rating: 'representative' };
-}
-
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * Finds real-user activity on any of the pages the synthetic run visited.
- *
- * Deliberately NOT gated on `kind="measurement" |= " ttfb="`: a hard-loaded
- * page always gets a ttfb-bearing measurement line, but a soft-navigated
- * page often gets *no* measurement line at all — only occasional LCP-only
- * ones, action-marker events, or fetch/resource events. Matching any
- * event/measurement record with a page_id in the journey, regardless of
- * what else is on the line, catches those too; gating on ttfb would make a
- * session that only soft-navigated past the first page look like it never
- * went further.
- *
- * This is a log-stream query (no `[range]` selector — that's only valid on
- * metric queries); the time window comes from the request's start/end params.
- */
-export function buildSimilarSessionsLogQL({ appId, pageIds }: { appId: string; pageIds: string[] }): string {
-  const pagePattern = escapeLogQLString(`^(${pageIds.map(escapeRegExp).join('|')})$`);
-
-  return `{kind=~"event|measurement", app_id="${appId}"} | logfmt | k6_isK6Browser=~"" | page_id=~"${pagePattern}"`;
-}
-
-export type SimilarSessionOutcome = { kind: 'completed' } | { kind: 'stopped-at'; pageId: string };
-
-export interface SimilarSession {
-  sessionId: string;
-  // pages from the synthetic journey this session also loaded, in journey order
-  matchedPages: string[];
-  lastSeen: number;
-  // Only set when matchedPages is an exact, in-order prefix of the journey —
-  // real users aren't guaranteed to follow the check's exact page sequence
-  // (they can revisit pages or skip around), so this stays undefined rather
-  // than claim a "stopped at X" story the data doesn't actually support.
-  outcome?: SimilarSessionOutcome;
-  // IP-derived (MaxMind GeoLite2 reverse lookup per FEO's own docs), so
-  // reliable regardless of which browser check type produced the session.
-  city?: string;
-  countryIso?: string;
-}
-
-/**
- * Version activity over time, bucketed so we can spot a deploy: page-load
- * counts per `app_version`. Includes synthetic traffic on purpose — on
- * low-traffic apps the checks themselves give the best resolution on when a
- * new version started serving.
- */
-export function buildAppVersionHistoryLogQL({ appId, bucket }: { appId: string; bucket: string }): string {
-  return `sum by (app_version) (count_over_time({kind="measurement", app_id="${appId}"} |= " ttfb=" | logfmt | app_version!="" [${bucket}]))`;
-}
-
-export interface AppVersionChange {
-  currentVersion: string;
-  // undefined when no other version was seen before currentVersion in the window
-  previousVersion?: string;
-  // when currentVersion first appeared in the window
-  firstSeen?: number;
-}
-
-interface VersionActivity {
-  version: string;
-  firstSeen: number;
-  lastSeen: number;
-}
-
-/**
- * Works out whether the version the check ran against replaced another version
- * recently. `series` is one entry per app_version with the timestamps where it
- * had page loads. If nothing but the run's version appears in the lookback
- * window, we report "no change" (the version may well predate the window —
- * we can only speak to what we looked at).
- */
-export function getAppVersionChange(series: VersionActivity[], runVersion: string): AppVersionChange {
-  const current = series.find((s) => s.version === runVersion);
-
-  if (!current) {
-    return { currentVersion: runVersion };
-  }
-
-  const candidates = series.filter((s) => s.version !== runVersion && s.firstSeen < current.firstSeen);
-
-  if (candidates.length === 0) {
-    return { currentVersion: runVersion };
-  }
-
-  candidates.sort((a, b) => b.lastSeen - a.lastSeen);
-
-  return {
-    currentVersion: runVersion,
-    previousVersion: candidates[0].version,
-    firstSeen: current.firstSeen,
-  };
-}
-
-/**
- * Counts distinct real-user sessions that threw the exact same exception
- * message. Answers "is my script's error a real error users are hitting, or
- * an artifact of this run?"
- */
-export function buildExceptionRealSessionsLogQL({
-  appId,
-  message,
-  range,
-}: {
-  appId: string;
-  message: string;
-  range: string;
-}): string {
-  const value = escapeLogQLString(message);
-
-  return `count(sum by (session_id) (count_over_time({kind="exception", app_id="${appId}"} | logfmt | k6_isK6Browser=~"" | value="${value}" [${range}])))`;
-}
-
-export function parseSimilarSessions(logs: FaroRecord[], journeyPageIds: string[]): SimilarSession[] {
-  const journey = new Set(journeyPageIds);
-  const sessions = new Map<
-    string,
-    { pages: Set<string>; lastSeen: number; city?: string; countryIso?: string }
-  >();
-
-  logs.forEach((record) => {
-    const labels = record.labels ?? {};
-    const sessionId = labels.session_id;
-    const pageId = labels.page_id;
-
-    if (!sessionId || !pageId || !journey.has(pageId)) {
-      return;
-    }
-
-    const existing = sessions.get(sessionId);
-
-    if (existing) {
-      existing.pages.add(pageId);
-      existing.lastSeen = Math.max(existing.lastSeen, record.timestamp);
-    } else {
-      // Geo is stable for the life of a session — take it from whichever
-      // record we see first, no need to reconcile across records.
-      sessions.set(sessionId, {
-        pages: new Set([pageId]),
-        lastSeen: record.timestamp,
-        city: labels.geo_city,
-        countryIso: labels.geo_country_iso,
-      });
-    }
-  });
-
-  return [...sessions.entries()]
-    .map(([sessionId, { pages, lastSeen, city, countryIso }]) => {
-      const matchedPages = journeyPageIds.filter((pageId) => pages.has(pageId));
-      const isPrefix = matchedPages.every((pageId, index) => pageId === journeyPageIds[index]);
-      const outcome: SimilarSessionOutcome | undefined = isPrefix
-        ? matchedPages.length === journeyPageIds.length
-          ? { kind: 'completed' }
-          : { kind: 'stopped-at', pageId: matchedPages[matchedPages.length - 1] }
-        : undefined;
-
-      return { sessionId, matchedPages, lastSeen, outcome, city, countryIso };
-    })
-    .sort((a, b) => b.matchedPages.length - a.matchedPages.length || b.lastSeen - a.lastSeen);
-}
-
-export type SummaryTone = 'error' | 'warning' | 'info' | 'success' | 'secondary';
-
-export interface SummaryChip {
-  text: string;
-  tone: SummaryTone;
-}
-
-export interface SummaryVerdict {
-  text: string;
-  tone: SummaryTone;
-  chips: SummaryChip[];
-}
-
-// Structural shape rather than importing RealUserActionBaseline from hooks —
-// utils shouldn't depend on hooks (wrong direction; hooks already imports
-// from here).
-interface ActionBaselineLike {
-  durationMs: number | null;
-  occurrences: number | null;
-  httpErrors: number | null;
-  exceptions: number | null;
-}
-
-// A real-user failure rate above this on a named action is worth leading
-// the summary with — below it, it's noise a rules pass shouldn't surface.
-const ACTION_FAILURE_RATE_THRESHOLD = 0.02;
-// Same 1.5x asymmetry threshold as the per-page fidelity verdict, applied to
-// one metric (duration) instead of five (vitals).
-const ACTION_FIDELITY_RATIO = 1.5;
-
-/**
- * One-sentence, rules-based synthesis over data the panel already fetched —
- * cowork's "summary band" proposal. Priority order: is a real user hitting
- * the same failure as this run (only asked when the check itself failed);
- * otherwise, does anything about this run diverge from what real users
- * experience (deploy, fidelity) worth a passing check knowing about.
- */
-export function getSummaryVerdict({
-  probeSuccess,
-  versionChange,
-  exceptions,
-  exceptionRealSessionCounts,
-  actions,
-  actionBaselines,
-  pages,
-}: {
-  probeSuccess?: boolean;
-  versionChange?: AppVersionChange | null;
-  exceptions: FaroException[];
-  exceptionRealSessionCounts: Record<string, number> | null | undefined;
-  actions: FaroAction[];
-  actionBaselines: Record<string, ActionBaselineLike | null | undefined>;
-  pages: FaroPageVisit[];
-}): SummaryVerdict {
-  const chips: SummaryChip[] = [];
-  const deployedRecently = Boolean(versionChange?.previousVersion && versionChange.firstSeen);
-
-  if (versionChange) {
-    chips.push(
-      deployedRecently
-        ? { text: 'Deploy landed before this run', tone: 'warning' }
-        : { text: 'No deploy in the last 6h', tone: 'success' }
-    );
-  }
-
-  // Worst named action by real-user failure rate, above threshold.
-  //
-  // The faro.user.action marker has no native success/failure field at all —
-  // it's purely a timing capture: start/end/duration/trigger/importance plus
-  // whatever custom business attributes the app attached. "Failure" is
-  // something we infer by correlating whatever else happened during the
-  // action's window via action_parent_id — so it has to combine every
-  // failure-shaped signal available, not just HTTP errors: an action that
-  // fails via a thrown JS exception with no failed network call at all
-  // would otherwise never trip this.
-  let worstFailingAction: { name: string; rate: number; failed: number; occurrences: number } | null = null;
-
-  actions.forEach((action) => {
-    const baseline = actionBaselines[action.actionName];
-
-    if (!baseline?.occurrences) {
-      return;
-    }
-
-    const failed = (baseline.httpErrors ?? 0) + (baseline.exceptions ?? 0);
-
-    if (!failed) {
-      return;
-    }
-
-    const rate = failed / baseline.occurrences;
-
-    if (rate > ACTION_FAILURE_RATE_THRESHOLD && (!worstFailingAction || rate > worstFailingAction.rate)) {
-      worstFailingAction = { name: action.actionName, rate, failed, occurrences: baseline.occurrences };
-    }
-  });
-
-  // Any of this run's exceptions also hitting real users?
-  const sharedException = exceptions.find((exception) => (exceptionRealSessionCounts?.[exception.message] ?? 0) > 0);
-  const sharedExceptionCount = sharedException ? exceptionRealSessionCounts![sharedException.message] : 0;
-
-  // Worst action where the check ran meaningfully faster than real users —
-  // the dangerous fidelity direction, same asymmetry as the page verdict.
-  let worstOptimisticAction: {
-    name: string;
-    ratio: number;
-    durationMs: number;
-    baselineDurationMs: number;
-  } | null = null;
-
-  actions.forEach((action) => {
-    const baseline = actionBaselines[action.actionName];
-
-    if (action.durationMs === undefined || baseline?.durationMs == null) {
-      return;
-    }
-
-    if (baseline.durationMs > action.durationMs * ACTION_FIDELITY_RATIO) {
-      const ratio = baseline.durationMs / action.durationMs;
-
-      if (!worstOptimisticAction || ratio > worstOptimisticAction.ratio) {
-        worstOptimisticAction = {
-          name: action.actionName,
-          ratio,
-          durationMs: action.durationMs,
-          baselineDurationMs: baseline.durationMs,
-        };
-      }
-    }
-  });
-
-  if (probeSuccess === false) {
-    if (worstFailingAction !== null) {
-      const { name, failed, occurrences } = worstFailingAction as { name: string; failed: number; occurrences: number; rate: number };
-
-      return {
-        text: `Real users are also failing on ${name}: ${failed} of ${occurrences} occurrences in the past hour.`,
-        tone: 'error',
-        chips,
-      };
-    }
-
-    if (sharedException) {
-      return {
-        text: `This run's error is also hitting real users — seen in ${sharedExceptionCount} real session${sharedExceptionCount === 1 ? '' : 's'} in the past hour.`,
-        tone: 'error',
-        chips,
-      };
-    }
-
-    // "No evidence of harm" is only worth stating as "users are fine" if we
-    // actually had a channel capable of finding harm. A check can fail with
-    // no in-page JS exception at all (a k6/Playwright assertion timeout
-    // throws outside the browser, invisible to Faro) and an app with no
-    // named actions gives the action-failure-rate check nothing to compare
-    // against either. Say so plainly rather than imply a clean bill of
-    // health we didn't earn — and name the page the run was on, since
-    // that's the closest thing to "where it failed" we have without action
-    // instrumentation.
-    if (actions.length === 0 && exceptions.length === 0) {
-      const lastPageId = pages[pages.length - 1]?.pageId;
-      const pageClause = lastPageId ? ` on ${lastPageId}` : '';
-
-      return {
-        text: `Couldn't tell whether real users are affected — this run produced no JS exception${pageClause}, and this app has no named action there to check a real-user failure rate against.`,
-        tone: 'secondary',
-        chips,
-      };
-    }
-
-    return {
-      text: "Real users don't appear to be seeing this failure. Start with the check, not the app.",
-      tone: 'success',
-      chips,
-    };
-  }
-
-  // Real failures outrank a pure fidelity observation, always — a check
-  // that's technically passing while real users fail on the matching action
-  // is a more urgent thing to say than "this check runs fast."
-  if (worstFailingAction !== null) {
-    const { name, rate } = worstFailingAction as { name: string; rate: number; failed: number; occurrences: number };
-    chips.push({ text: `${name}: ${(rate * 100).toFixed(1)}% real-user failure rate`, tone: 'error' });
-
-    return {
-      text: `This run passed, but real users are failing on ${name}.`,
-      tone: 'error',
-      chips,
-    };
-  }
-
-  if (deployedRecently) {
-    return {
-      text: 'A new version shipped before this run. No other divergence from real users detected.',
-      tone: 'warning',
-      chips,
-    };
-  }
-
-  // Fidelity comes last among the "passed" branches — only worth leading
-  // with when nothing more concrete is going on. Kept purely factual on
-  // purpose (the numbers, no interpretation of what they mean or don't) —
-  // whether a speed gap matters is an eng call to make per-check, not
-  // something to argue for or against here.
-  if (worstOptimisticAction !== null) {
-    const { name, ratio, durationMs, baselineDurationMs } = worstOptimisticAction as {
-      name: string;
-      ratio: number;
-      durationMs: number;
-      baselineDurationMs: number;
-    };
-
-    return {
-      text: `${name}: this run ${formatDurationMs(durationMs)} vs real users' p75 ${formatDurationMs(baselineDurationMs)} (${ratio.toFixed(1)}x faster).`,
-      tone: 'info',
-      chips,
-    };
-  }
-
-  return {
-    text: 'Nothing notable diverges from real users.',
-    tone: 'secondary',
-    chips,
-  };
 }

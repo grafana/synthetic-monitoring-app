@@ -48,6 +48,7 @@ export enum CheckEventType {
   AlertsFiring = 'Alerts firing',
   AlertsPending = 'Alerts pending',
   NoData = 'No data',
+  AppBuildChanged = 'New app build',
 }
 
 export type CheckEvent = {
@@ -55,6 +56,7 @@ export type CheckEvent = {
   from: UnixTimestamp | null;
   to: UnixTimestamp | null;
   color: string;
+  description?: string;
 };
 
 export type CheckConfigType = 'no-data';

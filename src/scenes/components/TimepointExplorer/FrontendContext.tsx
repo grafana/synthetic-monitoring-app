@@ -1,70 +1,72 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import {
   Badge,
-  BadgeColor,
+  Button,
+  ClipboardButton,
   Icon,
-  Input,
-  LinkButton,
   Spinner,
   Stack,
   Text,
   TextLink,
   Tooltip,
   useStyles2,
+  useTheme2,
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useTracesDS } from 'hooks/useTracesDS';
-import { PlainButton } from 'components/PlainButton';
+import { Feedback } from 'components/Feedback';
 import { fetchTraceData } from 'scenes/components/LogsRenderer/LogLine.utils';
 import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
 import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import {
-  RealUserActionBaseline,
-  RealUserPageBaseline,
-  useAppVersionChange,
-  useExceptionRealSessions,
-  useFaroExecutionContext,
-  useRealUserActionBaselines,
-  useRealUserPageBaseline,
-  useSimilarRealSessions,
+  BUILD_LOOKBACK_MS,
+  FailureImpact,
+  REAL_USER_WINDOW_MS,
+  useFailureImpact,
+  useFaroRunContext,
+  useJourneySessions,
+  useRealUserBuildLoads,
+  useRunBuildHistory,
+  useSourceMapUploads,
 } from 'scenes/components/TimepointExplorer/FrontendContext.hooks';
 import {
-  buildFaroPageHref,
-  FaroAction,
-  FaroExecutionContext,
-  FaroHttpRequest,
-  FaroPageVisit,
-  FidelityRating,
+  AppBuild,
+  BuildActivity,
+  buildFaroAppHref,
+  buildFaroErrorHref,
+  BuildInsight,
+  BuildStart,
+  FailureSignature,
+  FaroRunContext,
+  formatBuild,
   formatDurationMs,
-  formatWebVitalDelta,
-  formatWebVitalValue,
-  getMedianRequestDuration,
-  getPageComparisonVerdict,
+  formatRelativeDuration,
+  formatShare,
+  getBuildCommit,
+  getBuildInsight,
+  getBuildKey,
+  getBuildSegments,
+  getErrorSignature,
+  getJourneySteps,
   getRequestPath,
-  getSummaryVerdict,
-  rateWebVital,
-  SummaryTone,
-  WEB_VITAL_LABELS,
-  WEB_VITALS,
-  WebVitalName,
-  WebVitalRating,
+  getRequestSignature,
+  hasBuildIdentity,
+  RealUserComparison,
+  RunError,
+  RunFailedRequest,
 } from 'scenes/components/TimepointExplorer/FrontendContext.utils';
 import { FARO_APP_PLUGIN_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
 import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { buildFaroSessionHref } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.utils';
 
-const RATING_COLOR: Record<WebVitalRating, BadgeColor> = {
-  good: 'green',
-  'needs-improvement': 'orange',
-  poor: 'red',
-};
+const REAL_USERS_DEFINITION =
+  "Real users are Frontend Observability sessions that weren't created by k6, so this check and any load tests are left out.";
 
 export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }) => {
   const { check, viewerState } = useTimepointExplorerContext();
@@ -77,520 +79,663 @@ export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }
       ? statefulTimepoint.probeResults?.[viewerProbeName]?.[viewerExecutionIndex]
       : undefined;
   const executionId = selectedExecution?.labels.execution_id;
-  const to = timepoint.adjustedTime + timepoint.timepointDuration + timepoint.config.frequency;
+  const timepointEnd = timepoint.adjustedTime + timepoint.timepointDuration;
+  // Faro records can arrive after the timepoint closes, so look a little past it.
+  const sessionSearchTo = timepointEnd + timepoint.config.frequency;
 
-  const { data: context } = useFaroExecutionContext({
+  const { data: run } = useFaroRunContext({
     executionId: executionId ?? '',
     from: timepoint.adjustedTime,
-    to,
+    to: sessionSearchTo,
     enabled: isBrowserCheck && Boolean(executionId),
   });
 
-  if (!isBrowserCheck || !context) {
+  // No Faro session for this run: the "Add RUM to your app" link in the
+  // viewer header already covers that case.
+  if (!isBrowserCheck || !executionId || !selectedExecution || !run) {
     return null;
   }
 
-  const probeSuccess = selectedExecution?.labels.probe_success === '1';
-
-  return <FrontendContextPanel context={context} from={timepoint.adjustedTime} to={to} probeSuccess={probeSuccess} />;
-};
-
-const FrontendContextPanel = ({
-  context,
-  from,
-  to,
-  probeSuccess,
-}: {
-  context: FaroExecutionContext;
-  from: number;
-  to: number;
-  probeSuccess: boolean;
-}) => {
-  const styles = useStyles2(getStyles);
-  const [expanded, setExpanded] = useState(false);
-  const sessionHref = buildFaroSessionHref({
-    pluginId: FARO_APP_PLUGIN_ID,
-    appId: context.appId,
-    sessionId: context.sessionId,
-  });
+  // The execution's final log line is stamped when the run ended. Date
+  // "before this run" from when it started (the page loads then), and end the
+  // real-user windows when it finished.
+  const runEnd = selectedExecution.timestamp;
+  const durationMs = Number(selectedExecution.labels.duration_seconds) * 1000;
+  const runStart = Number.isFinite(durationMs) && durationMs > 0 ? runEnd - durationMs : runEnd;
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Stack direction="row" gap={1} alignItems="center">
-          <Icon name="frontend-observability" />
-          <Text variant="h6">Real user context</Text>
-          {context.appName && (
-            <Text color="secondary" variant="bodySmall">
-              <span className={styles.mono}>{context.appName}</span>
-            </Text>
-          )}
-        </Stack>
-        <Stack direction="row" gap={1} alignItems="center">
-          {context.hasSessionReplay ? (
-            <LinkButton href={sessionHref} icon="play" size="sm" variant="secondary" fill="outline" target="_blank">
-              Watch session replay
-            </LinkButton>
-          ) : (
-            <Text color="secondary" italic variant="bodySmall">
-              Session replay not available for this run
-            </Text>
-          )}
-        </Stack>
-      </div>
+    <RealUserContextPanel
+      key={executionId}
+      run={run}
+      runTime={runStart}
+      to={runEnd}
+      probeSuccess={selectedExecution.labels.probe_success === '1'}
+    />
+  );
+};
 
-      <div className={styles.provenance}>
-        <Text color="secondary" variant="bodySmall" italic>
-          Read from the Faro session this check created — including the check&apos;s own actions, requests and
-          exceptions. Action names come from the app, not from your check configuration.
+interface PanelProps {
+  run: FaroRunContext;
+  runTime: number;
+  to: number;
+  probeSuccess: boolean;
+}
+
+const RealUserContextPanel = ({ run, runTime, to, probeSuccess }: PanelProps) => {
+  const styles = useStyles2(getStyles);
+  const headingId = useId();
+  const appName = run.appName || 'Frontend Observability app';
+
+  // The viewer header's "View Frontend Session" button already links this
+  // run's session, so the panel only links the app it compares against.
+  return (
+    <section className={styles.panel} aria-labelledby={headingId}>
+      <header className={styles.header}>
+        <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
+          <Icon name="frontend-observability" />
+          <Text element="h4" variant="h5" id={headingId}>
+            Real user context
+          </Text>
+          <Tooltip content={REAL_USERS_DEFINITION}>
+            <Icon name="info-circle" size="sm" tabIndex={0} aria-label="What counts as a real user" />
+          </Tooltip>
+          <Text color="secondary" variant="bodySmall">
+            from{' '}
+            <TextLink
+              href={buildFaroAppHref({ pluginId: FARO_APP_PLUGIN_ID, appId: run.appId })}
+              external
+              inline
+              variant="bodySmall"
+              aria-label={`Open ${appName} in Frontend Observability`}
+            >
+              {appName}
+            </TextLink>
+            {run.appEnvironment && ` · ${run.appEnvironment}`}
+          </Text>
+        </Stack>
+        <Feedback feature="real-user-context" about={{ text: 'Experimental' }} />
+      </header>
+
+      <div className={styles.facts}>
+        <FactRow label="App build" detail="last 24 h">
+          <BuildFact run={run} runTime={runTime} to={to} />
+        </FactRow>
+        <FactRow label="What failed in the browser" detail="real users, last hour">
+          <FailuresFact run={run} to={to} probeSuccess={probeSuccess} />
+        </FactRow>
+        <FactRow label="Real users on these pages" detail="last hour">
+          <JourneyFact run={run} to={to} />
+        </FactRow>
+      </div>
+    </section>
+  );
+};
+
+const FactRow = ({ label, detail, children }: { label: string; detail: string; children: React.ReactNode }) => {
+  const styles = useStyles2(getStyles);
+
+  return (
+    <div className={styles.factRow}>
+      <div className={styles.factLabel}>
+        <Text element="h5" variant="bodySmall" weight="medium">
+          {label}
+        </Text>
+        <Text color="secondary" variant="bodySmall">
+          {detail}
         </Text>
       </div>
-
-      <SummaryBand
-        context={context}
-        to={to}
-        probeSuccess={probeSuccess}
-        expanded={expanded}
-        onToggle={() => setExpanded(!expanded)}
-      />
-
-      {expanded && (
-        <div className={styles.body}>
-          <AppVersionLine context={context} from={from} to={to} />
-
-        {context.exceptions.length > 0 && (
-          <div className={styles.section}>
-            <ExceptionsList context={context} to={to} />
-          </div>
-        )}
-
-        {context.actions.length > 0 && (
-          <div className={styles.section}>
-            <ActionsList context={context} to={to} />
-          </div>
-        )}
-
-        {context.requests.length > 0 && (
-          <div className={styles.section}>
-            <NetworkRequestsList context={context} />
-          </div>
-        )}
-
-        <div className={styles.section}>
-          <Stack direction="column" gap={1}>
-            <Text weight="medium">Pages visited</Text>
-            {context.pages.map((page) => (
-              <PageVisit key={page.pageId} appId={context.appId} page={page} to={to} requests={context.requests} />
-            ))}
-          </Stack>
-        </div>
-
-          <SimilarSessions context={context} to={to} />
-        </div>
-      )}
+      <div className={styles.factBody}>{children}</div>
     </div>
   );
 };
 
-const CHIP_COLOR: Record<SummaryTone, BadgeColor> = {
-  error: 'red',
-  warning: 'orange',
-  info: 'blue',
-  success: 'green',
-  secondary: 'blue',
+const Unavailable = ({ children }: { children: NonNullable<React.ReactNode> }) => (
+  <Text color="secondary" italic variant="bodySmall">
+    {children}
+  </Text>
+);
+
+// ---------------------------------------------------------------------------
+// App build
+// ---------------------------------------------------------------------------
+
+function formatClockTime(time: number, reference: number): string {
+  const sameDay =
+    dateTimeFormat(time, { format: 'YYYY-MM-DD' }) === dateTimeFormat(reference, { format: 'YYYY-MM-DD' });
+
+  return dateTimeFormat(time, { format: sameDay ? 'HH:mm' : 'MMM D, HH:mm' });
+}
+
+// A deploy this close to the run is worth leading with.
+const RECENT_BUILD_MS = 2 * 60 * 60 * 1000;
+// Below this, "most real users" is a handful of page loads, not a pattern.
+const MIN_REAL_USER_LOADS = 20;
+
+const NEW_BUILD_TOOLTIP =
+  "A new build means a new deploy, not necessarily a change to this app's code: some pipelines rebuild every app on every merge.";
+
+type RealUsers = NonNullable<BuildInsight['realUsers']>;
+
+// Only the comparisons that point at a problem get a badge; a build that is
+// still rolling out right after its deploy is expected.
+const COMPARISON_BADGES: Partial<Record<RealUserComparison, string>> = {
+  newer: 'Most users on an older build',
+  older: 'Older than most users get',
+  different: 'Not the build most users get',
 };
 
-const SummaryBand = ({
-  context,
-  to,
-  probeSuccess,
-  expanded,
-  onToggle,
-}: {
-  context: FaroExecutionContext;
-  to: number;
-  probeSuccess: boolean;
-  expanded: boolean;
-  onToggle: () => void;
-}) => {
-  const styles = useStyles2(getStyles);
-  const { data: versionChange, isLoading: isVersionLoading } = useAppVersionChange({
-    appId: context.appId,
-    runVersion: context.appVersion ?? '',
-    to,
-    enabled: Boolean(context.appVersion),
-  });
-  const { data: exceptionRealSessionCounts, isLoading: isExceptionsLoading } = useExceptionRealSessions({
-    appId: context.appId,
-    messages: context.exceptions.map((exception) => exception.message),
-    to,
-  });
-  const { data: actionBaselines, isLoading: isActionBaselinesLoading } = useRealUserActionBaselines({
-    appId: context.appId,
-    actionNames: context.actions.map((action) => action.actionName),
-    to,
-  });
+const BuildFact = ({ run, runTime, to }: { run: FaroRunContext; runTime: number; to: number }) => {
+  const { data: history, isLoading: isHistoryLoading } = useRunBuildHistory({ appId: run.appId, to });
+  const { data: realUserLoads, isLoading: isLoadsLoading } = useRealUserBuildLoads({ appId: run.appId, to });
+  const { uploads } = useSourceMapUploads({ appId: run.appId, bundleIds: [run.build.bundleId] });
 
-  // Every hook above feeds the verdict directly - rendering before they
-  // resolve means computing on empty/undefined data, which surfaces as a
-  // misleading "Nothing notable diverges" flash before the real verdict
-  // lands a beat later.
-  if (isVersionLoading || isExceptionsLoading || isActionBaselinesLoading) {
+  if (!hasBuildIdentity(run.build)) {
     return (
-      <div className={styles.summaryBand}>
-        <Spinner />
-      </div>
+      <Unavailable>
+        This app doesn&apos;t report a version or bundle id to Faro, so builds can&apos;t be compared. Set{' '}
+        <code>app.version</code> in the Faro SDK, or add the Faro bundler plugin.
+      </Unavailable>
     );
   }
 
-  const verdict = getSummaryVerdict({
-    probeSuccess,
-    versionChange,
-    exceptions: context.exceptions,
-    exceptionRealSessionCounts,
-    actions: context.actions,
-    actionBaselines,
-    pages: context.pages,
+  const insight = getBuildInsight({
+    runBuild: run.build,
+    runTime,
+    activity: history?.activity ?? [],
+    // only used when there is history to date the build from
+    stepMs: history?.stepMs ?? 0,
+    realUserLoads: realUserLoads ?? [],
+    realUserWindowFrom: to - REAL_USER_WINDOW_MS,
+    uploads,
   });
-
-  return (
-    <div className={styles.summaryBand}>
-      <Text variant="h5" color={verdict.tone === 'secondary' ? undefined : verdict.tone}>
-        {verdict.text}
-      </Text>
-      {verdict.chips.length > 0 && (
-        <Stack direction="row" gap={1} wrap="wrap">
-          {verdict.chips.map((chip, index) => (
-            <Badge key={index} text={chip.text} color={CHIP_COLOR[chip.tone]} />
-          ))}
-        </Stack>
-      )}
-      <PlainButton onClick={onToggle}>
-        <Text color="link" variant="bodySmall">
-          <Icon name={expanded ? 'angle-up' : 'angle-down'} size="sm" /> {expanded ? 'Hide detail' : 'Show detail'}
-        </Text>
-      </PlainButton>
-    </div>
-  );
-};
-
-const ActionsList = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
-  const styles = useStyles2(getStyles);
-  const actionNames = context.actions.map((action) => action.actionName);
-  const { data: baselines } = useRealUserActionBaselines({ appId: context.appId, actionNames, to });
-
-  // One shared scale across every action's bars — lets "which action is
-  // slowest" and "where do run and p75 disagree most" both read at a
-  // glance, without anyone parsing a number. Per-row scaling would show
-  // divergence but destroy cross-action comparison.
-  const maxDurationMs = Math.max(
-    1,
-    ...context.actions.flatMap((action) => {
-      const baseline = baselines[action.actionName];
-      return [action.durationMs, baseline?.durationMs].filter((value): value is number => value != null);
-    })
-  );
+  const { start } = insight;
+  const isRecent = start !== undefined && runTime - start.from <= RECENT_BUILD_MS;
+  const realUsers = insight.realUsers && insight.realUsers.loads >= MIN_REAL_USER_LOADS ? insight.realUsers : undefined;
+  const comparisonBadge = realUsers ? COMPARISON_BADGES[realUsers.comparison] : undefined;
 
   return (
     <Stack direction="column" gap={1}>
-      <Stack direction="row" gap={0.5} alignItems="center">
-        <Text weight="medium">Named actions during this run ({context.actions.length})</Text>
-        <Tooltip content="Business-level actions this app tags via Faro's User Actions feature. Each one auto-correlates every network call that happened while it was in progress — a more precise unit than the page it occurred on, and it works the same whether the app uses hard or soft navigation. Duration comes from the SDK's own userActionDuration measurement.">
-          <Icon name="info-circle" size="sm" />
-        </Tooltip>
+      <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
+        <BuildName build={run.build} />
+        {start && <Badge text="New build" color="orange" icon="rocket" tooltip={NEW_BUILD_TOOLTIP} />}
+        {comparisonBadge && <Badge text={comparisonBadge} color="orange" icon="exclamation-triangle" />}
       </Stack>
-      <Stack direction="column" gap={1}>
-        {context.actions.map((action) => (
-          <div key={action.actionId} className={styles.indent}>
-            <ActionRow action={action} baseline={baselines[action.actionName]} maxDurationMs={maxDurationMs} />
-          </div>
-        ))}
-      </Stack>
-    </Stack>
-  );
-};
 
-const ActionRow = ({
-  action,
-  baseline,
-  maxDurationMs,
-}: {
-  action: FaroAction;
-  baseline: RealUserActionBaseline | null | undefined;
-  maxDurationMs: number;
-}) => {
-  const styles = useStyles2(getStyles);
-  // The action marker has no native success/failure field (it's purely a
-  // timing capture) — "failure" is inferred by combining every
-  // failure-shaped signal correlated to it, not just HTTP errors, or an
-  // action that fails via a thrown exception with no failed request at all
-  // would never show as failing.
-  const failedTotal = (baseline?.httpErrors ?? 0) + (baseline?.exceptions ?? 0);
-  const failureRate = baseline?.occurrences && failedTotal > 0 ? (failedTotal / baseline.occurrences) * 100 : null;
-
-  return (
-    <Stack direction="column" gap={0.5}>
-      <Text variant="bodySmall">
-        <span className={cx(styles.mono, styles.actionName)}>{action.actionName}</span>{' '}
+      {isHistoryLoading ? (
+        <Spinner size="sm" />
+      ) : history === null ? (
+        <Unavailable>Couldn&apos;t load build history.</Unavailable>
+      ) : start ? (
+        <BuildStartText start={start} previous={insight.previous} runTime={runTime} isRecent={isRecent} />
+      ) : (
         <Text color="secondary" variant="bodySmall">
-          on {action.pageId || 'unknown page'}
+          Already serving at the start of the 24 h before this run.
+          {insight.uploadedAt !== undefined &&
+            ` Its source maps were uploaded ${formatClockTime(insight.uploadedAt, runTime)}.`}
         </Text>
-      </Text>
-
-      {(action.durationMs !== undefined || baseline?.durationMs != null) && (
-        <Stack direction="column" gap={0.25}>
-          {action.durationMs !== undefined && (
-            <BarRow label="this run" valueMs={action.durationMs} maxMs={maxDurationMs} tone="run" />
-          )}
-          {baseline?.durationMs != null && (
-            <BarRow label="users p75" valueMs={baseline.durationMs} maxMs={maxDurationMs} tone="p75" />
-          )}
-        </Stack>
       )}
 
-      <Text color={action.errorCount > 0 || failureRate !== null ? 'error' : 'secondary'} variant="bodySmall">
-        {action.requestCount} request{action.requestCount === 1 ? '' : 's'}
-        {action.errorCount > 0 && `, ${action.errorCount} failed this run`}
-        {baseline?.occurrences != null &&
-          ` · ${baseline.occurrences} real-user occurrence${baseline.occurrences === 1 ? '' : 's'}/hr`}
-        {baseline?.httpErrors ? `, ${baseline.httpErrors} failed requests` : ''}
-        {baseline?.exceptions ? `, ${baseline.exceptions} JS exceptions` : ''}
-        {failureRate !== null && ` (${failureRate.toFixed(1)}% combined real-user failure rate)`}
-      </Text>
+      {isLoadsLoading ? null : realUsers ? (
+        <RealUserBuildText realUsers={realUsers} />
+      ) : (
+        <Text variant="bodySmall" color="secondary">
+          Not enough real-user page loads in the last hour to compare builds.
+        </Text>
+      )}
+
+      {history && history.activity.length > 1 && (
+        <BuildStrip
+          activity={history.activity}
+          from={history.from}
+          to={history.to}
+          stepMs={history.stepMs}
+          runBuild={run.build}
+          runTime={runTime}
+        />
+      )}
     </Stack>
   );
 };
 
-const BarRow = ({
-  label,
-  valueMs,
-  maxMs,
-  tone,
-}: {
-  label: string;
-  valueMs: number;
-  maxMs: number;
-  tone: 'run' | 'p75';
-}) => {
+/** The build's short name, with its full identifiers on hover. */
+const BuildName = ({ build }: { build: AppBuild }) => {
   const styles = useStyles2(getStyles);
-  const widthPct = Math.min(100, (valueMs / maxMs) * 100);
+  const commit = getBuildCommit(build);
+  const details = [
+    build.version && `Version: ${build.version}`,
+    build.bundleId && `Bundle ID: ${build.bundleId}`,
+    commit?.source === 'git-hash' && `Git commit: ${commit.sha}`,
+    commit?.source === 'bundle-id' &&
+      'The bundle ID has the shape of a git commit SHA, so it is probably the build commit.',
+  ].filter((line): line is string => Boolean(line));
 
   return (
-    <div className={styles.barRow}>
-      <span className={cx(styles.mono, styles.barLabel)}>{label}</span>
-      <div className={styles.barTrack}>
-        <div
-          className={cx(styles.barFill, tone === 'run' ? styles.barFillRun : styles.barFillP75)}
-          style={{ width: `${widthPct}%` }}
+    <Stack direction="row" gap={0.5} alignItems="center">
+      <Tooltip
+        content={
+          <div>
+            {details.map((line) => (
+              <div key={line}>{line}</div>
+            ))}
+          </div>
+        }
+      >
+        {/* focusable so keyboard users can reach the tooltip */}
+        <span className={styles.buildName} tabIndex={0}>
+          {formatBuild(build)}
+        </span>
+      </Tooltip>
+      {commit?.source === 'git-hash' && commit.sha !== build.bundleId && (
+        <Text variant="bodySmall" color="secondary">
+          commit {commit.sha.slice(0, 7)}
+        </Text>
+      )}
+      {commit && (
+        <ClipboardButton
+          icon="copy"
+          size="sm"
+          variant="secondary"
+          fill="text"
+          getText={() => commit.sha}
+          tooltip={commit.source === 'git-hash' ? 'Copy commit SHA' : 'Copy bundle ID'}
+          aria-label={commit.source === 'git-hash' ? 'Copy commit SHA' : 'Copy bundle ID'}
         />
+      )}
+    </Stack>
+  );
+};
+
+const BuildStartText = ({
+  start,
+  previous,
+  runTime,
+  isRecent,
+}: {
+  start: BuildStart;
+  previous?: AppBuild;
+  runTime: number;
+  isRecent: boolean;
+}) => {
+  const replacing = previous ? `, replacing ${formatBuild(previous)}` : '';
+
+  return (
+    <Stack direction="row" gap={0.5} alignItems="center" wrap="wrap">
+      <Text variant="body" color={isRecent ? 'warning' : undefined} weight={isRecent ? 'medium' : undefined}>
+        {start.source === 'source-maps'
+          ? `Deployed at ${formatClockTime(start.from, runTime)}, ${formatRelativeDuration(
+              runTime - start.from
+            )} before this run${replacing}.`
+          : `First served between ${formatClockTime(start.from, runTime)} and ${formatClockTime(
+              start.to,
+              runTime
+            )}, at most ${formatRelativeDuration(runTime - start.from)} before this run${replacing}.`}
+      </Text>
+      <Tooltip
+        content={
+          start.source === 'source-maps'
+            ? "Dated by when this build's source maps were uploaded to Frontend Observability."
+            : "From Faro page loads, counted in 15-minute buckets. Upload the build's source maps at deploy time to get an exact time."
+        }
+      >
+        <Icon name="info-circle" size="sm" tabIndex={0} aria-label="Where this time comes from" />
+      </Tooltip>
+    </Stack>
+  );
+};
+
+const RealUserBuildText = ({ realUsers }: { realUsers: RealUsers }) => {
+  const share = formatShare(realUsers.runBuildShare);
+  const dominantShare = formatShare(realUsers.dominant.share);
+  const dominant = formatBuild(realUsers.dominant.build);
+
+  switch (realUsers.comparison) {
+    case 'same':
+      return (
+        <Text variant="bodySmall" color="secondary">
+          {share} of real-user page loads in the last hour were on this build.
+        </Text>
+      );
+    case 'rolling-out':
+      return (
+        <Text variant="bodySmall" color="secondary">
+          {share} of real-user page loads in the last hour were on this build and {dominantShare} on {dominant}.
+          That&apos;s expected right after a deploy.
+        </Text>
+      );
+    case 'newer':
+      return (
+        <Text variant="bodySmall" color="warning">
+          Only {share} of real-user page loads in the last hour were on this build; {dominantShare} were on the older{' '}
+          {dominant}. Is this a partial rollout or a canary?
+        </Text>
+      );
+    case 'older':
+      return (
+        <Text variant="bodySmall" color="warning">
+          {dominantShare} of real-user page loads in the last hour were on the newer {dominant}; only {share} on this
+          one. A stale cache, CDN or instance may have served this check.
+        </Text>
+      );
+    case 'different':
+      return (
+        <Text variant="bodySmall" color="warning">
+          Only {share} of real-user page loads in the last hour were on this build; {dominantShare} were on {dominant}.
+        </Text>
+      );
+  }
+};
+
+const BUILD_COLORS = ['blue', 'purple', 'orange', 'yellow', 'green'];
+
+const BuildStrip = ({
+  activity,
+  from,
+  to,
+  stepMs,
+  runBuild,
+  runTime,
+}: {
+  activity: BuildActivity[];
+  from: number;
+  to: number;
+  stepMs: number;
+  runBuild: AppBuild;
+  runTime: number;
+}) => {
+  const styles = useStyles2(getStyles);
+  const theme = useTheme2();
+  const colorFor = (key: string | null) => {
+    if (key === null) {
+      return theme.colors.background.secondary;
+    }
+
+    const index = activity.findIndex((entry) => entry.key === key);
+
+    return theme.visualization.getColorByName(BUILD_COLORS[index % BUILD_COLORS.length]);
+  };
+  const segments = getBuildSegments(activity, from, to, stepMs);
+  const span = to - from;
+  const runOffset = Math.min(100, Math.max(0, ((runTime - from) / span) * 100));
+  const runKey = getBuildKey(runBuild);
+  const summary = activity
+    .map((entry) => `${formatBuild(entry.build)} from ${formatClockTime(entry.firstSeen, runTime)}`)
+    .join(', ');
+
+  return (
+    <div className={styles.strip}>
+      <div
+        className={styles.stripTrack}
+        role="img"
+        aria-label={`Builds serving in the 24 hours before this run: ${summary}`}
+      >
+        {segments.map((segment) => (
+          <div
+            key={segment.from}
+            className={styles.stripSegment}
+            style={{ width: `${((segment.to - segment.from) / span) * 100}%`, background: colorFor(segment.key) }}
+          />
+        ))}
+        <div className={styles.stripRunMarker} style={{ left: `${runOffset}%` }} />
       </div>
-      <Text variant="bodySmall">{formatDurationMs(valueMs)}</Text>
+      <div className={styles.stripAxis}>
+        <Text color="secondary" variant="bodySmall">
+          {formatRelativeDuration(BUILD_LOOKBACK_MS)} before
+        </Text>
+        <Text color="secondary" variant="bodySmall">
+          this run
+        </Text>
+      </div>
+      <Stack direction="row" gap={2} wrap="wrap">
+        {activity.map((entry) => (
+          <Stack key={entry.key} direction="row" gap={0.5} alignItems="center">
+            <span className={styles.swatch} style={{ background: colorFor(entry.key) }} />
+            <Text variant="bodySmall" weight={entry.key === runKey ? 'medium' : undefined}>
+              {formatBuild(entry.build)}
+              {entry.key === runKey ? ' (this run)' : ''}
+            </Text>
+          </Stack>
+        ))}
+      </Stack>
     </div>
   );
 };
 
-const AppVersionLine = ({ context, from, to }: { context: FaroExecutionContext; from: number; to: number }) => {
-  const styles = useStyles2(getStyles);
-  const { data: versionChange } = useAppVersionChange({
-    appId: context.appId,
-    runVersion: context.appVersion ?? '',
-    to,
-    enabled: Boolean(context.appVersion),
-  });
+// ---------------------------------------------------------------------------
+// What failed in the browser
+// ---------------------------------------------------------------------------
 
-  if (!context.appVersion) {
-    return null;
+const COLLAPSED_FAILURE_COUNT = 3;
+
+type FailureItem = { kind: 'error'; error: RunError } | { kind: 'request'; request: RunFailedRequest };
+
+const FailuresFact = ({ run, to, probeSuccess }: { run: FaroRunContext; to: number; probeSuccess: boolean }) => {
+  const [showAll, setShowAll] = useState(false);
+  const items: FailureItem[] = [
+    ...run.errors.map((error) => ({ kind: 'error' as const, error })),
+    ...run.failedRequests.map((request) => ({ kind: 'request' as const, request })),
+  ];
+
+  if (!items.length) {
+    return probeSuccess ? (
+      <Text color="secondary" variant="bodySmall">
+        No JS errors or failed requests during this run.
+      </Text>
+    ) : (
+      <Text variant="bodySmall">
+        The browser reported no JS errors or failed requests during this run, so this failure isn&apos;t visible in
+        real-user monitoring. It&apos;s more likely the script&apos;s expectations than the app. To see what the page
+        showed, open the replay with <strong>View Frontend Session</strong>.
+      </Text>
+    );
   }
 
-  const versionLabel = `${context.appVersion}${context.appEnvironment ? ` (${context.appEnvironment})` : ''}`;
+  const visible = showAll ? items : items.slice(0, COLLAPSED_FAILURE_COUNT);
 
-  if (!versionChange?.previousVersion || !versionChange.firstSeen) {
-    return (
-      <div className={styles.section}>
+  return (
+    <Stack direction="column" gap={1.5}>
+      {visible.map((item) =>
+        item.kind === 'error' ? (
+          <ErrorRow key={item.error.key} appId={run.appId} error={item.error} to={to} />
+        ) : (
+          <RequestRow key={item.request.key} appId={run.appId} request={item.request} to={to} />
+        )
+      )}
+      {items.length > COLLAPSED_FAILURE_COUNT && (
+        <div>
+          <Button size="sm" variant="secondary" fill="text" onClick={() => setShowAll(!showAll)}>
+            {showAll ? 'Show fewer' : `Show ${items.length - COLLAPSED_FAILURE_COUNT} more`}
+          </Button>
+        </div>
+      )}
+    </Stack>
+  );
+};
+
+function getWhereText({ pageId, actionName, count }: { pageId: string; actionName?: string; count: number }) {
+  return [
+    pageId ? `on ${pageId}` : undefined,
+    actionName ? `during ${actionName}` : undefined,
+    count > 1 ? `${count}× in this run` : undefined,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+}
+
+const ErrorRow = ({ appId, error, to }: { appId: string; error: RunError; to: number }) => {
+  const styles = useStyles2(getStyles);
+  const signature = getErrorSignature(error);
+
+  return (
+    <div className={styles.failureRow}>
+      <Icon name="times-circle" className={styles.failureIcon} />
+      <div className={styles.failureMain}>
+        <Tooltip content={error.message}>
+          <span className={styles.failureMessage} tabIndex={0}>
+            {error.template ?? error.message}
+          </span>
+        </Tooltip>
         <Text color="secondary" variant="bodySmall">
-          App version: <span className={styles.mono}>{versionLabel}</span> — no version change detected in the 6
-          hours before this run
+          {[error.type, getWhereText(error)].filter(Boolean).join(' · ')}
+        </Text>
+      </div>
+      <FailureImpactCell appId={appId} signature={signature} to={to} />
+      <div className={styles.failureLinks}>
+        {error.hash && (
+          <TextLink
+            href={buildFaroErrorHref({
+              pluginId: FARO_APP_PLUGIN_ID,
+              appId,
+              hash: error.hash,
+              from: to - REAL_USER_WINDOW_MS,
+              to,
+            })}
+            external
+            variant="bodySmall"
+          >
+            Error details
+          </TextLink>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const RequestRow = ({ appId, request, to }: { appId: string; request: RunFailedRequest; to: number }) => {
+  const styles = useStyles2(getStyles);
+  const tracesDS = useTracesDS();
+  const [isTraceOpen, setIsTraceOpen] = useState(false);
+  const signature = getRequestSignature(request);
+  const status = request.statusCode === 0 ? 'no response' : request.statusCode;
+
+  return (
+    <Stack direction="column" gap={1}>
+      <div className={styles.failureRow}>
+        <Icon name="times-circle" className={styles.failureIcon} />
+        <div className={styles.failureMain}>
+          <Tooltip content={request.url}>
+            <span className={cx(styles.failureMessage, styles.mono)} tabIndex={0}>
+              {request.method} {getRequestPath(request.urlTemplate ?? request.url)} → {status}
+            </span>
+          </Tooltip>
+          <Text color="secondary" variant="bodySmall">
+            {[
+              'Failed request',
+              request.durationMs !== undefined ? formatDurationMs(request.durationMs) : undefined,
+              getWhereText(request),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </Text>
+        </div>
+        <FailureImpactCell appId={appId} signature={signature} to={to} />
+        <div className={styles.failureLinks}>
+          {tracesDS && request.traceId && (
+            <Button
+              size="sm"
+              variant="secondary"
+              fill="text"
+              onClick={() => setIsTraceOpen(!isTraceOpen)}
+              aria-expanded={isTraceOpen}
+            >
+              {isTraceOpen ? 'Hide trace' : 'Trace'}
+            </Button>
+          )}
+        </div>
+      </div>
+      {isTraceOpen && tracesDS && request.traceId && (
+        <RequestTrace
+          traceId={request.traceId}
+          timestamp={request.timestamp}
+          tracesDS={tracesDS}
+          onClose={() => setIsTraceOpen(false)}
+        />
+      )}
+    </Stack>
+  );
+};
+
+const FailureImpactCell = ({ appId, signature, to }: { appId: string; signature: FailureSignature; to: number }) => {
+  const styles = useStyles2(getStyles);
+  const { data: impact, isLoading } = useFailureImpact({ appId, signature, to });
+
+  if (isLoading) {
+    return (
+      <div className={styles.failureImpact}>
+        <Spinner size="sm" />
+      </div>
+    );
+  }
+
+  if (!impact) {
+    return (
+      <div className={styles.failureImpact}>
+        <Unavailable>Couldn&apos;t check real users</Unavailable>
+      </div>
+    );
+  }
+
+  if (impact.sessions === 0) {
+    return (
+      <div className={styles.failureImpact}>
+        <Text color="secondary" variant="bodySmall">
+          No real-user sessions
+        </Text>
+        <Text color="secondary" variant="bodySmall">
+          likely specific to this run
         </Text>
       </div>
     );
   }
 
-  const minutesBeforeRun = Math.max(0, Math.round((from - versionChange.firstSeen) / 60_000));
-
   return (
-    <div className={cx(styles.section, styles.calloutAccent)}>
-      <Text color="warning" variant="bodySmall" weight="medium">
-        App version: <span className={styles.mono}>{versionLabel}</span> — first seen{' '}
-        {dateTimeFormat(versionChange.firstSeen, { format: 'HH:mm' })}
-        {minutesBeforeRun > 0 && ` (${formatMinutes(minutesBeforeRun)} before this run)`} · previously{' '}
-        <span className={styles.mono}>{versionChange.previousVersion}</span>
+    <div className={styles.failureImpact}>
+      <Stack direction="row" gap={1} alignItems="center">
+        <Text color="error" weight="medium">
+          {impact.sessions.toLocaleString()} {impact.sessions === 1 ? 'session' : 'sessions'}
+        </Text>
+        <Sparkline impact={impact} />
+      </Stack>
+      <Text color="secondary" variant="bodySmall">
+        {impact.trend.firstSeen !== undefined
+          ? `started ${formatClockTime(impact.trend.firstSeen, to)}`
+          : 'ongoing for 24 h or more'}
       </Text>
     </div>
   );
 };
 
-function formatMinutes(minutes: number): string {
-  if (minutes >= 60) {
-    const hours = Math.floor(minutes / 60);
-    const rest = minutes % 60;
-    return rest > 0 ? `${hours} h ${rest} min` : `${hours} h`;
-  }
-
-  return `${minutes} min`;
-}
-
-const ExceptionsList = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
-  const { data: realSessionCounts } = useExceptionRealSessions({
-    appId: context.appId,
-    messages: context.exceptions.map((exception) => exception.message),
-    to,
-  });
-
-  return (
-    <Stack direction="column" gap={0.5}>
-      <Text weight="medium">JS exceptions during this run ({context.exceptions.length})</Text>
-      {context.exceptions.slice(0, 5).map((exception, index) => {
-        const realSessions = realSessionCounts?.[exception.message];
-
-        return (
-          <Text key={index} variant="bodySmall">
-            <Text color="error" variant="bodySmall">
-              {exception.type}: {exception.message} {exception.pageId && <em>on {exception.pageId}</em>}
-            </Text>
-            {realSessions !== undefined && (
-              <Text color={realSessions > 0 ? 'warning' : 'secondary'} variant="bodySmall">
-                {' '}
-                —{' '}
-                {realSessions > 0
-                  ? `also hit ${realSessions} real user ${realSessions === 1 ? 'session' : 'sessions'} in the past hour`
-                  : 'not seen in any real user session in the past hour (likely specific to this run)'}
-              </Text>
-            )}
-          </Text>
-        );
-      })}
-    </Stack>
-  );
-};
-
-const COLLAPSED_REQUEST_COUNT = 5;
-
-const NetworkRequestsList = ({ context }: { context: FaroExecutionContext }) => {
+const Sparkline = ({ impact }: { impact: FailureImpact }) => {
   const styles = useStyles2(getStyles);
-  const tracesDS = useTracesDS();
-  const [showAll, setShowAll] = useState(false);
-  const failedCount = context.requests.filter((request) => request.isError).length;
-
-  // Failures get priority for the collapsed view — the failing request is what
-  // you came for — but rendering below is grouped by page, chronological within.
-  const prioritized = [...context.requests].sort(
-    (a, b) => Number(b.isError) - Number(a.isError) || a.timestamp - b.timestamp
-  );
-  const visibleSet = new Set(showAll ? prioritized : prioritized.slice(0, COLLAPSED_REQUEST_COUNT));
-
-  // Pages in journey order; any request with an unrecognized page lands at the end.
-  const journeyPageIds = context.pages.map((page) => page.pageId);
-  const pageIds = [...new Set([...journeyPageIds, ...context.requests.map((request) => request.pageId)])];
+  const max = Math.max(1, ...impact.trend.buckets);
 
   return (
-    <Stack direction="column" gap={0.5}>
-      <Text weight="medium">
-        Network requests during this run ({context.requests.length}
-        {failedCount > 0 ? ` · ${failedCount} failed` : ''})
-      </Text>
-      {pageIds.map((pageId) => {
-        const pageRequests = context.requests
-          .filter((request) => request.pageId === pageId && visibleSet.has(request))
-          .sort((a, b) => a.timestamp - b.timestamp);
-
-        if (!pageRequests.length) {
-          return null;
-        }
-
-        return (
-          <Stack key={pageId || 'unknown-page'} direction="column" gap={0.5}>
-            <Text color="secondary" variant="bodySmall" weight="medium">
-              on {pageId || 'unknown page'}
-            </Text>
-            <div className={styles.indent}>
-              <Stack direction="column" gap={0.5}>
-                {pageRequests.map((request, index) => (
-                  <RequestRow
-                    key={`${request.timestamp}-${request.url}-${index}`}
-                    request={request}
-                    tracesDS={tracesDS}
-                  />
-                ))}
-              </Stack>
-            </div>
-          </Stack>
-        );
-      })}
-      {context.requests.length > COLLAPSED_REQUEST_COUNT && (
-        <PlainButton onClick={() => setShowAll(!showAll)}>
-          <Text color="link" variant="bodySmall">
-            {showAll ? 'Show fewer' : `Show all ${context.requests.length} requests`}
-          </Text>
-        </PlainButton>
-      )}
-    </Stack>
-  );
-};
-
-const RequestRow = ({
-  request,
-  tracesDS,
-}: {
-  request: FaroHttpRequest;
-  tracesDS: ReturnType<typeof useTracesDS>;
-}) => {
-  const [traceExpanded, setTraceExpanded] = useState(false);
-  const canShowTrace = Boolean(tracesDS && request.traceId);
-
-  return (
-    <Stack direction="column" gap={0.5}>
-      <Text variant="bodySmall">
-        <Text color={request.isError ? 'error' : 'secondary'} variant="bodySmall">
-          {request.method}{' '}
-          <Tooltip content={request.url}>
-            <span>{getRequestPath(request.url)}</span>
-          </Tooltip>{' '}
-          → {request.statusCode === 0 ? 'no response' : request.statusCode}
-          {request.durationMs !== undefined && ` · ${Math.round(request.durationMs)} ms`}
-        </Text>
-        {canShowTrace && (
-          <>
-            {' '}
-            ·{' '}
-            <PlainButton onClick={() => setTraceExpanded(!traceExpanded)}>
-              <Text color="link" variant="bodySmall">
-                {traceExpanded ? 'hide trace' : 'view trace'}
-              </Text>
-            </PlainButton>
-          </>
-        )}
-      </Text>
-      {traceExpanded && tracesDS && request.traceId && (
-        <RequestTrace request={request} tracesDS={tracesDS} onClose={() => setTraceExpanded(false)} />
-      )}
-    </Stack>
+    <div className={styles.sparkline} aria-hidden>
+      {impact.trend.buckets.map((value, index) => (
+        <span
+          key={index}
+          className={cx(styles.sparkBar, value === 0 && styles.sparkBarEmpty)}
+          style={{ height: value === 0 ? undefined : `${Math.max(12, (value / max) * 100)}%` }}
+        />
+      ))}
+    </div>
   );
 };
 
 const RequestTrace = ({
-  request,
+  traceId,
+  timestamp,
   tracesDS,
   onClose,
 }: {
-  request: FaroHttpRequest;
+  traceId: string;
+  timestamp: number;
   tracesDS: NonNullable<ReturnType<typeof useTracesDS>>;
   onClose: () => void;
 }) => {
   const { data: traceData, isLoading } = useQuery({
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- tracesDS.uid is a stable identifier
-    queryKey: ['faro-request-trace', request.traceId, tracesDS.uid],
-    queryFn: () => fetchTraceData(request.traceId!, tracesDS),
-    enabled: Boolean(request.traceId),
+    queryKey: ['faro-request-trace', traceId, tracesDS.uid],
+    queryFn: () => fetchTraceData(traceId, tracesDS),
     staleTime: Infinity,
     retry: false,
   });
@@ -602,8 +747,8 @@ const RequestTrace = ({
   if (!traceData || traceData.series.length === 0) {
     return (
       <Text color="secondary" italic variant="bodySmall">
-        No trace found for this request — the backend may not have sampled it.{' '}
-        <TextLink href={getExploreTraceUrl(tracesDS.uid, request.traceId!)} inline={false} variant="bodySmall">
+        No trace found for this request. The backend may not have sampled it.{' '}
+        <TextLink href={getExploreTraceUrl(tracesDS.uid, traceId)} inline={false} variant="bodySmall">
           Try in Explore
         </TextLink>
       </Text>
@@ -612,538 +757,275 @@ const RequestTrace = ({
 
   return (
     <TracePanel
-      traceId={request.traceId!}
+      traceId={traceId}
       tracesDS={tracesDS}
       traceData={traceData}
-      logTimestamp={request.timestamp}
+      logTimestamp={timestamp}
       arrowOffset={null}
       onClose={onClose}
     />
   );
 };
 
-const COLLAPSED_SIMILAR_SESSION_COUNT = 5;
+// ---------------------------------------------------------------------------
+// Real users on these pages
+// ---------------------------------------------------------------------------
 
-const SimilarSessions = ({ context, to }: { context: FaroExecutionContext; to: number }) => {
+const JourneyFact = ({ run, to }: { run: FaroRunContext; to: number }) => {
   const styles = useStyles2(getStyles);
-  const [showAll, setShowAll] = useState(false);
-  const [filter, setFilter] = useState('');
-  const journeyPageIds = context.pages.map((page) => page.pageId);
-  const { data: sessions } = useSimilarRealSessions({
-    appId: context.appId,
-    pageIds: journeyPageIds,
-    to,
-  });
+  const { data, isLoading } = useJourneySessions({ appId: run.appId, pageIds: run.pages, to });
 
-  if (!sessions?.length) {
-    return null;
+  if (!run.pages.length) {
+    return <Unavailable>This run didn&apos;t report any pages.</Unavailable>;
   }
-
-  const filtered = filter
-    ? sessions.filter((session) => session.sessionId.toLowerCase().includes(filter.toLowerCase()))
-    : sessions;
-  const visibleSessions = showAll ? filtered : filtered.slice(0, COLLAPSED_SIMILAR_SESSION_COUNT);
-
-  // Aggregate before sample — a dozen rows all reading "Completed the
-  // journey" (or a mix of outcomes) is slower to parse than one sentence
-  // summarizing them. Always computed over the full set, not just what's
-  // currently visible/filtered.
-  const completedCount = sessions.filter((session) => session.outcome?.kind === 'completed').length;
-  const stoppedSessions = sessions.filter((session) => session.outcome?.kind === 'stopped-at');
-  const otherCount = sessions.length - completedCount - stoppedSessions.length;
-  const stopPageCounts = new Map<string, number>();
-
-  stoppedSessions.forEach((session) => {
-    const pageId = (session.outcome as { kind: 'stopped-at'; pageId: string }).pageId;
-    stopPageCounts.set(pageId, (stopPageCounts.get(pageId) ?? 0) + 1);
-  });
-
-  const topStopPage = [...stopPageCounts.entries()].sort((a, b) => b[1] - a[1])[0];
-
-  return (
-    <div className={styles.section}>
-      <Stack direction="column" gap={1}>
-        <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
-          <Text weight="medium">Real user sessions with a similar journey ({sessions.length})</Text>
-          <Tooltip content="Real user sessions from the hour before this run that loaded the same pages as this check, ranked by how much of the check's journey they cover.">
-            <Icon name="info-circle" size="sm" />
-          </Tooltip>
-          {sessions.length > COLLAPSED_SIMILAR_SESSION_COUNT && (
-            <Input
-              placeholder="Filter by session ID"
-              value={filter}
-              onChange={(event) => setFilter(event.currentTarget.value)}
-              width={24}
-            />
-          )}
-        </Stack>
-        <Text color="secondary" variant="bodySmall">
-          {completedCount} of {sessions.length} completed the journey
-          {stoppedSessions.length > 0 &&
-            topStopPage &&
-            `, ${stoppedSessions.length} stopped at ${topStopPage[0]}${
-              topStopPage[1] < stoppedSessions.length ? ' or elsewhere' : ''
-            }`}
-          {otherCount > 0 && `, ${otherCount} took a different path`}
-        </Text>
-        <Stack direction="column" gap={1}>
-          {visibleSessions.map((session) => {
-            const location = [session.city, session.countryIso].filter(Boolean).join(', ');
-            const outcomeText =
-              session.outcome?.kind === 'completed'
-                ? 'Completed the journey'
-                : session.outcome?.kind === 'stopped-at'
-                  ? `Stopped at ${session.outcome.pageId}`
-                  : `${session.matchedPages.length} of ${journeyPageIds.length} pages in common, not in journey order`;
-
-            return (
-              <div key={session.sessionId} className={styles.indent}>
-                <Stack direction="column" gap={0.25}>
-                  <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
-                    <TextLink
-                      href={buildFaroSessionHref({
-                        pluginId: FARO_APP_PLUGIN_ID,
-                        appId: context.appId,
-                        sessionId: session.sessionId,
-                      })}
-                      inline={false}
-                      variant="bodySmall"
-                    >
-                      <span className={styles.mono}>{session.sessionId}</span>
-                    </TextLink>
-                    <Text color="secondary" variant="bodySmall">
-                      {outcomeText}
-                      {location && ` · ${location}`} · last seen{' '}
-                      {dateTimeFormat(session.lastSeen, { format: 'HH:mm:ss' })}
-                    </Text>
-                  </Stack>
-                  <Text variant="bodySmall">
-                    <span className={styles.mono}>
-                      {session.matchedPages.length > 0 ? session.matchedPages.join(' → ') : '(no matched pages)'}
-                    </span>
-                  </Text>
-                </Stack>
-              </div>
-            );
-          })}
-        </Stack>
-        {filtered.length > COLLAPSED_SIMILAR_SESSION_COUNT && (
-          <PlainButton onClick={() => setShowAll(!showAll)}>
-            <Text color="link" variant="bodySmall">
-              {showAll ? 'Show fewer' : `Show all ${filtered.length} sessions`}
-            </Text>
-          </PlainButton>
-        )}
-        {filter && filtered.length === 0 && (
-          <Text color="secondary" italic variant="bodySmall">
-            No session ID matches &quot;{filter}&quot;.
-          </Text>
-        )}
-      </Stack>
-    </div>
-  );
-};
-
-const FIDELITY_COLOR: Record<FidelityRating, 'info' | 'secondary'> = {
-  representative: 'secondary',
-  optimistic: 'info',
-  pessimistic: 'info',
-  'insufficient-data': 'secondary',
-};
-
-const PageVisit = ({
-  appId,
-  page,
-  to,
-  requests,
-}: {
-  appId: string;
-  page: FaroPageVisit;
-  to: number;
-  requests: FaroHttpRequest[];
-}) => {
-  const styles = useStyles2(getStyles);
-  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
-  const pageHref = buildFaroPageHref({ pluginId: FARO_APP_PLUGIN_ID, appId, pageId: page.pageId });
-  const hasVitals = WEB_VITALS.some((vital) => page.vitals[vital] !== undefined);
-  const hasOwnRequests = requests.some((request) => request.pageId === page.pageId);
-
-  return (
-    <div className={styles.indent}>
-      <Stack direction="column" gap={1}>
-        <Stack direction="row" gap={2} alignItems="center" wrap="wrap">
-          <TextLink href={pageHref} inline={false}>
-            {page.pageId}
-          </TextLink>
-          {page.pageLoadTimeMs !== undefined && (
-            <Tooltip content="Total page load time from faro.performance.navigation — the headline outcome; the vitals alongside it are the diagnostic breakdown. Not a Core Web Vital, no good/poor threshold.">
-              <Text weight="medium">{formatDurationMs(page.pageLoadTimeMs)} page load</Text>
-            </Tooltip>
-          )}
-          <Stack direction="row" gap={0.5} alignItems="center">
-            {WEB_VITALS.map((vital) => {
-              const value = page.vitals[vital];
-
-              if (value === undefined) {
-                return null;
-              }
-
-              return (
-                <Badge
-                  key={vital}
-                  text={`${WEB_VITAL_LABELS[vital]} ${formatWebVitalValue(vital, value)}`}
-                  color={RATING_COLOR[rateWebVital(vital, value)]}
-                  tooltip="As measured by Frontend Observability during this run"
-                />
-              );
-            })}
-          </Stack>
-          {(hasVitals || hasOwnRequests || page.pageLoadTimeMs !== undefined) && (
-            <PlainButton onClick={() => setIsComparisonOpen(!isComparisonOpen)}>
-              <Text color="link" variant="bodySmall">
-                <Icon name={isComparisonOpen ? 'angle-up' : 'angle-down'} size="sm" /> Compare with real users
-              </Text>
-            </PlainButton>
-          )}
-        </Stack>
-        {isComparisonOpen && <PageBaseline appId={appId} page={page} to={to} requests={requests} />}
-      </Stack>
-    </div>
-  );
-};
-
-const RealUserSummaryLine = ({ pageId, baseline }: { pageId: string; baseline: RealUserPageBaseline }) => (
-  <Text color="secondary" variant="bodySmall">
-    Real users on {pageId} in the hour before this run
-    {baseline.pageLoads !== null && `: ${baseline.pageLoads} page ${baseline.pageLoads === 1 ? 'load' : 'loads'}`}
-    {baseline.exceptions !== null && `, ${baseline.exceptions} JS exceptions`}
-    {baseline.httpErrors !== null && `, ${baseline.httpErrors} failed requests`}
-  </Text>
-);
-
-const PageBaseline = ({
-  appId,
-  page,
-  to,
-  requests,
-}: {
-  appId: string;
-  page: FaroPageVisit;
-  to: number;
-  requests: FaroHttpRequest[];
-}) => {
-  const styles = useStyles2(getStyles);
-  const { data: baseline, isLoading } = useRealUserPageBaseline({
-    appId,
-    pageId: page.pageId,
-    to,
-  });
-  const hasVitals = WEB_VITALS.some((vital) => page.vitals[vital] !== undefined);
-  const runLatencyMs = getMedianRequestDuration(requests, page.pageId);
 
   if (isLoading) {
-    return <Spinner />;
+    return <Spinner size="sm" />;
   }
 
-  const hasRealUserVitals = Boolean(baseline?.pageLoads);
-  const hasRealUserLatency = baseline?.requestLatencyMs !== null && baseline?.requestLatencyMs !== undefined;
-  const hasRealUserPageLoadTime = baseline?.pageLoadTimeMs !== null && baseline?.pageLoadTimeMs !== undefined;
+  if (!data) {
+    return <Unavailable>Couldn&apos;t load real-user sessions.</Unavailable>;
+  }
 
-  if (!baseline || (!hasRealUserVitals && !hasRealUserLatency && !hasRealUserPageLoadTime)) {
+  const steps = getJourneySteps({ run, ...data });
+  const maxSessions = Math.max(0, ...steps.map((step) => step.sessions));
+
+  if (maxSessions === 0) {
     return (
-      <Text color="secondary" italic variant="bodySmall">
-        No real user traffic on {page.pageId} in the hour before this run.
+      <Text color="secondary" variant="bodySmall">
+        No real-user sessions on these pages in the hour before this run.
       </Text>
     );
   }
 
-  const pageLoadLine = (page.pageLoadTimeMs !== undefined || baseline.pageLoadTimeMs !== null) && (
-    <Text variant="bodySmall">
-      Page load: this run {page.pageLoadTimeMs !== undefined ? formatDurationMs(page.pageLoadTimeMs) : '-'} vs real
-      users&apos; p75 {baseline.pageLoadTimeMs !== null ? formatDurationMs(baseline.pageLoadTimeMs) : '-'}
-    </Text>
-  );
-
-  if (hasVitals) {
-    const verdict = getPageComparisonVerdict(page.vitals, baseline.vitals);
-    const isFidelityFlagged = verdict.rating === 'optimistic' || verdict.rating === 'pessimistic';
-
-    return (
-      <div className={cx(styles.resultCard, isFidelityFlagged && styles.resultCardFidelity)}>
-        <Text
-          color={FIDELITY_COLOR[verdict.rating]}
-          variant={verdict.rating === 'optimistic' ? 'body' : 'bodySmall'}
-          weight={verdict.rating === 'optimistic' ? 'medium' : undefined}
-          italic={verdict.rating === 'insufficient-data'}
-        >
-          {verdict.text}
-        </Text>
-        <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
-        {pageLoadLine}
-        <table className={styles.comparisonTable}>
-          <thead>
-            <tr>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  Web vital
-                </Text>
-              </th>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  This run
-                </Text>
-              </th>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  Real users (p75)
-                </Text>
-              </th>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  Difference
-                </Text>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {WEB_VITALS.map((vital) => {
-              const runValue = page.vitals[vital];
-              const baselineValue = baseline.vitals[vital];
-
-              if (runValue === undefined && baselineValue === undefined) {
-                return null;
-              }
-
-              return (
-                <tr key={vital}>
-                  <td>
-                    <Text variant="bodySmall">{WEB_VITAL_LABELS[vital]}</Text>
-                  </td>
-                  <td>
-                    <ComparisonValue vital={vital} value={runValue} />
-                  </td>
-                  <td>
-                    <ComparisonValue vital={vital} value={baselineValue} />
-                  </td>
-                  <td>
-                    {runValue !== undefined && baselineValue !== undefined ? (
-                      <Text variant="bodySmall" color={runValue > baselineValue * 1.5 ? 'warning' : 'secondary'}>
-                        {formatWebVitalDelta(vital, runValue, baselineValue)}
-                      </Text>
-                    ) : (
-                      <Text variant="bodySmall" color="secondary">
-                        -
-                      </Text>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  if (runLatencyMs !== null || hasRealUserLatency) {
-    return (
-      <div className={styles.resultCard}>
-        <Text color="secondary" variant="bodySmall" italic>
-          No web vitals recorded for {page.pageId} — comparing request latency instead. TTFB/FCP/LCP are tied to
-          the initial document load; this app doesn&apos;t re-measure them on this page&apos;s navigation.
-        </Text>
-        <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
-        {pageLoadLine}
-        <table className={styles.comparisonTable}>
-          <thead>
-            <tr>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  Metric
-                </Text>
-              </th>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  This run
-                </Text>
-              </th>
-              <th>
-                <Text variant="bodySmall" color="secondary">
-                  Real users (p75)
-                </Text>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <Text variant="bodySmall">Request latency</Text>
-              </td>
-              <td>
-                <Text variant="bodySmall">{runLatencyMs !== null ? `${Math.round(runLatencyMs)} ms` : '-'}</Text>
-              </td>
-              <td>
-                <Text variant="bodySmall">
-                  {baseline.requestLatencyMs !== null ? `${Math.round(baseline.requestLatencyMs)} ms` : '-'}
-                </Text>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
-  }
-
-  if (pageLoadLine) {
-    return (
-      <div className={styles.resultCard}>
-        <Text color="secondary" variant="bodySmall" italic>
-          No web vitals or request timing recorded for {page.pageId} — comparing page load time only.
-        </Text>
-        <RealUserSummaryLine pageId={page.pageId} baseline={baseline} />
-        {pageLoadLine}
-      </div>
-    );
-  }
-
   return (
-    <Text color="secondary" italic variant="bodySmall">
-      No comparable real-user data for {page.pageId}.
-    </Text>
+    <div className={styles.journey} role="table" aria-label="Real-user sessions on the pages this run visited">
+      {steps.map((step) => {
+        const errorShare = step.sessions ? step.errorSessions / step.sessions : 0;
+
+        return (
+          <div key={step.pageId} className={styles.journeyRow} role="row">
+            <span className={cx(styles.mono, styles.journeyPage)} role="rowheader" title={step.pageId}>
+              {step.pageId}
+            </span>
+            <div className={styles.journeyBarTrack} role="cell" aria-hidden>
+              <div className={styles.journeyBar} style={{ width: `${(step.sessions / maxSessions) * 100}%` }}>
+                <div className={styles.journeyBarErrors} style={{ width: `${errorShare * 100}%` }} />
+              </div>
+            </div>
+            <Text variant="bodySmall" role="cell">
+              {step.sessions.toLocaleString()} {step.sessions === 1 ? 'session' : 'sessions'}
+            </Text>
+            <Text variant="bodySmall" role="cell" color={step.errorSessions ? 'error' : 'secondary'}>
+              {step.sessions ? `${formatShare(errorShare)} with JS errors` : '–'}
+            </Text>
+            <span role="cell">
+              {step.runFailedHere ? (
+                <Text variant="bodySmall" color="error">
+                  this run failed here
+                </Text>
+              ) : step.runEndedHere ? (
+                <Text variant="bodySmall" color="secondary">
+                  this run ended here
+                </Text>
+              ) : null}
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 };
 
-const ComparisonValue = ({ vital, value }: { vital: WebVitalName; value?: number }) => {
-  if (value === undefined) {
-    return (
-      <Text variant="bodySmall" color="secondary">
-        -
-      </Text>
-    );
-  }
+// ---------------------------------------------------------------------------
 
-  const rating = rateWebVital(vital, value);
-  const color = rating === 'good' ? 'success' : rating === 'needs-improvement' ? 'warning' : 'error';
+const PANEL_CONTAINER = 'real-user-context';
 
-  return (
-    <Text variant="bodySmall" color={color}>
-      {formatWebVitalValue(vital, value)}
-    </Text>
-  );
+const getStyles = (theme: GrafanaTheme2) => {
+  const narrow = `@container ${PANEL_CONTAINER} (max-width: ${theme.breakpoints.values.md}px)`;
+
+  return {
+    panel: css({
+      border: `1px solid ${theme.colors.border.weak}`,
+      borderRadius: theme.shape.radius.default,
+      containerName: PANEL_CONTAINER,
+      containerType: 'inline-size',
+      marginBottom: theme.spacing(2),
+    }),
+    header: css({
+      alignItems: 'center',
+      borderBottom: `1px solid ${theme.colors.border.weak}`,
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: theme.spacing(1),
+      justifyContent: 'space-between',
+      padding: theme.spacing(1, 2),
+    }),
+    facts: css({
+      display: 'flex',
+      flexDirection: 'column',
+    }),
+    factRow: css({
+      display: 'grid',
+      gap: theme.spacing(1, 3),
+      gridTemplateColumns: '180px minmax(0, 1fr)',
+      padding: theme.spacing(2),
+
+      '& + &': {
+        borderTop: `1px solid ${theme.colors.border.weak}`,
+      },
+
+      [narrow]: {
+        gridTemplateColumns: 'minmax(0, 1fr)',
+      },
+    }),
+    factLabel: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.25),
+    }),
+    factBody: css({
+      minWidth: 0,
+    }),
+    mono: css({
+      fontFamily: theme.typography.fontFamilyMonospace,
+    }),
+    buildName: css({
+      fontFamily: theme.typography.fontFamilyMonospace,
+      fontSize: theme.typography.h5.fontSize,
+      fontWeight: theme.typography.fontWeightMedium,
+    }),
+    strip: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.5),
+      marginTop: theme.spacing(0.5),
+      maxWidth: 640,
+    }),
+    stripTrack: css({
+      borderRadius: theme.shape.radius.default,
+      display: 'flex',
+      height: theme.spacing(1),
+      overflow: 'visible',
+      position: 'relative',
+    }),
+    stripSegment: css({
+      height: '100%',
+      '&:first-child': {
+        borderBottomLeftRadius: theme.shape.radius.default,
+        borderTopLeftRadius: theme.shape.radius.default,
+      },
+    }),
+    stripRunMarker: css({
+      background: theme.colors.text.primary,
+      bottom: `-${theme.spacing(0.5)}`,
+      position: 'absolute',
+      top: `-${theme.spacing(0.5)}`,
+      transform: 'translateX(-1px)',
+      width: 2,
+    }),
+    stripAxis: css({
+      display: 'flex',
+      justifyContent: 'space-between',
+    }),
+    swatch: css({
+      borderRadius: theme.shape.radius.default,
+      display: 'inline-block',
+      height: theme.spacing(1),
+      width: theme.spacing(1.5),
+    }),
+    failureRow: css({
+      alignItems: 'start',
+      display: 'grid',
+      gap: theme.spacing(0.5, 2),
+      gridTemplateColumns: 'auto minmax(0, 1fr) 200px 96px',
+
+      [narrow]: {
+        gridTemplateColumns: 'auto minmax(0, 1fr)',
+      },
+    }),
+    failureIcon: css({
+      color: theme.colors.error.text,
+      marginTop: 2,
+    }),
+    failureMain: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.25),
+      minWidth: 0,
+    }),
+    failureMessage: css({
+      display: '-webkit-box',
+      overflow: 'hidden',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: 2,
+      wordBreak: 'break-word',
+    }),
+    failureImpact: css({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: theme.spacing(0.25),
+
+      [narrow]: {
+        gridColumn: 2,
+      },
+    }),
+    failureLinks: css({
+      display: 'flex',
+      justifyContent: 'flex-end',
+
+      [narrow]: {
+        gridColumn: 2,
+        justifyContent: 'flex-start',
+      },
+    }),
+    sparkline: css({
+      alignItems: 'flex-end',
+      display: 'flex',
+      gap: 1,
+      height: theme.spacing(2),
+      width: 72,
+    }),
+    sparkBar: css({
+      background: theme.colors.error.main,
+      flex: 1,
+      minWidth: 1,
+    }),
+    sparkBarEmpty: css({
+      background: theme.colors.border.weak,
+      height: 1,
+    }),
+    journey: css({
+      alignItems: 'center',
+      display: 'grid',
+      gap: theme.spacing(1, 2),
+      gridTemplateColumns: 'minmax(80px, max-content) minmax(80px, 240px) max-content max-content 1fr',
+
+      [narrow]: {
+        gridTemplateColumns: 'minmax(80px, max-content) minmax(60px, 1fr) max-content',
+      },
+    }),
+    journeyRow: css({
+      display: 'contents',
+    }),
+    journeyPage: css({
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'nowrap',
+    }),
+    journeyBarTrack: css({
+      background: theme.colors.background.secondary,
+      borderRadius: theme.shape.radius.default,
+      height: theme.spacing(1),
+      overflow: 'hidden',
+    }),
+    journeyBar: css({
+      background: theme.colors.border.strong,
+      height: '100%',
+    }),
+    journeyBarErrors: css({
+      background: theme.colors.error.main,
+      height: '100%',
+    }),
+  };
 };
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  container: css`
-    border: 1px solid ${theme.colors.border.medium};
-    border-radius: ${theme.shape.radius.default};
-    overflow: hidden;
-  `,
-  header: css`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: ${theme.spacing(1)};
-    padding: ${theme.spacing(1.5, 2)};
-    background: ${theme.colors.background.secondary};
-    border-bottom: 1px solid ${theme.colors.border.medium};
-  `,
-  provenance: css`
-    padding: ${theme.spacing(1, 2)};
-    background: ${theme.colors.background.secondary};
-    border-bottom: 1px solid ${theme.colors.border.medium};
-  `,
-  summaryBand: css`
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.spacing(1)};
-    padding: ${theme.spacing(2)};
-    border-bottom: 1px solid ${theme.colors.border.medium};
-  `,
-  body: css`
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.spacing(2)};
-    padding: ${theme.spacing(2)};
-  `,
-  // A section is a direct child of .body; the CSS-only "no border on the
-  // first one" rule works regardless of which optional sections rendered,
-  // since removed ones simply aren't in the DOM to be :first-child.
-  section: css`
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.spacing(1)};
-    padding-top: ${theme.spacing(2)};
-    border-top: 1px solid ${theme.colors.border.weak};
-
-    &:first-child {
-      padding-top: 0;
-      border-top: none;
-    }
-  `,
-  calloutAccent: css`
-    border-left: 3px solid ${theme.colors.warning.border};
-    padding-left: ${theme.spacing(1.5)};
-    margin-left: -${theme.spacing(1.5)};
-  `,
-  mono: css`
-    font-family: ${theme.typography.fontFamilyMonospace};
-  `,
-  actionName: css`
-    color: ${theme.colors.text.primary};
-    font-weight: ${theme.typography.fontWeightMedium};
-  `,
-  indent: css`
-    border-left: 2px solid ${theme.colors.border.medium};
-    padding-left: ${theme.spacing(1.5)};
-  `,
-  resultCard: css`
-    background: ${theme.colors.background.secondary};
-    border-radius: ${theme.shape.radius.default};
-    border-left: 3px solid ${theme.colors.border.medium};
-    padding: ${theme.spacing(1.5)};
-    display: flex;
-    flex-direction: column;
-    gap: ${theme.spacing(1)};
-  `,
-  resultCardFidelity: css`
-    border-left-color: ${theme.colors.info.border};
-  `,
-  barRow: css`
-    display: grid;
-    grid-template-columns: 64px 1fr 64px;
-    gap: ${theme.spacing(1)};
-    align-items: center;
-  `,
-  barLabel: css`
-    font-size: ${theme.typography.bodySmall.fontSize};
-    color: ${theme.colors.text.secondary};
-  `,
-  barTrack: css`
-    height: 8px;
-    background: ${theme.colors.background.secondary};
-    border-radius: 2px;
-    overflow: hidden;
-  `,
-  barFill: css`
-    display: block;
-    height: 100%;
-  `,
-  barFillRun: css`
-    background: ${theme.colors.info.border};
-  `,
-  barFillP75: css`
-    background: ${theme.colors.border.strong};
-  `,
-  comparisonTable: css`
-    border-collapse: collapse;
-    width: max-content;
-
-    th,
-    td {
-      text-align: left;
-      padding: ${theme.spacing(0.25, 4, 0.25, 0)};
-      white-space: nowrap;
-    }
-  `,
-});

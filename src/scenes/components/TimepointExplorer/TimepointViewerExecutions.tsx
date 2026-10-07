@@ -10,6 +10,7 @@ import { PlainButton } from 'components/PlainButton';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { CheckResultMissing } from 'scenes/components/TimepointExplorer/CheckResultMissing';
+import { FrontendContext } from 'scenes/components/TimepointExplorer/FrontendContext';
 import { ProbeResultMissing } from 'scenes/components/TimepointExplorer/ProbeResultMissing';
 import { ProbeResultPending } from 'scenes/components/TimepointExplorer/ProbeResultPending';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
@@ -83,6 +84,7 @@ export const TimepointViewerExecutions = ({
       </TabsBar>
       <TabContent>
         <Box paddingY={2}>
+          <FrontendContext timepoint={timepoint} />
           {tabsToRender.map(({ probeName, executions, status }) => {
             const active = probeNameToView === probeName;
 
