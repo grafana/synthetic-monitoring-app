@@ -1,16 +1,23 @@
 import React, { useMemo } from 'react';
 import { Outlet } from 'react-router';
-import { NavModelItem } from '@grafana/data';
+import { FeatureState, NavModelItem } from '@grafana/data';
 import { t } from '@grafana/i18n';
 import { PluginPage } from '@grafana/runtime';
+import { FeatureBadge } from '@grafana/ui';
 
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { useActiveTab, useTabUrl } from 'hooks/useActiveTab';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
-import { NewBadge } from 'components/NewStatusBadge';
 
 import { getRecommendationsTabUrl } from './tabs/Recommendations/Recommendations.links';
+
+// `tabSuffix` spaces itself with a className, which FeatureBadge does not take.
+const ExperimentalBadge = ({ className }: { className?: string }) => (
+  <span className={className}>
+    <FeatureBadge featureState={FeatureState.experimental} />
+  </span>
+);
 
 // Only the tabbed routes sit under this; the editor and dashboards keep their own page chrome.
 export function ChecksPageLayout() {
@@ -40,8 +47,7 @@ export function ChecksPageLayout() {
           text: t('checksPageLayout.tabs.recommendations', 'Recommendations'),
           url: getRecommendationsTabUrl(getChecksTabUrl('recommendations')),
           active: activeTab('recommendations'),
-          // `isNew` is read by the mega menu, not by page tabs.
-          tabSuffix: NewBadge,
+          tabSuffix: ExperimentalBadge,
         },
       ],
     };

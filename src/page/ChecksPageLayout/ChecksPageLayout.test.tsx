@@ -23,12 +23,12 @@ describe('Checks page tabs', () => {
   describe('with recommendations enabled', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: true }));
 
-    it('offers a Recommendations tab flagged as new, beside the check list', async () => {
+    it('offers a Recommendations tab flagged as experimental, beside the check list', async () => {
       renderAt(AppRoutes.Checks);
 
       const recommendations = await screen.findByRole('tab', { name: /recommendations/i });
 
-      expect(within(recommendations).getByText('NEW')).toBeInTheDocument();
+      expect(within(recommendations).getByText('Experimental')).toBeInTheDocument();
       // Tagged so the tab can tell a click on it from a typed URL or a refresh.
       expect(recommendations).toHaveAttribute('href', expect.stringContaining('/checks/recommendations?source=tab'));
       expect(recommendations).toHaveAttribute('aria-selected', 'false');

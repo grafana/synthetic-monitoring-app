@@ -129,7 +129,7 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
         <Stack direction="row" gap={2} alignItems="flex-start" justifyContent="space-between">
           <Heading active={active} visible={visible} totalCheckCount={checks.length} calNames={calNames} />
           <div className={styles.feedback}>
-            <Feedback feature="recommendations" about={{ text: `New feature!` }} />
+            <Feedback feature="recommendations" about={{ text: 'Experimental' }} />
           </div>
         </Stack>
         {isCALsUnavailable && (
