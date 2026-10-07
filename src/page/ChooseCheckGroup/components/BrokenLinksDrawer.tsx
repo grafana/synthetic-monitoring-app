@@ -4,7 +4,7 @@ import { Alert, Button, Drawer, Field, Input, Stack } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
 import { CheckAlertDraft, CheckType, FeatureName } from 'types';
-import { getHttpUrlProtocolSuggestions } from 'validation';
+import { getHttpUrlProtocolSuggestions, validateHttpTarget } from 'validation';
 import { AddCheckResult } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -78,7 +78,10 @@ function BrokenLinksForm({
   function parseUrl() {
     try {
       const parsed = new URL(url.trim());
-      return ['http:', 'https:'].includes(parsed.protocol) ? parsed : undefined;
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return undefined;
+      }
+      return validateHttpTarget(parsed.href) === undefined ? parsed : undefined;
     } catch {
       return undefined;
     }

@@ -135,6 +135,18 @@ it('shows the URL format error live as you type, without requiring a submit clic
   expect(await screen.findByText('Enter a valid URL starting with https:// or http://.')).toBeInTheDocument();
 });
 
+it('rejects a single-label host even with an explicit protocol, matching the stricter validator', async () => {
+  const { record, requests } = getServerRequests();
+  server.use(apiRoute('addCheck', {}, record));
+  const { user } = await openDrawer();
+
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://quick');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+
+  expect(await screen.findByText('Enter a valid URL starting with https:// or http://.')).toBeInTheDocument();
+  expect(requests).toHaveLength(0);
+});
+
 it('preserves inputs on API failure and allows retry', async () => {
   server.use(apiRoute('addCheck', { result: () => ({ status: 500, json: { err: 'Creation failed' } }) }));
   const { user, onClose } = await openDrawer();
