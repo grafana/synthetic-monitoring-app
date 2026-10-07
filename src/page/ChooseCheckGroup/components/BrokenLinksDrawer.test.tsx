@@ -115,6 +115,7 @@ it('hints https:// and http:// variants when the Page URL is missing a protocol'
 
   expect(urlInput).toHaveValue('https://grafana.com');
   expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+  expect(urlInput).toHaveFocus();
 });
 
 it('does not hint a protocol for a hostname fragment with no TLD yet', async () => {

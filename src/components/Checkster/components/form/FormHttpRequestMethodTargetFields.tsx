@@ -94,6 +94,7 @@ export function FormHttpRequestMethodTargetFields({
         suggestions={protocolSuggestions}
         disabled={disabled}
         onSelect={handleSelectProtocolSuggestion}
+        inputId={field}
       />
       {showQueryParams && (
         <Indent>

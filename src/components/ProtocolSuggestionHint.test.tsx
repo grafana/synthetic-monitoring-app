@@ -1,8 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { ProtocolSuggestionHint } from './ProtocolSuggestionHint';
+
+// Mimics how a real consumer uses this component: selecting a suggestion updates the value,
+// which empties `suggestions` on the next render and unmounts the hint (and the button the
+// user just activated).
+function Harness({ initialSuggestions }: { initialSuggestions: string[] }) {
+  const [suggestions, setSuggestions] = useState(initialSuggestions);
+
+  return (
+    <div>
+      <input id="target-input" aria-label="Target" />
+      <ProtocolSuggestionHint suggestions={suggestions} onSelect={() => setSuggestions([])} inputId="target-input" />
+    </div>
+  );
+}
 
 describe('ProtocolSuggestionHint', () => {
   it('renders nothing when there are no suggestions', () => {
@@ -38,5 +52,28 @@ describe('ProtocolSuggestionHint', () => {
     render(<ProtocolSuggestionHint suggestions={['https://grafana.com']} onSelect={jest.fn()} marginBottom={2} />);
 
     expect(screen.getByText(/Did you mean/)).toBeInTheDocument();
+  });
+
+  it('returns focus to the associated input after a mouse-selected suggestion unmounts the hint', async () => {
+    const user = userEvent.setup();
+    render(<Harness initialSuggestions={['https://grafana.com']} />);
+
+    await user.click(screen.getByRole('button', { name: 'https://grafana.com' }));
+
+    expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Target' })).toHaveFocus();
+  });
+
+  it('returns focus to the associated input after selecting a suggestion via keyboard (Enter)', async () => {
+    const user = userEvent.setup();
+    render(<Harness initialSuggestions={['https://grafana.com']} />);
+
+    await user.tab(); // focuses the input
+    await user.tab(); // focuses the suggestion button
+    expect(screen.getByRole('button', { name: 'https://grafana.com' })).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: 'Target' })).toHaveFocus();
   });
 });

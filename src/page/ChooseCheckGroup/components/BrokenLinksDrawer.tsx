@@ -202,6 +202,7 @@ function BrokenLinksForm({
               onSelect={setUrl}
               disabled={busy || !!createdCheck}
               marginBottom={2}
+              inputId="template-url"
             />
             {foldersEnabled && (
               <Field label="Folder" error={errors.folder} invalid={!!errors.folder}>

@@ -68,7 +68,7 @@ describe('FormHttpRequestMethodTargetFields - protocol hint', () => {
     expect(screen.getByText(/Did you mean/)).toBeInTheDocument();
   });
 
-  it('fills in the target with the selected protocol hint and dismisses the hint', async () => {
+  it('fills in the target with the selected protocol hint, dismisses the hint, and keeps focus on the input', async () => {
     const user = renderTargetField();
     const targetInput = screen.getByLabelText('Request target', { exact: false }) as HTMLInputElement;
 
@@ -77,6 +77,7 @@ describe('FormHttpRequestMethodTargetFields - protocol hint', () => {
 
     expect(targetInput).toHaveValue('https://grafana.com');
     expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+    expect(targetInput).toHaveFocus();
   });
 
   it('disables the protocol hint buttons when the form is disabled', () => {
