@@ -1,17 +1,22 @@
 import React, { useMemo } from 'react';
 import { t, Trans } from '@grafana/i18n';
-import { LinkButton } from '@grafana/ui';
 import { trackRecommendationActioned } from 'features/tracking/recommendationEvents';
 
 import { RecommendationGroup } from '../Recommendations.types';
 import { FindingProps } from './Finding.types';
 import { Check } from 'types';
 import { formatDuration, getCheckType } from 'utils';
-import { AppRoutes } from 'routing/types';
-import { generateRoutePath } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
 
-import { CheckRow, GroupRow, PaginatedRows, PanelFooter, RecommendationSection } from '../Recommendations.components';
+import {
+  CheckRow,
+  EditCheckButton,
+  GroupRow,
+  PaginatedRows,
+  PanelFooter,
+  RecommendationSection,
+} from '../Recommendations.components';
+import { UNESCAPED } from '../Recommendations.constants';
 import { getChecksByTargetUrl } from '../Recommendations.links';
 import { describeProbes } from '../Recommendations.utils';
 import { useFindingPanel } from './Finding.hooks';
@@ -29,9 +34,7 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
   // A duplicate group needs two checks to still be a duplicate; an overlapping group needs two
   // check types.
   const isRedundant = (group: RecommendationGroup) =>
-    group.type
-      ? group.checks.length > 1
-      : new Set(group.checks.map((check) => getCheckType(check.settings))).size > 1;
+    group.type ? group.checks.length > 1 : new Set(group.checks.map((check) => getCheckType(check.settings))).size > 1;
 
   const visibleGroups = useMemo(() => {
     const kept = new Set(rows.map((check) => check.id));
@@ -63,27 +66,29 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
           ? t('recommendations.redundancy.row.settings', 'Every {{frequency}} · {{probes}}', {
               frequency: formatDuration(check.frequency, true),
               probes: describeProbes(check, probes),
+              ...UNESCAPED,
             })
           : t('recommendations.redundancy.row.settingsPaused', 'Every {{frequency}} · {{probes}} · paused', {
               frequency: formatDuration(check.frequency, true),
               probes: describeProbes(check, probes),
+              ...UNESCAPED,
             })
       }
       onDismiss={dismissFromGroup}
       // Editing is the action here.
       showEditButton={false}
       action={
-        <LinkButton
-          size="sm"
+        <EditCheckButton
+          check={check}
           variant="primary"
-          href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}
           onClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
           aria-label={t('recommendations.redundancy.row.editLabel', 'Open {{job}} in the check editor', {
             job: check.job,
+            ...UNESCAPED,
           })}
         >
           <Trans i18nKey="recommendations.redundancy.row.edit">Edit check</Trans>
-        </LinkButton>
+        </EditCheckButton>
       }
     />
   );
@@ -107,6 +112,7 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
                 ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
                     detail: group.detail,
                     checkCount: group.checks.length,
+                    ...UNESCAPED,
                   })
                 : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: group.checks.length })
             }

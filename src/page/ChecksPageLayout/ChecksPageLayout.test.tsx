@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { UI_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureToggles, runTestWithoutCheckReadAccess } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
@@ -23,12 +23,12 @@ describe('Checks page tabs', () => {
   describe('with recommendations enabled', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: true }));
 
-    it('offers a Recommendations tab flagged as experimental, beside the check list', async () => {
+    it('offers a Recommendations tab flagged as new, beside the check list', async () => {
       renderAt(AppRoutes.Checks);
 
       const recommendations = await screen.findByRole('tab', { name: /recommendations/i });
 
-      expect(within(recommendations).getByText('Experimental')).toBeInTheDocument();
+      expect(within(recommendations).getByText('NEW')).toBeInTheDocument();
       // Tagged so the tab can tell a click on it from a typed URL or a refresh.
       expect(recommendations).toHaveAttribute('href', expect.stringContaining('/checks/recommendations?source=tab'));
       expect(recommendations).toHaveAttribute('aria-selected', 'false');
@@ -46,6 +46,15 @@ describe('Checks page tabs', () => {
 
       expect(await screen.findByText(/findings derived from how your checks are configured/i)).toBeInTheDocument();
       expect(screen.getByRole('tab', { name: /recommendations/i })).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('asks a user who cannot read checks for the permission instead of showing findings', async () => {
+      runTestWithoutCheckReadAccess();
+
+      renderAt(AppRoutes.CheckRecommendations);
+
+      expect(await screen.findByText('grafana-synthetic-monitoring-app.checks:read')).toBeInTheDocument();
+      expect(screen.queryByText(/findings derived from how your checks are configured/i)).not.toBeInTheDocument();
     });
   });
 

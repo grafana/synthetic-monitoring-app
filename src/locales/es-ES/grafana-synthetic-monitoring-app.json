@@ -73,9 +73,13 @@
         "apply": "",
         "applying": "",
         "applySingle": "",
+        "averageDuration": "",
         "cancel": "",
+        "certificateExpiry": "",
         "close": "",
         "done": "",
+        "failedExecutions": "",
+        "failedExecutionsSingle": "",
         "previewTitle": "",
         "setUp": "",
         "setUpLabel": "",
@@ -190,6 +194,7 @@
       }
     },
     "row": {
+      "cannotEdit": "",
       "dismiss": "",
       "editCheck": "",
       "select": ""

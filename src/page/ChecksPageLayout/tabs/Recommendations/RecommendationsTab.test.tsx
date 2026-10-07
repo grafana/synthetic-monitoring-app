@@ -340,7 +340,7 @@ describe('Recommendations tab', () => {
       expect(within(section).getByRole('link', { name: /view in check list/i })).toBeInTheDocument();
     });
 
-    it('offers each affected check its editor', async () => {
+    it("opens each affected check's editor on its alerting section", async () => {
       await renderCategory(
         [buildCheck({ job: 'unalerted', target: 'https://a.com', id: 42 })],
         RecommendationCategoryId.Alerting
@@ -350,22 +350,28 @@ describe('Recommendations tab', () => {
 
       expect(within(section).getByRole('link', { name: 'Edit unalerted' })).toHaveAttribute(
         'href',
-        expect.stringContaining('/checks/42/edit')
+        expect.stringContaining('/checks/42/edit?section=alerting')
       );
     });
 
-    it('previews the default alerts for the check type before adding them', async () => {
-      const { user } = await renderCategory([UNALERTED()], RecommendationCategoryId.Alerting);
+    it('previews the default alerts for the check type, worded as the editor words them', async () => {
+      const { user } = await renderCategory(
+        // Every minute from two probes: ten executions in five minutes.
+        [buildCheck({ job: 'unalerted', target: 'https://a.com', probes: [1, 2] })],
+        RecommendationCategoryId.Alerting
+      );
       const section = await findSection(/have no alerts/);
 
       await user.click(within(section).getByRole('button', { name: 'Set up alerts for unalerted' }));
 
       expect(within(section).getByText('Probe Failed Executions Too High')).toBeInTheDocument();
-      expect(within(section).getByText('1 over 5 min')).toBeInTheDocument();
+      expect(
+        within(section).getByText('At least 1 of 10 probe executions fails in the last 5 min')
+      ).toBeInTheDocument();
       expect(within(section).getByText('HTTP Request Duration Too High Avg')).toBeInTheDocument();
-      expect(within(section).getByText('300ms over 5 min')).toBeInTheDocument();
+      expect(within(section).getByText('Average duration above 300ms over the last 5 min')).toBeInTheDocument();
       expect(within(section).getByText('HTTP Target Certificate Close To Expiring')).toBeInTheDocument();
-      expect(within(section).getByText('30d')).toBeInTheDocument();
+      expect(within(section).getByText('Certificate expires in less than 30d')).toBeInTheDocument();
     });
 
     it('adds the default alerts to one check, confirms it and drops it from the finding', async () => {
@@ -585,16 +591,31 @@ describe('Recommendations tab', () => {
       );
     });
 
+    it('shows a check name as written, even with characters HTML would escape', async () => {
+      const job = 'Detect broken links on https://grafana.com/ (2)';
+      const { user } = await renderCategory(
+        [buildCheck({ job, target: 'https://grafana.com/' })],
+        RecommendationCategoryId.Alerting
+      );
+      const section = await findSection(/have no alerts/);
+
+      await user.click(within(section).getByRole('button', { name: `Set up alerts for ${job}` }));
+
+      expect(within(section).getByText(`Recommended alerts for ${job}`)).toBeInTheDocument();
+    });
+
     it('stretches the evaluation period to fit a check that runs less often', async () => {
       const { user } = await renderCategory(
-        [buildCheck({ job: 'slow', target: 'https://a.com', frequency: 10 * ONE_MINUTE })],
+        [buildCheck({ job: 'slow', target: 'https://a.com', frequency: 10 * ONE_MINUTE, probes: [1, 2] })],
         RecommendationCategoryId.Alerting
       );
       const section = await findSection(/have no alerts/);
 
       await user.click(within(section).getByRole('button', { name: 'Set up alerts for slow' }));
 
-      expect(within(section).getByText('1 over 10 min')).toBeInTheDocument();
+      expect(
+        within(section).getByText('At least 1 of 2 probe executions fails in the last 10 min')
+      ).toBeInTheDocument();
     });
   });
 
@@ -935,7 +956,7 @@ describe('Recommendations tab', () => {
       expect(within(section).getByText('Missing team')).toBeInTheDocument();
       expect(within(section).getByRole('link', { name: 'Add labels to unattributed' })).toHaveAttribute(
         'href',
-        expect.stringContaining('/checks/12/edit')
+        expect.stringContaining('/checks/12/edit?section=labels')
       );
       expect(within(section).getByRole('link', { name: /view in check list/i })).toHaveAttribute(
         'href',
@@ -1023,6 +1044,54 @@ describe('Recommendations tab', () => {
 
       expect(alerting).not.toHaveTextContent(/set up alerts for all/i);
       expect(alerting).toHaveTextContent(/view in check list/i);
+    });
+
+    it('tells a viewer why they cannot open a check in the editor, instead of linking there', async () => {
+      runTestAsSMViewer();
+
+      const { user } = await renderCategory([UNALERTED()], RecommendationCategoryId.Alerting);
+      const section = await findSection(/1 of 1 checks have no alerts/);
+
+      expect(within(section).queryByRole('link', { name: 'Edit unalerted' })).not.toBeInTheDocument();
+      const edit = within(section).getByRole('button', { name: 'Edit unalerted' });
+      expect(edit).toHaveAttribute('aria-disabled', 'true');
+
+      await user.hover(edit);
+
+      expect(await screen.findByText('You do not have permission to edit this check.')).toBeInTheDocument();
+    });
+
+    it('does not send a viewer to the editor to add cost labels', async () => {
+      // Flags first: mockFeatureToggles rebuilds config, which would drop the viewer's permissions.
+      mockFeatureToggles({ [FeatureName.CALs]: true });
+      runTestAsSMViewer();
+      server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ json: { names: ['team'] } }) }));
+
+      await renderCategory(
+        [buildCheck({ job: 'unattributed', alertSensitivity: AlertSensitivity.High, target: 'https://a.com' })],
+        RecommendationCategoryId.Cost
+      );
+      const section = await findSection(/1 of 1 checks are unattributed/);
+
+      expect(within(section).queryByRole('link', { name: 'Add labels to unattributed' })).not.toBeInTheDocument();
+      expect(within(section).getByRole('button', { name: 'Add labels to unattributed' })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      );
+    });
+
+    it('does not send a viewer to the editor from a duplicate group', async () => {
+      runTestAsSMViewer();
+
+      const { user } = await renderCategory(DUPLICATES(), RecommendationCategoryId.Redundancy);
+      const section = await findSection(/are duplicates/);
+      await user.click(within(section).getByRole('button', { name: 'https://grafana.com' }));
+
+      expect(within(section).queryByRole('link', { name: 'Open copy in the check editor' })).not.toBeInTheDocument();
+      expect(within(section).getByRole('button', { name: 'Open copy in the check editor' })).toHaveAttribute(
+        'aria-disabled',
+        'true'
+      );
     });
 
     it('offers no way to resume a paused check a viewer cannot write', async () => {

@@ -11,6 +11,8 @@ import { Check, CheckType, Probe } from 'types';
 import { checkHasAlerting, getCheckType } from 'utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
+import { UNESCAPED } from './Recommendations.constants';
+
 // Presentation order. All derived from check config alone, nothing from Mimir or Loki.
 const FINDERS: Array<(inputs: RecommendationInputs) => Recommendation | undefined> = [
   findAlertingGaps,
@@ -106,7 +108,11 @@ export function describeProbes(check: Check, probes: Probe[]): string {
   }
 
   return remainder > 0
-    ? t('recommendations.probes.listWithMore', '{{probes}} +{{remainder}}', { probes: listed.join(', '), remainder })
+    ? t('recommendations.probes.listWithMore', '{{probes}} +{{remainder}}', {
+        probes: listed.join(', '),
+        remainder,
+        ...UNESCAPED,
+      })
     : listed.join(', ');
 }
 

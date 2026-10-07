@@ -4,11 +4,17 @@ import { LinkButton } from '@grafana/ui';
 import { trackRecommendationActioned } from 'features/tracking/recommendationEvents';
 
 import { FindingProps } from './Finding.types';
-import { AppRoutes } from 'routing/types';
-import { generateRoutePath } from 'routing/utils';
+import { FormSectionName } from 'components/Checkster/types';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
-import { CheckRow, PaginatedRows, PanelFooter, RecommendationSection } from '../Recommendations.components';
+import {
+  CheckRow,
+  EditCheckButton,
+  PaginatedRows,
+  PanelFooter,
+  RecommendationSection,
+} from '../Recommendations.components';
+import { UNESCAPED } from '../Recommendations.constants';
 import { getChecksMissingCostLabelsUrl } from '../Recommendations.links';
 import { useFindingPanel } from './Finding.hooks';
 
@@ -63,21 +69,24 @@ export function MissingCostLabelsFinding({
             check={check}
             detail={t('recommendations.missingCostLabels.row.missing', 'Missing {{labels}}', {
               labels: getMissingCalNames(check.labels, calNames).join(', '),
+              ...UNESCAPED,
             })}
             onDismiss={dismissCheck}
+            editSection={FormSectionName.Labels}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             action={
-              <LinkButton
-                size="sm"
+              <EditCheckButton
+                check={check}
+                section={FormSectionName.Labels}
                 variant="primary"
-                href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}
                 onClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
                 aria-label={t('recommendations.missingCostLabels.row.addLabelsLabel', 'Add labels to {{job}}', {
                   job: check.job,
+                  ...UNESCAPED,
                 })}
               >
                 <Trans i18nKey="recommendations.missingCostLabels.row.addLabels">Add labels</Trans>
-              </LinkButton>
+              </EditCheckButton>
             }
           />
         )}

@@ -21,6 +21,7 @@ import {
   PanelFooter,
   RecommendationSection,
 } from '../Recommendations.components';
+import { UNESCAPED } from '../Recommendations.constants';
 import { useRowSelection } from '../Recommendations.hooks';
 import { getPausedChecksUrl } from '../Recommendations.links';
 import { getPausedSince } from '../Recommendations.utils';
@@ -203,7 +204,10 @@ function PausedCheckRow({
           icon={isResuming ? 'spinner' : 'play'}
           disabled={isResuming || !canWrite}
           onClick={handleResume}
-          aria-label={t('recommendations.pausedChecks.row.resumeLabel', 'Resume {{job}}', { job: check.job })}
+          aria-label={t('recommendations.pausedChecks.row.resumeLabel', 'Resume {{job}}', {
+            job: check.job,
+            ...UNESCAPED,
+          })}
         >
           <Trans i18nKey="recommendations.pausedChecks.row.resume">Resume</Trans>
         </Button>

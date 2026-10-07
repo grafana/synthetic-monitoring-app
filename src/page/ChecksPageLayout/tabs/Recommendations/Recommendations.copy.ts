@@ -1,4 +1,6 @@
+import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { t } from '@grafana/i18n';
+import { getTotalChecksPerPeriod } from 'checkUsageCalc';
 
 import {
   CategorySummary,
@@ -8,9 +10,10 @@ import {
   RecommendationId,
   RecommendationSeverity,
 } from './Recommendations.types';
-import { Check } from 'types';
+import { Check, CheckAlertType } from 'types';
 
-import { getAlertPlans } from './Recommendations.alerts';
+import { formatAlertPeriod, formatAlertThreshold, getAlertPlans, RecommendedAlert } from './Recommendations.alerts';
+import { UNESCAPED } from './Recommendations.constants';
 import { getDismissedCheckIds } from './Recommendations.utils';
 
 export interface RecommendationCopy {
@@ -35,7 +38,7 @@ export function getRecommendationCopy(id: RecommendationId, calNames: string[]):
         tooltip: t(
           'recommendations.missingCostLabels.description',
           'These checks are missing one or more of your cost attribution labels ({{labels}}), so their spend cannot be attributed to a team.',
-          { labels: calNames.join(', ') }
+          { labels: calNames.join(', '), ...UNESCAPED }
         ),
       };
 
@@ -219,4 +222,59 @@ export function getLegendLabel(severity: RecommendationSeverity, checkCount: num
     case 'info':
       return t('recommendations.legend.info', '{{checkCount}} info', { checkCount });
   }
+}
+
+const DURATION_AVERAGE_ALERTS = [
+  CheckAlertType.HTTPRequestDurationTooHighAvg,
+  CheckAlertType.PingRequestDurationTooHighAvg,
+  CheckAlertType.DNSRequestDurationTooHighAvg,
+];
+
+// Worded as the editor words each alert, so the preview reads like what the user will find there.
+export function getRecommendedAlertCopy(alert: RecommendedAlert, check: Check): string {
+  const { definition, draft } = alert;
+  const threshold = formatAlertThreshold(alert);
+
+  if (!draft.period) {
+    return definition.type === CheckAlertType.TLSTargetCertificateCloseToExpiring
+      ? t('recommendations.alertingGaps.row.certificateExpiry', 'Certificate expires in less than {{threshold}}', {
+          threshold,
+        })
+      : threshold;
+  }
+
+  const period = formatAlertPeriod(draft.period);
+
+  if (definition.type === CheckAlertType.ProbeFailedExecutionsTooHigh) {
+    const executionCount = getTotalChecksPerPeriod(
+      check.probes.length,
+      check.frequency,
+      durationToMilliseconds(parseDuration(draft.period))
+    );
+
+    return draft.threshold === 1
+      ? t(
+          'recommendations.alertingGaps.row.failedExecutionsSingle',
+          'At least 1 of {{executionCount}} probe executions fails in the last {{period}}',
+          { executionCount, period }
+        )
+      : t(
+          'recommendations.alertingGaps.row.failedExecutions',
+          'At least {{threshold}} of {{executionCount}} probe executions fail in the last {{period}}',
+          { threshold, executionCount, period }
+        );
+  }
+
+  if (DURATION_AVERAGE_ALERTS.includes(definition.type)) {
+    return t(
+      'recommendations.alertingGaps.row.averageDuration',
+      'Average duration above {{threshold}} over the last {{period}}',
+      { threshold, period }
+    );
+  }
+
+  return t('recommendations.alertingGaps.row.thresholdWithPeriod', '{{threshold}} over {{period}}', {
+    threshold,
+    period,
+  });
 }

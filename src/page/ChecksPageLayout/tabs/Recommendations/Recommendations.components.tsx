@@ -3,6 +3,7 @@ import { t, Trans } from '@grafana/i18n';
 import {
   Badge,
   Button,
+  ButtonProps,
   Checkbox,
   Icon,
   IconButton,
@@ -20,14 +21,14 @@ import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 import { CategorySummary, DismissedChecks, RecommendationSeverity } from './Recommendations.types';
 import { Check } from 'types';
 import { getCheckType } from 'utils';
-import { AppRoutes } from 'routing/types';
-import { generateRoutePath } from 'routing/utils';
-import { useGetCheckPermissions } from 'contexts/CheckFolderAccessContext';
+import { useCheckPermissions, useGetCheckPermissions } from 'contexts/CheckFolderAccessContext';
+import { FormSectionName } from 'components/Checkster/types';
 
 import { getLegend } from './Recommendations.categories';
-import { ROWS_PER_PAGE } from './Recommendations.constants';
+import { ROWS_PER_PAGE, UNESCAPED } from './Recommendations.constants';
 import { getCategoryCopy, getCategoryRowCopy, getLegendLabel } from './Recommendations.copy';
 import { ATTENTION_VIEW, RecommendationsView } from './Recommendations.hooks';
+import { getEditCheckUrl } from './Recommendations.links';
 import { getSeverityColor, getStyles } from './Recommendations.styles';
 
 const PANEL_CLASS: Record<RecommendationSeverity, keyof ReturnType<typeof getStyles>> = {
@@ -325,6 +326,8 @@ interface CheckRowProps {
   expansion?: ReactNode;
   /** Off where editing is itself the row's `action`. */
   showEditButton?: boolean;
+  /** The editor section the edit button opens on. */
+  editSection?: FormSectionName;
   onEditClick?: () => void;
   /** The dismiss button only renders when given. */
   onDismiss?: (check: Check) => void;
@@ -339,6 +342,7 @@ export function CheckRow({
   action,
   expansion,
   showEditButton = true,
+  editSection,
   onEditClick,
   onDismiss,
 }: CheckRowProps) {
@@ -352,7 +356,7 @@ export function CheckRow({
           <Checkbox
             value={isSelected}
             onChange={() => onSelectChange(check)}
-            aria-label={t('recommendations.row.select', 'Select {{job}}', { job: check.job })}
+            aria-label={t('recommendations.row.select', 'Select {{job}}', { job: check.job, ...UNESCAPED })}
           />
         )}
         <div className={styles.rowMain}>
@@ -366,13 +370,13 @@ export function CheckRow({
           ) : (
             <>
               {showEditButton && (
-                <LinkButton
-                  size="sm"
+                <EditCheckButton
+                  check={check}
+                  section={editSection}
                   variant="secondary"
                   fill="outline"
                   icon="pen"
-                  href={generateRoutePath(AppRoutes.EditCheck, { id: check.id! })}
-                  aria-label={t('recommendations.row.editCheck', 'Edit {{job}}', { job: check.job })}
+                  aria-label={t('recommendations.row.editCheck', 'Edit {{job}}', { job: check.job, ...UNESCAPED })}
                   onClick={onEditClick}
                 />
               )}
@@ -382,7 +386,10 @@ export function CheckRow({
                   name="times"
                   size="sm"
                   variant="secondary"
-                  tooltip={t('recommendations.row.dismiss', 'Dismiss {{job}} from this finding', { job: check.job })}
+                  tooltip={t('recommendations.row.dismiss', 'Dismiss {{job}} from this finding', {
+                    job: check.job,
+                    ...UNESCAPED,
+                  })}
                   onClick={() => onDismiss(check)}
                 />
               )}
@@ -392,6 +399,45 @@ export function CheckRow({
       </div>
       {expansion}
     </div>
+  );
+}
+
+interface EditCheckButtonProps {
+  check: Check;
+  /** The editor section to open on. */
+  section?: FormSectionName;
+  variant?: ButtonProps['variant'];
+  fill?: ButtonProps['fill'];
+  icon?: ButtonProps['icon'];
+  'aria-label': string;
+  onClick?: () => void;
+  children?: ReactNode;
+}
+
+/**
+ * A link into the check's editor. Without write access the editor would only bounce the user back,
+ * so the same button is disabled instead, saying why.
+ */
+export function EditCheckButton({ check, section, onClick, children, ...buttonProps }: EditCheckButtonProps) {
+  const { canWrite } = useCheckPermissions(check);
+
+  if (!canWrite) {
+    return (
+      <Button
+        size="sm"
+        {...buttonProps}
+        disabled
+        tooltip={t('recommendations.row.cannotEdit', 'You do not have permission to edit this check.')}
+      >
+        {children}
+      </Button>
+    );
+  }
+
+  return (
+    <LinkButton size="sm" {...buttonProps} href={getEditCheckUrl(check.id!, section)} onClick={onClick}>
+      {children}
+    </LinkButton>
   );
 }
 

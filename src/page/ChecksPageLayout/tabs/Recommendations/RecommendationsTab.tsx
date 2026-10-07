@@ -5,7 +5,11 @@ import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
 import { FeatureName } from 'types';
-import { CheckFolderAccessProvider, useIsVisibilitySettling, useVisibleChecks } from 'contexts/CheckFolderAccessContext';
+import {
+  CheckFolderAccessProvider,
+  useIsVisibilitySettling,
+  useVisibleChecks,
+} from 'contexts/CheckFolderAccessContext';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
@@ -20,6 +24,7 @@ import { RedundancyFinding } from './findings/RedundancyFinding';
 import { countDismissedChecks, getFindingSnapshot } from './Recommendations.analytics';
 import { countDistinctChecks, summariseCategories } from './Recommendations.categories';
 import { AttentionRow, CategoryRail, SeverityLegend } from './Recommendations.components';
+import { UNESCAPED } from './Recommendations.constants';
 import { getCategoryCopy, getRecommendationCopy } from './Recommendations.copy';
 import {
   ATTENTION_VIEW,
@@ -107,7 +112,16 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
       durationMs: Math.round(performance.now() - openedAt),
       calsUnavailable: isCALsUnavailable,
     }),
-    [recommendations, dismissedCount, dismissedChecks, checks.length, entryPoint, focusedId, openedAt, isCALsUnavailable]
+    [
+      recommendations,
+      dismissedCount,
+      dismissedChecks,
+      checks.length,
+      entryPoint,
+      focusedId,
+      openedAt,
+      isCALsUnavailable,
+    ]
   );
 
   useRecommendationImpressions({ shown: active?.findings ?? NO_FINDINGS, getVisit, isComplete: !isSettling });
@@ -237,6 +251,7 @@ function getOverview(visible: Recommendation[], totalCheckCount: number, calName
       affectedCheckCount: countDistinctChecks(visible),
       totalCheckCount,
       leadFinding: getRecommendationCopy(visible[0].id, calNames).title,
+      ...UNESCAPED,
     }
   );
 }

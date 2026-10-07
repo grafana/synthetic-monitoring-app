@@ -73,9 +73,13 @@
         "apply": "Add {{alertCount}} alerts",
         "applying": "Adding...",
         "applySingle": "Add alert",
+        "averageDuration": "Average duration above {{threshold}} over the last {{period}}",
         "cancel": "Cancel",
+        "certificateExpiry": "Certificate expires in less than {{threshold}}",
         "close": "Close",
         "done": "Alerts added",
+        "failedExecutions": "At least {{threshold}} of {{executionCount}} probe executions fail in the last {{period}}",
+        "failedExecutionsSingle": "At least 1 of {{executionCount}} probe executions fails in the last {{period}}",
         "previewTitle": "Recommended alerts for {{job}}",
         "setUp": "Set up",
         "setUpLabel": "Set up alerts for {{job}}",
@@ -190,6 +194,7 @@
       }
     },
     "row": {
+      "cannotEdit": "You do not have permission to edit this check.",
       "dismiss": "Dismiss {{job}} from this finding",
       "editCheck": "Edit {{job}}",
       "select": "Select {{job}}"

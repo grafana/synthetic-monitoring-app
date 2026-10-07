@@ -24,6 +24,7 @@ import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { LabelMigrationTab } from 'page/ConfigPageLayout/tabs/LabelMigrationTab';
 import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditProbe } from 'page/EditProbe';
 import { NewProbe } from 'page/NewProbe';
@@ -89,13 +90,16 @@ export const InitialisedRouter = () => {
             element={
               !isRecommendationsReady ? (
                 <Spinner />
-              ) : isRecommendationsEnabled ? (
-                <RecommendationsTab />
-              ) : (
+              ) : !isRecommendationsEnabled ? (
                 <NotFound>
                   The page you are looking for does not exist. Here is a working link to{' '}
                   <TextLink href={getRoute(AppRoutes.Checks)}>checks listing</TextLink>.
                 </NotFound>
+              ) : canReadChecks ? (
+                <RecommendationsTab />
+              ) : (
+                // The layout already provides the page; UnauthorizedPage would nest a second one.
+                <ContactAdminAlert missingPermissions={['grafana-synthetic-monitoring-app.checks:read']} />
               )
             }
           />

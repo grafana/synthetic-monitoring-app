@@ -14,16 +14,9 @@ import { useCheckPermissions, useGetCheckPermissions } from 'contexts/CheckFolde
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS } from 'data/useChecks';
 import { showAlert } from 'data/utils';
+import { FormSectionName } from 'components/Checkster/types';
 
-import {
-  AlertPlan,
-  formatAlertPeriod,
-  formatAlertThreshold,
-  getAlertPlans,
-  getRecommendedAlerts,
-  isFailure,
-  runInBatches,
-} from '../Recommendations.alerts';
+import { AlertPlan, getAlertPlans, getRecommendedAlerts, isFailure, runInBatches } from '../Recommendations.alerts';
 import {
   CheckRow,
   HeaderAction,
@@ -31,7 +24,8 @@ import {
   PanelFooter,
   RecommendationSection,
 } from '../Recommendations.components';
-import { BULK_ACTION_BATCH_SIZE } from '../Recommendations.constants';
+import { BULK_ACTION_BATCH_SIZE, UNESCAPED } from '../Recommendations.constants';
+import { getRecommendedAlertCopy } from '../Recommendations.copy';
 import { useRowSelection } from '../Recommendations.hooks';
 import { getChecksWithoutAlertsUrl } from '../Recommendations.links';
 import { getStyles } from '../Recommendations.styles';
@@ -251,10 +245,14 @@ function AlertSetupRow({
     showAlert(
       'success',
       alerts.length === 1
-        ? t('recommendations.alertingGaps.row.appliedSingle', 'Added an alert to {{job}}', { job: check.job })
+        ? t('recommendations.alertingGaps.row.appliedSingle', 'Added an alert to {{job}}', {
+            job: check.job,
+            ...UNESCAPED,
+          })
         : t('recommendations.alertingGaps.row.applied', 'Added {{alertCount}} alerts to {{job}}', {
             alertCount: alerts.length,
             job: check.job,
+            ...UNESCAPED,
           })
     );
     // The check list carries the alerts, so refetching it drops this row.
@@ -268,6 +266,7 @@ function AlertSetupRow({
       isSelected={isSelected}
       onSelectChange={canApply ? onSelectChange : undefined}
       onDismiss={onDismiss}
+      editSection={FormSectionName.Alerting}
       onEditClick={onEditClick}
       action={
         alerts.length > 0 ? (
@@ -279,6 +278,7 @@ function AlertSetupRow({
             aria-expanded={isExpanded}
             aria-label={t('recommendations.alertingGaps.row.setUpLabel', 'Set up alerts for {{job}}', {
               job: check.job,
+              ...UNESCAPED,
             })}
           >
             {isExpanded
@@ -294,20 +294,14 @@ function AlertSetupRow({
               <span className={styles.inlinePanelTitle}>
                 {t('recommendations.alertingGaps.row.previewTitle', 'Recommended alerts for {{job}}', {
                   job: check.job,
+                  ...UNESCAPED,
                 })}
               </span>
               <Stack direction="column" gap={0.5}>
                 {alerts.map((alert) => (
                   <div key={alert.draft.name} className={styles.previewItem}>
                     <span className={styles.previewItemLabel}>{alert.definition.name}</span>
-                    <span className={styles.rowDetail}>
-                      {alert.draft.period
-                        ? t('recommendations.alertingGaps.row.thresholdWithPeriod', '{{threshold}} over {{period}}', {
-                            threshold: formatAlertThreshold(alert),
-                            period: formatAlertPeriod(alert.draft.period),
-                          })
-                        : formatAlertThreshold(alert)}
-                    </span>
+                    <span className={styles.rowDetail}>{getRecommendedAlertCopy(alert, check)}</span>
                   </div>
                 ))}
               </Stack>

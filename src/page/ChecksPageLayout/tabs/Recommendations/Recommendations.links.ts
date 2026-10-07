@@ -1,6 +1,8 @@
 import { CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
-import { getRoute } from 'routing/utils';
+import { generateRoutePath, getRoute } from 'routing/utils';
+import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
+import { FormSectionName } from 'components/Checkster/types';
 import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
 /** How the user got onto the tab. */
@@ -16,6 +18,12 @@ export function getEntryPoint(source: string | null): RecommendationsEntryPoint 
 
 export function getRecommendationsTabUrl(tabUrl: string) {
   return `${tabUrl}?${SOURCE_PARAM}=tab`;
+}
+
+export function getEditCheckUrl(checkId: number, section?: FormSectionName) {
+  const url = generateRoutePath(AppRoutes.EditCheck, { id: checkId });
+
+  return section ? `${url}?${FORM_SECTION_QUERY_PARAM}=${section}` : url;
 }
 
 // Param names and encodings have to match what `useCheckFilters` decodes.
