@@ -1,4 +1,4 @@
-import { buildServiceNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedServices.utils';
+import { buildEntityNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedServices.utils';
 
 function paramsOf(url: string): URLSearchParams {
   return new URLSearchParams(url.split('?')[1]);
@@ -45,29 +45,32 @@ describe('escapeCypher', () => {
   });
 });
 
-describe('buildServiceNeighbourhoodQuery', () => {
-  it('matches the monitored service and walks CALLS in both directions', () => {
-    const query = buildServiceNeighbourhoodQuery('vika http check.__http://grafana.com');
-
-    expect(query).toContain(
-      'MATCH (sy:SyntheticCheck {name: "vika http check.__http://grafana.com"})<-[:MONITORED_BY]-(s1:Service)'
+describe('buildEntityNeighbourhoodQuery', () => {
+  it('serializes bound zero-hop and service-only one-hop branches at the selected end time', () => {
+    // This checks the query contract, not KG execution; retention also needs live API validation.
+    expect(buildEntityNeighbourhoodQuery('check"\\__https://example.com', 2000)).toBe(
+      [
+        'MATCH (sy:SyntheticCheck {name: "check\\"\\\\__https://example.com"})<-[monitored:MONITORED_BY]-(entity)',
+        'WHERE (entity:Service OR entity:Frontend)',
+        'AND (monitored._created IS NULL OR monitored._created <= 2000)',
+        'AND (monitored._expired IS NULL OR monitored._expired > 2000)',
+        'RETURN sy, entity, entity AS neighbour',
+        'UNION',
+        'MATCH (sy:SyntheticCheck {name: "check\\"\\\\__https://example.com"})<-[monitored:MONITORED_BY]-(entity)',
+        'WHERE (entity:Service OR entity:Frontend)',
+        'AND (monitored._created IS NULL OR monitored._created <= 2000)',
+        'AND (monitored._expired IS NULL OR monitored._expired > 2000)',
+        'MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)',
+        'WHERE (calls._created IS NULL OR calls._created <= 2000)',
+        'AND (calls._expired IS NULL OR calls._expired > 2000)',
+        'RETURN sy, entity, neighbour',
+      ].join('\n')
     );
-    // Zero hops preserves services without CALLS neighbours; one hop includes callers and dependencies.
-    expect(query).toContain('MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)');
-    expect(query).not.toContain('OPTIONAL MATCH');
-    expect(query).not.toContain('->(downstream:Service)');
-    expect(query).toContain('RETURN sy, s1, neighbour');
-  });
-
-  it('escapes the entity name it interpolates', () => {
-    const query = buildServiceNeighbourhoodQuery('evil"} DETACH DELETE n //');
-
-    expect(query).toContain('{name: "evil\\"} DETACH DELETE n //"}');
   });
 });
 
 describe('getCheckGraphUrl', () => {
-  it('anchors the KG entity graph on the check, connected to the services it monitors', () => {
+  it('anchors the KG entity graph on the check, connected to the services and frontends it monitors', () => {
     const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/', 1000, 2000);
 
     expect(url.startsWith('/a/grafana-asserts-app/entities?')).toBe(true);
@@ -77,6 +80,11 @@ describe('getCheckGraphUrl', () => {
     expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
     expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
     expect(params.get('filterCriteria[1][propertyMatchers][0][op]')).toBe('IS NOT NULL');
+    // Both connected types need an explicit criterion: KG then expands each independently,
+    // retaining service-only and frontend-only checks instead of requiring both edges.
+    expect(params.get('filterCriteria[2][entityType]')).toBe('Frontend');
+    expect(params.get('filterCriteria[2][propertyMatchers][0][name]')).toBe('name');
+    expect(params.get('filterCriteria[2][propertyMatchers][0][op]')).toBe('IS NOT NULL');
     expect(params.get('start')).toBe('1000');
     expect(params.get('end')).toBe('2000');
 
@@ -85,7 +93,7 @@ describe('getCheckGraphUrl', () => {
       paramsOf(url),
       'SyntheticCheck',
       [['name', 'grafana.com homepage__https://grafana.com/']],
-      ['Service']
+      ['Service', 'Frontend']
     );
   });
 });

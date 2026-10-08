@@ -125,7 +125,7 @@ describe('useKGReservedLabels', () => {
   }
 
   beforeEach(() => {
-    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   });
 
   it(`reserves service_name and namespace when the Knowledge Graph app is installed`, async () => {
@@ -133,10 +133,18 @@ describe('useKGReservedLabels', () => {
     const { result } = renderReservedLabels();
 
     await waitForHookRender(result);
-    expect(result.current?.names).toEqual(['service_name', 'namespace']);
+    expect(result.current?.names).toEqual(['service_name', 'namespace', 'feo11y_app_id']);
     expect(result.current?.message('service_name')).toBe(
-      'service_name is used for service connections. Select a service above to connect this check, or use a different name for your custom label.'
+      'service_name is used for service connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.'
     );
+  });
+
+  it('leaves the Frontend label editable as a custom label when the Frontend flag is off', async () => {
+    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+    setKgInstalled(true);
+    const { result } = renderReservedLabels();
+    await waitForHookRender(result);
+    expect(result.current?.names).toEqual(['service_name', 'namespace']);
   });
 
   it(`reserves nothing when the Knowledge Graph app is not installed`, async () => {
@@ -164,6 +172,6 @@ describe('useKGReservedLabels', () => {
     // user-typed custom label with that name must stay visible for the CAL-conflict
     // validation to be seen and fixed.
     await waitForHookRender(result);
-    expect(result.current?.names).toEqual(['namespace']);
+    expect(result.current?.names).toEqual(['namespace', 'feo11y_app_id']);
   });
 });

@@ -1,4 +1,9 @@
-import { KG_PLUGIN_ID, KG_SERVICE_ENTITY_TYPE, KG_SYNTHETIC_CHECK_ENTITY_TYPE } from './knowledgeGraph';
+import {
+  KG_FRONTEND_ENTITY_TYPE,
+  KG_PLUGIN_ID,
+  KG_SERVICE_ENTITY_TYPE,
+  KG_SYNTHETIC_CHECK_ENTITY_TYPE,
+} from './knowledgeGraph';
 
 /**
  * Escape values interpolated into a Cypher string so a target/job containing quotes or
@@ -9,15 +14,27 @@ export function escapeCypher(value: string): string {
 }
 
 /**
- * Show services monitoring this check and their immediate callers/dependencies.
- * Restrict expansion to CALLS in either direction; other service associations are outside
- * this preview's scope. Zero hops retains monitored services without CALLS neighbours.
+ * Retain monitored services/frontends, then add one-hop service CALLS neighbours.
+ * Each UNION branch returns bound entities: KG drops rows with unmatched OPTIONAL MATCH
+ * variables. Filter both relationship types at the range end to preserve historical topology.
  */
-export function buildServiceNeighbourhoodQuery(checkEntityName: string): string {
+export function buildEntityNeighbourhoodQuery(checkEntityName: string, end: number): string {
+  const monitoredEntities = [
+    `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[monitored:MONITORED_BY]-(entity)`,
+    `WHERE (entity:Service OR entity:Frontend)`,
+    `AND (monitored._created IS NULL OR monitored._created <= ${end})`,
+    `AND (monitored._expired IS NULL OR monitored._expired > ${end})`,
+  ].join('\n');
+
   return [
-    `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[:MONITORED_BY]-(s1:Service)`,
-    `MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)`,
-    `RETURN sy, s1, neighbour`,
+    monitoredEntities,
+    'RETURN sy, entity, entity AS neighbour',
+    'UNION',
+    monitoredEntities,
+    'MATCH (entity:Service)-[calls:CALLS]-(neighbour:Service)',
+    `WHERE (calls._created IS NULL OR calls._created <= ${end})`,
+    `AND (calls._expired IS NULL OR calls._expired > ${end})`,
+    `RETURN sy, entity, neighbour`,
   ].join('\n');
 }
 
@@ -71,8 +88,8 @@ function toQueryString(params: URLSearchParams): string {
 }
 
 /**
- * Open the check, its monitored services, and their service neighbours. Environment selection
- * stays inside the exposed mini graph, so this link intentionally opens across environments.
+ * Open the check, its monitored services and frontends, and its services' neighbours. Environment
+ * selection stays inside the exposed mini graph, so this link opens across environments.
  */
 export function getCheckGraphUrl(checkEntityName: string, start: number, end: number): string {
   const params = new URLSearchParams();
@@ -80,9 +97,10 @@ export function getCheckGraphUrl(checkEntityName: string, start: number, end: nu
     entityType: KG_SYNTHETIC_CHECK_ENTITY_TYPE,
     name: checkEntityName,
     scope: {},
-    connectToEntityTypes: [KG_SERVICE_ENTITY_TYPE],
+    connectToEntityTypes: [KG_SERVICE_ENTITY_TYPE, KG_FRONTEND_ENTITY_TYPE],
   });
-  // The graph search chains these criteria: check -> monitored Service -> Service neighbours.
+  // Give each connected type its own criterion so KG expands both branches with OPTIONAL MATCH.
+  // Leaving Frontend only in connectToEntityTypes would require a frontend edge to find the check.
   // A self filter retains monitored services with no neighbours (the API uses zero-or-one hop).
   params.set('filterCriteria[1][entityType]', KG_SERVICE_ENTITY_TYPE);
   params.set('filterCriteria[1][connectToEntityTypes][0]', KG_SERVICE_ENTITY_TYPE);
@@ -90,6 +108,11 @@ export function getCheckGraphUrl(checkEntityName: string, start: number, end: nu
   params.set('filterCriteria[1][propertyMatchers][0][op]', 'IS NOT NULL');
   params.set('filterCriteria[1][propertyMatchers][0][type]', 'String');
   params.set('filterCriteria[1][propertyMatchers][0][value]', '');
+  params.set('filterCriteria[2][entityType]', KG_FRONTEND_ENTITY_TYPE);
+  params.set('filterCriteria[2][propertyMatchers][0][name]', 'name');
+  params.set('filterCriteria[2][propertyMatchers][0][op]', 'IS NOT NULL');
+  params.set('filterCriteria[2][propertyMatchers][0][type]', 'String');
+  params.set('filterCriteria[2][propertyMatchers][0][value]', '');
   params.set('start', String(start));
   params.set('end', String(end));
 

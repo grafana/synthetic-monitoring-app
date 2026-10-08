@@ -22,24 +22,30 @@ import {
   ExposedMiniGraphComponent,
   useExposedMiniGraph,
 } from './ConnectedServicesMiniGraph';
-import { findLabelValue, getSyntheticCheckEntityName, KG_PLUGIN_ID, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
-import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
+import {
+  findLabelValue,
+  getSyntheticCheckEntityName,
+  KG_FRONTEND_APP_ID_LABEL,
+  KG_PLUGIN_ID,
+  KG_SERVICE_NAME_LABEL,
+} from './knowledgeGraph';
+import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 
 interface ConnectedServicesProps {
   check: Check;
 }
 
 /**
- * Renders the check's Knowledge Graph service neighbourhood as an inline dashboard section (the
- * check, the Service linked via MONITORED_BY, and that Service's one-hop CALLS neighbours in both
- * directions), drawn by the KG's exposed mini graph component — the KG owns fetching, the ranked
+ * Renders the check's Knowledge Graph neighbourhood as an inline dashboard section (the check,
+ * Services and Frontends linked via MONITORED_BY, and the Services' one-hop CALLS neighbours in
+ * both directions), drawn by the KG's exposed mini graph component — the KG owns fetching, the ranked
  * layout anchored on the check, insight rings, the node card, and loading/error/empty states, so
  * the section stays visually consistent with the KG by construction.
  *
  * Gating:
  * - KG app not installed or feature flag off → renders nothing (SM works without the Knowledge Graph).
  * - Asserts app predating the mini-graph exposure → renders nothing (the component is the only renderer).
- * - Enabled but the check has no service link → an inviting zero state pointing at the edit form.
+ * - Enabled but the check has no service or frontend link → a zero state pointing at the edit form.
  * - Enabled and linked → the exposed mini graph.
  */
 export function ConnectedServices({ check }: ConnectedServicesProps) {
@@ -61,18 +67,20 @@ interface ConnectedServicesSectionProps {
 function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSectionProps) {
   const styles = useStyles2(getStyles);
   // Expanded on load: the graph is the point of the section, and the KG query only runs for a
-  // check that is actually linked to a service.
+  // check that has a service or frontend association label.
   const [isOpen, setIsOpen] = useState(true);
   const [timeRange] = useTimeRange();
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
+  const frontendAppId = findLabelValue(check.labels ?? [], KG_FRONTEND_APP_ID_LABEL);
+  const hasConnection = Boolean(serviceName || frontendAppId);
 
   return (
     <section className={styles.container} data-testid={CONNECTED_SERVICES_TEST_ID.section}>
       <div className={styles.header}>
         <IconButton
           name={isOpen ? 'angle-down' : 'angle-right'}
-          aria-label="Connected services"
+          aria-label={CONNECTED_SERVICES_TITLE}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
         />
@@ -85,7 +93,7 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
           </Text>
         </div>
         <Feedback feature="knowledge-graph-connected-services" about={{ text: `New feature!` }} />
-        {serviceName && (
+        {hasConnection && (
           <LinkButton
             variant="secondary"
             size="sm"
@@ -104,7 +112,7 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
 
       {isOpen && (
         <div className={styles.body}>
-          {serviceName ? (
+          {hasConnection ? (
             <ConnectedServicesMiniGraph check={check} MiniGraph={MiniGraph} />
           ) : (
             <ConnectedServicesZeroState checkId={check.id} />
@@ -119,10 +127,11 @@ interface ConnectedServicesZeroStateProps {
   checkId: Check['id'];
 }
 
-/** Inviting CTA for a check without a Knowledge Graph service link. */
+/** Inviting CTA for a check without a Knowledge Graph connection. */
 function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
   const styles = useStyles2(getStyles);
-  // Deep link straight to the Labels section of the edit form, where the KG service link lives.
+  // Deep link straight to the Labels section of the edit form, where KG connections live.
   const editHref =
     checkId != null
       ? `${generateRoutePath(AppRoutes.EditCheck, { id: checkId })}?${FORM_SECTION_QUERY_PARAM}=${FormSectionName.Labels}`
@@ -133,15 +142,18 @@ function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps
       <Stack direction="column" alignItems="center" gap={1}>
         <Icon name="sitemap" size="xxl" />
         <Text element="h3" variant="h5">
-          Connect this check to a service
+          {frontendEnabled
+            ? 'Connect this check to a service or frontend application'
+            : 'Connect this check to a service'}
         </Text>
         <Text variant="body" color="secondary" textAlignment="center">
-          Link a Knowledge Graph service to surface connected services and root-cause hints when this check fails.
+          Link a Knowledge Graph {frontendEnabled ? 'service or frontend application' : 'service'} to surface connected
+          entities and root-cause hints when this check fails.
         </Text>
         <Stack direction="row" alignItems="center" gap={2}>
           {editHref && (
             <TextLink href={editHref} icon="pen">
-              Add service link
+              Add connection
             </TextLink>
           )}
           <TextLink href={`/a/${KG_PLUGIN_ID}/`} external>
