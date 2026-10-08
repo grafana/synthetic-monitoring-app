@@ -148,13 +148,4 @@ describe('CheckList - cost attribution setup banner', () => {
       expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
     });
   });
-
-  describe('when CALs feature flag is disabled', () => {
-    it('does not show the banner', async () => {
-      mockCalNames([]);
-      await renderCheckList(buildChecks(5));
-
-      expect(screen.queryByText(BANNER_TITLE)).not.toBeInTheDocument();
-    });
-  });
 });

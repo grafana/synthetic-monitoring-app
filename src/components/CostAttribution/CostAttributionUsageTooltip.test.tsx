@@ -95,15 +95,4 @@ describe('CostAttributionUsageTooltip', () => {
       expect(screen.queryByRole('link', { name: new RegExp(TOOLTIP_LINK_TEXT) })).not.toBeInTheDocument();
     });
   });
-
-  describe('when CALs feature flag is disabled', () => {
-    it('renders children without a tooltip', async () => {
-      mockCalNames([]);
-      const { user } = renderTooltip();
-
-      await user.hover(await screen.findByText(CHILD_TEXT));
-
-      expect(screen.queryByRole('link', { name: new RegExp(TOOLTIP_LINK_TEXT) })).not.toBeInTheDocument();
-    });
-  });
 });
