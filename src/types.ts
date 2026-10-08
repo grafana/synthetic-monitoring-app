@@ -757,7 +757,6 @@ export enum FeatureName {
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',
   KnowledgeGraph = 'synthetic-monitoring-knowledge-graph',
-  LabelMigration = 'synthetic-monitoring-label-migration',
   Screenshots = 'synthetic-monitoring-screenshots',
   SecretsManagement = 'synthetic-monitoring-secrets-management',
   TimepointExplorer = 'synthetic-monitoring-timepoint-explorer',
