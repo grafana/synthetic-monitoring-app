@@ -3,10 +3,10 @@ import { ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
+import { mockCmabCostAttributionWrite } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
-import { Check, FeatureName } from 'types';
+import { Check } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { gotoSection, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
@@ -48,11 +48,7 @@ async function readSavedCheck(read: () => Promise<{ body?: Check }>) {
 }
 
 describe('cost attribution labels on the check form', () => {
-  describe('when the CALs feature is enabled', () => {
-    beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
-    });
-
+  describe('when CALs are configured', () => {
     it('shows a row per configured CAL, filled from the check and blank where it has no value', async () => {
       await goToLabels();
 
@@ -169,28 +165,6 @@ describe('cost attribution labels on the check form', () => {
         expect(screen.getByRole('textbox', { name: 'Custom labels 1 name' })).toHaveValue(SET_CAL);
       });
       expect(screen.queryByText('Cost attribution labels')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('when the CALs feature is disabled', () => {
-    beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: false });
-    });
-
-    it('shows every label as a custom label and no CAL section', async () => {
-      await goToLabels();
-
-      expect(await screen.findByRole('textbox', { name: 'Custom labels 1 name' })).toHaveValue(SET_CAL);
-      expect(screen.getByRole('textbox', { name: 'Custom labels 2 name' })).toHaveValue(CUSTOM_LABEL_NAME);
-      expect(screen.queryByText('Cost attribution labels')).not.toBeInTheDocument();
-    });
-
-    it('does not show the setup hint', async () => {
-      mockCalNames([]);
-      await goToLabels();
-
-      expect(await screen.findByRole('textbox', { name: 'Custom labels 1 name' })).toBeInTheDocument();
-      expect(screen.queryByTestId('cost-attribution-setup-hint')).not.toBeInTheDocument();
     });
   });
 });
