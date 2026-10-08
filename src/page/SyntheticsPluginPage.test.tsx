@@ -55,6 +55,12 @@ describe('getSyntheticsPageNav', () => {
     expect(checkSuggestions?.active).toBeFalsy();
   });
 
+  it('keeps the Check Suggestions tab on its own page while its gate is closed', () => {
+    const nav = getSyntheticsPageNav(SyntheticsTab.CheckSuggestions, { ...ALL_TABS_VISIBLE, checkSuggestions: false });
+
+    expect(nav.children?.find((tab) => tab.text === 'Check Suggestions')).toMatchObject({ active: true });
+  });
+
   it('uses a distinct Overview crumb URL so Grafana keeps the Synthetics section crumb', () => {
     const nav = getSyntheticsPageNav(SyntheticsTab.Home, ALL_TABS_VISIBLE);
 
@@ -64,7 +70,7 @@ describe('getSyntheticsPageNav', () => {
     expect(nav.children?.[0]).toMatchObject({ text: 'Overview', active: true });
   });
 
-  it.each([SyntheticsTab.Checks, SyntheticsTab.Probes, SyntheticsTab.Configuration])(
+  it.each([SyntheticsTab.Checks, SyntheticsTab.Probes, SyntheticsTab.CheckSuggestions, SyntheticsTab.Configuration])(
     'keeps pageNav out of breadcrumbs on the %s tab so crumbs are not repeated',
     (tab) => {
       expect(getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).hideFromBreadcrumbs).toBe(true);
@@ -90,6 +96,7 @@ describe('getSyntheticsPageNav', () => {
     [SyntheticsTab.Home, 'Overview'],
     [SyntheticsTab.Checks, 'Checks'],
     [SyntheticsTab.Probes, 'Probes'],
+    [SyntheticsTab.CheckSuggestions, 'Check Suggestions'],
     [SyntheticsTab.Configuration, 'Configuration'],
   ])('marks %s as the active tab', (tab, label) => {
     const activeTabs = getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).children?.filter((child) => child.active);
@@ -122,6 +129,7 @@ describe('SyntheticsPluginPage', () => {
     [SyntheticsTab.Home, 'Overview'],
     [SyntheticsTab.Checks, 'Checks'],
     [SyntheticsTab.Probes, 'Probes'],
+    [SyntheticsTab.CheckSuggestions, 'Check Suggestions'],
     [SyntheticsTab.Configuration, 'Configuration'],
   ])('shows %s as the active tab', async (tab, label) => {
     renderPage(tab);
