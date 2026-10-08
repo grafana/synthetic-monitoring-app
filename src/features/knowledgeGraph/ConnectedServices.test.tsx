@@ -49,7 +49,7 @@ function setExposedMiniGraph(Stub: React.ComponentType<ExposedMiniGraphProps>) {
 }
 
 beforeEach(() => {
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   setKgInstalled(true);
   setExposedMiniGraph(() => <div>exposed mini graph</div>);
 });
@@ -196,4 +196,10 @@ it('links the section header to this check, its services, and its frontends in t
   expect(params.get('view')).toBe('graph');
   expect(params.get('start')).toBe(String(Date.parse(MOCK_TIME_RANGE_FROM)));
   expect(params.get('end')).toBe(String(Date.parse(MOCK_TIME_RANGE_TO)));
+});
+
+it('uses service-only setup copy when the Frontend flag is off', async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+  await renderSection(checkWithLabels([]));
+  expect(screen.getByText('Connect this check to a service')).toBeInTheDocument();
 });

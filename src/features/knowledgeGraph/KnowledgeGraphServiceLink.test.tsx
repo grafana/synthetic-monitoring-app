@@ -49,7 +49,7 @@ function renderServiceLink({ labels = [], loadedLabels }: RenderOptions = {}) {
 
 beforeEach(() => {
   testUsesCombobox();
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
 });
 
@@ -251,4 +251,16 @@ it('combines a frontend across paginated environments and explains its scope', a
   expect(
     screen.getByText('This connection includes all listed environments for this application.')
   ).toBeInTheDocument();
+});
+
+it('keeps Service setup available and preserves saved Frontend labels when the Frontend flag is off', async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+  const labels = [{ name: 'feo11y_app_id', value: '229' }];
+  const { user } = renderServiceLink({ labels });
+  expect(screen.queryByRole('combobox', { name: 'Frontend application' })).not.toBeInTheDocument();
+  await user.click(await screen.findByRole('button', { name: 'Add connection' }));
+  expect(screen.queryByRole('menuitem', { name: 'Frontend application' })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('menuitem', { name: 'Service' }));
+  expect(screen.getByRole('combobox', { name: 'Service name' })).toBeInTheDocument();
+  expect(screen.getByTestId('labels-output')).toHaveTextContent(JSON.stringify(labels));
 });

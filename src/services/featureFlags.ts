@@ -14,6 +14,7 @@ export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
   [FeatureName.Folders]: 'synthetic-monitoring.folders',
   [FeatureName.GRPCChecks]: 'synthetic-monitoring.grpc-checks',
   [FeatureName.KnowledgeGraph]: 'synthetic-monitoring.knowledge-graph',
+  [FeatureName.KnowledgeGraphFrontend]: 'synthetic-monitoring.knowledge-graph-frontend',
   [FeatureName.LabelMigration]: 'synthetic-monitoring.label-migration',
   [FeatureName.Screenshots]: 'synthetic-monitoring.screenshots',
   [FeatureName.SecretsManagement]: 'synthetic-monitoring.secrets-management',

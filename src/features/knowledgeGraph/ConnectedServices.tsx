@@ -29,7 +29,7 @@ import {
   KG_PLUGIN_ID,
   KG_SERVICE_NAME_LABEL,
 } from './knowledgeGraph';
-import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
+import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 
 interface ConnectedServicesProps {
   check: Check;
@@ -129,6 +129,7 @@ interface ConnectedServicesZeroStateProps {
 
 /** Inviting CTA for a check without a Knowledge Graph connection. */
 function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
   const styles = useStyles2(getStyles);
   // Deep link straight to the Labels section of the edit form, where KG connections live.
   const editHref =
@@ -141,11 +142,13 @@ function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps
       <Stack direction="column" alignItems="center" gap={1}>
         <Icon name="sitemap" size="xxl" />
         <Text element="h3" variant="h5">
-          Connect this check to a service or frontend application
+          {frontendEnabled
+            ? 'Connect this check to a service or frontend application'
+            : 'Connect this check to a service'}
         </Text>
         <Text variant="body" color="secondary" textAlignment="center">
-          Link a Knowledge Graph service or frontend application to surface connected entities and root-cause hints when
-          this check fails.
+          Link a Knowledge Graph {frontendEnabled ? 'service or frontend application' : 'service'} to surface connected
+          entities and root-cause hints when this check fails.
         </Text>
         <Stack direction="row" alignItems="center" gap={2}>
           {editHref && (

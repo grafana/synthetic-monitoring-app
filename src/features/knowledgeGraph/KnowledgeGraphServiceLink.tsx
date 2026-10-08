@@ -9,7 +9,7 @@ import { useDOMId } from 'hooks/useDOMId';
 import { StyledField } from 'components/Checkster/components/ui/StyledField';
 
 import { KG_FRONTEND_APP_ID_LABEL, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
-import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
+import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 import { KnowledgeGraphConnectionRow } from './KnowledgeGraphConnectionRow';
 import { KnowledgeGraphFrontendLink } from './KnowledgeGraphFrontendLink';
 import { KGLinkedLabel, useKGLinkedLabel, useKGServiceMatch } from './KnowledgeGraphServiceLink.hooks';
@@ -38,7 +38,8 @@ function KnowledgeGraphConnectionFields() {
   const namespace = useKGLinkedLabel(KG_NAMESPACE_LABEL);
   // Empty rows are UI-only. Saved values (including asynchronously loaded CALs) stay authoritative.
   const [drafts, setDrafts] = useState({ frontend: false, service: false });
-  const showFrontend = Boolean(frontend.value || drafts.frontend);
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
+  const showFrontend = frontendEnabled && Boolean(frontend.value || drafts.frontend);
   const showService = Boolean(serviceName.value || namespace.value || drafts.service);
 
   const removeConnection = (type: ConnectionType) => {
@@ -59,7 +60,9 @@ function KnowledgeGraphConnectionFields() {
           Knowledge Graph connections
         </Text>
         <Text color="secondary" variant="bodySmall">
-          Connect this check to a frontend application, a service, or both.
+          {frontendEnabled
+            ? 'Connect this check to a frontend application, a service, or both.'
+            : 'Connect this check to a service.'}
         </Text>
       </Stack>
       {showFrontend && (
@@ -80,13 +83,13 @@ function KnowledgeGraphConnectionFields() {
         />
       )}
       {!showFrontend && !showService && <Text color="secondary">No connections added.</Text>}
-      {(!showFrontend || !showService) && (
+      {((frontendEnabled && !showFrontend) || !showService) && (
         <div>
           <Dropdown
             placement="bottom-start"
             overlay={
               <Menu ariaLabel="Add Knowledge Graph connection">
-                {!showFrontend && (
+                {frontendEnabled && !showFrontend && (
                   <Menu.Item
                     label="Frontend application"
                     icon="monitor"

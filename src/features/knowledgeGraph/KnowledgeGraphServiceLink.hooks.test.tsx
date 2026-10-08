@@ -125,7 +125,7 @@ describe('useKGReservedLabels', () => {
   }
 
   beforeEach(() => {
-    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   });
 
   it(`reserves service_name and namespace when the Knowledge Graph app is installed`, async () => {
@@ -137,6 +137,14 @@ describe('useKGReservedLabels', () => {
     expect(result.current?.message('service_name')).toBe(
       'service_name is used for service connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.'
     );
+  });
+
+  it('leaves the Frontend label editable as a custom label when the Frontend flag is off', async () => {
+    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+    setKgInstalled(true);
+    const { result } = renderReservedLabels();
+    await waitForHookRender(result);
+    expect(result.current?.names).toEqual(['service_name', 'namespace']);
   });
 
   it(`reserves nothing when the Knowledge Graph app is not installed`, async () => {

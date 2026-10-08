@@ -5,7 +5,7 @@ import { ComboboxOption } from '@grafana/ui';
 import { CheckFormValues, Label } from 'types';
 
 import { findLabelValue, KG_FRONTEND_APP_ID_LABEL, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
-import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
+import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 import { fetchServiceMatchExists, fetchServiceNames, fetchServiceNamespaces } from './knowledgeGraphApi';
 
 export interface KGReservedLabels {
@@ -26,6 +26,7 @@ export interface KGReservedLabels {
  */
 export function useKGReservedLabels(): KGReservedLabels | undefined {
   const kgEnabled = useKnowledgeGraphEnabled();
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
   const { watch } = useFormContext<CheckFormValues>();
   const calLabels = watch('calLabels') ?? [];
 
@@ -33,9 +34,11 @@ export function useKGReservedLabels(): KGReservedLabels | undefined {
     return undefined;
   }
 
-  const names = [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL, KG_FRONTEND_APP_ID_LABEL].filter(
-    (name) => !calLabels.some((label) => label.name === name)
-  );
+  const names = [
+    KG_SERVICE_NAME_LABEL,
+    KG_NAMESPACE_LABEL,
+    ...(frontendEnabled ? [KG_FRONTEND_APP_ID_LABEL] : []),
+  ].filter((name) => !calLabels.some((label) => label.name === name));
 
   return {
     names,

@@ -55,7 +55,7 @@ async function readSavedCheck(read: () => Promise<{ body?: Check }>) {
 
 beforeEach(() => {
   testUsesCombobox();
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
 });
 
@@ -93,7 +93,11 @@ it('restores a saved frontend and removes only its association', async () => {
 });
 
 it.each([false, true])('synchronizes and saves the CAL-managed frontend (clear: %s)', async (clear) => {
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.CALs]: true });
+  mockFeatureToggles({
+    [FeatureName.KnowledgeGraph]: true,
+    [FeatureName.KnowledgeGraphFrontend]: true,
+    [FeatureName.CALs]: true,
+  });
   server.use(
     apiRoute('getTenantCostAttributionLabels', {
       result: () => ({ json: { names: ['feo11y_app_id'] } }),
@@ -147,7 +151,11 @@ it('prevents viewers from adding a missing connection', async () => {
 
 it.each([false, true])('saves an unscoped service without removing it (CAL-managed namespace: %s)', async (cal) => {
   if (cal) {
-    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.CALs]: true });
+    mockFeatureToggles({
+      [FeatureName.KnowledgeGraph]: true,
+      [FeatureName.KnowledgeGraphFrontend]: true,
+      [FeatureName.CALs]: true,
+    });
     server.use(
       apiRoute('getTenantCostAttributionLabels', {
         result: () => ({ json: { names: ['namespace'] } }),
@@ -172,7 +180,11 @@ it.each([false, true])(
   'removes both service labels while preserving the frontend and unrelated labels (CAL: %s)',
   async (cal) => {
     if (cal) {
-      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.CALs]: true });
+      mockFeatureToggles({
+        [FeatureName.KnowledgeGraph]: true,
+        [FeatureName.KnowledgeGraphFrontend]: true,
+        [FeatureName.CALs]: true,
+      });
       server.use(
         apiRoute('getTenantCostAttributionLabels', {
           result: () => ({ json: { names: ['service_name', 'namespace', 'team'] } }),
