@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.64.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.63.0...v1.64.0) (2026-10-07)
+
+
+### Features
+
+* add RudderStack event for cloud-setup CLI command copy ([#1896](https://github.com/grafana/synthetic-monitoring-app/issues/1896)) ([5c879e2](https://github.com/grafana/synthetic-monitoring-app/commit/5c879e25c67848eaff47ab46be7ae4183f4015a4))
+* **cloud-setup:** report CLI panel views ([#1913](https://github.com/grafana/synthetic-monitoring-app/issues/1913)) ([1368a0d](https://github.com/grafana/synthetic-monitoring-app/commit/1368a0d58be9b52b0a8a4a8185b78ae7545cb996))
+* enable alerts for template checks ([#1909](https://github.com/grafana/synthetic-monitoring-app/issues/1909)) ([c510a54](https://github.com/grafana/synthetic-monitoring-app/commit/c510a54aa313c4a655aae975e14c94b69ac692c0))
+* **label-migration:** find prefixed label usages with Assistant ([#1907](https://github.com/grafana/synthetic-monitoring-app/issues/1907)) ([001ab97](https://github.com/grafana/synthetic-monitoring-app/commit/001ab97525e87e98be280ad85835a45d80f86fe5))
+* **named-queries:** add checks_latency query to the backend registry ([#1908](https://github.com/grafana/synthetic-monitoring-app/issues/1908)) ([2739165](https://github.com/grafana/synthetic-monitoring-app/commit/2739165b7c64eff030bb2733714bf7d1da86df5f))
+* reach the Reliability Inbox backend from prod stacks ([#1918](https://github.com/grafana/synthetic-monitoring-app/issues/1918)) ([42ecd0d](https://github.com/grafana/synthetic-monitoring-app/commit/42ecd0d70c092263c1b24cf06fe883c4ddd4e1fc))
+* redesign the create a new check page ([#1900](https://github.com/grafana/synthetic-monitoring-app/issues/1900)) ([4b99737](https://github.com/grafana/synthetic-monitoring-app/commit/4b9973710794d299866cb2000d803a2db04e03aa))
+
+
+### Fixes
+
+* **checks:** require typing the count before deleting more than 5 checks ([#1893](https://github.com/grafana/synthetic-monitoring-app/issues/1893)) ([500096e](https://github.com/grafana/synthetic-monitoring-app/commit/500096eeae85a9741637592ec5d8fb2ef2f5b634))
+* Disable Reliability Inbox banned if Assistant is disabled ([#1903](https://github.com/grafana/synthetic-monitoring-app/issues/1903)) ([eb85db2](https://github.com/grafana/synthetic-monitoring-app/commit/eb85db299c69488bd114049d676db65f66f3b5c6))
+* **knowledge-graph:** include service neighbours and time range in graph link ([#1906](https://github.com/grafana/synthetic-monitoring-app/issues/1906)) ([0ccf0fb](https://github.com/grafana/synthetic-monitoring-app/commit/0ccf0fb8724ab881e4ab1a7ce011f5abba33d48c))
+* **reliability-inbox:** report banner views and clicks on first visit ([#1910](https://github.com/grafana/synthetic-monitoring-app/issues/1910)) ([2c7d09a](https://github.com/grafana/synthetic-monitoring-app/commit/2c7d09a68bc3cf3029cd62e35872ead15a6fca28))
+* respect homepage check visibility and populate label filters ([#1898](https://github.com/grafana/synthetic-monitoring-app/issues/1898)) ([41b9d19](https://github.com/grafana/synthetic-monitoring-app/commit/41b9d19752f3ed957659cb8a71679649b466725d))
+* **security/high/:** update dependency axios to v1.20.0 [security] ([#1901](https://github.com/grafana/synthetic-monitoring-app/issues/1901)) ([b7f78b9](https://github.com/grafana/synthetic-monitoring-app/commit/b7f78b92da4e339f2f657df21ff696a5fe7e1229))
+* **security/medium/:** update dependency undici to v7.29.1 [security] ([#1894](https://github.com/grafana/synthetic-monitoring-app/issues/1894)) ([219b6b7](https://github.com/grafana/synthetic-monitoring-app/commit/219b6b784485df098f2b3a7c55a23ddcc88c1e76))
+
 ## [1.63.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.62.0...v1.63.0) (2026-09-29)
 
 
