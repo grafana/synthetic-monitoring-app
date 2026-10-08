@@ -1,7 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Box, Stack, Text, TextLink } from '@grafana/ui';
 import {
   trackAgentSkillInstallCommandCopied,
   trackAgentSkillLinkClicked,
@@ -26,12 +24,15 @@ import { ClaudeIcon } from './ClaudeIcon';
 
 type AgentSkillTool = (typeof AGENT_SKILL_TOOLS)[number];
 
+// Install commands and prompts are prose-length; past this width they get hard to read.
+// In theme spacing units: 760px.
+const STEPS_MAX_WIDTH = 95;
+
 interface AgentSkillPickerProps {
   source: AgentSkillReferenceSource;
 }
 
 export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
-  const styles = useStyles2(getStyles);
   const [selectedId, setSelectedId] = useState<AgentSkillToolId | null>(null);
   const { askForFeedback, markInstallCopied, markFeedbackGiven } = useAgentSkillFeedback();
   const trackView = useTrackAgentSkillSectionViewed(source);
@@ -40,8 +41,8 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
 
   const handleSelect = useCallback(
     (tool: AgentSkillTool) => {
+      // The tools are mutually exclusive choices, so picking the current one again changes nothing.
       if (selectedId === tool.id) {
-        setSelectedId(null);
         return;
       }
 
@@ -53,7 +54,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
   );
 
   return (
-    <div className={styles.picker}>
+    <Stack direction="column" gap={2}>
       <Stack direction="row" alignItems="center" gap={1} wrap="wrap">
         <Text color="secondary">{AGENT_SKILL_DEFAULT_COPY.description}</Text>
         {askForFeedback && (
@@ -66,73 +67,56 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
       </Stack>
       <ChoiceTileGrid>
         {AGENT_SKILL_TOOLS.map((tool) => (
-          <li key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
-            <ChoiceTile
-              title={tool.name}
-              description={tool.cardDescription}
-              icon={tool.id === 'claude-code' ? <ClaudeIcon /> : 'ai-sparkle'}
-              selected={selectedId === tool.id}
-              expanded={selectedId === tool.id}
-              onClick={() => handleSelect(tool)}
-            />
-          </li>
+          <ChoiceTile
+            key={tool.id}
+            data-fs-element={`Agent skill tool card ${tool.id} (${source})`}
+            title={tool.name}
+            description={tool.cardDescription}
+            icon={tool.id === 'claude-code' ? <ClaudeIcon /> : 'ai-sparkle'}
+            selected={selectedId === tool.id}
+            onClick={() => handleSelect(tool)}
+          />
         ))}
       </ChoiceTileGrid>
       {selectedTool && (
-        <div className={styles.steps}>
-          <Stack direction="column" gap={0.5}>
-            <Text variant="h6" element="h2">
-              1. Install the skill (one-time)
-            </Text>
-            <div data-fs-element={`Agent skill install command ${selectedTool.trackingId} (${source})`}>
-              <Clipboard
-                key={selectedTool.id}
-                content={selectedTool.installCommand}
-                isCode
-                inlineCopy
-                onCopy={() => {
-                  markInstallCopied();
-                  trackAgentSkillInstallCommandCopied({ source, command: selectedTool.trackingId });
-                }}
-              />
+        <Box paddingTop={1}>
+          <Stack direction="column" gap={2} maxWidth={STEPS_MAX_WIDTH}>
+            <Stack direction="column" gap={0.5}>
+              <Text variant="h6" element="h2">
+                1. Install the skill (one-time)
+              </Text>
+              <div data-fs-element={`Agent skill install command ${selectedTool.trackingId} (${source})`}>
+                <Clipboard
+                  key={selectedTool.id}
+                  content={selectedTool.installCommand}
+                  isCode
+                  inlineCopy
+                  onCopy={() => {
+                    markInstallCopied();
+                    trackAgentSkillInstallCommandCopied({ source, command: selectedTool.trackingId });
+                  }}
+                />
+              </div>
+            </Stack>
+            <Stack direction="column" gap={0.5}>
+              <Text variant="h6" element="h2">
+                2. Tell your agent what to build
+              </Text>
+              <AgentSkillPrompts source={source} tool={selectedTool.id} />
+            </Stack>
+            <div>
+              <TextLink
+                href={AGENT_SKILL_REPO_URL}
+                external
+                onClick={() => trackAgentSkillLinkClicked({ source })}
+                data-fs-element={`Agent skill repo link (${source})`}
+              >
+                View the skill on GitHub
+              </TextLink>
             </div>
           </Stack>
-          <Stack direction="column" gap={0.5}>
-            <Text variant="h6" element="h2">
-              2. Tell your agent what to build
-            </Text>
-            <AgentSkillPrompts source={source} tool={selectedTool.id} />
-          </Stack>
-          <div>
-            <TextLink
-              href={AGENT_SKILL_REPO_URL}
-              external
-              onClick={() => trackAgentSkillLinkClicked({ source })}
-              data-fs-element={`Agent skill repo link (${source})`}
-            >
-              View the skill on GitHub
-            </TextLink>
-          </div>
-        </div>
+        </Box>
       )}
-    </div>
+    </Stack>
   );
 };
-
-// Install commands and prompts are prose-length; past this width they get hard to read.
-const STEPS_MAX_WIDTH = 760;
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  picker: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  }),
-  steps: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-    maxWidth: STEPS_MAX_WIDTH,
-    paddingTop: theme.spacing(1),
-  }),
-});

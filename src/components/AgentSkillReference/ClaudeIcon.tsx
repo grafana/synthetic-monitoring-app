@@ -18,11 +18,12 @@ export function ClaudeIcon() {
   );
 }
 
-// Colour is inherited so the mark matches whatever icon treatment its container applies.
+// Colour is inherited so the mark matches whatever icon treatment its container applies; the size
+// matches Grafana's `xl` icons, which the other agent tiles use.
 const getStyles = () => ({
   icon: css({
-    width: 18,
-    height: 18,
+    width: 24,
+    height: 24,
     flexShrink: 0,
     display: 'inline-block',
     lineHeight: 0,

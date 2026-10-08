@@ -22,13 +22,15 @@ export interface Availability {
   reason?: string;
 }
 
+/**
+ * Options stay available while limits load, rather than flashing disabled on every visit: they only
+ * open the check form, which enforces the same limits before anything can be saved.
+ */
 export function getGroupAvailability(
-  { isReady, isOverBrowserLimit, isOverScriptedLimit, isOverCheckLimit, isOverHgExecutionLimit }: ReturnType<
-    typeof useLimits
-  >,
+  { isOverBrowserLimit, isOverScriptedLimit, isOverCheckLimit, isOverHgExecutionLimit }: ReturnType<typeof useLimits>,
   checkTypeGroup: CheckTypeGroup
 ): Availability {
-  if (!isReady || isOverCheckLimit || isOverHgExecutionLimit) {
+  if (isOverCheckLimit || isOverHgExecutionLimit) {
     return { disabled: true };
   }
 

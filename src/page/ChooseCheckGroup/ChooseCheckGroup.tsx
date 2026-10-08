@@ -1,9 +1,8 @@
 import React, { ReactNode, useCallback, useId, useMemo } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
-import { GrafanaTheme2, IconName, NavModelItem, PageLayoutType } from '@grafana/data';
+import { IconName, NavModelItem, PageLayoutType } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { Text, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Stack, Text } from '@grafana/ui';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
 import { CheckTypeGroup } from 'types';
@@ -35,10 +34,10 @@ const TABS: Array<{ id: ChooseCheckTab; label: string; icon: IconName }> = [
 ];
 
 // Tiles stop gaining anything from extra width well before the page does, so cap the content.
-const CONTENT_MAX_WIDTH = 1200;
+// In theme spacing units: 1200px.
+const CONTENT_MAX_WIDTH = 150;
 
 export const ChooseCheckGroup = () => {
-  const styles = useStyles2(getStyles);
   const activeTab = useActiveTab();
   const getTabUrl = useTabUrl();
 
@@ -62,12 +61,12 @@ export const ChooseCheckGroup = () => {
       pageNav={pageNav}
       subTitle="Choose what to test. Each check runs on a schedule from the probe locations you pick."
     >
-      <div className={styles.content}>
+      <Stack direction="column" gap={2} maxWidth={CONTENT_MAX_WIDTH}>
         <OverLimitAlert />
         {activeTab === ChooseCheckTab.CheckType && <CheckTypeTab />}
         {activeTab === ChooseCheckTab.Template && <TemplateTab />}
         {activeTab === ChooseCheckTab.Agent && <AgentSkillPicker source="choose-check-type" />}
-      </div>
+      </Stack>
     </PluginPage>
   );
 };
@@ -101,7 +100,6 @@ function useTabUrl() {
 }
 
 function CheckTypeTab() {
-  const styles = useStyles2(getStyles);
   const groups = useCheckTypeGroupOptions();
   const limits = useLimits();
 
@@ -109,7 +107,7 @@ function CheckTypeTab() {
   const journeyGroups = groups.filter(({ value }) => value !== CheckTypeGroup.ApiTest);
 
   return (
-    <div className={styles.sections} data-testid={CHECKS_TEST_ID.form.chooseType}>
+    <Stack direction="column" gap={4} data-testid={CHECKS_TEST_ID.form.chooseType}>
       {endpointGroup && (
         <ChoiceSection
           title="API endpoint"
@@ -117,31 +115,30 @@ function CheckTypeTab() {
           data-testid={`${CHECKS_TEST_ID.groupCard}-${endpointGroup.value}`}
         >
           {endpointGroup.protocols.map((protocol) => (
-            <li key={protocol.label}>
-              <ProtocolTile protocol={protocol} availability={getGroupAvailability(limits, endpointGroup.value)} />
-            </li>
+            <ProtocolTile
+              key={protocol.label}
+              protocol={protocol}
+              availability={getGroupAvailability(limits, endpointGroup.value)}
+            />
           ))}
         </ChoiceSection>
       )}
 
       {journeyGroups.length > 0 && (
         <ChoiceSection
-          title="Multi-step and scripted"
+          title="Journeys and scripts"
           description="Test a sequence of requests, custom k6 logic or a full browser session."
         >
           {journeyGroups.map((group) => (
-            <li key={group.value}>
-              <GroupTile group={group} availability={getGroupAvailability(limits, group.value)} />
-            </li>
+            <GroupTile key={group.value} group={group} availability={getGroupAvailability(limits, group.value)} />
           ))}
         </ChoiceSection>
       )}
-    </div>
+    </Stack>
   );
 }
 
 function TemplateTab() {
-  const styles = useStyles2(getStyles);
   const groups = useCheckTypeGroupOptions();
   const limits = useLimits();
 
@@ -151,76 +148,49 @@ function TemplateTab() {
   const scriptedAvailability = getGroupAvailability(limits, CheckTypeGroup.Scripted);
 
   return (
-    <div className={styles.tab}>
+    <Stack direction="column" gap={2}>
       <Text color="secondary">Start from a check that is already set up for a common task.</Text>
       <ChoiceTileGrid>
         {CHECK_TEMPLATES.map((template) => (
-          <li key={template.id}>
-            <CheckTemplate template={template} />
-          </li>
+          <CheckTemplate key={template.id} template={template} />
         ))}
         {websocketExample?.href && (
-          <li>
-            <ChoiceTile
-              title="Test a WebSocket API"
-              description="Open a scripted check with a working WebSocket example."
-              icon="exchange-alt"
-              href={websocketExample.href}
-              onClick={websocketExample.onClick}
-              disabled={scriptedAvailability.disabled}
-              disabledReason={scriptedAvailability.reason}
-            />
-          </li>
+          <ChoiceTile
+            title="Test a WebSocket API"
+            description="Open a scripted check with a working WebSocket example."
+            icon="exchange-alt"
+            href={websocketExample.href}
+            onClick={websocketExample.onClick}
+            disabled={scriptedAvailability.disabled}
+            disabledReason={scriptedAvailability.reason}
+          />
         )}
       </ChoiceTileGrid>
-    </div>
+    </Stack>
   );
 }
 
 interface ChoiceSectionProps {
   title: string;
   description: string;
-  children: ReactNode;
+  children: NonNullable<ReactNode>;
   'data-testid'?: string;
 }
 
 function ChoiceSection({ title, description, children, 'data-testid': testId }: ChoiceSectionProps) {
-  const styles = useStyles2(getStyles);
   const headingId = useId();
 
   return (
-    <section className={styles.tab} aria-labelledby={headingId} data-testid={testId}>
-      <div className={styles.sectionHeader}>
-        <Text element="h2" variant="h4" id={headingId}>
-          {title}
-        </Text>
-        <Text color="secondary">{description}</Text>
-      </div>
-      <ChoiceTileGrid>{children}</ChoiceTileGrid>
+    <section aria-labelledby={headingId} data-testid={testId}>
+      <Stack direction="column" gap={2}>
+        <Stack direction="column" gap={0.5}>
+          <Text element="h2" variant="h4" id={headingId}>
+            {title}
+          </Text>
+          <Text color="secondary">{description}</Text>
+        </Stack>
+        <ChoiceTileGrid>{children}</ChoiceTileGrid>
+      </Stack>
     </section>
   );
 }
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  content: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-    maxWidth: CONTENT_MAX_WIDTH,
-  }),
-  sections: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(4),
-  }),
-  tab: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(2),
-  }),
-  sectionHeader: css({
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-  }),
-});

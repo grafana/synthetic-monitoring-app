@@ -27,27 +27,37 @@ import {
 const API_ENDPOINT_TYPES = ['HTTP', 'Ping', 'DNS', 'TCP', 'Traceroute'];
 const JOURNEY_TYPES = ['Multi Step', 'Scripted', 'Browser'];
 const AGENT_TOOLS = ['Claude Code', 'Cursor, Codex & other agents'];
+const SCRIPTED_LIMIT_REASON = 'Scripted and Multi Step check limit reached';
 
 interface RenderOptions {
   checkLimit?: number;
   scriptedLimit?: number;
+  /** Leaves the limits request unanswered, to render the page as it looks while limits load. */
+  limitsPending?: boolean;
   /** A raw value, so tests can also request tabs that do not exist. */
   tab?: string;
 }
 
-async function renderChooseCheckGroup({ checkLimit = 10, scriptedLimit = 10, tab }: RenderOptions = {}) {
+async function renderChooseCheckGroup({
+  checkLimit = 10,
+  scriptedLimit = 10,
+  limitsPending = false,
+  tab,
+}: RenderOptions = {}) {
   server.use(
     apiRoute('getTenantLimits', {
-      result: () => ({
-        json: {
-          MaxChecks: checkLimit,
-          MaxScriptedChecks: scriptedLimit,
-          MaxMetricLabels: 16,
-          MaxLogLabels: 13,
-          maxAllowedMetricLabels: 10,
-          maxAllowedLogLabels: 5,
-        },
-      }),
+      result: limitsPending
+        ? () => new Promise<never>(() => {})
+        : () => ({
+            json: {
+              MaxChecks: checkLimit,
+              MaxScriptedChecks: scriptedLimit,
+              MaxMetricLabels: 16,
+              MaxLogLabels: 13,
+              maxAllowedMetricLabels: 10,
+              maxAllowedLogLabels: 5,
+            },
+          }),
     })
   );
   const path = tab ? `${AppRoutes.ChooseCheckGroup}?${CHOOSE_CHECK_TAB_PARAM}=${tab}` : AppRoutes.ChooseCheckGroup;
@@ -65,16 +75,34 @@ function getActiveTab() {
   return screen.getByTestId(CONFIG_TEST_ID.layout.activeTab);
 }
 
-// Tiles render as disabled placeholders until limits load, then are replaced by real links,
-// so each attempt has to query afresh rather than wait on the first element found.
-function findEnabledLink(name: string) {
-  return waitFor(() => {
-    const link = screen.getByRole('link', { name });
-    expect(link).not.toHaveAttribute('aria-disabled');
+/** The tile whose title is `name`, whether it is currently a link, a button or disabled. */
+function getTile(name: string) {
+  const tile = screen.getByText(name).closest<HTMLElement>('[role="listitem"]');
 
-    return link;
-  });
+  if (!tile) {
+    throw new Error(`No tile titled "${name}"`);
+  }
+
+  return tile;
 }
+
+// Disabled tiles keep their content but stop being a link or button, so nothing can open them.
+function expectTileDisabled(name: string) {
+  const tile = getTile(name);
+
+  expect(within(tile).queryByRole('link')).not.toBeInTheDocument();
+  expect(within(tile).queryByRole('button')).not.toBeInTheDocument();
+}
+
+// Tiles are plain anchors that Grafana routes in the app; jsdom would otherwise try a full navigation.
+function preventLinkNavigation(event: MouseEvent) {
+  if (event.target instanceof Element && event.target.closest('a[href]')) {
+    event.preventDefault();
+  }
+}
+
+beforeAll(() => document.addEventListener('click', preventLinkNavigation));
+afterAll(() => document.removeEventListener('click', preventLinkNavigation));
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -86,8 +114,8 @@ describe('tabs', () => {
 
     expect(getActiveTab()).toHaveTextContent('By check type');
     expect(getSection('API endpoint')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Detect broken links' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: AGENT_TOOLS[0] })).not.toBeInTheDocument();
+    expect(screen.queryByText('Detect broken links')).not.toBeInTheDocument();
+    expect(screen.queryByText(AGENT_TOOLS[0])).not.toBeInTheDocument();
   });
 
   it('falls back to the check type tab when the requested tab does not exist', async () => {
@@ -132,56 +160,66 @@ describe('tabs', () => {
 });
 
 describe('check type tab', () => {
-  it('groups every check type into an API endpoint and a multi-step section', async () => {
+  it('groups every check type into an API endpoint and a journeys section', async () => {
     await renderChooseCheckGroup();
 
     const apiSection = getSection('API endpoint');
+    expect(within(apiSection).getAllByRole('listitem')).toHaveLength(API_ENDPOINT_TYPES.length);
     API_ENDPOINT_TYPES.forEach((name) => {
       expect(within(apiSection).getByRole('link', { name })).toBeInTheDocument();
     });
 
-    const journeySection = getSection('Multi-step and scripted');
+    const journeySection = getSection('Journeys and scripts');
+    expect(within(journeySection).getAllByRole('listitem')).toHaveLength(JOURNEY_TYPES.length);
     JOURNEY_TYPES.forEach((name) => {
       expect(within(journeySection).getByRole('link', { name })).toBeInTheDocument();
+    });
+  });
+
+  it('keeps check types available while limits are still loading', async () => {
+    await renderChooseCheckGroup({ limitsPending: true });
+
+    [...API_ENDPOINT_TYPES, ...JOURNEY_TYPES].forEach((name) => {
+      expect(screen.getByRole('link', { name })).toBeInTheDocument();
     });
   });
 
   it('describes each check type on its tile', async () => {
     await renderChooseCheckGroup();
 
-    expect(await findEnabledLink('HTTP')).toHaveAccessibleDescription(
-      'Request a URL and check its status, response time and SSL certificate.'
-    );
-    expect(await findEnabledLink('Browser')).toHaveAccessibleDescription(
-      'Script a real browser to load pages and interact like a user.'
-    );
+    expect(
+      within(getTile('HTTP')).getByText('Request a URL and check its status, response time and SSL certificate.')
+    ).toBeInTheDocument();
+    expect(
+      within(getTile('Browser')).getByText('Script a real browser to load pages and interact like a user.')
+    ).toBeInTheDocument();
   });
 
   it('links API endpoint tiles to the API endpoint form with their request type selected', async () => {
     await renderChooseCheckGroup();
 
-    expect(await findEnabledLink('HTTP')).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'HTTP' })).toHaveAttribute(
       'href',
       expect.stringContaining(`/${CheckTypeGroup.ApiTest}?checkType=${CheckType.Http}`)
     );
-    expect(await findEnabledLink('Traceroute')).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Traceroute' })).toHaveAttribute(
       'href',
       expect.stringContaining(`/${CheckTypeGroup.ApiTest}?checkType=${CheckType.Traceroute}`)
     );
   });
 
-  it('links multi-step and scripted tiles to their own forms', async () => {
+  it('links journey and script tiles to their own forms', async () => {
     await renderChooseCheckGroup();
 
-    expect(await findEnabledLink('Multi Step')).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Multi Step' })).toHaveAttribute(
       'href',
       expect.stringMatching(new RegExp(`/${CheckTypeGroup.MultiStep}$`))
     );
-    expect(await findEnabledLink('Scripted')).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Scripted' })).toHaveAttribute(
       'href',
       expect.stringMatching(new RegExp(`/${CheckTypeGroup.Scripted}$`))
     );
-    expect(await findEnabledLink('Browser')).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'Browser' })).toHaveAttribute(
       'href',
       expect.stringMatching(new RegExp(`/${CheckTypeGroup.Browser}$`))
     );
@@ -190,7 +228,7 @@ describe('check type tab', () => {
   it('tracks the request type when an API endpoint tile is selected', async () => {
     const { user } = await renderChooseCheckGroup();
 
-    await user.click(await findEnabledLink('DNS'));
+    await user.click(screen.getByRole('link', { name: 'DNS' }));
 
     expect(trackAddCheckTypeButtonClicked).toHaveBeenCalledWith({
       checkTypeGroup: CheckTypeGroup.ApiTest,
@@ -199,10 +237,10 @@ describe('check type tab', () => {
     expect(trackAddCheckTypeGroupButtonClicked).not.toHaveBeenCalled();
   });
 
-  it('tracks the group when a multi-step or scripted tile is selected', async () => {
+  it('tracks the group when a journey or script tile is selected', async () => {
     const { user } = await renderChooseCheckGroup();
 
-    await user.click(await findEnabledLink('Browser'));
+    await user.click(screen.getByRole('link', { name: 'Browser' }));
 
     expect(trackAddCheckTypeGroupButtonClicked).toHaveBeenCalledWith({ checkTypeGroup: CheckTypeGroup.Browser });
     expect(trackAddCheckTypeButtonClicked).not.toHaveBeenCalled();
@@ -236,25 +274,19 @@ describe('check type tab', () => {
     const alert = await screen.findByText(/You have reached your monthly execution limit of/);
     expect(alert).toBeInTheDocument();
 
-    [...API_ENDPOINT_TYPES, ...JOURNEY_TYPES].forEach((name) => {
-      expect(screen.getByRole('link', { name })).toHaveAttribute('aria-disabled', 'true');
-    });
+    await waitFor(() => [...API_ENDPOINT_TYPES, ...JOURNEY_TYPES].forEach(expectTileDisabled));
   });
 
   it('disables only scripted and multi-step tiles, with a reason, when the scripted limit is reached', async () => {
     await renderChooseCheckGroup({ scriptedLimit: 0 });
 
-    // The reason only appears once limits have loaded, so waiting for it also waits for readiness.
-    await waitFor(() =>
-      expect(screen.getByRole('link', { name: 'Scripted' })).toHaveAccessibleDescription(
-        expect.stringContaining('Scripted and Multi Step check limit reached')
-      )
-    );
-    expect(screen.getByRole('link', { name: 'Scripted' })).toHaveAttribute('aria-disabled', 'true');
-    expect(screen.getByRole('link', { name: 'Multi Step' })).toHaveAttribute('aria-disabled', 'true');
+    await waitFor(() => expect(within(getTile('Scripted')).getByText(SCRIPTED_LIMIT_REASON)).toBeInTheDocument());
+    expectTileDisabled('Scripted');
+    expectTileDisabled('Multi Step');
+    expect(within(getTile('Multi Step')).getByText(SCRIPTED_LIMIT_REASON)).toBeInTheDocument();
 
-    expect(screen.getByRole('link', { name: 'HTTP' })).not.toHaveAttribute('aria-disabled');
-    expect(screen.getByRole('link', { name: 'Browser' })).not.toHaveAttribute('aria-disabled');
+    expect(screen.getByRole('link', { name: 'HTTP' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browser' })).toBeInTheDocument();
   });
 });
 
@@ -262,10 +294,11 @@ describe('template tab', () => {
   it('offers the templates and the WebSocket example', async () => {
     await renderChooseCheckGroup({ tab: ChooseCheckTab.Template });
 
-    expect(await screen.findByRole('button', { name: 'Detect broken links' })).toHaveAccessibleDescription(
-      'Check a page for links that no longer work.'
-    );
-    expect(await findEnabledLink('Test a WebSocket API')).toHaveAttribute(
+    await screen.findByRole('button', { name: 'Detect broken links' });
+    expect(
+      within(getTile('Detect broken links')).getByText('Check a page for links that no longer work.')
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Test a WebSocket API' })).toHaveAttribute(
       'href',
       expect.stringContaining(`/${CheckTypeGroup.Scripted}?example=websocket`)
     );
@@ -274,7 +307,7 @@ describe('template tab', () => {
   it('tracks the WebSocket example as a scripted protocol selection', async () => {
     const { user } = await renderChooseCheckGroup({ tab: ChooseCheckTab.Template });
 
-    await user.click(await findEnabledLink('Test a WebSocket API'));
+    await user.click(screen.getByRole('link', { name: 'Test a WebSocket API' }));
 
     expect(trackAddCheckTypeButtonClicked).toHaveBeenCalledWith({
       checkTypeGroup: CheckTypeGroup.Scripted,
@@ -285,9 +318,8 @@ describe('template tab', () => {
   it('opens the template drawer and tracks selection without a feature flag', async () => {
     const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
     const { user } = await renderChooseCheckGroup({ tab: ChooseCheckTab.Template });
-    const card = await screen.findByRole('button', { name: 'Detect broken links' });
-    await waitFor(() => expect(card).toBeEnabled());
-    await user.click(card);
+    // Templates create checks directly, so they stay disabled until limits are known.
+    await user.click(await screen.findByRole('button', { name: 'Detect broken links' }));
     expect(reportInteraction).toHaveBeenCalledWith(
       'synthetic-monitoring_check_templates_template_selected',
       expect.objectContaining({ check_template_id: 'broken_links' })
@@ -301,24 +333,23 @@ describe('template tab', () => {
   it('disables templates when the check limit is reached', async () => {
     await renderChooseCheckGroup({ checkLimit: 1, tab: ChooseCheckTab.Template });
     await screen.findByText(/You have reached your check limit of /);
-    expect(screen.getByRole('button', { name: 'Detect broken links' })).toBeDisabled();
+    expectTileDisabled('Detect broken links');
   });
 
   it('disables templates for viewers', async () => {
     runTestAsViewer();
     await renderChooseCheckGroup({ tab: ChooseCheckTab.Template });
-    expect(await screen.findByRole('button', { name: 'Detect broken links' })).toBeDisabled();
+    await screen.findByText('Detect broken links');
+    expectTileDisabled('Detect broken links');
   });
 
   it('disables the WebSocket example, with a reason, when the scripted limit is reached', async () => {
     await renderChooseCheckGroup({ scriptedLimit: 0, tab: ChooseCheckTab.Template });
 
     await waitFor(() =>
-      expect(screen.getByRole('link', { name: 'Test a WebSocket API' })).toHaveAccessibleDescription(
-        expect.stringContaining('Scripted and Multi Step check limit reached')
-      )
+      expect(within(getTile('Test a WebSocket API')).getByText(SCRIPTED_LIMIT_REASON)).toBeInTheDocument()
     );
-    expect(screen.getByRole('link', { name: 'Test a WebSocket API' })).toHaveAttribute('aria-disabled', 'true');
+    expectTileDisabled('Test a WebSocket API');
   });
 
   it('disables the WebSocket example when user is HG Free user over the execution limit', async () => {
@@ -326,6 +357,6 @@ describe('template tab', () => {
     await renderChooseCheckGroup({ tab: ChooseCheckTab.Template });
 
     await screen.findByText(/You have reached your monthly execution limit of/);
-    expect(screen.getByRole('link', { name: 'Test a WebSocket API' })).toHaveAttribute('aria-disabled', 'true');
+    await waitFor(() => expectTileDisabled('Test a WebSocket API'));
   });
 });
