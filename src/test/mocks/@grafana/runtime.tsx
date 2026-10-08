@@ -223,6 +223,9 @@ jest.mock('@grafana/runtime', () => {
     useAppPluginInstalled: jest.fn(() => ({ loading: false, error: undefined, value: false })),
     // Defaults to "no exposed component"; tests can override via (usePluginComponent as jest.Mock).mockReturnValue(...)
     usePluginComponent: jest.fn(() => ({ component: null, isLoading: false })),
+    // The real implementation throws outside production if Grafana core never registered a
+    // hook via setChromeHeaderHeightHook (which it never does in tests) — default to 0 instead.
+    useChromeHeaderHeight: jest.fn(() => 0),
     config: {
       ...actual.config,
       datasources: {

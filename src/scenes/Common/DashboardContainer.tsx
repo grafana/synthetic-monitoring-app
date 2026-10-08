@@ -3,6 +3,7 @@ import { PluginPage } from '@grafana/runtime';
 import { CustomVariable, QueryVariable, SceneContextProvider } from '@grafana/scenes-react';
 import { VariableHide, VariableRefresh } from '@grafana/schema';
 import { Stack } from '@grafana/ui';
+import { CheckFailureExplanation } from 'features/checkInsights/CheckFailureExplanation';
 import { trackCheckDashboardViewed } from 'features/tracking/checkDashboardEvents';
 import { TrackingTimeRangeScope } from 'features/tracking/TrackingTimeRangeScope';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
@@ -85,6 +86,7 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
           >
             <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
               <Stack direction="column" gap={2}>
+                <CheckFailureExplanation check={check} />
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
                   {children}

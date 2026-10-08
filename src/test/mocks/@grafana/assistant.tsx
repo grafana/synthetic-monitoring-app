@@ -9,6 +9,9 @@
  * Per-test overrides:
  *   import { useAssistant, providePageContext } from '@grafana/assistant';
  *   jest.mocked(useAssistant).mockReturnValueOnce({ isAvailable: false, ... });
+ *
+ * Also stubs useTerms/useLimits/useInlineAssistant (used by the check-failure-explanation
+ * feature's non-interactive completion path), defaulting to "fully clear to use Assistant".
  */
 jest.mock('@grafana/assistant', () => {
   const makeRegistration = () => {
@@ -33,14 +36,38 @@ jest.mock('@grafana/assistant', () => {
     subscribe: jest.fn(),
   }));
 
+  const createAssistantContextItem = jest.fn((type, params) => ({ type, ...params }));
+
+  // Defaults represent an org that's fully clear to use Assistant (terms accepted, under its
+  // usage limit) — tests for the check-failure-explanation feature override these per case to
+  // exercise the blocked states (see CheckFailureExplanation.test.tsx / AiCheckExplanationsSetting.test.tsx).
   const useTerms = jest.fn(() => ({
     accepted: true,
-    termsType: 'termsAndConditions',
+    termsType: 'termsAndConditions' as const,
     loading: false,
     error: null,
   }));
+  const checkTerms = jest.fn(() => Promise.resolve(true));
 
-  const createAssistantContextItem = jest.fn((type, params) => ({ type, ...params }));
+  const useLimits = jest.fn(() => ({
+    count: 0,
+    limit: 0,
+    month: '2026-01',
+    isLimitReached: false,
+    loading: false,
+    error: null,
+    refetch: jest.fn(),
+  }));
+  const checkLimits = jest.fn(() => Promise.resolve({ count: 0, limit: 0, month: '2026-01', isLimitReached: false }));
+
+  const useInlineAssistant = jest.fn(() => ({
+    generate: jest.fn(),
+    isGenerating: false,
+    content: '',
+    error: null,
+    cancel: jest.fn(),
+    reset: jest.fn(),
+  }));
 
   return {
     __esModule: true,
@@ -49,8 +76,12 @@ jest.mock('@grafana/assistant', () => {
     useProvidePageContext,
     useAssistant,
     isAssistantAvailable,
-    useTerms,
     TERMS_AND_CONDITIONS_REFRESH_EVENT: 'grafana-assistant-terms-and-conditions-refresh',
     createAssistantContextItem,
+    useTerms,
+    checkTerms,
+    useLimits,
+    checkLimits,
+    useInlineAssistant,
   };
 });
