@@ -109,7 +109,17 @@ describe('ReliabilityInboxPage', () => {
     expect(within(titleGroup).getByRole('button', { name: "I don't like this feature" })).toBeVisible();
   });
 
-  it('shows when suggestions were generated in the page actions', async () => {
+  it('keeps the Synthetics tabs with Check Suggestions selected', async () => {
+    renderPage();
+
+    expect(await screen.findByRole('tab', { name: 'Check Suggestions', selected: true })).toHaveAttribute(
+      'href',
+      getRoute(AppRoutes.ReliabilityInbox)
+    );
+    expect(screen.getByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+  });
+
+  it('shows when suggestions were generated beside the title', async () => {
     jest.spyOn(Date, 'now').mockReturnValue(GENERATED_AT);
     renderPage();
 
@@ -585,7 +595,6 @@ describe('ReliabilityInboxPage', () => {
 
     const { user } = renderPage([HTTP_RELIABILITY_SUGGESTION, dismissedSuggestion]);
 
-    expect(await screen.findByRole('tablist')).toBeInTheDocument();
     const dismissedFilter = await screen.findByRole('tab', { name: 'Dismissed 1' });
     expect(dismissedFilter).toHaveAttribute('aria-selected', 'false');
     dismissedFilter.focus();

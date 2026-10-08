@@ -10,6 +10,7 @@ export enum SyntheticsTab {
   Home = 'home',
   Checks = 'checks',
   Probes = 'probes',
+  CheckSuggestions = 'check-suggestions',
   Configuration = 'configuration',
 }
 
@@ -32,6 +33,7 @@ function NewFeatureTabSuffix({ className }: { className?: string }) {
 
 export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: SyntheticsTabVisibility): NavModelItem {
   const isOverview = activeTab === SyntheticsTab.Home;
+  const isCheckSuggestions = activeTab === SyntheticsTab.CheckSuggestions;
   const isConfiguration = activeTab === SyntheticsTab.Configuration;
   const configurationUrl = getRoute(AppRoutes.Config);
   const tabs: NavModelItem[] = [
@@ -58,11 +60,12 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
     });
   }
 
-  // Check Suggestions renders its own page header, so this tab is never the active one.
-  if (visibility.checkSuggestions) {
+  // Also shown on its own page, which renders while the AI gate is still loading or closed.
+  if (visibility.checkSuggestions || isCheckSuggestions) {
     tabs.push({
       text: 'Check Suggestions',
       url: getRoute(AppRoutes.ReliabilityInbox),
+      active: isCheckSuggestions,
       tabSuffix: NewFeatureTabSuffix,
     });
   }
