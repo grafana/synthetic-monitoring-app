@@ -207,11 +207,40 @@ describe('FrontendContext with several probes', () => {
     mockQueryDS.mockResolvedValue({});
   });
 
+  it('keeps the probe tabs above the source rail', async () => {
+    const { user } = renderViewer([OHIO_RUN], 'Ohio');
+
+    expect(await screen.findByRole('tab', { name: 'Synthetic monitoring' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: /Ohio/ })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Real user context' })).not.toBeInTheDocument();
+
+    screen.getByRole('tab', { name: 'Synthetic monitoring' }).focus();
+    await user.keyboard('{ArrowDown}');
+
+    expect(screen.getByRole('tab', { name: 'Frontend user data' })).toHaveFocus();
+    expect(await within(await findPanel()).findByText(OHIO_RUN.error)).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Ohio/ })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Synthetic monitoring' }));
+
+    expect(screen.getByRole('tab', { name: /Ohio/ })).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Real user context' })).not.toBeInTheDocument();
+  });
+
+  it('explains when frontend user data is unavailable', async () => {
+    mockQueryLoki.mockResolvedValue([]);
+    const { user } = renderViewer([OHIO_RUN], 'Ohio');
+
+    await user.click(await screen.findByRole('tab', { name: 'Frontend user data' }));
+
+    expect(await screen.findByText('No frontend user data is available for this execution.')).toBeInTheDocument();
+  });
+
   it(`shows each probe tab's own run`, async () => {
     const { user } = renderViewer([OHIO_RUN, OREGON_RUN], 'Ohio');
 
+    await user.click(await screen.findByRole('tab', { name: 'Frontend user data' }));
     expect(await within(await findPanel()).findByText(OHIO_RUN.error)).toBeInTheDocument();
-    expect(screen.queryByText(OREGON_RUN.error)).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: /Oregon/ }));
 
@@ -230,9 +259,12 @@ describe('FrontendContext with several probes', () => {
   it('follows the selected execution when a probe ran more than once in a timepoint', async () => {
     const { user } = renderViewer([OHIO_RUN, OHIO_RETRY, OREGON_RUN], 'Ohio');
 
+    await user.click(await screen.findByRole('tab', { name: 'Frontend user data' }));
     expect(await within(await findPanel()).findByText(OHIO_RUN.error)).toBeInTheDocument();
 
+    await user.click(screen.getByRole('tab', { name: 'Synthetic monitoring' }));
     await user.click(screen.getByRole('button', { name: '2' }));
+    await user.click(screen.getByRole('tab', { name: 'Frontend user data' }));
 
     expect(await within(await findPanel()).findByText(OHIO_RETRY.error)).toBeInTheDocument();
     expect(screen.queryByText(OHIO_RUN.error)).not.toBeInTheDocument();
