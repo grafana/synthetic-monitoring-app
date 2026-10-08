@@ -100,9 +100,8 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const { data: reachabilitySuccessRates = [] } = useChecksReachabilitySuccessRate();
   const [applyAlertSort, setApplyAlertSort] = useState(false);
   const filters = useCheckFilters();
-  const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
   const { data: calData } = useTenantCostAttributionLabels();
-  const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);
+  const calNames = useMemo(() => calData?.names ?? [], [calData?.names]);
 
   // When folders are unavailable, fall back to card view synchronously so the
   // folder view never renders, while preserving the user's stored preference

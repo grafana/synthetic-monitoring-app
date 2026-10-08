@@ -3,9 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
-
-import { FeatureName } from 'types';
+import { mockCmabCostAttributionWrite } from 'test/utils';
 
 import { CMAB_URLS } from './CostAttribution.constants';
 import { CostAttributionUsageTooltip } from './CostAttributionUsageTooltip';
@@ -32,9 +30,8 @@ function renderTooltip() {
 }
 
 describe('CostAttributionUsageTooltip', () => {
-  describe('when CALs feature flag is enabled and no CALs are configured', () => {
+  describe('when no CALs are configured', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       mockCalNames([]);
     });
 
@@ -64,7 +61,6 @@ describe('CostAttributionUsageTooltip', () => {
 
   describe('when CALs are already configured', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       mockCalNames([`Team`, `Service`]);
     });
 
@@ -82,7 +78,6 @@ describe('CostAttributionUsageTooltip', () => {
 
   describe('when the CALs request fails', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       server.use(
         apiRoute(`getTenantCostAttributionLabels`, {
           result: () => ({

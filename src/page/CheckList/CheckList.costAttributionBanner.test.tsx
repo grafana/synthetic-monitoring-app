@@ -4,9 +4,9 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
+import { mockCmabCostAttributionWrite } from 'test/utils';
 
-import { Check, FeatureName, HTTPCheck } from 'types';
+import { Check, HTTPCheck } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { CAL_BANNER_DISMISSED_KEY, CMAB_URLS } from 'components/CostAttribution/CostAttribution.constants';
@@ -72,11 +72,7 @@ describe('CheckList - cost attribution setup banner', () => {
     window.localStorage.removeItem(CAL_BANNER_DISMISSED_KEY);
   });
 
-  describe('when CALs feature flag is enabled', () => {
-    beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
-    });
-
+  describe('cost attribution banner', () => {
     it('shows the banner with a CMAB settings link when no CALs are configured', async () => {
       mockCalNames([]);
       await renderCheckList(buildChecks(5));
