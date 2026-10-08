@@ -1,5 +1,4 @@
 import React from 'react';
-import { GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -19,7 +18,8 @@ export function ClaudeIcon() {
   );
 }
 
-const getStyles = (theme: GrafanaTheme2) => ({
+// Colour is inherited so the mark matches whatever icon treatment its container applies.
+const getStyles = () => ({
   icon: css({
     width: 18,
     height: 18,
@@ -27,6 +27,5 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'inline-block',
     lineHeight: 0,
     verticalAlign: 'middle',
-    color: theme.colors.text.primary,
   }),
 });

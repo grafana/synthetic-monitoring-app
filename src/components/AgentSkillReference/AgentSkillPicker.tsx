@@ -1,14 +1,14 @@
 import React, { useCallback, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Stack, styleMixins, Text, TextLink, useStyles2 } from '@grafana/ui';
-import { css, cx } from '@emotion/css';
+import { Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 import {
   trackAgentSkillInstallCommandCopied,
   trackAgentSkillLinkClicked,
   trackAgentSkillToolSelected,
 } from 'features/tracking/agentSkillEvents';
 
-import { Card } from 'components/Card';
+import { ChoiceTile, ChoiceTileGrid } from 'components/ChoiceTile';
 import { Clipboard } from 'components/Clipboard';
 import { Feedback } from 'components/Feedback';
 
@@ -53,9 +53,9 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
   );
 
   return (
-    <Stack direction="column" gap={2}>
-      <Stack direction="row" alignItems="center" gap={1}>
-        <div>Create checks with your coding agent</div>
+    <div className={styles.picker}>
+      <Stack direction="row" alignItems="center" gap={1} wrap="wrap">
+        <Text color="secondary">{AGENT_SKILL_DEFAULT_COPY.description}</Text>
         {askForFeedback && (
           <Feedback
             feature={AGENT_SKILL_FEEDBACK_FEATURE}
@@ -64,38 +64,24 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
           />
         )}
       </Stack>
-      <div className={styles.cardRow}>
+      <ChoiceTileGrid>
         {AGENT_SKILL_TOOLS.map((tool) => (
-          <div key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
-            <Card className={cx(styles.toolCard, selectedId === tool.id && styles.toolCardSelected)}>
-              <Stack alignItems="flex-start" direction="column" gap={1}>
-                <Stack alignItems="center" direction="row" gap={1}>
-                  {tool.id === 'claude-code' && <ClaudeIcon />}
-                  {tool.id === 'agent-skills' && <Icon name="ai-sparkle" size="lg" aria-hidden="true" />}
-                  <Card.Heading variant="h5">
-                    <button
-                      type="button"
-                      className={styles.action}
-                      aria-expanded={selectedId === tool.id}
-                      onClick={() => handleSelect(tool)}
-                    >
-                      {tool.name}
-                    </button>
-                  </Card.Heading>
-                </Stack>
-                <Text color="secondary">{tool.cardDescription}</Text>
-              </Stack>
-            </Card>
-          </div>
+          <li key={tool.id} data-fs-element={`Agent skill tool card ${tool.id} (${source})`}>
+            <ChoiceTile
+              title={tool.name}
+              description={tool.cardDescription}
+              icon={tool.id === 'claude-code' ? <ClaudeIcon /> : 'ai-sparkle'}
+              selected={selectedId === tool.id}
+              expanded={selectedId === tool.id}
+              onClick={() => handleSelect(tool)}
+            />
+          </li>
         ))}
-      </div>
+      </ChoiceTileGrid>
       {selectedTool && (
-        <Stack direction="column" gap={2}>
-          <Text element="p" color="secondary">
-            {AGENT_SKILL_DEFAULT_COPY.description}
-          </Text>
+        <div className={styles.steps}>
           <Stack direction="column" gap={0.5}>
-            <Text variant="h6" element="h4">
+            <Text variant="h6" element="h2">
               1. Install the skill (one-time)
             </Text>
             <div data-fs-element={`Agent skill install command ${selectedTool.trackingId} (${source})`}>
@@ -112,7 +98,7 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
             </div>
           </Stack>
           <Stack direction="column" gap={0.5}>
-            <Text variant="h6" element="h4">
+            <Text variant="h6" element="h2">
               2. Tell your agent what to build
             </Text>
             <AgentSkillPrompts source={source} tool={selectedTool.id} />
@@ -127,35 +113,26 @@ export const AgentSkillPicker = ({ source }: AgentSkillPickerProps) => {
               View the skill on GitHub
             </TextLink>
           </div>
-        </Stack>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 };
 
+// Install commands and prompts are prose-length; past this width they get hard to read.
+const STEPS_MAX_WIDTH = 760;
+
 const getStyles = (theme: GrafanaTheme2) => ({
-  cardRow: css({
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+  picker: css({
+    display: 'flex',
+    flexDirection: 'column',
     gap: theme.spacing(2),
   }),
-  action: css({
-    all: 'unset',
-    '&::after': {
-      content: "''",
-      position: 'absolute',
-      inset: 0,
-      borderRadius: theme.shape.radius.default,
-      cursor: 'pointer',
-    },
-    '&:focus-visible::after': styleMixins.getFocusStyles(theme),
-  }),
-  toolCard: css({
-    height: '100%',
-    minWidth: 0,
-    textAlign: 'left',
-  }),
-  toolCardSelected: css({
-    boxShadow: `inset 0 0 0 1px ${theme.colors.primary.border}`,
+  steps: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    maxWidth: STEPS_MAX_WIDTH,
+    paddingTop: theme.spacing(1),
   }),
 });
