@@ -41,7 +41,6 @@ export const InitialisedRouter = () => {
   const { isEnabled: isCheckSuggestionsEnabled, isReady: isCheckSuggestionsReady } = useFeatureFlag(
     FeatureName.CheckSuggestions
   );
-  const { isEnabled: isLabelMigrationEnabled } = useFeatureFlag(FeatureName.LabelMigration);
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
   const page = urlSearchParams.get('page');
@@ -159,7 +158,7 @@ export const InitialisedRouter = () => {
         <Route index element={<GeneralTab />} />
         <Route path="access-tokens" element={<AccessTokensTab />} />
         <Route path="terraform" element={<TerraformTab />} />
-        {isLabelMigrationEnabled && <Route path="label-migration" element={<LabelMigrationTab />} />}
+        <Route path="label-migration" element={<LabelMigrationTab />} />
         {isSecretsManagementEnabled && <Route path="secrets" element={<SecretsManagementTab />} />}
       </Route>
 

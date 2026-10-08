@@ -27,7 +27,6 @@ function useActiveTab(route: AppRoutes) {
 
 export function ConfigPageLayout() {
   const activeTab = useActiveTab(AppRoutes.Config);
-  const { isEnabled: isLabelMigrationEnabled } = useFeatureFlag(FeatureName.LabelMigration);
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
   const pageNav: NavModelItem = useMemo(() => {
@@ -57,19 +56,15 @@ export function ConfigPageLayout() {
           url: getConfigTabUrl('terraform'),
           active: activeTab('terraform'),
         },
+        {
+          // The tab itself limits mode changes to admins and shows a contact-admin notice otherwise.
+          icon: 'tag-alt',
+          text: 'Label migration',
+          url: getConfigTabUrl('label-migration'),
+          active: activeTab('label-migration'),
+        },
       ],
     };
-
-    // Label Migration is feature-flagged for rollout. The tab itself limits
-    // mode changes to admins and shows a contact-admin notice otherwise.
-    if (isLabelMigrationEnabled) {
-      navModel.children!.push({
-        icon: 'tag-alt',
-        text: 'Label migration',
-        url: getConfigTabUrl('label-migration'),
-        active: activeTab('label-migration'),
-      });
-    }
 
     // Add secrets management tab if the feature is enabled
     if (isSecretsManagementEnabled) {
@@ -81,7 +76,7 @@ export function ConfigPageLayout() {
       });
     }
     return navModel;
-  }, [activeTab, isLabelMigrationEnabled, isSecretsManagementEnabled]);
+  }, [activeTab, isSecretsManagementEnabled]);
 
   return (
     <PluginPage pageNav={pageNav}>
