@@ -1,6 +1,8 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Combobox, Stack, Text } from '@grafana/ui';
+import { GrafanaTheme2 } from '@grafana/data';
+import { Button, Combobox, Icon, Stack, Text, useStyles2 } from '@grafana/ui';
+import { css } from '@emotion/css';
 
 import { useDOMId } from 'hooks/useDOMId';
 
@@ -17,6 +19,7 @@ interface Props {
 
 export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRemove }: Props) {
   const labelId = useDOMId();
+  const styles = useStyles2(getStyles);
   const {
     data: apps,
     isLoading,
@@ -70,12 +73,17 @@ export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRe
             Loading frontend applications…
           </Text>
         ) : selected ? (
-          selectedApp &&
-          selectedApp.environments.length > 1 && (
-            <Text color="secondary" variant="bodySmall">
-              This connection includes all listed environments for this application.
-            </Text>
-          )
+          <>
+            <div className={styles.matchIndicator}>
+              <Icon name="check-circle" size="sm" />
+              <span>Will link to frontend application {selectedApp?.name} in the Knowledge Graph.</span>
+            </div>
+            {selectedApp && selectedApp.environments.length > 1 && (
+              <Text color="secondary" variant="bodySmall">
+                This connection includes all listed environments for this application.
+              </Text>
+            )}
+          </>
         ) : frontend.value ? (
           <Text color="secondary" variant="bodySmall">
             No matching frontend in Knowledge Graph yet.
@@ -89,3 +97,13 @@ export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRe
     </KnowledgeGraphConnectionRow>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  matchIndicator: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.success.text,
+  }),
+});

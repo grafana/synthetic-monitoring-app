@@ -167,6 +167,15 @@ function ServiceConnection({ serviceName, namespace, disabled, autoFocus, onRemo
             />
           </StyledField>
         </div>
+        {matchState === 'match' && serviceName.value && (
+          <div className={styles.matchIndicator}>
+            <Icon name="check-circle" size="sm" />
+            <span>
+              Will link to service {serviceName.value}
+              {namespace.value && ` (namespace ${namespace.value})`} in the Knowledge Graph.
+            </span>
+          </div>
+        )}
         {matchState === 'no-match' && serviceName.value && (
           <Text color="secondary" variant="bodySmall">
             No matching service in the Knowledge Graph yet. The link will become active once service {serviceName.value}
@@ -179,6 +188,13 @@ function ServiceConnection({ serviceName, namespace, disabled, autoFocus, onRemo
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  matchIndicator: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    fontSize: theme.typography.bodySmall.fontSize,
+    color: theme.colors.success.text,
+  }),
   serviceFields: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',

@@ -115,6 +115,9 @@ it('restores asynchronously loaded connections, including a namespace-only servi
 
 it('writes service_name and namespace when a service is selected', async () => {
   server.use(
+    apiRoute('searchKnowledgeGraphEntities', {
+      result: () => ({ json: { data: { entities: [{ name: 'frontend', scope: { namespace: 'otel-demo' } }] } } }),
+    }),
     apiRoute('getKnowledgeGraphPropertyValues', {
       result: async (request) => {
         const { propertyName } = await request.json();
@@ -135,11 +138,17 @@ it('writes service_name and namespace when a service is selected', async () => {
     ])
   );
   expect(screen.getByRole('button', { name: 'Save labels' })).toBeEnabled();
+  expect(
+    await screen.findByText('Will link to service frontend (namespace otel-demo) in the Knowledge Graph.')
+  ).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Remove service connection' }));
+  expect(screen.queryByText(/Will link to service/)).not.toBeInTheDocument();
 });
 
 it('shows a hint when the saved service is not discovered', async () => {
   renderServiceLink({ labels: [{ name: 'service_name', value: 'my-new-service' }] });
   expect(await screen.findByText(/No matching service in the Knowledge Graph yet/)).toBeInTheDocument();
+  expect(screen.queryByText(/Will link to service/)).not.toBeInTheDocument();
 });
 
 it('treats a namespace mismatch as no match', async () => {
@@ -155,11 +164,13 @@ it('treats a namespace mismatch as no match', async () => {
     ],
   });
   expect(await screen.findByText(/No matching service in the Knowledge Graph yet/)).toBeInTheDocument();
+  expect(screen.queryByText(/Will link to service/)).not.toBeInTheDocument();
 });
 
 it('preserves an unavailable frontend app ID and lets the user remove it', async () => {
   const { user } = renderServiceLink({ labels: [{ name: 'feo11y_app_id', value: '999' }] });
   expect(await screen.findByText('No matching frontend in Knowledge Graph yet.')).toBeInTheDocument();
+  expect(screen.queryByText(/Will link to frontend application/)).not.toBeInTheDocument();
   expect(screen.getByRole('combobox', { name: 'Frontend application' })).toHaveValue('App ID 999');
   expect(screen.getByTestId('labels-output')).toHaveTextContent('"name":"feo11y_app_id","value":"999"');
   await user.click(screen.getByRole('button', { name: 'Remove frontend application connection' }));
@@ -171,6 +182,7 @@ it('preserves frontend values on lookup failure, allows removal, and supports re
   server.use(apiRoute('searchKnowledgeGraphEntities', { result: () => ({ status: 500 }) }));
   const { user } = renderServiceLink({ labels: [{ name: 'feo11y_app_id', value: '229' }] });
   expect(await screen.findByText(/Could not load frontend applications/)).toBeInTheDocument();
+  expect(screen.queryByText(/Will link to frontend application/)).not.toBeInTheDocument();
   expect(screen.getByRole('combobox', { name: 'Frontend application' })).toHaveValue('App ID 229');
   expect(screen.getByTestId('labels-output')).toHaveTextContent('"name":"feo11y_app_id","value":"229"');
   await user.click(screen.getByRole('button', { name: 'Remove frontend application connection' }));
@@ -184,6 +196,9 @@ it('preserves frontend values on lookup failure, allows removal, and supports re
   await waitFor(() => expect(input).toBeEnabled());
   await user.click(input);
   await user.click(await screen.findByRole('option', { name: /banking · production/ }));
+  expect(
+    await screen.findByText('Will link to frontend application banking in the Knowledge Graph.')
+  ).toBeInTheDocument();
   expect(screen.getByTestId('labels-output')).toHaveTextContent('"name":"feo11y_app_id","value":"229"');
 });
 
