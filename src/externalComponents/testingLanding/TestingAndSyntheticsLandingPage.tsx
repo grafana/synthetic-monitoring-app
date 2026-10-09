@@ -10,7 +10,6 @@ import {
   trackTestingSyntheticsLandingViewed,
 } from 'features/tracking/testingSyntheticsLandingEvents';
 
-import { AgenticFeaturedCard } from './components/AgenticFeaturedCard';
 import { ProductPanel } from './components/ProductPanel';
 import { UseCaseTile } from './components/UseCaseTile';
 import {
@@ -28,7 +27,7 @@ interface Props {
 
 export function TestingAndSyntheticsLandingPage({ node }: Props) {
   const styles = useStyles2(getStyles);
-  const { hasAgentic, hasK6, hasSynthetics } = getInstalledPlugins(node);
+  const { hasK6, hasSynthetics } = getInstalledPlugins(node);
 
   const syntheticsTiles = [
     {
@@ -67,14 +66,12 @@ export function TestingAndSyntheticsLandingPage({ node }: Props) {
   ];
 
   useEffect(() => {
-    trackTestingSyntheticsLandingViewed({ hasAgentic, hasK6, hasSynthetics });
-  }, [hasAgentic, hasK6, hasSynthetics]);
+    trackTestingSyntheticsLandingViewed({ hasK6, hasSynthetics });
+  }, [hasK6, hasSynthetics]);
 
   return (
     <div className={styles.page} data-testid={TESTING_LANDING_TEST_IDS.root}>
       <Stack direction="column" gap={3}>
-        {hasAgentic && <AgenticFeaturedCard />}
-
         {hasK6 && (
           <ProductPanel
             testId={TESTING_LANDING_TEST_IDS.performancePanel}

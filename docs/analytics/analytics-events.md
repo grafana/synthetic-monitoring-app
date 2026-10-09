@@ -688,17 +688,8 @@ Tracks when the Testing & synthetics landing page is viewed.
 
 | name          | type            | description                                         |
 | ------------- | --------------- | --------------------------------------------------- |
-| hasAgentic    | `false \| true` | Whether the Agentic testing section was shown.      |
 | hasK6         | `false \| true` | Whether the Performance testing section was shown.  |
 | hasSynthetics | `false \| true` | Whether the Synthetic monitoring section was shown. |
-
-#### synthetic-monitoring_testing_synthetics_landing_agentic_learn_more_button_clicked
-
-Tracks when the Agentic Learn more button is clicked.
-
-#### synthetic-monitoring_testing_synthetics_landing_agentic_create_button_clicked
-
-Tracks when the Agentic Create a test button is clicked.
 
 #### synthetic-monitoring_testing_synthetics_landing_open_link_clicked
 
@@ -706,9 +697,9 @@ Tracks when an Open link is clicked.
 
 ##### Properties
 
-| name    | type                                         | description                                 |
-| ------- | -------------------------------------------- | ------------------------------------------- |
-| product | `"agentic" \| "performance" \| "synthetics"` | The product panel the Open link belongs to. |
+| name    | type                            | description                                 |
+| ------- | ------------------------------- | ------------------------------------------- |
+| product | `"performance" \| "synthetics"` | The product panel the Open link belongs to. |
 
 #### synthetic-monitoring_testing_synthetics_landing_performance_browse_projects_button_clicked
 
