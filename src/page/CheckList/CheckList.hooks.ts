@@ -9,6 +9,7 @@ import { defaultFilters } from 'page/CheckList/CheckList.utils';
 
 interface CheckFiltersProps {
   search: [state: string, update: (value: string | null) => void];
+  target: [state: string, update: (value: string | null) => void];
   labels: [state: string[], update: (value: string[] | null) => void];
   type: [state: CheckTypeFilter, update: (value: CheckTypeFilter | null) => void];
   alerts: [state: CheckAlertsFilter, update: (value: CheckAlertsFilter | null) => void];
@@ -30,6 +31,12 @@ export function useCheckFilters() {
     search: useQueryParametersState<string>({
       key: 'search',
       initialValue: defaultFilters.search,
+      encode: (value) => value,
+      decode: (value) => value,
+    }),
+    target: useQueryParametersState<string>({
+      key: 'target',
+      initialValue: defaultFilters.target,
       encode: (value) => value,
       decode: (value) => value,
     }),

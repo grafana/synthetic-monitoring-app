@@ -9,6 +9,8 @@ import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 
 interface CheckFolderAccessContextValue {
   visibleChecks: Check[];
+  /** True while a folder request is still in flight, so visibleChecks may still grow. */
+  isVisibilitySettling: boolean;
   getPermissions: (check: Pick<Check, 'folderUid'>) => CheckPermissions;
   getFolderStatus: (check: Pick<Check, 'folderUid'>) => CheckFolderStatus;
   isFoldersAvailable: boolean;
@@ -51,12 +53,21 @@ export function useVisibleChecks() {
   return useCheckFolderAccessContext().visibleChecks;
 }
 
+export function useIsVisibilitySettling() {
+  return useCheckFolderAccessContext().isVisibilitySettling;
+}
+
 export function useCheckPermissions(check: Pick<Check, 'folderUid'>): CheckPermissions {
   return useCheckFolderAccessContext().getPermissions(check);
 }
 
 export function useCheckFolderStatus(check: Pick<Check, 'folderUid'>): CheckFolderStatus {
   return useCheckFolderAccessContext().getFolderStatus(check);
+}
+
+/** For filtering a list of checks by permission, where a hook per check is not possible. */
+export function useGetCheckPermissions() {
+  return useCheckFolderAccessContext().getPermissions;
 }
 
 export function useBulkCheckPermissions(checks: Array<Pick<Check, 'folderUid'>>) {

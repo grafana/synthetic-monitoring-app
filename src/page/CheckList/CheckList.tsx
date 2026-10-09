@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation } from 'react-router';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { locationService, PluginPage } from '@grafana/runtime';
+import { locationService } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
@@ -60,11 +60,9 @@ export const CheckList = () => {
   };
 
   return (
-    <PluginPage>
-      <QueryErrorBoundary>
-        <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
-      </QueryErrorBoundary>
-    </PluginPage>
+    <QueryErrorBoundary>
+      <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
+    </QueryErrorBoundary>
   );
 };
 
@@ -140,11 +138,13 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
   const [folders, setFolders] = filters.folders;
+  const [target] = filters.target;
 
   const checkFiltersWithStatus: CheckFiltersType = useMemo(
     () => ({
       labels,
       search,
+      target,
       type,
       alerts,
       status:
@@ -154,7 +154,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
       probes,
       folders: isFoldersAvailable ? folders : [],
     }),
-    [labels, search, type, alerts, status, probes, folders, isFoldersAvailable]
+    [labels, search, target, type, alerts, status, probes, folders, isFoldersAvailable]
   );
 
   const [currentPage, setCurrentPage] = useState(1);

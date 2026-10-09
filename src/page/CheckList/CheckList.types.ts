@@ -17,12 +17,14 @@ export type CheckTypeFilter = CheckType | 'all';
 
 export type CheckAlertsFilter = 'all' | 'with' | 'without';
 
-export type FilterType = 'search' | 'labels' | 'type' | 'status' | 'probes' | 'alerts' | 'folders';
+export type FilterType = 'search' | 'target' | 'labels' | 'type' | 'status' | 'probes' | 'alerts' | 'folders';
 
 export interface CheckFiltersType {
   [key: string]: any;
 
   search: string;
+  /** Exact target match, for links that mean one specific group of checks rather than a text search. */
+  target: string;
   labels: string[];
   type: CheckTypeFilter;
   status: ComboboxOption<CheckEnabledStatus>;
