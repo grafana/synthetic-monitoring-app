@@ -3,8 +3,10 @@ import { createSMEventFactory, TrackingEventProps } from 'features/tracking/util
 const reliabilityInboxEvents = createSMEventFactory('reliability_inbox');
 
 interface InboxExposureEvent extends TrackingEventProps {
-  /** Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. */
+  /** Number of recommendations ready to create shown by the inbox entry point; 0 when it offers to generate them. */
   opportunityCount: number;
+  /** Number of recommendations shown that need configuration or credentials first; not part of opportunityCount. */
+  needsSetupCount: number;
   /** Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet. */
   topOpportunityId?: string;
 }
@@ -17,6 +19,8 @@ interface ReviewEntryClickedEvent extends TrackingEventProps {
 interface RecommendationEvent extends TrackingEventProps {
   /** Identifier for the recommendation involved in the interaction. */
   opportunityId: string;
+  /** True when the recommendation needs configuration or credentials before its check can pass. */
+  needsSetup: boolean;
 }
 
 interface NamespaceFilterEvent extends TrackingEventProps {

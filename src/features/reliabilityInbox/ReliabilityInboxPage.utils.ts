@@ -48,7 +48,9 @@ export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
         rationale: suggestion.rationale,
         evidence: { reqPerS, errorRatio, p99Ms },
       },
-      suggestedDraft: proposedCheck,
+      // Without a draft when it needs configuration: the service's prompt says
+      // what to ask the user for, and a GET draft would contradict it.
+      ...(!suggestion.needsConfiguration && { suggestedDraft: proposedCheck }),
     },
   });
 
@@ -90,6 +92,8 @@ export function getManualCreateLocation(opportunity: ReliabilityOpportunity) {
           },
         },
       },
+      // Shown above the form, so what to provide is in view where it goes.
+      setupSteps: opportunity.setup?.steps,
     },
   };
 }

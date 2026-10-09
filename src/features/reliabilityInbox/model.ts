@@ -1,4 +1,5 @@
 import { Address4, Address6 } from 'ip-address';
+import { upperFirst } from 'lodash';
 
 import { ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
@@ -25,10 +26,79 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
     errorRate: formatErrorRate(suggestion.evidence.errorRatio),
     p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
     proposedCheck,
+    setup: getSetupGuide(suggestion),
   };
 }
 
 export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>;
+
+export interface SetupGuide {
+  /** What creating the check will ask the user for. */
+  title: string;
+  /** Where to provide it, in the check editor's own labels. */
+  steps: string[];
+  /** The evidence that the draft alone would not pass. */
+  why?: string;
+}
+
+const KUBERNETES_CLIENT_FAMILY = 'rest_client_requests_total';
+const TEST_THEN_SAVE = 'Click Test to confirm the check passes, then save it.';
+
+/**
+ * What the user must provide before the check can pass, or undefined when the
+ * draft is complete. Telemetry cannot supply a request body, a CA certificate or
+ * credentials, so these suggestions say what is needed and where, instead of
+ * being hidden.
+ *
+ * ponytail: the kind is inferred from evidence the service already sends (its
+ * client-go family, the auth flag); a configuration kind from the service would
+ * keep the two in step if more cases appear.
+ */
+function getSetupGuide({
+  needsConfiguration,
+  configurationReason,
+  authRequired,
+  evidence,
+}: ReliabilitySuggestion): SetupGuide | undefined {
+  if (needsConfiguration && evidence.families.includes(KUBERNETES_CLIENT_FAMILY)) {
+    return {
+      title: "Creating this check will ask you for the cluster's CA certificate",
+      steps: [
+        'Add a path the API server answers without credentials to Request target, such as /version.',
+        "Open Request options → TLS and paste the cluster's CA certificate in PEM format into CA certificate. Your kubeconfig holds it, base64-encoded, as certificate-authority-data.",
+        TEST_THEN_SAVE,
+      ],
+      why: "It's a Kubernetes API server: its certificate is signed by the cluster's own CA, which probes don't trust.",
+    };
+  }
+
+  if (needsConfiguration) {
+    return {
+      title: 'Creating this check will ask you for the request to send',
+      steps: [
+        'Choose the Request method this endpoint expects, such as POST, and add its path to Request target.',
+        'Open Request options → Body and add a payload it accepts. Or point Request target at a health endpoint instead.',
+        TEST_THEN_SAVE,
+      ],
+      // The service words its reasons "<what it saw>: <what to configure>"; the
+      // steps above already cover the second half.
+      why: configurationReason && `${upperFirst(configurationReason.split(': ')[0])}.`,
+    };
+  }
+
+  if (authRequired) {
+    return {
+      title: 'Creating this check will ask you for credentials',
+      steps: [
+        'Open Request options → Authentication and add a Bearer Token or Basic Auth credentials.',
+        TEST_THEN_SAVE,
+      ],
+      why: 'Most requests to this endpoint are answered with 401 or 403.',
+    };
+  }
+
+  return undefined;
+}
 
 /**
  * Renders the attribution as "namespace: checkout · service: api" for the
@@ -77,19 +147,20 @@ export function getNamespaceOptions(opportunities: ReliabilityOpportunity[]) {
   ).sort();
 }
 
-/** Orders eligible recommendations by technical relevance. */
+/** Orders the ones ready to create first, then by technical relevance. */
 export function compareReliabilityOpportunities(a: ReliabilityOpportunity, b: ReliabilityOpportunity) {
-  return b.sortScore - a.sortScore || a.id.localeCompare(b.id);
+  return Number(!!a.setup) - Number(!!b.setup) || b.sortScore - a.sortScore || a.id.localeCompare(b.id);
 }
 
+// Suggestions that need credentials or configuration stay: they are real gaps,
+// and both ways to create one end in review. Their setup guide says what to
+// provide and where.
 export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
   if (
     suggestion.checkType !== CheckType.Http ||
     suggestion.dedupStatus !== 'uncovered' ||
     suggestion.confidence.toLowerCase() !== 'high' ||
-    suggestion.reachability !== 'public' ||
-    suggestion.authRequired ||
-    suggestion.needsConfiguration
+    suggestion.reachability !== 'public'
   ) {
     return false;
   }

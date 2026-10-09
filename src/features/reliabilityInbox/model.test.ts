@@ -99,6 +99,77 @@ describe('Reliability Inbox model', () => {
     expect(opportunities.map(({ id }) => id)).toEqual(['higher-service-score', 'lower-service-score']);
   });
 
+  it('orders recommendations ready to create before those that need setup', () => {
+    const opportunities = [
+      { id: 'needs-setup', relevance: 90, needsConfiguration: true },
+      { id: 'ready', relevance: 10, needsConfiguration: false },
+    ]
+      .map(({ id, relevance, needsConfiguration }) =>
+        toReliabilityOpportunity({
+          ...HTTP_RELIABILITY_SUGGESTION,
+          id,
+          target: `https://${id}.example.com/`,
+          relevance,
+          needsConfiguration,
+        })
+      )
+      .sort(compareReliabilityOpportunities);
+
+    expect(opportunities.map(({ id }) => id)).toEqual(['ready', 'needs-setup']);
+  });
+
+  it('keeps suggestions that need configuration or credentials, saying what to provide and where', () => {
+    const postOnly = {
+      ...HTTP_RELIABILITY_SUGGESTION,
+      needsConfiguration: true,
+      configurationReason: 'only OPTIONS/POST requests observed: configure the request (method, path, body)',
+    };
+    const apiServer = {
+      ...HTTP_RELIABILITY_SUGGESTION,
+      needsConfiguration: true,
+      configurationReason: "Kubernetes API server (seen in client-go traffic): add the cluster's CA certificate",
+      evidence: { ...HTTP_RELIABILITY_SUGGESTION.evidence, families: ['rest_client_requests_total'] },
+    };
+    const authRequired = { ...HTTP_RELIABILITY_SUGGESTION, authRequired: true };
+
+    for (const suggestion of [postOnly, apiServer, authRequired]) {
+      expect(isInitialReviewCandidate(suggestion)).toBe(true);
+    }
+
+    expect(toReliabilityOpportunity(postOnly).setup).toEqual({
+      title: 'Creating this check will ask you for the request to send',
+      steps: [
+        expect.stringContaining('Request method'),
+        expect.stringContaining('Request options → Body'),
+        expect.stringContaining('Click Test'),
+      ],
+      why: 'Only OPTIONS/POST requests observed.',
+    });
+    expect(toReliabilityOpportunity(apiServer).setup).toEqual(
+      expect.objectContaining({
+        title: "Creating this check will ask you for the cluster's CA certificate",
+        steps: expect.arrayContaining([expect.stringContaining('Request options → TLS')]),
+      })
+    );
+    expect(toReliabilityOpportunity(authRequired).setup).toEqual(
+      expect.objectContaining({
+        title: 'Creating this check will ask you for credentials',
+        steps: expect.arrayContaining([expect.stringContaining('Request options → Authentication')]),
+      })
+    );
+    expect(toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION).setup).toBeUndefined();
+  });
+
+  it('leaves the expected status open when the request itself needs configuring', () => {
+    const { proposedCheck } = toReliabilityOpportunity({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      needsConfiguration: true,
+      prompt: 'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/.',
+    });
+
+    expect(proposedCheck.validStatusCodes).toEqual([]);
+  });
+
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
     const target = 'https://api.example.com:8443/health?verbose=true#status';
     const opportunity = toReliabilityOpportunity({ ...HTTP_RELIABILITY_SUGGESTION, target });

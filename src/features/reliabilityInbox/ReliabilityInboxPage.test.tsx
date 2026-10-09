@@ -48,6 +48,16 @@ const LOWER_PRIORITY_HTTP_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySugg
   },
 });
 
+const NEEDS_SETUP_SUGGESTION: ReliabilitySuggestion = DB.reliabilitySuggestion.build({
+  ...HTTP_RELIABILITY_SUGGESTION,
+  id: 'faro-suggestion',
+  target: 'https://faro.goagain.dev/',
+  needsConfiguration: true,
+  configurationReason: 'only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat',
+  prompt:
+    'Create a Grafana Synthetic Monitoring http check for https://faro.goagain.dev/. Parts of the configuration could not be derived from telemetry and must be completed with the user: only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat.',
+});
+
 const openAssistant = jest.fn();
 const originalMatchMedia = window.matchMedia;
 const GENERATED_AT = Date.UTC(2026, 7, 20, 13, 30);
@@ -269,7 +279,7 @@ describe('ReliabilityInboxPage', () => {
       within(evidence).queryByText('Exact endpoint-and-path matching across accessible checks')
     ).not.toBeInTheDocument();
     expect(within(evidence).queryByRole('button', { name: 'How we checked' })).not.toBeInTheDocument();
-    expect(trackRecommendationReviewed).toHaveBeenCalledWith({ opportunityId: 'http-suggestion' });
+    expect(trackRecommendationReviewed).toHaveBeenCalledWith({ opportunityId: 'http-suggestion', needsSetup: false });
   });
 
   it('reserves the telemetry plots and shows their loading indicators while the query is in flight', async () => {
@@ -309,7 +319,10 @@ describe('ReliabilityInboxPage', () => {
     expect(
       within(screen.getByRole('region', { name: 'Suggested HTTP check' })).getByText('https://secondary.goagain.dev/')
     ).toBeInTheDocument();
-    expect(trackRecommendationReviewed).toHaveBeenCalledWith({ opportunityId: 'lower-priority-http-suggestion' });
+    expect(trackRecommendationReviewed).toHaveBeenCalledWith({
+      opportunityId: 'lower-priority-http-suggestion',
+      needsSetup: false,
+    });
   });
 
   it('keeps the responsive disclosure inside recommendations and collapses it after selection', async () => {
@@ -678,7 +691,7 @@ describe('ReliabilityInboxPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Create manually' }));
 
-    expect(trackCreateManually).toHaveBeenCalledWith({ opportunityId: 'http-suggestion' });
+    expect(trackCreateManually).toHaveBeenCalledWith({ opportunityId: 'http-suggestion', needsSetup: false });
     expect(locationService.getLocation()).toMatchObject({
       pathname: `${generateRoutePath(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}`,
       search: `?checkType=${CheckType.Http}`,
@@ -708,7 +721,7 @@ describe('ReliabilityInboxPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Create with Grafana Assistant' }));
 
-    expect(trackSetupWithAssistant).toHaveBeenCalledWith({ opportunityId: 'http-suggestion' });
+    expect(trackSetupWithAssistant).toHaveBeenCalledWith({ opportunityId: 'http-suggestion', needsSetup: false });
     expect(openAssistant).toHaveBeenCalledWith(
       expect.objectContaining({
         origin: 'grafana-synthetic-monitoring-app/reliability-inbox',
@@ -747,6 +760,34 @@ describe('ReliabilityInboxPage', () => {
       })
     );
     expect(openAssistant.mock.calls[0][0].context[0].bypassLimits).toBeUndefined();
+  });
+
+  it('says what a suggestion needs before its check can pass, and gives Assistant no draft to contradict it', async () => {
+    const { user } = renderPage([NEEDS_SETUP_SUGGESTION]);
+
+    const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
+    expect(within(suggestedCheck).getByText('Needs setup')).toBeVisible();
+    expect(within(suggestedCheck).getByText('Creating this check will ask you for the request to send')).toBeVisible();
+    expect(within(suggestedCheck).getByText(/^Open Request options → Body/)).toBeVisible();
+    expect(
+      within(suggestedCheck).getByText('Why: Only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat.')
+    ).toBeVisible();
+    expect(within(suggestedCheck).getByText('Any 2xx')).toBeVisible();
+    expect(within(screen.getByLabelText('Recommendations')).getByText(/^Needs setup/)).toBeInTheDocument();
+
+    await user.click(within(suggestedCheck).getByRole('button', { name: 'Create with Grafana Assistant' }));
+
+    expect(trackSetupWithAssistant).toHaveBeenCalledWith({ opportunityId: 'faro-suggestion', needsSetup: true });
+    expect(openAssistant.mock.calls[0][0].context[0].data).not.toHaveProperty('suggestedDraft');
+
+    // The same steps travel to the check editor, where they apply.
+    await user.click(within(suggestedCheck).getByRole('button', { name: 'Create manually' }));
+
+    expect(locationService.getLocation().state).toEqual(
+      expect.objectContaining({
+        setupSteps: expect.arrayContaining([expect.stringMatching(/^Open Request options → Body/)]),
+      })
+    );
   });
 
   it('defers probe location selection to the review flow', async () => {

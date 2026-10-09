@@ -38,12 +38,44 @@ describe('ReliabilityInboxBanner', () => {
     await waitFor(() =>
       expect(trackInboxExposure).toHaveBeenCalledWith({
         opportunityCount: 1,
+        needsSetupCount: 0,
         topOpportunityId: 'http-suggestion',
       })
     );
 
     await user.click(reviewLink);
     expect(trackReviewEntryClicked).toHaveBeenCalledWith({ opportunityId: 'http-suggestion' });
+  });
+
+  it('counts suggestions that need setup apart from those ready to review', async () => {
+    const { queryClient } = render(<ReliabilityInboxBanner />);
+
+    expect(await screen.findByRole('heading', { name: 'Check Suggestions' })).toBeInTheDocument();
+
+    act(() =>
+      queryClient.setQueryData(QUERY_KEY, [
+        {
+          ...HTTP_RELIABILITY_SUGGESTION,
+          id: 'faro-suggestion',
+          target: 'https://faro.goagain.dev/',
+          needsConfiguration: true,
+        },
+        HTTP_RELIABILITY_SUGGESTION,
+      ])
+    );
+
+    expect(
+      await screen.findByText(
+        '1 suggestion is ready to review · 1 needs setup · turn traffic signals into proactive monitoring'
+      )
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(trackInboxExposure).toHaveBeenCalledWith({
+        opportunityCount: 1,
+        needsSetupCount: 1,
+        topOpportunityId: 'http-suggestion',
+      })
+    );
   });
 
   it('offers to generate without generating, and still reports the visit and the click', async () => {
@@ -63,7 +95,11 @@ describe('ReliabilityInboxBanner', () => {
     expect(screen.queryByText(/turn traffic signals into proactive monitoring/)).not.toBeInTheDocument();
     expect(request).not.toHaveBeenCalled();
     expect(trackInboxExposure).toHaveBeenCalledTimes(1);
-    expect(trackInboxExposure).toHaveBeenCalledWith({ opportunityCount: 0, topOpportunityId: undefined });
+    expect(trackInboxExposure).toHaveBeenCalledWith({
+      opportunityCount: 0,
+      needsSetupCount: 0,
+      topOpportunityId: undefined,
+    });
 
     await user.click(screen.getByRole('link', { name: 'Generate suggestions' }));
     expect(trackReviewEntryClicked).toHaveBeenCalledWith({ opportunityId: undefined });

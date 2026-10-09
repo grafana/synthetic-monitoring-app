@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
 import { GrafanaTheme2 } from '@grafana/data';
 import { locationService, PluginPage } from '@grafana/runtime';
-import { TextLink, useStyles2 } from '@grafana/ui';
+import { Alert, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { UI_TEST_ID } from 'test/dataTestIds';
 
@@ -88,8 +88,10 @@ export function NewCheckV2() {
 
   const location = useLocation();
   // The Grafana Assistant can deep-link here with a pre-filled check draft in
-  // router state so the user only has to review and click Create.
-  const prefilledCheck = (location.state as { prefilledCheck?: Check } | null)?.prefilledCheck;
+  // router state so the user only has to review and click Create. Check
+  // Suggestions adds the steps its draft still needs, when it needs any.
+  const { prefilledCheck, setupSteps } =
+    (location.state as { prefilledCheck?: Check; setupSteps?: string[] } | null) ?? {};
   const fallbackCheckType = checkType ?? (group ? CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value] : CheckType.Http);
   const exampleCheck = useMemo(() => {
     if (example !== 'websocket') {
@@ -139,6 +141,15 @@ export function NewCheckV2() {
   return (
     <PluginPage pageNav={navModel}>
       <div className={styles.wrapper} data-testid={!isLoading ? UI_TEST_ID.page.ready : UI_TEST_ID.page.notReady}>
+        {prefilledCheck && setupSteps && setupSteps.length > 0 && (
+          <Alert severity="info" title="Before you save this suggested check">
+            <ol className={styles.setupSteps}>
+              {setupSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </Alert>
+        )}
         <ChecksterProvider
           checkType={checkType || CHECK_TYPE_GROUP_DEFAULT_CHECK[group.value]}
           disabled={isOverlimit || !canWriteChecks}
@@ -158,5 +169,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
   wrapper: css({
     paddingTop: theme.spacing(2),
     height: `100%`,
+  }),
+  setupSteps: css({
+    margin: 0,
+    paddingLeft: theme.spacing(2.5),
   }),
 });

@@ -498,10 +498,11 @@ Tracks when the compact Reliability Inbox entry point is shown, whether or not i
 
 ##### Properties
 
-| name             | type                  | description                                                                                             |
-| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| opportunityCount | `number`              | Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. |
-| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.   |
+| name             | type                  | description                                                                                                  |
+| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| opportunityCount | `number`              | Number of recommendations ready to create shown by the inbox entry point; 0 when it offers to generate them. |
+| needsSetupCount  | `number`              | Number of recommendations shown that need configuration or credentials first; not part of opportunityCount.  |
+| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.        |
 
 #### synthetic-monitoring_reliability_inbox_review_entry_clicked
 
@@ -519,9 +520,10 @@ Tracks when a recommendation becomes selected for review.
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_setup_with_assistant_clicked
 
@@ -529,9 +531,10 @@ Tracks when a user explicitly hands a recommendation to Assistant for guided set
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_create_manually_clicked
 
@@ -539,9 +542,10 @@ Tracks when a user takes a recommendation to the check form to create it themsel
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_namespace_filter_changed
 
