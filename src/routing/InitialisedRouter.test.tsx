@@ -74,6 +74,12 @@ describe('Routes to pages correctly', () => {
     expect(backendAddress).toBeInTheDocument();
   });
 
+  test('Config features tab renders', async () => {
+    renderInitialisedRouting({ path: `${getRoute(AppRoutes.Config)}/features` });
+    expect(await screen.findByRole('list', { name: 'Features' })).toBeInTheDocument();
+    expect(screen.queryByText('Not found', { selector: 'span' })).not.toBeInTheDocument();
+  });
+
   test('Non-existent route shows 404 page', async () => {
     renderInitialisedRouting({ path: notaRoute });
     const homePageText = await screen.findByText('Not found', { selector: 'span' });
