@@ -41,7 +41,9 @@ describe(`BrowserCheck - 1 (Script) UI`, () => {
       await user.type(scriptTextAreaPreSubmit, exportCorrectOptions);
 
       await submitForm(user);
-      const err = await screen.findByText("Script must import { browser } from 'k6/browser'");
+      const err = await screen.findByText(
+        "Script must import { browser } from 'k6/browser' or from 'https://jslib.k6.io/browser-ai/<version>/index.js'"
+      );
       expect(err).toBeInTheDocument();
     });
 
