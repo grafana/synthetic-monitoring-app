@@ -7,10 +7,10 @@ import { DB } from 'test/db';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsSMViewer } from 'test/utils';
+import { runTestAsSMViewer } from 'test/utils';
 
 import { RecommendationCategoryId } from './Recommendations.types';
-import { AlertSensitivity, Check, CheckAlertDraft, CheckAlertType, CheckType, FeatureName } from 'types';
+import { AlertSensitivity, Check, CheckAlertDraft, CheckAlertType, CheckType } from 'types';
 
 import { DISMISSED_CHECKS_STORAGE_KEY, DISMISSED_FINDINGS_STORAGE_KEY } from './Recommendations.constants';
 import { RecommendationsTab } from './RecommendationsTab';
@@ -83,6 +83,8 @@ const DUPLICATES = () => [
 describe('Recommendations tab', () => {
   beforeEach(() => {
     localStorage.clear();
+    // The default tenant has cost labels, so the cost finding would join every test; tests about it set their own.
+    server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ json: { names: [] } }) }));
   });
 
   describe('landing view', () => {
@@ -935,7 +937,6 @@ describe('Recommendations tab', () => {
       server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ json: { names } }) }));
 
     it('reports which cost labels each check is missing and links to its editor', async () => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       withCalNames(['team', 'env']);
 
       await renderCategory(
@@ -965,9 +966,8 @@ describe('Recommendations tab', () => {
       expect(within(section).queryByRole('checkbox')).not.toBeInTheDocument();
     });
 
-    it('stays quiet when the feature is off, even with unlabelled checks', async () => {
-      mockFeatureToggles({ [FeatureName.CALs]: false });
-      withCalNames(['team']);
+    it('stays quiet about cost when the tenant has no cost labels configured', async () => {
+      withCalNames([]);
 
       await renderTab([
         buildCheck({ job: 'unattributed', alertSensitivity: AlertSensitivity.High, target: 'https://a.com' }),
@@ -977,7 +977,6 @@ describe('Recommendations tab', () => {
     });
 
     it('says the labels could not be loaded rather than that nothing needs attention', async () => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ status: 500, json: {} }) }));
 
       await renderTab([
@@ -990,7 +989,6 @@ describe('Recommendations tab', () => {
 
     it('marks the visit when the cost finding could not be worked out, so its zero is not read as none', async () => {
       const reportInteraction = mockReportInteraction();
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ status: 500, json: {} }) }));
 
       await renderTab([UNALERTED()]);
@@ -1005,7 +1003,6 @@ describe('Recommendations tab', () => {
 
     it('waits for the labels before counting the visit, so the cost finding is in findingCount', async () => {
       const reportInteraction = mockReportInteraction();
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       withCalNames(['team']);
 
       await renderTab([
@@ -1062,8 +1059,6 @@ describe('Recommendations tab', () => {
     });
 
     it('does not send a viewer to the editor to add cost labels', async () => {
-      // Flags first: mockFeatureToggles rebuilds config, which would drop the viewer's permissions.
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       runTestAsSMViewer();
       server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ json: { names: ['team'] } }) }));
 
@@ -1202,7 +1197,6 @@ describe('Recommendations tab', () => {
 
     it('leaves a check dismissed from one finding visible in another', async () => {
       localStorage.setItem(DISMISSED_CHECKS_STORAGE_KEY, JSON.stringify({ 'alerting-gaps': [1] }));
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       server.use(apiRoute('getTenantCostAttributionLabels', { result: () => ({ json: { names: ['team'] } }) }));
 
       await renderCategory([buildCheck({ job: 'one', target: 'https://a.com', id: 1 })], RecommendationCategoryId.Cost);

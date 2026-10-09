@@ -4,7 +4,6 @@ import { Alert, Button, EmptyState, LoadingPlaceholder, Stack, Text, useStyles2 
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
-import { FeatureName } from 'types';
 import {
   CheckFolderAccessProvider,
   useIsVisibilitySettling,
@@ -12,7 +11,6 @@ import {
 } from 'contexts/CheckFolderAccessContext';
 import { useSuspenseChecks } from 'data/useChecks';
 import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
-import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { Feedback } from 'components/Feedback';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
@@ -76,15 +74,12 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
   // An empty list reads as "no checks created" below, which is only true once every folder
   // has answered: until then a tenant whose checks all live in folders looks like a new one.
   const isVisibilitySettling = useIsVisibilitySettling();
-  const { isEnabled: isCALsEnabled } = useFeatureFlag(FeatureName.CALs);
-  const { data: calData, isLoading: isCALsLoading, isError: isCALsError } = useTenantCostAttributionLabels();
-  const calNames = useMemo(() => (isCALsEnabled ? (calData?.names ?? []) : []), [isCALsEnabled, calData?.names]);
+  const { data: calData, isLoading: isCALsLoading, isError: isCALsUnavailable } = useTenantCostAttributionLabels();
+  const calNames = useMemo(() => calData?.names ?? [], [calData?.names]);
   // No labels and not-yet-known are the same empty array to the finders, so wait for the
   // query to settle before deciding what to show. Otherwise the cost finding is missing
   // from the first render, the empty state and the one-shot visit impression.
-  const isCALsUnresolved = isCALsEnabled && isCALsLoading;
-  const isSettling = isCALsUnresolved || isVisibilitySettling;
-  const isCALsUnavailable = isCALsEnabled && isCALsError;
+  const isSettling = isCALsLoading || isVisibilitySettling;
 
   const recommendations = useMemo(() => computeRecommendations({ checks, calNames }), [checks, calNames]);
   const { dismissed, dismiss, restoreAll } = useDismissedRecommendations();
