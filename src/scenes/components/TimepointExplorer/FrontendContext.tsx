@@ -5,6 +5,7 @@ import {
   Badge,
   Button,
   ClipboardButton,
+  EmptyState,
   Icon,
   Spinner,
   Stack,
@@ -83,17 +84,29 @@ export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }
   // Faro records can arrive after the timepoint closes, so look a little past it.
   const sessionSearchTo = timepointEnd + timepoint.config.frequency;
 
-  const { data: run } = useFaroRunContext({
+  const { data: run, isLoading } = useFaroRunContext({
     executionId: executionId ?? '',
     from: timepoint.adjustedTime,
     to: sessionSearchTo,
     enabled: isBrowserCheck && Boolean(executionId),
   });
 
-  // No Faro session for this run: the "Add RUM to your app" link in the
-  // viewer header already covers that case.
-  if (!isBrowserCheck || !executionId || !selectedExecution || !run) {
+  if (!isBrowserCheck) {
     return null;
+  }
+
+  if (!executionId || !selectedExecution) {
+    return <EmptyState hideImage variant="not-found" message="No browser execution is selected for this timepoint." />;
+  }
+
+  if (isLoading) {
+    return <Spinner size={24} />;
+  }
+
+  if (!run) {
+    return (
+      <EmptyState hideImage variant="not-found" message="No frontend user data is available for this execution." />
+    );
   }
 
   // The execution's final log line is stamped when the run ended. Date
@@ -846,34 +859,27 @@ const getStyles = (theme: GrafanaTheme2) => {
 
   return {
     panel: css({
-      border: `1px solid ${theme.colors.border.weak}`,
-      borderRadius: theme.shape.radius.default,
       containerName: PANEL_CONTAINER,
       containerType: 'inline-size',
       marginBottom: theme.spacing(2),
     }),
     header: css({
       alignItems: 'center',
-      borderBottom: `1px solid ${theme.colors.border.weak}`,
       display: 'flex',
       flexWrap: 'wrap',
       gap: theme.spacing(1),
       justifyContent: 'space-between',
-      padding: theme.spacing(1, 2),
+      paddingBottom: theme.spacing(2),
     }),
     facts: css({
       display: 'flex',
       flexDirection: 'column',
+      gap: theme.spacing(2),
     }),
     factRow: css({
       display: 'grid',
       gap: theme.spacing(1, 3),
       gridTemplateColumns: '180px minmax(0, 1fr)',
-      padding: theme.spacing(2),
-
-      '& + &': {
-        borderTop: `1px solid ${theme.colors.border.weak}`,
-      },
 
       [narrow]: {
         gridTemplateColumns: 'minmax(0, 1fr)',
