@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation } from 'react-router';
 import { GrafanaTheme2, SelectableValue } from '@grafana/data';
-import { locationService, PluginPage } from '@grafana/runtime';
+import { locationService } from '@grafana/runtime';
 import { Pagination, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { getTotalChecksPerMonth } from 'checkUsageCalc';
@@ -45,6 +45,8 @@ import {
   FolderNotProvisionedBanner,
   FolderPermissionBanner,
 } from 'page/CheckList/components/FolderBanners';
+import { SyntheticsTab } from 'page/SyntheticsPageNav';
+import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
 
 export const CheckList = () => {
   const { isEnabled: isFoldersEnabled } = useFeatureFlag(FeatureName.Folders);
@@ -60,11 +62,11 @@ export const CheckList = () => {
   };
 
   return (
-    <PluginPage>
+    <SyntheticsPluginPage activeTab={SyntheticsTab.Checks}>
       <QueryErrorBoundary>
         <CheckListContent onChangeViewType={handleChangeViewType} viewType={viewType} />
       </QueryErrorBoundary>
-    </PluginPage>
+    </SyntheticsPluginPage>
   );
 };
 

@@ -136,6 +136,7 @@ export const CONFIG_TEST_ID = {
   contentLoading: 'config content-loading',
   layout: {
     activeTab: 'config layout active-tab',
+    activeNavItem: 'config layout active-nav-item',
   },
   labelMigration: {
     invalidList: 'config label-migration invalid-list',

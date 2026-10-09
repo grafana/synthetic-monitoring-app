@@ -1,8 +1,8 @@
 import React from 'react';
-import { TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant, useTerms } from '@grafana/assistant';
+import { checkTerms, TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant } from '@grafana/assistant';
 import { FieldType, toDataFrame } from '@grafana/data';
 import { locationService } from '@grafana/runtime';
-import { fireEvent, screen, within } from '@testing-library/react';
+import { fireEvent, screen, waitFor, within } from '@testing-library/react';
 import {
   trackCreateManually,
   trackNamespaceFilterChanged,
@@ -85,9 +85,7 @@ describe('ReliabilityInboxPage', () => {
       closeAssistant: jest.fn(),
       toggleAssistant: jest.fn(),
     });
-    jest
-      .mocked(useTerms)
-      .mockReturnValue({ accepted: true, termsType: 'termsAndConditions', loading: false, error: null });
+    jest.mocked(checkTerms).mockResolvedValue(true);
     jest.mocked(useRecommendationTelemetry).mockReturnValue({
       data: undefined,
       isError: false,
@@ -111,7 +109,17 @@ describe('ReliabilityInboxPage', () => {
     expect(within(titleGroup).getByRole('button', { name: "I don't like this feature" })).toBeVisible();
   });
 
-  it('shows when suggestions were generated in the page actions', async () => {
+  it('keeps the Synthetics tabs with Check Suggestions selected', async () => {
+    renderPage();
+
+    expect(await screen.findByRole('tab', { name: 'Check Suggestions', selected: true })).toHaveAttribute(
+      'href',
+      getRoute(AppRoutes.ReliabilityInbox)
+    );
+    expect(screen.getByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+  });
+
+  it('shows when suggestions were generated beside the title', async () => {
     jest.spyOn(Date, 'now').mockReturnValue(GENERATED_AT);
     renderPage();
 
@@ -459,9 +467,7 @@ describe('ReliabilityInboxPage', () => {
   });
 
   it('does not generate suggestions when the Assistant terms are not accepted', async () => {
-    jest
-      .mocked(useTerms)
-      .mockReturnValue({ accepted: false, termsType: 'termsAndConditions', loading: false, error: null });
+    jest.mocked(checkTerms).mockResolvedValue(false);
     const generate = jest.fn(() => ({ json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } }));
     server.use(apiRoute('reliabilityInboxSuggestions', { result: generate }));
 
@@ -479,9 +485,7 @@ describe('ReliabilityInboxPage', () => {
   });
 
   it('offers a retry, not the Assistant setup, when the terms check fails', async () => {
-    jest
-      .mocked(useTerms)
-      .mockReturnValue({ accepted: false, termsType: null, loading: false, error: 'Failed to check terms' });
+    jest.mocked(checkTerms).mockRejectedValue(new Error('Failed to check terms'));
     const generate = jest.fn(() => ({ json: { suggestions: [HTTP_RELIABILITY_SUGGESTION], warnings: [] } }));
     server.use(apiRoute('reliabilityInboxSuggestions', { result: generate }));
     const recheck = jest.fn();
@@ -497,6 +501,7 @@ describe('ReliabilityInboxPage', () => {
 
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(recheck).toHaveBeenCalled();
+    await waitFor(() => expect(checkTerms).toHaveBeenCalledTimes(2));
     expect(generate).not.toHaveBeenCalled();
     document.removeEventListener(TERMS_AND_CONDITIONS_REFRESH_EVENT, recheck);
   });
@@ -590,7 +595,6 @@ describe('ReliabilityInboxPage', () => {
 
     const { user } = renderPage([HTTP_RELIABILITY_SUGGESTION, dismissedSuggestion]);
 
-    expect(await screen.findByRole('tablist')).toBeInTheDocument();
     const dismissedFilter = await screen.findByRole('tab', { name: 'Dismissed 1' });
     expect(dismissedFilter).toHaveAttribute('aria-selected', 'false');
     dismissedFilter.focus();

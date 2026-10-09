@@ -20,6 +20,7 @@ describe('getGlobalTrackingProps', () => {
       ['/a/grafana-synthetic-monitoring-app/checks/new/api-endpoint', 'checks/new/:checkTypeGroup'],
       ['/a/grafana-synthetic-monitoring-app/config', 'config'],
       ['/a/grafana-synthetic-monitoring-app/config/access-tokens', 'config/access-tokens'],
+      ['/a/grafana-synthetic-monitoring-app/config/alerts', 'config/alerts'],
       ['/a/grafana-synthetic-monitoring-app/probes', 'probes'],
       ['/a/grafana-synthetic-monitoring-app/probes/7/edit', 'probes/:id/edit'],
     ])('resolves %s to the route pattern "%s"', (pathname, expectedPattern) => {

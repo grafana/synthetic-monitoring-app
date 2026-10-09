@@ -3,6 +3,7 @@ import { providePageContext, provideQuestions, useAssistant } from '@grafana/ass
 import { render } from '@testing-library/react';
 
 import { AppRoutes } from 'routing/types';
+import { getRoute } from 'routing/utils';
 
 import { AssistantContext } from './AssistantContext';
 import { ASSISTANT_CONTEXT_EXCLUDED_ROUTES, ASSISTANT_PAGE_CONTEXTS } from './AssistantContext.constants';
@@ -44,6 +45,19 @@ describe('AssistantContext', () => {
     it('does not have duplicate ids', () => {
       const ids = ASSISTANT_PAGE_CONTEXTS.map((entry) => entry.id);
       expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it.each([
+      [getRoute(AppRoutes.Config), ['sm-config']],
+      [`${getRoute(AppRoutes.Config)}/access-tokens`, ['sm-config']],
+      [`${getRoute(AppRoutes.Config)}/alerts`, ['sm-alerts']],
+    ])('matches only the expected entries on %s', (pathname, expectedIds) => {
+      // The Assistant matches string patterns as globs; none of ours use wildcards.
+      const matchingIds = ASSISTANT_PAGE_CONTEXTS.filter(({ urlPattern }) =>
+        urlPattern instanceof RegExp ? urlPattern.test(pathname) : urlPattern === pathname
+      ).map(({ id }) => id);
+
+      expect(matchingIds).toEqual(expectedIds);
     });
 
     it('produces at least one context item per entry', () => {

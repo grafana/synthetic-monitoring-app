@@ -1,12 +1,24 @@
 import React, { useCallback, useMemo } from 'react';
 import { matchPath, Outlet, useLocation } from 'react-router';
-import { NavModelItem } from '@grafana/data';
-import { PluginPage } from '@grafana/runtime';
+import { GrafanaTheme2 } from '@grafana/data';
+import { type IconName, useStyles2, VerticalTab } from '@grafana/ui';
+import { css } from '@emotion/css';
+import { CONFIG_TEST_ID } from 'test/dataTestIds';
 
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { useUserPermissions } from 'data/permissions';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { SyntheticsTab } from 'page/SyntheticsPageNav';
+import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
+
+interface ConfigNavItem {
+  icon: IconName;
+  text: string;
+  url: string;
+  active: boolean;
+}
 
 function getConfigTabUrl(tab = '/') {
   return `${getRoute(AppRoutes.Config)}/${tab}`.replace(/\/+/g, '/');
@@ -26,61 +38,102 @@ function useActiveTab(route: AppRoutes) {
 }
 
 export function ConfigPageLayout() {
+  const styles = useStyles2(getStyles);
   const activeTab = useActiveTab(AppRoutes.Config);
+  const { canReadAlerts } = useUserPermissions();
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
-  const pageNav: NavModelItem = useMemo(() => {
-    const navModel: NavModelItem = {
-      icon: 'sliders-v-alt',
-      text: 'Config',
-      subTitle: 'Configure your Synthetic Monitoring settings',
-      url: getConfigTabUrl(),
-      hideFromBreadcrumbs: true, // It will stack with the parent breadcrumb ('config')
+  const navItems = useMemo(() => {
+    const items: ConfigNavItem[] = [
+      {
+        icon: 'cog',
+        text: 'General',
+        url: getConfigTabUrl(),
+        active: activeTab(''),
+      },
+      {
+        icon: 'key-skeleton-alt',
+        text: 'Access tokens',
+        url: getConfigTabUrl('access-tokens'),
+        active: activeTab('access-tokens'),
+      },
+      {
+        icon: 'brackets-curly',
+        text: 'Terraform',
+        url: getConfigTabUrl('terraform'),
+        active: activeTab('terraform'),
+      },
+      {
+        // The tab itself limits mode changes to admins and shows a contact-admin notice otherwise.
+        icon: 'tag-alt',
+        text: 'Label migration',
+        url: getConfigTabUrl('label-migration'),
+        active: activeTab('label-migration'),
+      },
+    ];
 
-      children: [
-        {
-          icon: 'cog',
-          text: 'General',
-          url: getConfigTabUrl(),
-          active: activeTab(''),
-        },
-        {
-          icon: 'key-skeleton-alt',
-          text: 'Access tokens',
-          url: getConfigTabUrl('access-tokens'),
-          active: activeTab('access-tokens'),
-        },
-        {
-          icon: 'brackets-curly',
-          text: 'Terraform',
-          url: getConfigTabUrl('terraform'),
-          active: activeTab('terraform'),
-        },
-        {
-          // The tab itself limits mode changes to admins and shows a contact-admin notice otherwise.
-          icon: 'tag-alt',
-          text: 'Label migration',
-          url: getConfigTabUrl('label-migration'),
-          active: activeTab('label-migration'),
-        },
-      ],
-    };
-
-    // Add secrets management tab if the feature is enabled
     if (isSecretsManagementEnabled) {
-      navModel.children!.push({
+      items.push({
         icon: 'key-skeleton-alt',
         text: 'Secrets',
         url: getConfigTabUrl('secrets'),
         active: activeTab('secrets'),
       });
     }
-    return navModel;
-  }, [activeTab, isSecretsManagementEnabled]);
+
+    if (canReadAlerts) {
+      items.push({
+        icon: 'bell',
+        text: 'Alerts (Legacy)',
+        url: getConfigTabUrl('alerts'),
+        active: activeTab('alerts'),
+      });
+    }
+
+    return items;
+  }, [activeTab, canReadAlerts, isSecretsManagementEnabled]);
 
   return (
-    <PluginPage pageNav={pageNav}>
-      <Outlet />
-    </PluginPage>
+    <SyntheticsPluginPage activeTab={SyntheticsTab.Configuration}>
+      <div className={styles.layout}>
+        <div className={styles.nav} role="tablist" aria-orientation="vertical" aria-label="Configuration">
+          {navItems.map((item) => (
+            <VerticalTab
+              key={item.url}
+              label={item.text}
+              // VerticalTab otherwise uses its e2e selector as the accessible name.
+              aria-label={item.text}
+              icon={item.icon}
+              href={item.url}
+              active={item.active}
+              data-testid={item.active ? CONFIG_TEST_ID.layout.activeNavItem : undefined}
+            />
+          ))}
+        </div>
+        <div className={styles.content}>
+          <Outlet />
+        </div>
+      </div>
+    </SyntheticsPluginPage>
   );
 }
+
+const getStyles = (theme: GrafanaTheme2) => ({
+  layout: css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(3),
+  }),
+  nav: css({
+    display: 'flex',
+    flexDirection: 'column',
+    flexShrink: 0,
+    width: theme.spacing(28),
+    paddingRight: theme.spacing(2),
+    borderRight: `1px solid ${theme.colors.border.weak}`,
+  }),
+  content: css({
+    flexGrow: 1,
+    minWidth: 0,
+  }),
+});

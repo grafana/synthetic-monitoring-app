@@ -256,15 +256,38 @@ jest.mock('@grafana/runtime', () => {
     }),
     getLocationSrv: () => ({ update: (args: any) => args }),
     getAppEvents: () => appEvents,
-    PluginPage: ({ actions, children, pageNav }: { actions: any; children: ReactNode; pageNav: NavModelItem }) => (
-      <div>
-        <h2>{pageNav?.text}</h2>
-        <div>{actions}</div>
-        {children}
-        <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
-          {pageNav?.children?.find((c) => c.active)?.text ?? 'No active tab'}
+    PluginPage: ({
+      actions,
+      children,
+      pageNav,
+      renderTitle,
+    }: {
+      actions: any;
+      children: ReactNode;
+      pageNav: NavModelItem;
+      renderTitle?: (title: string) => ReactNode;
+    }) => {
+      const tabs = pageNav?.children?.filter((child) => !child.hideFromTabs);
+
+      return (
+        <div>
+          {renderTitle ? renderTitle(pageNav?.text) : <h2>{pageNav?.text}</h2>}
+          <div>{actions}</div>
+          {tabs && (
+            <div role="tablist">
+              {tabs.map((tab) => (
+                <a key={tab.text} role="tab" href={tab.url} aria-selected={Boolean(tab.active)}>
+                  {tab.text}
+                </a>
+              ))}
+            </div>
+          )}
+          {children}
+          <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
+            {tabs?.find((tab) => tab.active)?.text ?? 'No active tab'}
+          </div>
         </div>
-      </div>
-    ),
+      );
+    },
   };
 });
