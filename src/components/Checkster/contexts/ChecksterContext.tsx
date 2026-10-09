@@ -99,8 +99,16 @@ function useFormValuesMeta(
       formValues.folderUid = defaultFolderUid;
     }
 
+    // New checks (including duplicates and prefilled checks) cannot inherit
+    // deprecated assignments. Leave an empty result for the user to replace.
+    const deprecatedProbeIds = new Set(probesWithMetadata.filter((probe) => probe.deprecated).map((probe) => probe.id));
+    const omittedDeprecatedProbes = !check?.id && formValues.probes.some((id) => deprecatedProbeIds.has(id));
+    if (omittedDeprecatedProbes) {
+      formValues.probes = formValues.probes.filter((id) => !deprecatedProbeIds.has(id));
+    }
+
     // One default probe, not none (invalid) or all of them (expensive).
-    if (!formValues.probes.length && defaultProbeId !== undefined) {
+    if (!omittedDeprecatedProbes && !formValues.probes.length && defaultProbeId !== undefined) {
       formValues.probes = [defaultProbeId];
     }
 
@@ -159,12 +167,32 @@ export function ChecksterProvider({
     check_is_duplicate: isDuplicate,
   });
 
-  const { schema, defaultFormValues } = useFormValuesMeta(
+  const { schema: baseSchema, defaultFormValues } = useFormValuesMeta(
     checkType,
     check,
     probesWithMetadata,
     seedFolderUid,
     requiresFolder
+  );
+
+  // Validate against the saved assignment, never the editable form values.
+  // Probe polling updates this resolver without resetting an in-progress draft.
+  const schema = useMemo(
+    () =>
+      baseSchema.superRefine((values, ctx) => {
+        const newlyAssigned = probesWithMetadata.filter(
+          (probe) =>
+            probe.deprecated && values.probes.includes(probe.id!) && (isNew || !check?.probes.includes(probe.id!))
+        );
+        if (newlyAssigned.length > 0) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['probes'],
+            message: `Deprecated probes cannot be added to checks: ${newlyAssigned.map((probe) => probe.displayName).join(', ')}. Choose another location.`,
+          });
+        }
+      }),
+    [baseSchema, probesWithMetadata, isNew, check]
   );
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Checkbox, Icon, Label, Stack, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Badge, Checkbox, Icon, Label, Stack, Text, Tooltip, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -17,12 +17,14 @@ export const ProbesList = ({
   title,
   probes,
   selectedProbes,
+  assignedProbes = [],
   onSelectionChange,
   disabled,
 }: {
   title: string;
   probes: ProbeWithMetadata[];
   selectedProbes: number[];
+  assignedProbes?: number[];
   onSelectionChange: (probes: number[]) => void;
   disabled?: boolean;
 }) => {
@@ -56,24 +58,33 @@ export const ProbesList = ({
     return isK6VersionUnknown(probe.k6Versions[selectedChannel]);
   };
 
+  const canSelectProbe = (probe: ProbeWithMetadata) =>
+    (!probe.deprecated || assignedProbes.includes(probe.id!)) && isProbeCompatible(probe);
+  const selectableProbes = probes.filter(canSelectProbe);
+
   const handleToggleAll = () => {
+    if (disabled) {
+      return;
+    }
     if (allProbesSelected) {
       onSelectionChange(selectedProbes.filter((id) => !probes.some((probe) => probe.id === id)));
       return;
     }
-    const selected = new Set([...selectedProbes, ...probes.map((probe) => probe.id!)]);
+    const selected = new Set([...selectedProbes, ...selectableProbes.map((probe) => probe.id!)]);
     onSelectionChange([...selected]);
   };
 
   const handleToggleProbe = (probe: ProbeWithMetadata) => {
-    if (!probe.id) {
+    if (!probe.id || disabled) {
       return;
     }
     if (selectedProbes.includes(probe.id)) {
       onSelectionChange(selectedProbes.filter((p) => p !== probe.id));
       return;
     }
-    onSelectionChange([...selectedProbes, probe.id]);
+    if (canSelectProbe(probe)) {
+      onSelectionChange([...selectedProbes, probe.id]);
+    }
   };
 
   const probeIds = useMemo(() => probes.map((probe) => probe.id!), [probes]);
@@ -82,15 +93,9 @@ export const ProbesList = ({
     [selectedProbes, probeIds]
   );
 
-  const allProbesSelected = useMemo(
-    () => probes.every((probe) => selectedProbes.includes(probe.id!)),
-    [probes, selectedProbes]
-  );
-
-  const someProbesSelected = useMemo(
-    () => probes.some((probe) => selectedProbes.includes(probe.id!)) && !allProbesSelected,
-    [probes, selectedProbes, allProbesSelected]
-  );
+  const allProbesSelected =
+    regionSelectedProbes.length > 0 && selectableProbes.every((probe) => selectedProbes.includes(probe.id!));
+  const someProbesSelected = regionSelectedProbes.length > 0 && !allProbesSelected;
 
   return (
     <div className={styles.probesColumn}>
@@ -108,7 +113,7 @@ export const ProbesList = ({
               element.indeterminate = someProbesSelected;
             }
           }}
-          disabled={disabled}
+          disabled={disabled || (selectableProbes.length === 0 && regionSelectedProbes.length === 0)}
         />
         <Label htmlFor={`header-${title}`} className={styles.headerLabel}>
           <Stack>
@@ -122,7 +127,7 @@ export const ProbesList = ({
           const isCompatible = isProbeCompatible(probe);
           const isUnknown = hasUnknownVersion(probe);
           const isSelected = selectedProbes.includes(probe.id!);
-          const shouldDisable = disabled || (!isCompatible && !isSelected);
+          const shouldDisable = disabled || (!canSelectProbe(probe) && !isSelected);
           const showIncompatibleStyling = !isCompatible && !isSelected;
 
           return (
@@ -136,10 +141,13 @@ export const ProbesList = ({
               />
               <Label htmlFor={`probe-${probe.id}`} data-testid={CHECKSTER_TEST_ID.form.inputs.probeLabel}>
                 <div className={styles.columnLabel}>
-                  <div className={`${styles.probeLabelContent} ${showIncompatibleStyling ? styles.incompatibleLabel : ''}`}>
+                  <div
+                    className={`${styles.probeLabelContent} ${showIncompatibleStyling ? styles.incompatibleLabel : ''}`}
+                  >
                     <ProbeStatus probe={probe} />
-                    {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${probe.provider ? `(${probe.provider})` : ''
-                      }`}
+                    {`${probe.displayName}${probe.countryCode ? `, ${probe.countryCode}` : ''} ${
+                      probe.provider ? `(${probe.provider})` : ''
+                    }`}
                     {isVersionManagementEnabled && (!isCompatible || isUnknown) && (
                       <ProbeUnsupportedBadge
                         probe={probe}
@@ -148,22 +156,7 @@ export const ProbesList = ({
                         channelNameById={channelNameById}
                       />
                     )}
-                    {probe.deprecated && (
-                      <DeprecationNotice
-                        tooltipContent={
-                          <div>
-                            This probe is deprecated and will be removed soon. For more information{' '}
-                            <TextLink
-                              variant={'bodySmall'}
-                              href="https://grafana.com/docs/grafana-cloud/whats-new/2025-01-14-launch-and-shutdown-dates-for-synthetics-probes-in-february-2025/"
-                              external
-                            >
-                              click here.
-                            </TextLink>
-                          </div>
-                        }
-                      />
-                    )}
+                    {probe.deprecated && <DeprecationNotice />}
                   </div>
                 </div>
               </Label>
