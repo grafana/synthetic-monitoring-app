@@ -1,6 +1,7 @@
 import {
   BrowserCheck,
   Check,
+  CheckAlertType,
   CheckFormValues,
   CheckType,
   DNSCheck,
@@ -43,7 +44,15 @@ export function getDefaultFormValues(checkType: CheckType = CheckType.Http, calN
     }
   }
 
-  return toFormValues(check, calNames);
+  const values = toFormValues(check, calNames);
+  const failedChecks = values.alerts?.[CheckAlertType.ProbeFailedExecutionsTooHigh];
+  if (failedChecks) {
+    values.alerts = {
+      ...values.alerts,
+      [CheckAlertType.ProbeFailedExecutionsTooHigh]: { ...failedChecks, isSelected: true },
+    };
+  }
+  return values;
 }
 
 export function toFormValues(check: Check, calNames: string[] = []): CheckFormValues {

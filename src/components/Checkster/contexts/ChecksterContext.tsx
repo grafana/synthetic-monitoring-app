@@ -11,6 +11,7 @@ import React, {
   useState,
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { isEqual } from 'lodash';
@@ -28,6 +29,7 @@ import { useDefaultProbeId } from 'hooks/useDefaultProbeId';
 import { useDOMId } from 'hooks/useDOMId';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CenteredSpinner } from 'components/CenteredSpinner';
+import { ALERT_PERIODS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
@@ -197,6 +199,27 @@ export function ChecksterProvider({
     disabled: disabled || isLoading, // || isSubmitting,
     shouldFocusError: true,
   });
+
+  const frequency = formMethods.watch('frequency');
+  const failedChecksPeriod = formMethods.watch('alerts')?.ProbeFailedExecutionsTooHigh?.period;
+  useEffect(() => {
+    const field = 'alerts.ProbeFailedExecutionsTooHigh.period' as const;
+    if (check || formMethods.getFieldState(field).isDirty) {
+      return;
+    }
+    const period = ALERT_PERIODS.find(({ value }) => durationToMilliseconds(parseDuration(value)) >= frequency)?.value;
+    if (period && formMethods.getValues(field) !== period) {
+      const alerts = formMethods.getValues('alerts');
+      formMethods.setValue(
+        'alerts',
+        {
+          ...alerts,
+          ProbeFailedExecutionsTooHigh: { ...alerts?.ProbeFailedExecutionsTooHigh, period },
+        },
+        { shouldValidate: true }
+      );
+    }
+  }, [check, frequency, failedChecksPeriod, formMethods]);
 
   useEffect(() => {
     if (!isNew && check) {

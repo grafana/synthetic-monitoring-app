@@ -7,7 +7,7 @@ import {
   USER_DEFINED_TREE_NAME,
 } from '@grafana/alerting';
 
-type RoutingTree = Parameters<typeof matchInstancesToRouteTrees>[0][number];
+export type RoutingTree = Parameters<typeof matchInstancesToRouteTrees>[0][number];
 
 import { CheckAlertType, CheckType, Label } from 'types';
 import { LabelMode } from 'datasource/responses.types';
@@ -26,6 +26,7 @@ export const generateAlertLabels = (
     job,
     instance,
     labelMode,
+    period,
   }: {
     checkType: CheckType;
     frequency: number;
@@ -35,6 +36,7 @@ export const generateAlertLabels = (
     // Unknown (still loading) is treated as Prefixed, matching pre-migration behavior
     // and the fallback used elsewhere (see GenericLabelContent).
     labelMode?: LabelMode;
+    period?: string;
   }
 ): Record<string, string> => {
   const labels: Record<string, string> = {
@@ -42,10 +44,7 @@ export const generateAlertLabels = (
     instance: instance || '',
     check_name: checkType || '',
     frequency: frequency?.toString() || '',
-    namespace: 'synthetic_monitoring',
-    grafana_folder: 'Grafana Synthetic Monitoring',
     label_per_check_alerts: 'true',
-    alertname: alertType,
   };
 
   const mode = labelMode ?? LabelMode.Prefixed;
@@ -66,7 +65,18 @@ export const generateAlertLabels = (
     }
   });
 
-  return labels;
+  // Rule labels take precedence over labels from the query result, including
+  // unprefixed custom labels. These are set by the SM alert rule builder.
+  return {
+    ...labels,
+    namespace: 'synthetic_monitoring',
+    grafana_folder: 'Grafana Synthetic Monitoring',
+    __grafana_origin: 'plugin/grafana-synthetic-monitoring-app',
+    alertname:
+      period && alertType !== CheckAlertType.TLSTargetCertificateCloseToExpiring
+        ? `${alertType} [${period}]`
+        : alertType,
+  };
 };
 
 export const convertLabelsToLabelPairs = (alertLabels: Record<string, string>): AlertingLabel[] => {
