@@ -68,11 +68,18 @@ const makeSLO = (overrides: Partial<SLO> = {}): SLO => ({
 
 let defaultDeleteSLO: jest.Mock;
 
-function mockHookReturn(overrides: { slos: SLO[]; isLoading?: boolean; error?: undefined; deleteSLO?: jest.Mock }) {
+function mockHookReturn(overrides: {
+  slos: SLO[];
+  isLoading?: boolean;
+  error?: undefined;
+  isAccessDenied?: boolean;
+  deleteSLO?: jest.Mock;
+}) {
   mockUseSLOsForCheck.mockReturnValue({
     slos: overrides.slos,
     isLoading: overrides.isLoading ?? false,
     error: overrides.error ?? undefined,
+    isAccessDenied: overrides.isAccessDenied ?? false,
   });
   mockUseDeleteSLO.mockReturnValue(overrides.deleteSLO ?? defaultDeleteSLO);
 }
@@ -98,6 +105,16 @@ describe('SLOIntegration', () => {
 
     expect(await screen.findByTestId('slo-integration-loading')).toHaveAttribute('aria-label', 'Loading linked SLOs');
     expect(screen.queryByRole('button', { name: /slos/i })).not.toBeInTheDocument();
+  });
+
+  it('renders nothing when the user is not allowed to read SLOs', async () => {
+    mockHookReturn({ slos: [], isAccessDenied: true });
+
+    render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
+
+    await waitFor(() => expect(mockUseSLOsForCheck).toHaveBeenCalled());
+    expect(screen.queryByRole('button', { name: /slos/i })).not.toBeInTheDocument();
+    expect(screen.queryByTestId('slo-integration-loading')).not.toBeInTheDocument();
   });
 
   it('opens drawer with wizard when there are no SLOs', async () => {

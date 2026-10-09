@@ -9,6 +9,7 @@ import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
 import { LatencyGauge, SuccessRateGaugeCheckReachability, SuccessRateGaugeCheckUptime } from 'components/Gauges';
+import { SLOStatus } from 'components/SLOStatus/SLOStatus';
 import { CHECK_LIST_CARD_CONTAINER_NAME } from 'page/CheckList/CheckList.constants';
 import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckCardLabel } from 'page/CheckList/components/CheckCardLabel';
@@ -22,6 +23,7 @@ import { UnattributedMessage } from 'page/CheckList/components/UnattributedMessa
 export const CheckListItemCard = ({
   check,
   runtimeAlertState,
+  slos,
   calNames,
   onLabelSelect,
   onTypeSelect,
@@ -59,6 +61,7 @@ export const CheckListItemCard = ({
               <div className={styles.titleRow}>
                 <h3 className={styles.heading}>{check.job}</h3>
                 <AlertStatus check={check} runtimeAlertState={runtimeAlertState} />
+                <SLOStatus slos={slos} />
                 {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
               </div>
               <div className={styles.checkTarget}>{check.target}</div>

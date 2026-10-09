@@ -6,6 +6,7 @@ import { css, cx } from '@emotion/css';
 import { checkToUsageCalcValues, getCheckType } from 'utils';
 import { useUsageCalc } from 'hooks/useUsageCalc';
 import { AlertStatus } from 'components/AlertStatus/AlertStatus';
+import { SLOStatus } from 'components/SLOStatus/SLOStatus';
 import { getMissingCalNames, splitLabels } from 'page/CheckList/CheckList.utils';
 import { CheckItemActionButtons } from 'page/CheckList/components/CheckItemActionButtons';
 import { CheckListItemProps } from 'page/CheckList/components/CheckListItem';
@@ -16,6 +17,7 @@ import { DisableReasonHint } from 'page/CheckList/components/DisableReasonHint';
 export const CheckListItemRow = ({
   check,
   runtimeAlertState,
+  slos,
   calNames,
   onLabelSelect,
   onTypeSelect,
@@ -50,6 +52,7 @@ export const CheckListItemRow = ({
             {check.job}
           </span>
           <AlertStatus check={check} compact runtimeAlertState={runtimeAlertState} />
+          <SLOStatus slos={slos} />
           {check.disableReason && <DisableReasonHint disableReason={check.disableReason} />}
         </div>
         <div className={styles.checkTarget}>
