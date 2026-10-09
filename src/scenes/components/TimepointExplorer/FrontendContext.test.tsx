@@ -12,6 +12,7 @@ import {
   CheckConfig,
   StatefulTimepoint,
   StatelessTimepoint,
+  TimepointViewerSource,
   ViewerState,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { TimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions';
@@ -53,6 +54,11 @@ const TIMEPOINT: StatelessTimepoint = {
   timepointDuration: FREQUENCY,
   index: 0,
   config: CONFIG,
+};
+const NEXT_TIMEPOINT: StatelessTimepoint = {
+  ...TIMEPOINT,
+  adjustedTime: TIMEPOINT_START + FREQUENCY,
+  index: 1,
 };
 
 interface Run {
@@ -152,7 +158,8 @@ function renderViewer(runs: Run[], initialProbe: string) {
 
   function Harness() {
     const [viewerState, setViewerState] = useState<ViewerState>([TIMEPOINT, initialProbe, 0]);
-    const [, viewerProbeName] = viewerState;
+    const [selectedSource, setSelectedSource] = useState<TimepointViewerSource>('synthetic');
+    const [viewerTimepoint = TIMEPOINT, viewerProbeName] = viewerState;
 
     // Only the fields the viewer and the panel read.
     const value = {
@@ -170,13 +177,20 @@ function renderViewer(runs: Run[], initialProbe: string) {
 
     return (
       <TimepointExplorerContext.Provider value={value}>
+        <button type="button" onClick={() => setViewerState([NEXT_TIMEPOINT, initialProbe, 0])}>
+          Next timepoint
+        </button>
+        {/* TimepointViewer remounts the executions for every timepoint. */}
         <TimepointViewerExecutions
+          key={viewerTimepoint.adjustedTime}
           isLoading={false}
           logsView="event"
+          onChangeSource={setSelectedSource}
           pendingProbeNames={[]}
           probeExecutions={probeExecutions}
           probeNameToView={viewerProbeName}
-          timepoint={TIMEPOINT}
+          selectedSource={selectedSource}
+          timepoint={viewerTimepoint}
         />
       </TimepointExplorerContext.Provider>
     );
@@ -234,6 +248,19 @@ describe('FrontendContext with several probes', () => {
     await user.click(await screen.findByRole('tab', { name: 'Frontend user data' }));
 
     expect(await screen.findByText('No frontend user data is available for this execution.')).toBeInTheDocument();
+  });
+
+  it('keeps the selected source when moving to another timepoint', async () => {
+    const { user } = renderViewer([OHIO_RUN], 'Ohio');
+
+    await user.click(await screen.findByRole('tab', { name: 'Frontend user data' }));
+    expect(await within(await findPanel()).findByText(OHIO_RUN.error)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Next timepoint' }));
+
+    expect(screen.getByRole('tab', { name: 'Frontend user data' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Synthetic monitoring' })).toHaveAttribute('aria-selected', 'false');
+    expect(await screen.findByText('No browser execution is selected for this timepoint.')).toBeInTheDocument();
   });
 
   it(`shows each probe tab's own run`, async () => {

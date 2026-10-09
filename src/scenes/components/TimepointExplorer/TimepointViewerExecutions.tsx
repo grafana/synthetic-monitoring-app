@@ -1,4 +1,4 @@
-import React, { useCallback, useId, useRef, useState } from 'react';
+import React, { useCallback, useId, useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Alert,
@@ -32,29 +32,33 @@ import {
   HoveredState,
   StatelessTimepoint,
   TimepointStatus,
+  TimepointViewerSource,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { useTimepointViewerExecutions } from 'scenes/components/TimepointExplorer/TimepointViewerExecutions.hooks';
 
 interface TimepointViewerExecutionsProps {
   isLoading: boolean;
   logsView: LogsView;
+  onChangeSource: (source: TimepointViewerSource) => void;
   pendingProbeNames: string[];
   probeExecutions: ProbeExecutionLogs[];
   probeNameToView?: string;
+  selectedSource: TimepointViewerSource;
   timepoint: StatelessTimepoint;
 }
 
 export const TimepointViewerExecutions = ({
   isLoading,
   logsView,
+  onChangeSource,
   pendingProbeNames,
   probeExecutions = [],
   probeNameToView,
+  selectedSource,
   timepoint,
 }: TimepointViewerExecutionsProps) => {
   const { checkType, handleHoverStateChange, handleViewerStateChange, viewerState } = useTimepointExplorerContext();
   const [, , viewerExecutionIndex = 0] = viewerState;
-  const [selectedSource, setSelectedSource] = useState<'synthetic' | 'frontend'>('synthetic');
   const styles = useStyles2(getStyles);
   const tabId = useId();
   const syntheticTabRef = useRef<HTMLAnchorElement>(null);
@@ -174,7 +178,7 @@ export const TimepointViewerExecutions = ({
   const handleRailKeyDown = (event: React.KeyboardEvent<HTMLAnchorElement>) => {
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
-      setSelectedSource(otherSource);
+      onChangeSource(otherSource);
       (otherSource === 'synthetic' ? syntheticTabRef : frontendTabRef).current?.focus();
     }
   };
@@ -196,7 +200,7 @@ export const TimepointViewerExecutions = ({
               aria-controls={`${tabId}-panel`}
               onChangeTab={(event) => {
                 event.preventDefault();
-                setSelectedSource('synthetic');
+                onChangeSource('synthetic');
               }}
               onKeyDown={handleRailKeyDown}
             />
@@ -211,7 +215,7 @@ export const TimepointViewerExecutions = ({
               aria-controls={`${tabId}-panel`}
               onChangeTab={(event) => {
                 event.preventDefault();
-                setSelectedSource('frontend');
+                onChangeSource('frontend');
               }}
               onKeyDown={handleRailKeyDown}
             />

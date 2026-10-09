@@ -33,6 +33,8 @@ export type SelectedTimepoint = [StatelessTimepoint, ProbeName, ExecutionIndex];
 export type ViewerState = SelectedTimepoint | [];
 export type HoveredState = SelectedTimepoint | [];
 
+export type TimepointViewerSource = 'synthetic' | 'frontend';
+
 export type MiniMapSection = [number, number];
 export type MiniMapSections = [MiniMapSection, ...MiniMapSection[]];
 
