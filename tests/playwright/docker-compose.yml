@@ -1,0 +1,15 @@
+services:
+  grafana:
+    extends:
+      file: ../../.config/docker-compose-base.yaml
+      service: grafana
+
+    volumes:
+      - ./provisioning:/etc/grafana/provisioning
+
+    env_file:
+      - ../../.env
+
+    environment:
+      GF_FEATURE_TOGGLES_ENABLE: localizationForPlugins externalServiceAccounts
+      GF_AUTH_MANAGED_SERVICE_ACCOUNTS_ENABLED: "true"
