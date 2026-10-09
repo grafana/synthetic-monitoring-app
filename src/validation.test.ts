@@ -1,4 +1,6 @@
 import {
+  getHttpUrlProtocolSuggestions,
+  getUrlProtocolSuggestions,
   validateDomain,
   validateHostAddress,
   validateHostPort,
@@ -215,5 +217,60 @@ describe('labels', () => {
     const shortEnough = validateLabelValue(longLabelValue.slice(0, 127));
     expect(error).toBe('Label values must be 128 characters or less');
     expect(shortEnough).toBe(undefined);
+  });
+});
+
+describe('getUrlProtocolSuggestions', () => {
+  const isValidHttpTarget = (candidate: string) => validateHttpTarget(candidate) === undefined;
+
+  it('suggests both protocols for a bare hostname that would be valid with either', () => {
+    expect(getUrlProtocolSuggestions('grafana.com', isValidHttpTarget)).toEqual([
+      'https://grafana.com',
+      'http://grafana.com',
+    ]);
+  });
+
+  it('suggests nothing for an empty value', () => {
+    expect(getUrlProtocolSuggestions('', isValidHttpTarget)).toEqual([]);
+  });
+
+  it('suggests nothing while the value is still a (partial) protocol being typed', () => {
+    ['h', 'ht', 'htt', 'http', 'https', 'http:', 'https:', 'http://', 'https://'].forEach((partial) => {
+      expect(getUrlProtocolSuggestions(partial, isValidHttpTarget)).toEqual([]);
+    });
+  });
+
+  it('suggests nothing once the value already has a complete protocol', () => {
+    expect(getUrlProtocolSuggestions('https://grafana.com', isValidHttpTarget)).toEqual([]);
+  });
+
+  it('suggests nothing for a value that would not be valid even with a protocol', () => {
+    expect(getUrlProtocolSuggestions('not a valid host', isValidHttpTarget)).toEqual([]);
+  });
+
+  it('trims surrounding whitespace before suggesting', () => {
+    expect(getUrlProtocolSuggestions('grafana.com ', isValidHttpTarget)).toEqual([
+      'https://grafana.com',
+      'http://grafana.com',
+    ]);
+  });
+
+  it('checks each protocol independently via the supplied predicate', () => {
+    const httpsOnly = (candidate: string) => candidate.startsWith('https://');
+    expect(getUrlProtocolSuggestions('grafana.com', httpsOnly)).toEqual(['https://grafana.com']);
+  });
+});
+
+describe('getHttpUrlProtocolSuggestions', () => {
+  it('suggests both protocols for a bare hostname that would be a valid http target', () => {
+    expect(getHttpUrlProtocolSuggestions('grafana.com')).toEqual(['https://grafana.com', 'http://grafana.com']);
+  });
+
+  it('suggests nothing for a hostname fragment with no TLD yet', () => {
+    expect(getHttpUrlProtocolSuggestions('quick')).toEqual([]);
+  });
+
+  it('suggests nothing once the value already has a complete protocol', () => {
+    expect(getHttpUrlProtocolSuggestions('https://grafana.com')).toEqual([]);
   });
 });

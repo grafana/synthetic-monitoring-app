@@ -104,6 +104,50 @@ it('validates inputs before sending a check', async () => {
   expect(requests).toHaveLength(0);
 });
 
+it('hints https:// and http:// variants when the Page URL is missing a protocol', async () => {
+  const { user } = await openDrawer();
+  const urlInput = screen.getByRole('textbox', { name: /^Page URL/ });
+
+  await user.type(urlInput, 'grafana.com');
+
+  expect(await screen.findByText(/Did you mean/)).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'https://grafana.com' }));
+
+  expect(urlInput).toHaveValue('https://grafana.com');
+  expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+  expect(urlInput).toHaveFocus();
+});
+
+it('does not hint a protocol for a hostname fragment with no TLD yet', async () => {
+  const { user } = await openDrawer();
+  const urlInput = screen.getByRole('textbox', { name: /^Page URL/ });
+
+  await user.type(urlInput, 'quick');
+
+  expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+});
+
+it('shows the URL format error live as you type, without requiring a submit click', async () => {
+  const { user } = await openDrawer();
+  const urlInput = screen.getByRole('textbox', { name: /^Page URL/ });
+
+  await user.type(urlInput, 'quick');
+
+  expect(await screen.findByText('Enter a valid URL starting with https:// or http://.')).toBeInTheDocument();
+});
+
+it('rejects a single-label host even with an explicit protocol, matching the stricter validator', async () => {
+  const { record, requests } = getServerRequests();
+  server.use(apiRoute('addCheck', {}, record));
+  const { user } = await openDrawer();
+
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://quick');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+
+  expect(await screen.findByText('Enter a valid URL starting with https:// or http://.')).toBeInTheDocument();
+  expect(requests).toHaveLength(0);
+});
+
 it('preserves inputs on API failure and allows retry', async () => {
   server.use(apiRoute('addCheck', { result: () => ({ status: 500, json: { err: 'Creation failed' } }) }));
   const { user, onClose } = await openDrawer();

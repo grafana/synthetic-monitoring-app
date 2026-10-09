@@ -42,6 +42,35 @@ export function validateHttpTarget(target: string) {
   return undefined;
 }
 
+const HINTABLE_URL_PROTOCOLS = ['https', 'http'] as const;
+
+// True while `value` is a complete protocol (e.g. `https://host`) or still just a prefix of one
+// being typed out (e.g. `h`, `htt`, `https:/`) — in both cases we don't want to suggest `<value>`
+// prefixed with a protocol, since that would offer nonsense like `https://https`.
+function isTypingUrlProtocol(value: string): boolean {
+  const lowerValue = value.toLowerCase();
+  return /^https?:\/\//.test(lowerValue) || 'https://'.startsWith(lowerValue) || 'http://'.startsWith(lowerValue);
+}
+
+// Returns the full targets (e.g. `https://host`) to suggest for `rawValue`, one per protocol that
+// `isValidTarget` accepts once prepended. Used to power "Did you mean https://x or http://x?"
+// hints next to URL inputs that require an explicit scheme.
+export function getUrlProtocolSuggestions(rawValue: string, isValidTarget: (candidate: string) => boolean): string[] {
+  const value = rawValue.trim();
+  if (!value || isTypingUrlProtocol(value)) {
+    return [];
+  }
+
+  return HINTABLE_URL_PROTOCOLS.map((protocol) => `${protocol}://${value}`).filter(isValidTarget);
+}
+
+// Convenience wrapper over `getUrlProtocolSuggestions` for the common case of validating against
+// `validateHttpTarget` (the same bar used for HTTP check targets), so callers don't each redefine
+// the same `(candidate) => validateHttpTarget(candidate) === undefined` predicate.
+export function getHttpUrlProtocolSuggestions(rawValue: string): string[] {
+  return getUrlProtocolSuggestions(rawValue, (candidate) => validateHttpTarget(candidate) === undefined);
+}
+
 function isIpV6FromUrl(target: string) {
   let isIpV6;
   try {
