@@ -1,4 +1,7 @@
+import { decode } from 'js-base64';
 import { RefinementCtx } from 'zod';
+
+import { createAgenticJourneyCheck } from 'page/ChooseCheckGroup/components/agenticJourney';
 
 import {
   MULTIPLE_SCENARIOS_MESSAGE,
@@ -418,6 +421,67 @@ export default async function () {
     expect(runValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 
+  it('accepts { browser } imported from the k6-browser-ai jslib', () => {
+    const script = `
+      import { browser } from 'https://jslib.k6.io/k6-browser-ai/0.1.0/index.js';
+
+      export const options = {
+        scenarios: {
+          ui: {
+            executor: 'shared-iterations',
+            options: {
+              browser: {
+                type: 'chromium',
+              },
+            },
+          },
+        },
+      };
+
+      export default async function () {
+        const page = await browser.newPage();
+      }
+    `;
+
+    expect(runValidation(script)).toEqual([]);
+  });
+
+  it.each([
+    'https://example.com/k6-browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io/browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io/k6-browser-ai/../index.js',
+    'https://jslib.k6.io/k6-browser-ai/%2e%2e/index.js',
+    'https://jslib.k6.io/k6-browser-ai/0.1.0/index.js?x=1',
+    'https://jslib.k6.io/k6-browser-ai/0.1.0/index.js#x',
+    'https://jslib.k6.io/k6-browser-ai/0.1.0/other.js',
+    'https://jslib.k6.io:8443/k6-browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io@example.com/k6-browser-ai/0.1.0/index.js',
+    'http://jslib.k6.io/k6-browser-ai/0.1.0/index.js',
+  ])('does not accept { browser } imported from %s', (source) => {
+    const script = `
+      import { browser } from '${source}';
+
+      export const options = {
+        scenarios: {
+          ui: {
+            executor: 'shared-iterations',
+            options: {
+              browser: {
+                type: 'chromium',
+              },
+            },
+          },
+        },
+      };
+
+      export default async function () {}
+    `;
+
+    expect(runValidation(script)).toEqual([
+      expect.objectContaining({ message: expect.stringContaining('Script must import { browser }') }),
+    ]);
+  });
+
   it(`errors when the script does not import { browser } from 'k6/browser'`, () => {
     const script = `
       export const options = {
@@ -437,7 +501,10 @@ export default async function () {
     `;
 
     expect(runValidation(script)).toEqual([
-      expect.objectContaining({ message: "Script must import { browser } from 'k6/browser'" }),
+      expect.objectContaining({
+        message:
+          "Script must import { browser } from 'k6/browser' or from 'https://jslib.k6.io/k6-browser-ai/<version>/index.js'",
+      }),
     ]);
   });
 });
@@ -511,5 +578,16 @@ export default function () {}
 `;
 
     expect(runNonBrowserValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
+  });
+});
+
+describe('agentic journey template script', () => {
+  it('passes browser script validation', () => {
+    const check = createAgenticJourneyCheck(
+      new URL('https://grafana.com/'),
+      [{ type: 'action', instruction: 'x' }],
+      's'
+    );
+    expect(runValidation(decode(check.settings.browser.script))).toEqual([]);
   });
 });

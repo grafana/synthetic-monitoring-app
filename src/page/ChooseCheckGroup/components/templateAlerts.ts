@@ -5,3 +5,7 @@ import { CheckAlertDraft, CheckAlertType } from 'types';
 export const BROKEN_LINKS_ALERTS: CheckAlertDraft[] = [
   { name: CheckAlertType.ProbeFailedExecutionsTooHigh, threshold: 1, period: '1h' },
 ];
+
+export const AGENTIC_JOURNEY_ALERTS: CheckAlertDraft[] = [
+  { name: CheckAlertType.ProbeFailedExecutionsTooHigh, threshold: 1, period: '1h' },
+];

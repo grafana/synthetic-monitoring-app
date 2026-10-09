@@ -184,9 +184,36 @@ interface ImportBrowserState {
   importStatement: Node | null;
 }
 
+// The k6-browser-ai jslib exposes a drop-in replacement for the `browser` export of k6/browser.
+const BROWSER_AI_MODULE_ORIGIN = 'https://jslib.k6.io';
+const BROWSER_AI_MODULE_PATH_REGEX = /^\/k6-browser-ai\/[^/%?#]+\/index\.js$/;
+
+function isBrowserModule(source: unknown) {
+  if (source === 'k6/browser') {
+    return true;
+  }
+  if (typeof source !== 'string') {
+    return false;
+  }
+
+  // Parse instead of matching the raw string: URL resolution collapses dot segments, so
+  // `https://jslib.k6.io/k6-browser-ai/../index.js` actually loads `https://jslib.k6.io/index.js`.
+  try {
+    const url = new URL(source);
+    return (
+      url.origin === BROWSER_AI_MODULE_ORIGIN &&
+      BROWSER_AI_MODULE_PATH_REGEX.test(url.pathname) &&
+      !url.search &&
+      !url.hash
+    );
+  } catch {
+    return false;
+  }
+}
+
 const importMatcher: SimpleVisitors<ImportBrowserState> = {
   ImportDeclaration(node, state) {
-    if (node.source.value === 'k6/browser') {
+    if (isBrowserModule(node.source.value)) {
       // Check if it imports { browser }
       const hasBrowserImport = node.specifiers.some((specifier) => {
         if (specifier.type === 'ImportSpecifier' && specifier.imported.type === 'Identifier') {

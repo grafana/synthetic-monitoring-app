@@ -1,10 +1,12 @@
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
+import { CheckTemplateId } from 'types';
+
 const checkTemplateEvents = createSMEventFactory('check_templates');
 
 interface CheckTemplateEvent extends TrackingEventProps {
   /** Stable template identifier. Never a URL, check name, or script. */
-  check_template_id: 'broken_links';
+  check_template_id: CheckTemplateId;
 }
 
 /** Tracks selection of a template card, before its configuration drawer opens. */
