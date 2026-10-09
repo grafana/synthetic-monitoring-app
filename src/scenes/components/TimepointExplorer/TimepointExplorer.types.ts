@@ -33,6 +33,8 @@ export type SelectedTimepoint = [StatelessTimepoint, ProbeName, ExecutionIndex];
 export type ViewerState = SelectedTimepoint | [];
 export type HoveredState = SelectedTimepoint | [];
 
+export type TimepointViewerSource = 'synthetic' | 'frontend';
+
 export type MiniMapSection = [number, number];
 export type MiniMapSections = [MiniMapSection, ...MiniMapSection[]];
 
@@ -48,6 +50,7 @@ export enum CheckEventType {
   AlertsFiring = 'Alerts firing',
   AlertsPending = 'Alerts pending',
   NoData = 'No data',
+  AppBuildChanged = 'New app build',
 }
 
 export type CheckEvent = {
@@ -55,6 +58,7 @@ export type CheckEvent = {
   from: UnixTimestamp | null;
   to: UnixTimestamp | null;
   color: string;
+  description?: string;
 };
 
 export type CheckConfigType = 'no-data';

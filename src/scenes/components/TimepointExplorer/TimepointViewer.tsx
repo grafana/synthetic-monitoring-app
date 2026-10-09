@@ -13,7 +13,7 @@ import { useSceneVarProbes } from 'scenes/Common/useSceneVarProbes';
 import { LOGS_VIEW_OPTIONS, LogsView, LogsViewSelect } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useRefetchInterval } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
-import { StatelessTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
+import { StatelessTimepoint, TimepointViewerSource } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
 import { getCouldBePending, getPendingProbes } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 import { useTimepointLogs } from 'scenes/components/TimepointExplorer/TimepointViewer.hooks';
 import { TimepointViewerActions } from 'scenes/components/TimepointExplorer/TimepointViewerActions';
@@ -23,6 +23,8 @@ export const TimepointViewer = () => {
   const { checkType, isInitialised, viewerState, shouldScrollToViewer, handleSetScrollToViewer } =
     useTimepointExplorerContext();
   const [logsView, setLogsView] = useState<LogsView>(LOGS_VIEW_OPTIONS[0].value);
+  // Kept here because the content below remounts for each timepoint.
+  const [selectedSource, setSelectedSource] = useState<TimepointViewerSource>('synthetic');
   const [viewerTimepoint, viewerProbeName] = viewerState;
   const styles = useStyles2(getStyles);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -57,7 +59,9 @@ export const TimepointViewer = () => {
             <QueryErrorBoundary key={viewerTimepoint.adjustedTime}>
               <TimepointViewerContent
                 logsView={logsView}
+                onChangeSource={setSelectedSource}
                 probeNameToView={viewerProbeName}
+                selectedSource={selectedSource}
                 timepoint={viewerTimepoint}
               />
             </QueryErrorBoundary>
@@ -74,11 +78,19 @@ export const TimepointViewer = () => {
 
 interface TimepointViewerContentProps {
   logsView: LogsView;
+  onChangeSource: (source: TimepointViewerSource) => void;
   probeNameToView?: string;
+  selectedSource: TimepointViewerSource;
   timepoint: StatelessTimepoint;
 }
 
-const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: TimepointViewerContentProps) => {
+const TimepointViewerContent = ({
+  logsView,
+  onChangeSource,
+  probeNameToView,
+  selectedSource,
+  timepoint,
+}: TimepointViewerContentProps) => {
   const elRef = useRef<HTMLDivElement>(null);
   const [viewerWidth, setViewerWidth] = useState<number>(0);
   const { check, currentAdjustedTime } = useTimepointExplorerContext();
@@ -119,9 +131,11 @@ const TimepointViewerContent = ({ logsView, probeNameToView, timepoint }: Timepo
       <TimepointViewerExecutions
         isLoading={isLoading}
         logsView={logsView}
+        onChangeSource={onChangeSource}
         probeExecutions={data}
         pendingProbeNames={pendingProbeNames}
         probeNameToView={probeNameToView}
+        selectedSource={selectedSource}
         timepoint={timepoint}
       />
     </>

@@ -126,7 +126,7 @@ export const FrontendO11yButton = ({ timepoint }: { timepoint: StatelessTimepoin
       variant="secondary"
       fill="outline"
     >
-      View Frontend Session
+      View frontend session
     </LinkButton>
   );
 };
