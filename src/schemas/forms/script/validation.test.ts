@@ -421,9 +421,9 @@ export default async function () {
     expect(runValidation(script)).toEqual([expect.objectContaining({ message: MULTIPLE_SCENARIOS_MESSAGE })]);
   });
 
-  it('accepts { browser } imported from the browser-ai jslib', () => {
+  it('accepts { browser } imported from the k6-browser-ai jslib', () => {
     const script = `
-      import { browser } from 'https://jslib.k6.io/browser-ai/0.1.0/index.js';
+      import { browser } from 'https://jslib.k6.io/k6-browser-ai/0.1.0/index.js';
 
       export const options = {
         scenarios: {
@@ -447,15 +447,16 @@ export default async function () {
   });
 
   it.each([
-    'https://example.com/browser-ai/0.1.0/index.js',
-    'https://jslib.k6.io/browser-ai/../index.js',
-    'https://jslib.k6.io/browser-ai/%2e%2e/index.js',
-    'https://jslib.k6.io/browser-ai/0.1.0/index.js?x=1',
-    'https://jslib.k6.io/browser-ai/0.1.0/index.js#x',
-    'https://jslib.k6.io/browser-ai/0.1.0/other.js',
-    'https://jslib.k6.io:8443/browser-ai/0.1.0/index.js',
-    'https://jslib.k6.io@example.com/browser-ai/0.1.0/index.js',
-    'http://jslib.k6.io/browser-ai/0.1.0/index.js',
+    'https://example.com/k6-browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io/browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io/k6-browser-ai/../index.js',
+    'https://jslib.k6.io/k6-browser-ai/%2e%2e/index.js',
+    'https://jslib.k6.io/k6-browser-ai/0.1.0/index.js?x=1',
+    'https://jslib.k6.io/k6-browser-ai/0.1.0/index.js#x',
+    'https://jslib.k6.io/k6-browser-ai/0.1.0/other.js',
+    'https://jslib.k6.io:8443/k6-browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io@example.com/k6-browser-ai/0.1.0/index.js',
+    'http://jslib.k6.io/k6-browser-ai/0.1.0/index.js',
   ])('does not accept { browser } imported from %s', (source) => {
     const script = `
       import { browser } from '${source}';
@@ -502,7 +503,7 @@ export default async function () {
     expect(runValidation(script)).toEqual([
       expect.objectContaining({
         message:
-          "Script must import { browser } from 'k6/browser' or from 'https://jslib.k6.io/browser-ai/<version>/index.js'",
+          "Script must import { browser } from 'k6/browser' or from 'https://jslib.k6.io/k6-browser-ai/<version>/index.js'",
       }),
     ]);
   });

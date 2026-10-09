@@ -184,9 +184,9 @@ interface ImportBrowserState {
   importStatement: Node | null;
 }
 
-// The browser-ai jslib exposes a drop-in replacement for the `browser` export of k6/browser.
+// The k6-browser-ai jslib exposes a drop-in replacement for the `browser` export of k6/browser.
 const BROWSER_AI_MODULE_ORIGIN = 'https://jslib.k6.io';
-const BROWSER_AI_MODULE_PATH_REGEX = /^\/browser-ai\/[^/%?#]+\/index\.js$/;
+const BROWSER_AI_MODULE_PATH_REGEX = /^\/k6-browser-ai\/[^/%?#]+\/index\.js$/;
 
 function isBrowserModule(source: unknown) {
   if (source === 'k6/browser') {
@@ -197,7 +197,7 @@ function isBrowserModule(source: unknown) {
   }
 
   // Parse instead of matching the raw string: URL resolution collapses dot segments, so
-  // `https://jslib.k6.io/browser-ai/../index.js` actually loads `https://jslib.k6.io/index.js`.
+  // `https://jslib.k6.io/k6-browser-ai/../index.js` actually loads `https://jslib.k6.io/index.js`.
   try {
     const url = new URL(source);
     return (
