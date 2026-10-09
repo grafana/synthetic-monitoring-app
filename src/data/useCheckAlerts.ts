@@ -1,4 +1,4 @@
-import { type QueryKey, useMutation, useQuery } from '@tanstack/react-query';
+import { type QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { isFetchError } from '@grafana/runtime';
 import { trackAlertCreationsAndDeletions } from 'features/tracking/perCheckAlertsEvents';
 
@@ -24,7 +24,11 @@ const alertsForCheckQuery = (api: SMDataSource, checkId?: number) => {
 
 export function useListAlertsForCheck(checkId?: number) {
   const smDS = useSMDS();
-  return useQuery(alertsForCheckQuery(smDS, checkId));
+  return useQuery({
+    ...alertsForCheckQuery(smDS, checkId),
+    refetchInterval: (query) =>
+      query.state.data?.alerts.some(({ status, error }) => status.startsWith('PENDING') && !error) ? 5000 : false,
+  });
 }
 
 export function useUpdateAlertsForCheck({
@@ -35,6 +39,7 @@ export function useUpdateAlertsForCheck({
   prevAlerts,
 }: MutationProps<null> & { prevAlerts?: CheckAlertPublished[] } = {}) {
   const smDS = useSMDS();
+  const queryClient = useQueryClient();
 
   return useMutation<null, Error, { alerts: CheckAlertDraft[]; checkId: number }>({
     mutationFn: async ({ alerts, checkId }) => {
@@ -47,8 +52,9 @@ export function useUpdateAlertsForCheck({
     onError: (error) => {
       onError?.(error);
     },
-    onSuccess: (data, variables) => {
+    onSuccess: async (data, variables) => {
       trackAlertCreationsAndDeletions(prevAlerts, variables.alerts);
+      await queryClient.invalidateQueries({ queryKey: [...QUERY_KEYS.listAlertsForCheck, variables.checkId] });
       onSuccess?.(data);
     },
     onSettled: () => {

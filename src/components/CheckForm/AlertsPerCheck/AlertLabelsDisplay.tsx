@@ -1,82 +1,79 @@
 import React from 'react';
-import { type LabelMatcher } from '@grafana/alerting';
+import { AlertLabel, type LabelMatcher } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Text, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
-
-import { isLabelMatched } from './alertRoutingUtils';
+import { css, cx } from '@emotion/css';
 
 interface AlertLabelsDisplayProps {
   alertLabels: Record<string, string>;
   highlightMatchers: LabelMatcher[];
 }
 
-export const AlertLabelsDisplay: React.FC<AlertLabelsDisplayProps> = ({ 
-  alertLabels, 
-  highlightMatchers 
-}) => {
+export const AlertLabelsDisplay: React.FC<AlertLabelsDisplayProps> = ({ alertLabels, highlightMatchers }) => {
   const styles = useStyles2(getStyles);
 
   return (
     <div className={styles.section}>
-      <Text variant="body">This alert includes the following labels:</Text>
-      <div className={styles.labelsContainer}>
+      <Text variant="bodySmall" color="secondary" weight="regular">
+        Notification policies determine which contact point receives this alert based on the labels below.
+      </Text>
+      <ul className={styles.labelsContainer} aria-label="Alert labels">
         {Object.entries(alertLabels).map(([key, value]) => {
-          const isMatched = isLabelMatched(key, value, highlightMatchers);
+          const isMatched = highlightMatchers.some(({ label }) => label === key);
           return (
-            <div key={key} className={isMatched ? styles.labelChipHighlighted : styles.labelChip}>
-              <Text variant="bodySmall">
-                {key}={value}
-              </Text>
-            </div>
+            <li
+              key={key}
+              className={cx(styles.labelChip, {
+                [styles.labelChipHighlighted]: isMatched,
+                [styles.labelChipEmpty]: value === '',
+              })}
+              title={isMatched ? 'Used by a matching policy' : undefined}
+            >
+              <AlertLabel labelKey={key} value={value === '' ? 'Not set' : value} size="xs" />
+            </li>
           );
         })}
-      </div>
+      </ul>
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
   section: css({
-    marginBottom: theme.spacing(1.5),
-    '&:last-child': {
-      marginBottom: 0,
-    },
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    minWidth: 0,
   }),
 
   labelsContainer: css({
     display: 'flex',
     flexWrap: 'wrap',
-    gap: theme.spacing(1),
-    marginTop: theme.spacing(1),
-    padding: theme.spacing(1),
-    backgroundColor: theme.colors.background.primary,
-    borderRadius: theme.shape.radius.default,
-    border: `1px solid ${theme.colors.border.weak}`,
+    gap: theme.spacing(0.75, 1),
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
   }),
 
   labelChip: css({
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
-    backgroundColor: theme.colors.background.secondary,
-    color: theme.colors.text.secondary,
-    border: `1px solid ${theme.colors.border.medium}`,
+    display: 'flex',
+    fontWeight: theme.typography.fontWeightRegular,
+    border: '1px solid transparent',
     borderRadius: theme.shape.radius.default,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontFamily: theme.typography.fontFamilyMonospace,
+    maxWidth: '100%',
+    minWidth: 0,
+    '& > div': { minWidth: 0, maxWidth: '100%' },
   }),
 
   labelChipHighlighted: css({
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
-    backgroundColor: theme.colors.primary.main,
-    color: theme.colors.primary.contrastText,
-    borderRadius: theme.shape.radius.default,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontFamily: theme.typography.fontFamilyMonospace,
-    fontWeight: theme.typography.fontWeightMedium,
-    boxShadow: `0 1px 2px ${theme.colors.primary.shade}`,
+    borderColor: theme.colors.primary.border,
+  }),
+
+  labelChipEmpty: css({
+    // AlertLabel has no value styling prop. Target only its value segment.
+    '& > div > div > div:last-child': {
+      color: theme.colors.warning.text,
+      fontStyle: 'italic',
+    },
   }),
 });

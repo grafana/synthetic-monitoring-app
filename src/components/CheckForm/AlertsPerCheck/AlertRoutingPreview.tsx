@@ -1,323 +1,137 @@
 import React, { useMemo } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { useFormContext } from 'react-hook-form';
-import { matchInstancesToRouteTrees, useMatchInstancesToRouteTrees } from '@grafana/alerting';
+import { USER_DEFINED_TREE_NAME } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Alert, Icon, LoadingPlaceholder, Text, TextLink, useStyles2 } from '@grafana/ui';
+import { Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useLabelMode } from 'data/useLabelMode';
+import { useNotificationRouting } from 'data/useNotificationRouting';
 
 import { AlertLabelsDisplay } from './AlertLabelsDisplay';
-import {
-  convertLabelsToLabelPairs,
-  encodeReceiverForUrl,
-  extractMatchersFromRoutes,
-  generateAlertLabels,
-  getDefaultRoutingTree,
-} from './alertRoutingUtils';
-import { RouteTreeDisplay } from './RouteTreeDisplay';
+import { generateAlertLabels, getPolicyIdentifier } from './alertRoutingUtils';
+import { getMatchingNotificationRoutes } from './notificationRouting';
 
 interface AlertRoutingPreviewProps {
   alertType: CheckAlertType;
-  alertName: string;
+  contactPointName: string;
 }
 
-const AlertRoutingPreviewContent: React.FC<AlertRoutingPreviewProps> = ({ alertType }) => {
+const AlertRoutingPreviewContent = ({ alertType, contactPointName }: AlertRoutingPreviewProps) => {
   const styles = useStyles2(getStyles);
-  const { getValues } = useFormContext<CheckFormValues>();
+  const { watch } = useFormContext<CheckFormValues>();
+  const { checkType, frequency, labels, job, target, alerts } = watch();
+  const labelMode = useLabelMode();
+  const routing = useNotificationRouting();
+  const period = alerts?.[alertType]?.period;
 
-  const checkType = getValues().checkType;
-  const frequency = getValues().frequency;
-  const customLabels = getValues().labels;
-  const job = getValues().job;
-  const instance = getValues().target;
-  const { data: labelModeState } = useLabelMode();
+  const alertLabels = useMemo(
+    () =>
+      generateAlertLabels(alertType, {
+        checkType,
+        frequency,
+        customLabels: labels,
+        job,
+        instance: target,
+        labelMode: labelMode.data?.mode,
+        period,
+      }),
+    [alertType, checkType, frequency, labels, job, target, labelMode.data?.mode, period]
+  );
 
-  const alertLabels = useMemo(() => {
-    return generateAlertLabels(alertType, {
-      checkType,
-      frequency,
-      customLabels,
-      job,
-      instance,
-      labelMode: labelModeState?.mode,
-    });
-  }, [alertType, checkType, frequency, customLabels, job, instance, labelModeState]);
-
-  const { isLoading, isError, currentData: routingTreeData } = useMatchInstancesToRouteTrees();
-
-  const routeMatches = useMemo(() => {
-    if (isLoading || isError || !routingTreeData?.items) {
+  const routes = useMemo(() => {
+    if (routing.isLoading || routing.isError || labelMode.isLoading || labelMode.isError || !routing.data) {
       return [];
     }
-    // SM alert rules are created without notification settings (see sm-api), so
-    // they carry no `__grafana_managed_route__` label and are always routed
-    // through the default (user-defined) tree — never through additional policy
-    // trees. Match only the default tree so the preview reflects real delivery
-    // instead of showing routes in trees the alert will never reach.
-    const defaultTree = getDefaultRoutingTree(routingTreeData.items);
-    if (!defaultTree) {
-      return [];
-    }
-    try {
-      return matchInstancesToRouteTrees([defaultTree], [convertLabelsToLabelPairs(alertLabels)]);
-    } catch (error) {
-      return [];
-    }
-  }, [isLoading, isError, routingTreeData, alertLabels]);
-
-  const highlightMatchers = useMemo(() => {
-    return extractMatchersFromRoutes(routeMatches);
-  }, [routeMatches]);
-
-  const defaultPolicyInfo = useMemo(() => {
-    if (!routingTreeData?.items || routingTreeData.items.length === 0) {
-      return null;
-    }
-
-    const defaultTree = getDefaultRoutingTree(routingTreeData.items);
-    if (!defaultTree?.spec?.defaults) {
-      return null;
-    }
-
-    const defaultReceiver = defaultTree.spec.defaults.receiver;
-    if (!defaultReceiver) {
-      return null;
-    }
-
-    return {
-      receiverName: defaultReceiver,
-    };
-  }, [routingTreeData]);
-
-  if (isLoading) {
-    return <LoadingPlaceholder text="Loading routing information..." />;
-  }
-
-  if (isError) {
     return (
-      <Alert severity="info" title="Notification policies preview unavailable">
-        <div>
-          <Text variant="body">
-            Unable to load notification policy information. This may happen if Grafana alertmanager endpoints are not
-            accessible.
-          </Text>
-        </div>
-      </Alert>
+      getMatchingNotificationRoutes(routing.data.trees, alertLabels)?.filter(
+        ({ route }) => 'receiver' in route && route.receiver === contactPointName
+      ) ?? []
+    );
+  }, [
+    routing.data,
+    routing.isLoading,
+    routing.isError,
+    labelMode.isLoading,
+    labelMode.isError,
+    alertLabels,
+    contactPointName,
+  ]);
+
+  if (routing.isLoading || labelMode.isLoading) {
+    return (
+      <Text variant="bodySmall" color="secondary">
+        Loading routing information...
+      </Text>
+    );
+  }
+  if (routes.length === 0) {
+    return (
+      <Text variant="bodySmall" color="secondary">
+        Routing could not be verified. Review notification policies in Grafana Alerting.
+      </Text>
     );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <Text variant="body">
-          <strong className={styles.headerTitle}>
-            <Icon name="bell" size="md" />
-            <span>Alert Routing Summary</span>
-          </strong>
-        </Text>
-        <TextLink
-          href="https://grafana.com/docs/grafana/latest/alerting/fundamentals/notification-policies/"
-          external={true}
-          variant="bodySmall"
-        >
-          Learn how alert routing works
-        </TextLink>
-      </div>
-
-      <AlertLabelsDisplay alertLabels={alertLabels} highlightMatchers={highlightMatchers} />
-
-      <div className={styles.section}>
-        <div className={styles.sectionHeader}>
-          <Text variant="body">
-            <strong>Matching notification policies</strong>
+    <div className={styles.preview}>
+      <div className={styles.routes}>
+        {routes.map(({ route, matchDetails, routeTree }) => (
+          <Text key={route.id} variant="bodySmall" color="primary" weight="regular">
+            Routes through{' '}
+            {matchDetails.matchingJourney.map(({ route }, index) => (
+              <React.Fragment key={route.id}>
+                {index > 0 && ' → '}
+                <TextLink
+                  href={`/alerting/routes/policy/${USER_DEFINED_TREE_NAME}/edit?alertmanager=grafana`}
+                  external
+                  variant="bodySmall"
+                  weight="regular"
+                >
+                  {getPolicyIdentifier(route, index === 0, routeTree.metadata.name).text}
+                </TextLink>
+              </React.Fragment>
+            ))}
           </Text>
-
-          <div className={styles.infoSection}>
-            <Text variant="body" color="secondary">
-              Notification policies determine which contact point receives this alert based on the labels shown above.
-              To change where alerts are sent,{' '}
-              <TextLink
-                href="/alerting/routes"
-                external={true}
-                variant="body"
-                onClick={() => {
-                  const url = new URL('/alerting/routes', window.location.origin);
-                  trackLinkClick({
-                    href: url.href,
-                    hostname: url.hostname,
-                    path: url.pathname,
-                    search: url.search,
-                    source: 'alert-routing-preview-info-section',
-                  });
-                }}
-              >
-                configure notification policies
-              </TextLink>{' '}
-              in the Alerting section.
-            </Text>
-          </div>
-        </div>
-
-        <div className={styles.routeTreeSection}>
-          {routeMatches.length > 0 && routeMatches[0] ? (
-            <RouteTreeDisplay routeMatch={routeMatches[0]} />
-          ) : (
-            <div className={styles.contactPointsSection}>
-              <Alert severity="info" title="Default notification policy will be used">
-                <div>
-                  <Text variant="body">
-                    No specific notification policies matched this alert. The alert will be routed using the default
-                    notification policy, which handles all alerts that don&apos;t match any specific routing rules.
-                  </Text>
-                  {defaultPolicyInfo && (
-                    <div className={styles.defaultContactPoint}>
-                      <Icon name="arrow-right" size="sm" />
-                      <Text variant="bodySmall">
-                        <strong>Sent to</strong>
-                      </Text>
-                      <TextLink
-                        href={`/alerting/notifications/receivers/${encodeReceiverForUrl(
-                          defaultPolicyInfo.receiverName
-                        )}/edit`}
-                        external={true}
-                        variant="bodySmall"
-                        className={styles.contactPointLink}
-                        onClick={() => {
-                          const path = `/alerting/notifications/receivers/${encodeReceiverForUrl(
-                            defaultPolicyInfo.receiverName
-                          )}/edit`;
-                          const url = new URL(path, window.location.origin);
-                          trackLinkClick({
-                            href: url.href,
-                            hostname: url.hostname,
-                            path: url.pathname,
-                            search: url.search,
-                            source: 'alert-routing-preview-receiver',
-                          });
-                        }}
-                      >
-                        {defaultPolicyInfo.receiverName}
-                      </TextLink>
-                    </div>
-                  )}
-                  <div className={styles.configureLink}>
-                    <TextLink
-                      href="/alerting/routes"
-                      external={true}
-                      variant="body"
-                      onClick={() => {
-                        const url = new URL('/alerting/routes', window.location.origin);
-                        trackLinkClick({
-                          href: url.href,
-                          hostname: url.hostname,
-                          path: url.pathname,
-                          search: url.search,
-                          source: 'alert-routing-preview-default-policy-configure',
-                        });
-                      }}
-                    >
-                      Configure notification policies to route to a different contact point
-                    </TextLink>
-                  </div>
-                </div>
-              </Alert>
-            </div>
-          )}
-        </div>
+        ))}
       </div>
+      <AlertLabelsDisplay
+        alertLabels={alertLabels}
+        highlightMatchers={routes.flatMap(({ matchDetails }) =>
+          matchDetails.matchingJourney.flatMap(({ matchDetails }) =>
+            matchDetails.flatMap((detail) => (detail.match ? [detail.matcher] : []))
+          )
+        )}
+      />
     </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  container: css({
-    width: '100%',
-    padding: theme.spacing(2.5),
-    backgroundColor: theme.colors.background.secondary,
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
-    marginTop: theme.spacing(2),
-    boxShadow: theme.shadows.z1,
-  }),
-
-  header: css({
+  preview: css({
     display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing(1.5),
+    flexDirection: 'column',
+    gap: theme.spacing(2.5),
+    minWidth: 0,
   }),
-
-  headerTitle: css({
+  routes: css({
     display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  }),
-
-  section: css({
-    marginBottom: theme.spacing(1.5),
-    '&:last-child': {
-      marginBottom: 0,
-    },
-  }),
-
-  sectionHeader: css({
-    marginBottom: theme.spacing(1.5),
-  }),
-
-  infoSection: css({
-    marginTop: theme.spacing(1),
-    marginBottom: theme.spacing(2),
-  }),
-
-  routeTreeSection: css({
-    marginTop: theme.spacing(1),
-  }),
-
-  contactPointsSection: css({
-    marginTop: theme.spacing(1),
-  }),
-
-  defaultContactPoint: css({
-    marginTop: theme.spacing(2),
-    display: 'inline-flex',
-    alignItems: 'center',
+    flexDirection: 'column',
     gap: theme.spacing(0.5),
-    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
-    border: `1px solid ${theme.colors.border.strong}`,
-    borderRadius: theme.shape.radius.default,
-    backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
-  }),
-
-  contactPointLink: css({
-    fontWeight: theme.typography.fontWeightBold,
-  }),
-
-  configureLink: css({
-    marginTop: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-    borderTop: `1px solid ${theme.colors.border.weak}`,
+    overflowWrap: 'anywhere',
   }),
 });
 
-export const AlertRoutingPreview: React.FC<AlertRoutingPreviewProps> = (props) => {
-  return (
-    <ErrorBoundary
-      fallback={
-        <Alert severity="warning" title="Alert routing preview unavailable">
-          <div>
-            <Text variant="body">
-              Unable to load notification policy information. Your alerts will still work correctly, but the routing
-              preview cannot be displayed at this time.
-            </Text>
-          </div>
-        </Alert>
-      }
-    >
-      <AlertRoutingPreviewContent {...props} />
-    </ErrorBoundary>
-  );
-};
+export const AlertRoutingPreview = (props: AlertRoutingPreviewProps) => (
+  <ErrorBoundary
+    fallback={
+      <Text variant="bodySmall" color="secondary">
+        Routing could not be verified. Review notification policies in Grafana Alerting.
+      </Text>
+    }
+  >
+    <AlertRoutingPreviewContent {...props} />
+  </ErrorBoundary>
+);

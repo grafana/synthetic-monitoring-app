@@ -14322,6 +14322,7 @@ __metadata:
     "@emotion/css": "npm:11.13.5"
     "@faker-js/faker": "npm:10.5.0"
     "@grafana/alerting": "npm:13.2.2"
+    "@grafana/api-clients": "npm:13.2.2"
     "@grafana/assistant": "npm:0.1.25"
     "@grafana/data": "npm:13.2.2"
     "@grafana/eslint-config": "npm:9.0.0"

@@ -1,7 +1,7 @@
 import { CheckAlertDraft, CheckAlertFormRecord, CheckAlertType } from 'types';
 
-export function getAlertsPayload(formValues?: CheckAlertFormRecord, checkId?: number): CheckAlertDraft[] {
-  if (!checkId || !formValues) {
+export function getAlertsPayload(formValues?: CheckAlertFormRecord): CheckAlertDraft[] {
+  if (!formValues) {
     return [];
   }
 

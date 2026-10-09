@@ -5,7 +5,7 @@ import { FormSectionName } from '../../../types';
 import { FormSection } from '../FormSection';
 import { GenericAlertingContent } from '../layouts/GenericAlertingContent';
 
-const DEFAULT_ALERTING_FIELDS = ['alerts'];
+const DEFAULT_ALERTING_FIELDS = ['alerts', 'notificationEmails'];
 
 export function AlertingSection() {
   return (

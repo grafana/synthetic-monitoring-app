@@ -1,7 +1,6 @@
 import React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import {
-  Checkbox,
   Icon,
   InlineField,
   InlineFieldRow,
@@ -12,40 +11,27 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import { trackChangeThreshold, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { trackChangeThreshold } from 'features/tracking/perCheckAlertsEvents';
 import { useDebounceCallback } from 'usehooks-ts';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CheckAlertType, CheckFormValues } from 'types';
+import { CheckFormValues } from 'types';
 
-import { getAlertItemStyles } from './AlertItem';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
-import { RunbookUrl } from './RunbookUrl';
+import { getAlertItemStyles } from './AlertsPerCheck.styles';
 
 export const TLSTargetCertificateCloseToExpiringAlert = ({
   alert,
   selected,
-  onSelectionChange,
   tooltipContent,
 }: {
   alert: PredefinedAlertInterface;
   selected: boolean;
-  onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
   const { control, formState } = useFormContext<CheckFormValues>();
 
-  const handleToggleAlert = (type: CheckAlertType) => {
-    onSelectionChange(type);
-    if (selected) {
-      trackUnSelectAlert({ name: type });
-    } else {
-      trackSelectAlert({ name: type });
-    }
-  };
-
   const thresholdError = formState.errors?.alerts?.[alert.type]?.threshold?.message;
-  const tlsError = formState.errors?.alerts?.[alert.type]?.isSelected?.message;
   const isFormDisabled = formState.disabled;
   const styles = useStyles2(getAlertItemStyles);
 
@@ -56,21 +42,6 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
   return (
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
-        <InlineField
-          invalid={!!tlsError}
-          error={tlsError}
-          htmlFor={`alert-${alert.type}`}
-          validationMessageHorizontalOverflow={true}
-        >
-          <Checkbox
-            className={styles.alertCheckbox}
-            id={`alert-${alert.type}`}
-            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
-            onClick={() => handleToggleAlert(alert.type)}
-            checked={selected}
-            disabled={isFormDisabled}
-          />
-        </InlineField>
         <Text>Alert if the target&apos;s certificate expires in less than </Text>{' '}
         <InlineField
           htmlFor={`alert-threshold-${alert.type}`}
@@ -81,6 +52,7 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
         >
           <Input
             {...field}
+            aria-label={`${alert.category} threshold`}
             aria-disabled={!selected || isFormDisabled}
             suffix={alert.unit}
             type="number"
@@ -101,7 +73,6 @@ export const TLSTargetCertificateCloseToExpiringAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
     </Stack>
   );
 };

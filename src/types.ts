@@ -343,6 +343,7 @@ export type CheckFormValuesBase = Omit<Check, 'settings' | 'basicMetricsOnly' | 
   publishAdvancedMetrics: boolean;
   calLabels: Label[];
   alerts?: CheckAlertFormRecord;
+  notificationEmails?: string;
   channels?: {
     k6?: K6Channel | K6ChannelRef;
   };

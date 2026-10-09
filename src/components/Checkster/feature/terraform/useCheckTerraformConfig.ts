@@ -18,7 +18,7 @@ export function useCheckTerraformConfig(formValues: CheckFormValues): CheckTerra
     const tfCheck = checkToTF(check);
     const resourceName = generateCheckResourceName(check);
 
-    const alerts = getAlertsPayload(formValues.alerts, check.id);
+    const alerts = check.id ? getAlertsPayload(formValues.alerts) : [];
     const tfAlerts = alertsToTF(alerts);
 
     const config: Partial<TFConfig> = {
