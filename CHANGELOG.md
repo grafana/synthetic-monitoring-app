@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.65.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.64.0...v1.65.0) (2026-10-09)
+
+
+### Features
+
+* suggest http(s):// prefixes when a check target URL is missing one ([#1916](https://github.com/grafana/synthetic-monitoring-app/issues/1916)) ([b6ce434](https://github.com/grafana/synthetic-monitoring-app/commit/b6ce4346e5ad188fda51f3cfb0a040e1dc349eae))
+
+
+### Fixes
+
+* Drop the label_ prefix from probes view ([#1915](https://github.com/grafana/synthetic-monitoring-app/issues/1915)) ([911e6ec](https://github.com/grafana/synthetic-monitoring-app/commit/911e6ecbb694c9dcd1fc1a435a203ec20ea57f2f))
+
+
+### Miscellaneous Chores
+
+* Clean up label migration flag ([#1922](https://github.com/grafana/synthetic-monitoring-app/issues/1922)) ([5fa5f25](https://github.com/grafana/synthetic-monitoring-app/commit/5fa5f25f737dcf4da3970e73d070d1a067a9b7ef))
+* remove cal gating mechanism ([#1920](https://github.com/grafana/synthetic-monitoring-app/issues/1920)) ([82a5c3b](https://github.com/grafana/synthetic-monitoring-app/commit/82a5c3bf7ec18c37565d84b73e5979ccaf2763aa))
+
 ## [1.64.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.63.0...v1.64.0) (2026-10-07)
 
 
