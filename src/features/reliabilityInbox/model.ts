@@ -1,4 +1,5 @@
 import { Address4, Address6 } from 'ip-address';
+import { upperFirst } from 'lodash';
 
 import { ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
@@ -25,10 +26,26 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
     errorRate: formatErrorRate(suggestion.evidence.errorRatio),
     p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
     proposedCheck,
+    setupNote: getSetupNote(suggestion),
   };
 }
 
 export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>;
+
+/**
+ * What the user must add before the check can pass, or undefined when the draft
+ * is complete. Telemetry cannot supply a request body, a CA certificate or
+ * credentials, so these suggestions say so instead of being hidden.
+ */
+function getSetupNote({ needsConfiguration, configurationReason, authRequired }: ReliabilitySuggestion) {
+  if (needsConfiguration) {
+    return upperFirst(configurationReason ?? 'some of the configuration could not be derived from telemetry.');
+  }
+
+  return authRequired
+    ? 'Most requests are answered 401/403: add credentials, a bearer token or basic auth.'
+    : undefined;
+}
 
 /**
  * Renders the attribution as "namespace: checkout · service: api" for the
@@ -77,19 +94,19 @@ export function getNamespaceOptions(opportunities: ReliabilityOpportunity[]) {
   ).sort();
 }
 
-/** Orders eligible recommendations by technical relevance. */
+/** Orders the ones ready to create first, then by technical relevance. */
 export function compareReliabilityOpportunities(a: ReliabilityOpportunity, b: ReliabilityOpportunity) {
-  return b.sortScore - a.sortScore || a.id.localeCompare(b.id);
+  return Number(!!a.setupNote) - Number(!!b.setupNote) || b.sortScore - a.sortScore || a.id.localeCompare(b.id);
 }
 
+// Suggestions that need credentials or configuration stay: they are real gaps,
+// and both ways to create one end in review. Their setup note says what to add.
 export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
   if (
     suggestion.checkType !== CheckType.Http ||
     suggestion.dedupStatus !== 'uncovered' ||
     suggestion.confidence.toLowerCase() !== 'high' ||
-    suggestion.reachability !== 'public' ||
-    suggestion.authRequired ||
-    suggestion.needsConfiguration
+    suggestion.reachability !== 'public'
   ) {
     return false;
   }

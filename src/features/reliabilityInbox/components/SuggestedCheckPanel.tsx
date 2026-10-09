@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, ClipboardButton, Icon, IconName, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Button, ClipboardButton, Icon, IconName, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 
 import { HttpMethod } from 'types';
@@ -53,6 +53,7 @@ export function SuggestedCheckPanel({
                 Suggested check
               </Text>
               <Badge color="darkgrey" icon="globe" text="HTTP" />
+              {opportunity.setupNote && <Badge color="orange" icon="exclamation-triangle" text="Needs setup" />}
               {opportunity.namespace && (
                 <Badge
                   color="darkgrey"
@@ -75,6 +76,11 @@ export function SuggestedCheckPanel({
         />
 
         <ConfigurationSection>
+          {opportunity.setupNote && (
+            <Alert severity="warning" title="Needs setup before it can pass" bottomSpacing={0}>
+              {opportunity.setupNote}
+            </Alert>
+          )}
           <CheckIdentity proposedCheck={proposedCheck} ownerHint={opportunity.ownerHint} />
         </ConfigurationSection>
 
@@ -85,7 +91,9 @@ export function SuggestedCheckPanel({
               {formatDuration(proposedCheck.timeoutMs)}
             </CheckField>
             <CheckField icon="check-circle" label="Expected response">
-              HTTP {proposedCheck.validStatusCodes.join(', ')}
+              {proposedCheck.validStatusCodes.length > 0
+                ? `HTTP ${proposedCheck.validStatusCodes.join(', ')}`
+                : 'Any 2xx'}
             </CheckField>
             <CheckField icon="shield" label="TLS requirement">
               {proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}

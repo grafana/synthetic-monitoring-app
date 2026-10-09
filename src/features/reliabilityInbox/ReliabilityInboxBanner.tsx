@@ -22,9 +22,15 @@ export function ReliabilityInboxBanner() {
   // banner rather than once per visit, because while it is open it switches to
   // "Review suggestions" if a generation started on the inbox page finishes.
   const exposedWithSuggestions = useRef<boolean | undefined>(undefined);
-  const suggestionSummary = `${opportunities.length} ${
-    opportunities.length === 1 ? 'suggestion is' : 'suggestions are'
-  } ready to review · turn traffic signals into proactive monitoring`;
+  const needsSetupCount = opportunities.filter(({ setupNote }) => setupNote).length;
+  const readyCount = opportunities.length - needsSetupCount;
+  const suggestionSummary = [
+    readyCount > 0 && `${readyCount} ${readyCount === 1 ? 'suggestion is' : 'suggestions are'} ready to review`,
+    needsSetupCount > 0 && `${needsSetupCount} ${needsSetupCount === 1 ? 'needs' : 'need'} setup`,
+    'turn traffic signals into proactive monitoring',
+  ]
+    .filter(Boolean)
+    .join(' · ');
 
   useEffect(() => {
     if (!allowed || exposedWithSuggestions.current === hasSuggestions) {
@@ -33,10 +39,11 @@ export function ReliabilityInboxBanner() {
 
     exposedWithSuggestions.current = hasSuggestions;
     trackInboxExposure({
-      opportunityCount: opportunities.length,
+      opportunityCount: readyCount,
+      needsSetupCount,
       topOpportunityId: topOpportunity?.id,
     });
-  }, [allowed, hasSuggestions, opportunities.length, topOpportunity]);
+  }, [allowed, hasSuggestions, readyCount, needsSetupCount, topOpportunity]);
 
   // The page this links to generates with AI (see useAIAllowed).
   if (!allowed) {

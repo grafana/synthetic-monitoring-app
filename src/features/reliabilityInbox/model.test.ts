@@ -99,6 +99,50 @@ describe('Reliability Inbox model', () => {
     expect(opportunities.map(({ id }) => id)).toEqual(['higher-service-score', 'lower-service-score']);
   });
 
+  it('orders recommendations ready to create before those that need setup', () => {
+    const opportunities = [
+      { id: 'needs-setup', relevance: 90, needsConfiguration: true },
+      { id: 'ready', relevance: 10, needsConfiguration: false },
+    ]
+      .map(({ id, relevance, needsConfiguration }) =>
+        toReliabilityOpportunity({
+          ...HTTP_RELIABILITY_SUGGESTION,
+          id,
+          target: `https://${id}.example.com/`,
+          relevance,
+          needsConfiguration,
+        })
+      )
+      .sort(compareReliabilityOpportunities);
+
+    expect(opportunities.map(({ id }) => id)).toEqual(['ready', 'needs-setup']);
+  });
+
+  it('keeps suggestions that need configuration or credentials, saying what to add', () => {
+    const needsConfiguration = {
+      ...HTTP_RELIABILITY_SUGGESTION,
+      needsConfiguration: true,
+      configurationReason: 'only OPTIONS/POST requests observed',
+    };
+    const authRequired = { ...HTTP_RELIABILITY_SUGGESTION, authRequired: true };
+
+    expect(isInitialReviewCandidate(needsConfiguration)).toBe(true);
+    expect(isInitialReviewCandidate(authRequired)).toBe(true);
+    expect(toReliabilityOpportunity(needsConfiguration).setupNote).toBe('Only OPTIONS/POST requests observed');
+    expect(toReliabilityOpportunity(authRequired).setupNote).toMatch(/add credentials/);
+    expect(toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION).setupNote).toBeUndefined();
+  });
+
+  it('leaves the expected status open when the request itself needs configuring', () => {
+    const { proposedCheck } = toReliabilityOpportunity({
+      ...HTTP_RELIABILITY_SUGGESTION,
+      needsConfiguration: true,
+      prompt: 'Create a Grafana Synthetic Monitoring http check for https://mcp.goagain.dev/.',
+    });
+
+    expect(proposedCheck.validStatusCodes).toEqual([]);
+  });
+
   it('uses hostname, non-default port, and meaningful path as the human-readable endpoint identity', () => {
     const target = 'https://api.example.com:8443/health?verbose=true#status';
     const opportunity = toReliabilityOpportunity({ ...HTTP_RELIABILITY_SUGGESTION, target });
