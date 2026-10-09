@@ -446,9 +446,19 @@ export default async function () {
     expect(runValidation(script)).toEqual([]);
   });
 
-  it('does not accept { browser } imported from other URLs', () => {
+  it.each([
+    'https://example.com/browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io/browser-ai/../index.js',
+    'https://jslib.k6.io/browser-ai/%2e%2e/index.js',
+    'https://jslib.k6.io/browser-ai/0.1.0/index.js?x=1',
+    'https://jslib.k6.io/browser-ai/0.1.0/index.js#x',
+    'https://jslib.k6.io/browser-ai/0.1.0/other.js',
+    'https://jslib.k6.io:8443/browser-ai/0.1.0/index.js',
+    'https://jslib.k6.io@example.com/browser-ai/0.1.0/index.js',
+    'http://jslib.k6.io/browser-ai/0.1.0/index.js',
+  ])('does not accept { browser } imported from %s', (source) => {
     const script = `
-      import { browser } from 'https://example.com/browser-ai/0.1.0/index.js';
+      import { browser } from '${source}';
 
       export const options = {
         scenarios: {

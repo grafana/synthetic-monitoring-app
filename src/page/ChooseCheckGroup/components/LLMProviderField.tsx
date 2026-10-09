@@ -72,7 +72,6 @@ function SecretPicker({
     description: secret.description,
   }));
   const hasSecrets = secrets.length > 0;
-
   const hasNoSecrets = canRead && !isLoading && !hasSecrets;
 
   return (

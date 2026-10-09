@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Combobox, Field, IconButton, Input, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
@@ -6,13 +6,15 @@ import { jobSchema } from 'schemas/general/Job';
 
 import { CheckAlertDraft } from 'types';
 
-import { AGENTIC_JOURNEY_STEP_TYPES, AgenticJourneyStep,createAgenticJourneyCheck } from './agenticJourney';
+import { AGENTIC_JOURNEY_STEP_TYPES, AgenticJourneyStep, createAgenticJourneyCheck } from './agenticJourney';
 import { LLMProviderField } from './LLMProviderField';
 import { AGENTIC_JOURNEY_ALERTS } from './templateAlerts';
 import { TemplateDrawer } from './TemplateDrawer';
 import { parseHttpUrl, TemplateUrlField, URL_FORMAT_ERROR } from './TemplateUrlField';
 
 const MAX_STEPS = 20;
+// Keeps the generated script well under the script size limit, even with the maximum number of steps.
+const MAX_INSTRUCTION_LENGTH = 500;
 const INSTRUCTION_PLACEHOLDERS: Record<AgenticJourneyStep['type'], string> = {
   action: 'click the "Sign in" button',
   assertion: 'the order confirmation is showing',
@@ -20,7 +22,16 @@ const INSTRUCTION_PLACEHOLDERS: Record<AgenticJourneyStep['type'], string> = {
   agent: 'add a pizza to the cart and open the checkout',
 };
 
-const newStep = (): AgenticJourneyStep => ({ type: 'action', instruction: '' });
+// Steps carry a stable id so reordering and removal keep each card's state and errors with its step.
+type DraftStep = AgenticJourneyStep & { id: number };
+
+function getNameError(name: string) {
+  if (!name.trim()) {
+    return undefined;
+  }
+  const result = jobSchema.safeParse(name);
+  return result.success ? undefined : result.error.issues[0].message;
+}
 
 export function AgenticJourneyDrawer({
   onClose,
@@ -32,7 +43,9 @@ export function AgenticJourneyDrawer({
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [secretName, setSecretName] = useState<string>();
-  const [steps, setSteps] = useState<AgenticJourneyStep[]>([newStep()]);
+  const nextStepId = useRef(0);
+  const newStep = (): DraftStep => ({ id: nextStepId.current++, type: 'action', instruction: '' });
+  const [steps, setSteps] = useState<DraftStep[]>(() => [newStep()]);
 
   function updateStep(index: number, patch: Partial<AgenticJourneyStep>) {
     setSteps((current) => current.map((step, i) => (i === index ? { ...step, ...patch } : step)));
@@ -60,11 +73,9 @@ export function AgenticJourneyDrawer({
       onClose={onClose}
       validate={() => {
         const errors: Record<string, string> = {};
-        if (name.trim()) {
-          const result = jobSchema.safeParse(name);
-          if (!result.success) {
-            errors.name = result.error.issues[0].message;
-          }
+        const nameError = getNameError(name);
+        if (nameError) {
+          errors.name = nameError;
         }
         if (!parseHttpUrl(url)) {
           errors.url = URL_FORMAT_ERROR;
@@ -72,9 +83,9 @@ export function AgenticJourneyDrawer({
         if (!secretName) {
           errors.secret = 'Select the secret that contains your Anthropic API key.';
         }
-        steps.forEach((step, index) => {
+        steps.forEach((step) => {
           if (!step.instruction.trim()) {
-            errors[`step-${index}`] = 'Describe this step.';
+            errors[`step-${step.id}`] = 'Describe this step.';
           }
         });
         return errors;
@@ -82,7 +93,12 @@ export function AgenticJourneyDrawer({
       buildCheck={() => createAgenticJourneyCheck(parseHttpUrl(url)!, steps, secretName!, name)}
       renderFields={(errors, folderField) => (
         <>
-          <Field label="Name (optional)" htmlFor="template-name" error={errors.name} invalid={!!errors.name}>
+          <Field
+            label="Name (optional)"
+            htmlFor="template-name"
+            error={getNameError(name)}
+            invalid={!!getNameError(name)}
+          >
             <Input
               id="template-name"
               autoFocus
@@ -103,11 +119,11 @@ export function AgenticJourneyDrawer({
             <Stack direction="column" gap={2}>
               {steps.map((step, index) => (
                 <StepCard
-                  key={index}
+                  key={step.id}
                   index={index}
                   step={step}
                   total={steps.length}
-                  error={errors[`step-${index}`]}
+                  error={step.instruction.trim() ? undefined : errors[`step-${step.id}`]}
                   onChange={(patch) => updateStep(index, patch)}
                   onMove={(offset) => moveStep(index, offset)}
                   onRemove={() => setSteps((current) => current.filter((_, i) => i !== index))}
@@ -126,7 +142,11 @@ export function AgenticJourneyDrawer({
               </div>
             </Stack>
           </Field>
-          <LLMProviderField value={secretName} onChange={setSecretName} error={errors.secret} />
+          <LLMProviderField
+            value={secretName}
+            onChange={setSecretName}
+            error={secretName ? undefined : errors.secret}
+          />
         </>
       )}
     />
@@ -167,6 +187,7 @@ function StepCard({
           <Input
             aria-label={`Step ${index + 1} instruction`}
             invalid={!!error}
+            maxLength={MAX_INSTRUCTION_LENGTH}
             placeholder={INSTRUCTION_PLACEHOLDERS[step.type]}
             value={step.instruction}
             onChange={(event) => onChange({ instruction: event.currentTarget.value })}

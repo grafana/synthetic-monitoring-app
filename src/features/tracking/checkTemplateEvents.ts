@@ -1,6 +1,6 @@
 import { createSMEventFactory, TrackingEventProps } from 'features/tracking/utils';
 
-import { CheckTemplateId } from 'page/ChooseCheckGroup/components/templateTypes';
+import { CheckTemplateId } from 'types';
 
 const checkTemplateEvents = createSMEventFactory('check_templates');
 

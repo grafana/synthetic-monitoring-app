@@ -1,12 +1,11 @@
 import { ComponentType } from 'react';
 import { IconName } from '@grafana/ui';
 
-import { CheckAlertDraft, CheckType } from 'types';
+import { CheckAlertDraft, CheckTemplateId, CheckType } from 'types';
 
 import { AgenticJourneyDrawer } from './AgenticJourneyDrawer';
 import { BrokenLinksDrawer } from './BrokenLinksDrawer';
-import { AGENTIC_JOURNEY_ALERTS,BROKEN_LINKS_ALERTS } from './templateAlerts';
-import { CheckTemplateId } from './templateTypes';
+import { AGENTIC_JOURNEY_ALERTS, BROKEN_LINKS_ALERTS } from './templateAlerts';
 
 export interface CheckTemplateDefinition {
   id: CheckTemplateId;

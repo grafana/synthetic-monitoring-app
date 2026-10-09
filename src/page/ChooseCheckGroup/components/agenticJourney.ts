@@ -44,7 +44,7 @@ const PAGE_LOAD_TIMEOUT_MS = 30_000;
 const WAIT_TIMEOUT_MS = 10_000;
 const AGENT_MAX_STEPS = 15;
 
-// k6-browser-ai's drop-in replacement for k6/browser, exposed publicly through jslib.
+// Drop-in replacement for k6/browser that adds AI-driven actions, published on jslib.
 export const BROWSER_AI_MODULE_URL = 'https://jslib.k6.io/browser-ai/0.1.0/index.js';
 
 export function createAgenticJourneyCheck(

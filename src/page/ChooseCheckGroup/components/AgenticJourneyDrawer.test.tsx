@@ -7,7 +7,13 @@ import { MOCKED_SECRETS, MOCKED_SECURE_VALUE_ITEMS, MOCKED_SECURE_VALUES_API_RES
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsSMAdmin, selectOption } from 'test/utils';
+import {
+  mockFeatureToggles,
+  runTestAsSecretsNoAccess,
+  runTestAsSecretsReadOnly,
+  runTestAsSMAdmin,
+  selectOption,
+} from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -67,13 +73,20 @@ it('creates a browser check whose script runs the configured steps', async () =>
   expect(script).toContain(`await secrets.get("${MOCKED_SECRETS[0].name}")`);
 });
 
-it('lets steps be removed and reordered', async () => {
+it('lets steps be reordered and removed', async () => {
   const { user } = await renderDrawer();
   expect(screen.getByRole('button', { name: 'Remove step' })).toBeDisabled();
+  await user.type(screen.getByLabelText('Step 1 instruction'), 'first');
   await user.click(screen.getByRole('button', { name: 'Add step' }));
-  expect(screen.getByLabelText('Step 2 instruction')).toBeInTheDocument();
+  await user.type(screen.getByLabelText('Step 2 instruction'), 'second');
+
+  await user.click(screen.getAllByRole('button', { name: 'Move step up' })[1]);
+  expect(screen.getByLabelText('Step 1 instruction')).toHaveValue('second');
+  expect(screen.getByLabelText('Step 2 instruction')).toHaveValue('first');
+
   await user.click(screen.getAllByRole('button', { name: 'Remove step' })[1]);
   expect(screen.queryByLabelText('Step 2 instruction')).not.toBeInTheDocument();
+  expect(screen.getByLabelText('Step 1 instruction')).toHaveValue('second');
 });
 
 it('flags an invalid start URL as the user types and suggests a protocol', async () => {
@@ -87,6 +100,23 @@ it('flags an invalid start URL as the user types and suggests a protocol', async
 });
 
 describe('LLM provider', () => {
+  it('asks an administrator to create the secret when the user cannot', async () => {
+    runTestAsSecretsReadOnly();
+    server.use(
+      apiRoute('listSecrets', { result: () => ({ json: { ...MOCKED_SECURE_VALUES_API_RESPONSE, items: [] } }) })
+    );
+    render(<AgenticJourneyDrawer onClose={jest.fn()} />);
+    expect(await screen.findByText(/Ask an administrator to create one/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Create one' })).not.toBeInTheDocument();
+  });
+
+  it('disables the secret picker when the user cannot read secrets', async () => {
+    runTestAsSecretsNoAccess();
+    render(<AgenticJourneyDrawer onClose={jest.fn()} />);
+    expect(await screen.findByRole('combobox', { name: /LLM provider/ })).toBeDisabled();
+    expect(screen.queryByRole('button', { name: 'Create a new one' })).not.toBeInTheDocument();
+  });
+
   it('offers to create a secret when none exist', async () => {
     server.use(
       apiRoute('listSecrets', { result: () => ({ json: { ...MOCKED_SECURE_VALUES_API_RESPONSE, items: [] } }) })

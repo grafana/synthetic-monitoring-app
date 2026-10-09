@@ -31,8 +31,9 @@ export interface AdhocFailureEvidence {
 function summarizeLog(log: LogEntry): AdhocFailureLine | null {
   // Script checks log one "check result" line per assertion, passing or failing.
   if (log.msg === 'check result' || ('check' in log && 'value' in log)) {
-    const { check, value } = log as { check?: string; value?: string };
-    return value === '1'
+    // k6 reports a passing check as 1, sometimes as a number rather than a string.
+    const { check, value } = log as { check?: string; value?: string | number };
+    return Number(value) === 1
       ? null
       : { text: `${ASSERTION_FAILURE_PREFIX}"${check ?? 'unknown check'}"`, severity: 'context' };
   }

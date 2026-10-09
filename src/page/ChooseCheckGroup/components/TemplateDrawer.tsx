@@ -5,7 +5,7 @@ import { AdhocFailureExplanation } from 'features/checkInsights/adhoc/AdhocFailu
 import { trackFaroUserAction } from 'features/tracking/userAction';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
-import { BrowserCheck, CheckAlertDraft, CheckType, FeatureName } from 'types';
+import { BrowserCheck, CheckAlertDraft, CheckTemplateId, CheckType, FeatureName } from 'types';
 import { FaroUserAction } from 'faro';
 import { AddCheckResult } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
@@ -25,7 +25,6 @@ import { FolderSelector } from 'components/FolderSelector/FolderSelector';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { TemplateAlerting } from './TemplateAlerting';
-import { CheckTemplateId } from './templateTypes';
 import { useCreateTemplateCheck } from './useCreateTemplateCheck';
 
 export interface TemplateDrawerProps {
@@ -38,9 +37,9 @@ export interface TemplateDrawerProps {
   validate: () => Record<string, string>;
   /** Builds the check from inputs that already passed `validate`. */
   buildCheck: () => BrowserCheck;
-  /** Renders the template's fields. The folder field is passed in so each template controls its position. */
   /** Shows a Test button that runs the check once, before it is created. */
   allowTest?: boolean;
+  /** Renders the template's fields. The folder field is passed in so each template controls its position. */
   renderFields: (errors: Record<string, string>, folderField: React.ReactNode) => React.ReactNode;
 }
 
@@ -81,6 +80,7 @@ function TemplateForm({
   const alertMutation = useUpdateAlertsForCheck();
   const { canWriteAlerts } = useAlertAccessControl();
   const [createdCheck, setCreatedCheck] = useState<AddCheckResult>();
+  const [testedCheck, setTestedCheck] = useState<BrowserCheck>();
   const busy = isSubmitting || mutation.isPending || alertMutation.isPending;
   const queryClient = useQueryClient();
   const navigateToCheck = useNavigateToCheckDashboard();
@@ -102,8 +102,6 @@ function TemplateForm({
     </Field>
   );
   const disabled = !canWriteChecks || isOverlimit !== false || busy || probeId === undefined || !isPreselectReady;
-
-  const [testedCheck, setTestedCheck] = useState<BrowserCheck>();
 
   function testCheck() {
     if (probeId === undefined) {
@@ -267,7 +265,7 @@ function TemplateForm({
               {testMutation.error?.message || 'Please try again.'}
             </Alert>
           )}
-          {testedCheck && testResults.length > 0 && (
+          {testedCheck && testResults.length > 0 && !testMutation.isPending && (
             <AdhocFailureExplanation run={testResults[testResults.length - 1]} check={testedCheck} />
           )}
           {testResults.length > 0 && <AdhocResultsList items={testResults} />}

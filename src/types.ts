@@ -934,3 +934,6 @@ export type K6ChannelRef = Pick<K6Channel, 'id'>;
 export interface ListChannelsResponse {
   channels: K6Channel[];
 }
+
+/** Stable identifier of a check template, as reported to analytics. */
+export type CheckTemplateId = 'broken_links' | 'agentic_journey';

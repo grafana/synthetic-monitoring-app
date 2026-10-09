@@ -1,6 +1,6 @@
 import { decode } from 'js-base64';
 
-import { AgenticJourneyStep,createAgenticJourneyCheck } from './agenticJourney';
+import { AgenticJourneyStep, createAgenticJourneyCheck } from './agenticJourney';
 
 const steps: AgenticJourneyStep[] = [
   { type: 'action', instruction: 'click the "Sign in" button' },

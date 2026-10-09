@@ -104,3 +104,18 @@ it('keeps every critical line when the cap is hit', () => {
   expect(evidence?.lines).toHaveLength(5);
   expect(evidence?.lines.map((line) => line.text)).toContain('error: real cause');
 });
+
+it('does not treat a numeric passing check value as a failure', () => {
+  const evidence = getAdhocFailureEvidence(
+    run(
+      probe({
+        name: 'bad',
+        logs: [
+          { level: 'info', msg: 'check result', check: 'passes', value: 1, time: '1' },
+          { level: 'error', msg: 'real cause', time: '2' },
+        ] as unknown as LogEntry[],
+      })
+    )
+  );
+  expect(evidence?.lines).toEqual([{ text: 'error: real cause', severity: 'critical' }]);
+});

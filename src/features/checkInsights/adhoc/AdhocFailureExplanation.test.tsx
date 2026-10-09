@@ -98,3 +98,13 @@ it('reports a failed generation instead of showing nothing', async () => {
 
   await waitFor(() => expect(screen.getByText("Couldn't generate an explanation right now.")).toBeInTheDocument());
 });
+
+it('waits for the limit check before generating', async () => {
+  jest
+    .mocked(useLimits)
+    .mockReturnValue({ isLimitReached: false, loading: true, error: null } as ReturnType<typeof useLimits>);
+  render(<AdhocFailureExplanation run={failedRun} check={check} />);
+
+  expect(await screen.findByText('Failing from: Paris')).toBeInTheDocument();
+  expect(generate).not.toHaveBeenCalled();
+});

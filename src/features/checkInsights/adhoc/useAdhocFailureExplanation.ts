@@ -49,8 +49,10 @@ export function useAdhocFailureExplanation(runId: string, check: ExplainedCheck,
 
   // A failed status check means "unknown", not "accepted" or "not capped", so don't fire on a guess.
   const hasStatusError = Boolean(termsError || limitsError);
-  const isReady = isAvailable && termsAccepted && !isLimitReached && !hasStatusError;
   const isGateLoading = isAssistantLoading || termsLoading || limitsLoading;
+  // Includes the loading flags: cached terms plus a not-yet-fetched limit would otherwise pass for
+  // "below the limit" and spend a completion before the limit is actually known.
+  const isReady = !isGateLoading && isAvailable && termsAccepted && !isLimitReached && !hasStatusError;
 
   const query = useQuery({
     queryKey: ['adhoc_failure_explanation', runId],
@@ -71,20 +73,19 @@ export function useAdhocFailureExplanation(runId: string, check: ExplainedCheck,
     refetchOnWindowFocus: false,
   });
 
-  const unavailableReason =
-    !evidence || isGateLoading
-      ? undefined
-      : !isReady
-        ? !isAvailable
-          ? 'Grafana Assistant is not available.'
-          : hasStatusError
-            ? "Couldn't check Grafana Assistant's status. Try again shortly."
-            : isLimitReached
-              ? "Grafana Assistant's usage limit has been reached."
-              : "Accept Grafana Assistant's terms and conditions to see an explanation."
-        : query.isError
-          ? "Couldn't generate an explanation right now."
-          : undefined;
+  const unavailableReason = isGateLoading
+    ? undefined
+    : !isReady
+      ? !isAvailable
+        ? 'Grafana Assistant is not available.'
+        : hasStatusError
+          ? "Couldn't check Grafana Assistant's status. Try again shortly."
+          : isLimitReached
+            ? "Grafana Assistant's usage limit has been reached."
+            : "Accept Grafana Assistant's terms and conditions to see an explanation."
+      : query.isError
+        ? "Couldn't generate an explanation right now."
+        : undefined;
 
   return {
     explanation: query.data ?? undefined,
