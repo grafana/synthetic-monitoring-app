@@ -118,19 +118,46 @@ describe('Reliability Inbox model', () => {
     expect(opportunities.map(({ id }) => id)).toEqual(['ready', 'needs-setup']);
   });
 
-  it('keeps suggestions that need configuration or credentials, saying what to add', () => {
-    const needsConfiguration = {
+  it('keeps suggestions that need configuration or credentials, saying what to provide and where', () => {
+    const postOnly = {
       ...HTTP_RELIABILITY_SUGGESTION,
       needsConfiguration: true,
-      configurationReason: 'only OPTIONS/POST requests observed',
+      configurationReason: 'only OPTIONS/POST requests observed: configure the request (method, path, body)',
+    };
+    const apiServer = {
+      ...HTTP_RELIABILITY_SUGGESTION,
+      needsConfiguration: true,
+      configurationReason: "Kubernetes API server (seen in client-go traffic): add the cluster's CA certificate",
+      evidence: { ...HTTP_RELIABILITY_SUGGESTION.evidence, families: ['rest_client_requests_total'] },
     };
     const authRequired = { ...HTTP_RELIABILITY_SUGGESTION, authRequired: true };
 
-    expect(isInitialReviewCandidate(needsConfiguration)).toBe(true);
-    expect(isInitialReviewCandidate(authRequired)).toBe(true);
-    expect(toReliabilityOpportunity(needsConfiguration).setupNote).toBe('Only OPTIONS/POST requests observed');
-    expect(toReliabilityOpportunity(authRequired).setupNote).toMatch(/add credentials/);
-    expect(toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION).setupNote).toBeUndefined();
+    for (const suggestion of [postOnly, apiServer, authRequired]) {
+      expect(isInitialReviewCandidate(suggestion)).toBe(true);
+    }
+
+    expect(toReliabilityOpportunity(postOnly).setup).toEqual({
+      title: 'Creating this check will ask you for the request to send',
+      steps: [
+        expect.stringContaining('Request method'),
+        expect.stringContaining('Request options → Body'),
+        expect.stringContaining('Click Test'),
+      ],
+      why: 'Only OPTIONS/POST requests observed.',
+    });
+    expect(toReliabilityOpportunity(apiServer).setup).toEqual(
+      expect.objectContaining({
+        title: "Creating this check will ask you for the cluster's CA certificate",
+        steps: expect.arrayContaining([expect.stringContaining('Request options → TLS')]),
+      })
+    );
+    expect(toReliabilityOpportunity(authRequired).setup).toEqual(
+      expect.objectContaining({
+        title: 'Creating this check will ask you for credentials',
+        steps: expect.arrayContaining([expect.stringContaining('Request options → Authentication')]),
+      })
+    );
+    expect(toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION).setup).toBeUndefined();
   });
 
   it('leaves the expected status open when the request itself needs configuring', () => {

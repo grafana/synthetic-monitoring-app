@@ -6,7 +6,7 @@ import { css, cx } from '@emotion/css';
 import { HttpMethod } from 'types';
 import { formatDuration, getMethodColor } from 'utils';
 
-import { ReliabilityOpportunity } from '../model';
+import { ReliabilityOpportunity, SetupGuide } from '../model';
 import { ProposedHttpCheckDraft } from '../proposedCheck';
 import { RecommendationEvidence } from './RecommendationEvidence';
 
@@ -53,7 +53,7 @@ export function SuggestedCheckPanel({
                 Suggested check
               </Text>
               <Badge color="darkgrey" icon="globe" text="HTTP" />
-              {opportunity.setupNote && <Badge color="orange" icon="exclamation-triangle" text="Needs setup" />}
+              {opportunity.setup && <Badge color="orange" icon="exclamation-triangle" text="Needs setup" />}
               {opportunity.namespace && (
                 <Badge
                   color="darkgrey"
@@ -76,11 +76,7 @@ export function SuggestedCheckPanel({
         />
 
         <ConfigurationSection>
-          {opportunity.setupNote && (
-            <Alert severity="warning" title="Needs setup before it can pass" bottomSpacing={0}>
-              {opportunity.setupNote}
-            </Alert>
-          )}
+          {opportunity.setup && <SetupGuideAlert setup={opportunity.setup} />}
           <CheckIdentity proposedCheck={proposedCheck} ownerHint={opportunity.ownerHint} />
         </ConfigurationSection>
 
@@ -134,6 +130,32 @@ export function SuggestedCheckPanel({
 
 function selectCreationEncouragement() {
   return CREATION_ENCOURAGEMENT[Math.floor(Math.random() * CREATION_ENCOURAGEMENT.length)];
+}
+
+/** What creating the check will ask for, and where the editor takes it. */
+function SetupGuideAlert({ setup }: { setup: SetupGuide }) {
+  const styles = useStyles2(getSetupGuideStyles);
+
+  return (
+    <Alert severity="warning" title={setup.title} bottomSpacing={0}>
+      <Stack direction="column" gap={1}>
+        <Text>In the check editor:</Text>
+        <ol className={styles.steps}>
+          {setup.steps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+        <Text variant="bodySmall" color="secondary">
+          Or choose Create with Grafana Assistant, which asks you for them and shows the check before saving it.
+        </Text>
+        {setup.why && (
+          <Text variant="bodySmall" color="secondary">
+            Why: {setup.why}
+          </Text>
+        )}
+      </Stack>
+    </Alert>
+  );
 }
 
 function ConfigurationSection({ children, titleId }: { children: React.ReactNode; titleId?: string }) {
@@ -322,6 +344,15 @@ function getStyles(theme: GrafanaTheme2) {
       gap: theme.spacing(0.75),
       marginLeft: 'auto',
       textAlign: 'right',
+    }),
+  };
+}
+
+function getSetupGuideStyles(theme: GrafanaTheme2) {
+  return {
+    steps: css({
+      margin: 0,
+      paddingLeft: theme.spacing(2.5),
     }),
   };
 }

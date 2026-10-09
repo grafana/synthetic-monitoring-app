@@ -125,7 +125,7 @@ export function RecommendationQueue({
                     <Text variant="bodySmall" color="secondary">
                       {view === 'dismissed'
                         ? 'Dismissed in this browser'
-                        : `${opportunity.setupNote ? 'Needs setup' : 'Missing check'}${
+                        : `${opportunity.setup ? 'Needs setup' : 'Missing check'}${
                             opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''
                           }`}
                     </Text>

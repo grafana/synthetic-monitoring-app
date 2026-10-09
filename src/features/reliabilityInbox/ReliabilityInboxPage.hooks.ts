@@ -68,7 +68,7 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
     }
 
     reviewedIds.current.add(selected.id);
-    trackRecommendationReviewed({ opportunityId: selected.id, needsSetup: !!selected.setupNote });
+    trackRecommendationReviewed({ opportunityId: selected.id, needsSetup: !!selected.setup });
   }, [selected]);
 
   const assistantAction = getAssistantActionState({
@@ -99,7 +99,7 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
       return;
     }
 
-    trackSetupWithAssistant({ opportunityId: selected.id, needsSetup: !!selected.setupNote });
+    trackSetupWithAssistant({ opportunityId: selected.id, needsSetup: !!selected.setup });
     openAssistant(getAssistantOpenPayload(selected));
   };
 
@@ -108,7 +108,7 @@ export function useReliabilityInboxReview(suggestionsQuery: ReturnType<typeof us
       return;
     }
 
-    trackCreateManually({ opportunityId: selected.id, needsSetup: !!selected.setupNote });
+    trackCreateManually({ opportunityId: selected.id, needsSetup: !!selected.setup });
 
     // Use React Router navigate so location.state reaches NewCheckV2. locationService.push drops it.
     const { pathname, search, state } = getManualCreateLocation(selected);

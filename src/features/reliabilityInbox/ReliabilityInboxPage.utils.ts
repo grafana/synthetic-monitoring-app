@@ -92,6 +92,8 @@ export function getManualCreateLocation(opportunity: ReliabilityOpportunity) {
           },
         },
       },
+      // Shown above the form, so what to provide is in view where it goes.
+      setupSteps: opportunity.setup?.steps,
     },
   };
 }

@@ -22,7 +22,7 @@ export function ReliabilityInboxBanner() {
   // banner rather than once per visit, because while it is open it switches to
   // "Review suggestions" if a generation started on the inbox page finishes.
   const exposedWithSuggestions = useRef<boolean | undefined>(undefined);
-  const needsSetupCount = opportunities.filter(({ setupNote }) => setupNote).length;
+  const needsSetupCount = opportunities.filter(({ setup }) => setup).length;
   const readyCount = opportunities.length - needsSetupCount;
   const suggestionSummary = [
     readyCount > 0 && `${readyCount} ${readyCount === 1 ? 'suggestion is' : 'suggestions are'} ready to review`,

@@ -767,8 +767,10 @@ describe('ReliabilityInboxPage', () => {
 
     const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
     expect(within(suggestedCheck).getByText('Needs setup')).toBeVisible();
+    expect(within(suggestedCheck).getByText('Creating this check will ask you for the request to send')).toBeVisible();
+    expect(within(suggestedCheck).getByText(/^Open Request options → Body/)).toBeVisible();
     expect(
-      within(suggestedCheck).getByText('Only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat')
+      within(suggestedCheck).getByText('Why: Only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat.')
     ).toBeVisible();
     expect(within(suggestedCheck).getByText('Any 2xx')).toBeVisible();
     expect(within(screen.getByLabelText('Recommendations')).getByText(/^Needs setup/)).toBeInTheDocument();
@@ -777,6 +779,15 @@ describe('ReliabilityInboxPage', () => {
 
     expect(trackSetupWithAssistant).toHaveBeenCalledWith({ opportunityId: 'faro-suggestion', needsSetup: true });
     expect(openAssistant.mock.calls[0][0].context[0].data).not.toHaveProperty('suggestedDraft');
+
+    // The same steps travel to the check editor, where they apply.
+    await user.click(within(suggestedCheck).getByRole('button', { name: 'Create manually' }));
+
+    expect(locationService.getLocation().state).toEqual(
+      expect.objectContaining({
+        setupSteps: expect.arrayContaining([expect.stringMatching(/^Open Request options → Body/)]),
+      })
+    );
   });
 
   it('defers probe location selection to the review flow', async () => {
