@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import {
@@ -105,7 +105,11 @@ export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }
 
   if (!run) {
     return (
-      <EmptyState hideImage variant="not-found" message="No frontend user data is available for this execution." />
+      <EmptyState
+        hideImage
+        variant="not-found"
+        message="Frontend Observability has no session for this execution, so it can't be compared with real users."
+      />
     );
   }
 
@@ -136,24 +140,18 @@ interface PanelProps {
 
 const RealUserContextPanel = ({ run, runTime, to, probeSuccess }: PanelProps) => {
   const styles = useStyles2(getStyles);
-  const headingId = useId();
   const appName = run.appName || 'Frontend Observability app';
 
-  // The viewer header's "View Frontend Session" button already links this
-  // run's session, so the panel only links the app it compares against.
+  // The viewer header's "View frontend session" button already links this
+  // run's session, so the panel only links the app it compares against. The
+  // "Real user context" tab names the surrounding tab panel, so the panel has
+  // no heading of its own.
   return (
-    <section className={styles.panel} aria-labelledby={headingId}>
+    <div className={styles.panel}>
       <header className={styles.header}>
         <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
-          <Icon name="frontend-observability" />
-          <Text element="h4" variant="h5" id={headingId}>
-            Real user context
-          </Text>
-          <Tooltip content={REAL_USERS_DEFINITION}>
-            <Icon name="info-circle" size="sm" tabIndex={0} aria-label="What counts as a real user" />
-          </Tooltip>
           <Text color="secondary" variant="bodySmall">
-            from{' '}
+            From{' '}
             <TextLink
               href={buildFaroAppHref({ pluginId: FARO_APP_PLUGIN_ID, appId: run.appId })}
               external
@@ -165,6 +163,9 @@ const RealUserContextPanel = ({ run, runTime, to, probeSuccess }: PanelProps) =>
             </TextLink>
             {run.appEnvironment && ` · ${run.appEnvironment}`}
           </Text>
+          <Tooltip content={REAL_USERS_DEFINITION}>
+            <Icon name="info-circle" size="sm" tabIndex={0} aria-label="What counts as a real user" />
+          </Tooltip>
         </Stack>
         <Feedback feature="real-user-context" about={{ text: 'Experimental' }} />
       </header>
@@ -180,7 +181,7 @@ const RealUserContextPanel = ({ run, runTime, to, probeSuccess }: PanelProps) =>
           <JourneyFact run={run} to={to} />
         </FactRow>
       </div>
-    </section>
+    </div>
   );
 };
 
@@ -537,7 +538,7 @@ const FailuresFact = ({ run, to, probeSuccess }: { run: FaroRunContext; to: numb
       <Text variant="bodySmall">
         The browser reported no JS errors or failed requests during this run, so this failure isn&apos;t visible in
         real-user monitoring. It&apos;s more likely the script&apos;s expectations than the app. To see what the page
-        showed, open the replay with <strong>View Frontend Session</strong>.
+        showed, open the replay with <strong>View frontend session</strong>.
       </Text>
     );
   }

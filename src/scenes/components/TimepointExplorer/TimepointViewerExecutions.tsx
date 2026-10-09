@@ -20,6 +20,7 @@ import { ExecutionLogs, ProbeExecutionLogs, UnknownExecutionLog } from 'features
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { CheckType } from 'types';
 import { PlainButton } from 'components/PlainButton';
+import { SyntheticMonitoringIcon } from 'components/SyntheticMonitoringIcon';
 import { LogsRenderer } from 'scenes/components/LogsRenderer/LogsRenderer';
 import { LogsView } from 'scenes/components/LogsRenderer/LogsViewSelect';
 import { CheckResultMissing } from 'scenes/components/TimepointExplorer/CheckResultMissing';
@@ -193,9 +194,14 @@ export const TimepointViewerExecutions = ({
               ref={syntheticTabRef}
               id={`${tabId}-synthetic`}
               href={`#${tabId}-panel`}
-              label="Synthetic monitoring"
-              aria-label="Synthetic monitoring"
-              icon="check"
+              // @ts-expect-error - it accepts components despite its type; `icon` only takes Grafana icon names
+              label={
+                <>
+                  <SyntheticMonitoringIcon />
+                  Execution logs
+                </>
+              }
+              aria-label="Execution logs"
               active={selectedSource === 'synthetic'}
               aria-controls={`${tabId}-panel`}
               onChangeTab={(event) => {
@@ -208,8 +214,8 @@ export const TimepointViewerExecutions = ({
               ref={frontendTabRef}
               id={`${tabId}-frontend`}
               href={`#${tabId}-panel`}
-              label="Frontend user data"
-              aria-label="Frontend user data"
+              label="Real user context"
+              aria-label="Real user context"
               icon="frontend-observability"
               active={selectedSource === 'frontend'}
               aria-controls={`${tabId}-panel`}

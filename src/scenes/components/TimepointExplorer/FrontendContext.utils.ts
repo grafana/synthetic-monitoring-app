@@ -168,7 +168,7 @@ export function isFailedStatus(statusCode: number): boolean {
  * failed: which build it was served, which pages it visited, and the errors
  * and failed requests the browser reported.
  *
- * Records are scoped to the session the "View Frontend Session" button links
+ * Records are scoped to the session the "View frontend session" button links
  * to, so both always describe the same session.
  */
 export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
