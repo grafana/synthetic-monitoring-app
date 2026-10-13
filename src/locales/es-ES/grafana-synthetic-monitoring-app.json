@@ -17,6 +17,7 @@
     "all": "Todos",
     "allFolders": "",
     "allProbes": "Todos los agentes",
+    "clearTarget": "",
     "filterByAlertsAriaLabel": "Filtrar por alertas",
     "filterByFolderAriaLabel": "",
     "filterByStatusAriaLabel": "Filtrar por estado",
@@ -25,6 +26,8 @@
     "probes": "Agentes",
     "searchChecksAriaLabel": "Buscar pruebas",
     "searchPlaceholder": "Buscar por nombre del job, endpoint o etiqueta",
+    "target": "",
+    "targetDescription": "",
     "type": "Tipo",
     "withAlerts": "Con alertas",
     "withoutAlerts": "Sin alertas"

@@ -138,7 +138,7 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
   const [status, setStatus] = filters.status;
   const [probes, setProbes] = filters.probes;
   const [folders, setFolders] = filters.folders;
-  const [target] = filters.target;
+  const [target, setTarget] = filters.target;
 
   const checkFiltersWithStatus: CheckFiltersType = useMemo(
     () => ({
@@ -196,6 +196,10 @@ const CheckListContent = ({ onChangeViewType, viewType }: CheckListContentProps)
     switch (type) {
       case 'search':
         setSearch(filters.search);
+        break;
+      case 'target':
+        // null drops the param; an empty one would linger in the URL.
+        setTarget(filters.target || null);
         break;
       case 'labels':
         setLabels(filters.labels);

@@ -17,6 +17,7 @@
     "all": "All",
     "allFolders": "All folders",
     "allProbes": "All probes",
+    "clearTarget": "Clear target filter",
     "filterByAlertsAriaLabel": "Filter by alerts",
     "filterByFolderAriaLabel": "Filter by folder",
     "filterByStatusAriaLabel": "Filter by status",
@@ -25,6 +26,8 @@
     "probes": "Probes",
     "searchChecksAriaLabel": "Search checks",
     "searchPlaceholder": "Search by job name, endpoint, or label",
+    "target": "Target",
+    "targetDescription": "Only checks with exactly this target",
     "type": "Type",
     "withAlerts": "With alerts",
     "withoutAlerts": "Without alerts"
