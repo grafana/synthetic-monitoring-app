@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Alert, Field, Stack, Text, TextArea, TextLink } from '@grafana/ui';
+import { Alert, Button, Field, Stack, Text, TextArea, TextLink } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
 import { canSetUpNotifications } from 'data/initialNotificationSetup';
@@ -22,19 +22,24 @@ export function InitialNotificationSetup() {
   const routing = useNotificationRouting();
   const { canWriteAlerts } = useUserPermissions();
   const hasSelectedAlerts = Object.values(watch('alerts') ?? {}).some((alert) => alert?.isSelected);
+  const notificationEmails = watch('notificationEmails');
   const eligibility =
     routing.data && !routing.isError
       ? getNotificationSetupEligibility(routing.data.trees, routing.data.contactPoints)
       : undefined;
-  const canConfigure = canWriteAlerts && eligibility?.status === 'available' && canSetUpNotifications(eligibility.tree);
+  const setupUnavailable =
+    !canWriteAlerts ||
+    eligibility?.status === 'managed' ||
+    (eligibility?.status === 'available' && !canSetUpNotifications(eligibility.tree));
+  const setupUnknown = !eligibility || eligibility.status === 'unknown';
 
   useEffect(() => {
-    // Preserve the draft between form steps. Discard it when shared setup
-    // becomes unavailable so hidden recipients cannot be used on save.
-    if (!routing.isLoading && !canConfigure) {
+    // Only a confirmed configuration or permission change discards the draft.
+    // Failed reads and filtered resources cannot establish setup eligibility.
+    if (setupUnavailable) {
       unregister('notificationEmails');
     }
-  }, [routing.isLoading, canConfigure, unregister]);
+  }, [setupUnavailable, unregister]);
 
   if (!hasSelectedAlerts) {
     return (
@@ -49,13 +54,10 @@ export function InitialNotificationSetup() {
       </Alert>
     );
   }
-  if (routing.isLoading || routing.isError || !routing.data) {
+  if (eligibility?.status === 'managed' || (setupUnknown && notificationEmails === undefined)) {
     return null;
   }
-  if (eligibility?.status !== 'available') {
-    return null;
-  }
-  if (!canSetUpNotifications(eligibility.tree)) {
+  if (setupUnavailable) {
     return (
       <Alert severity="warning" title="Notifications are not configured" bottomSpacing={0}>
         Ask an administrator to configure a destination in{' '}
@@ -68,12 +70,30 @@ export function InitialNotificationSetup() {
   }
   const emailsField = register('notificationEmails');
   return (
-    <Alert severity="info" title="Set up notifications for Synthetic Monitoring" bottomSpacing={0}>
+    <Alert
+      severity={setupUnknown ? 'warning' : 'info'}
+      title={
+        setupUnknown ? 'Notification setup could not be verified' : 'Set up notifications for Synthetic Monitoring'
+      }
+      bottomSpacing={0}
+    >
       <Stack direction="column" gap={2}>
         <Text>
-          The default contact point isn’t configured. Add email recipients for current and future Synthetic Monitoring
-          checks.
+          {setupUnknown
+            ? 'Your email draft is preserved. Retry to check whether notification setup is still available.'
+            : 'The default contact point isn’t configured. Add email recipients for current and future Synthetic Monitoring checks.'}
         </Text>
+        {setupUnknown && (
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            disabled={routing.isFetching || disabled}
+            onClick={() => routing.refetch()}
+          >
+            Retry notification lookup
+          </Button>
+        )}
         <Field
           label="Email addresses"
           description="Separate addresses with commas, semicolons or new lines."

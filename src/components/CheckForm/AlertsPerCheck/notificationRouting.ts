@@ -19,6 +19,11 @@ export type NotificationRouting =
 // that agree with Alertmanager's RE2 matcher. This is deliberately conservative,
 // not a translator for RE2-only syntax. Unsupported patterns remain unknown.
 function canPreviewRegex(pattern: string, labelValue: string): boolean {
+  // Bound the work done on the UI thread, including compilation. Longer values
+  // and more complex expressions require Alertmanager's RE2 engine to inspect.
+  if (pattern.length > 256 || labelValue.length > 512) {
+    return false;
+  }
   // Unicode, control characters and line endings differ between the engines.
   if (/[^\x20-\x7e]/.test(pattern) || /[^\x20-\x7e]/.test(labelValue)) {
     return false;
@@ -32,6 +37,18 @@ function canPreviewRegex(pattern: string, labelValue: string): boolean {
   // Reject other escapes, special groups, empty classes and nested/POSIX
   // classes, including forms that JavaScript accepts with different meanings.
   if (syntax.includes('\\') || /\(\?(?!:)|\[\^?\]|\[[^[\]]*\[/.test(syntax)) {
+    return false;
+  }
+  // Ignore metacharacters inside classes and the '?' in noncapturing groups.
+  // Permit at most one single-atom repetition and four alternations. Without
+  // repeated groups or multiple repetitions, backtracking cannot multiply with
+  // input length. This also excludes bounded repetitions and lazy quantifiers.
+  const structure = syntax.replace(/\[[^\]]*\]/g, 'a').replace(/\(\?:/g, '(');
+  if (
+    /[{}]|\)[*+?]/.test(structure) ||
+    (structure.match(/[*+?]/g)?.length ?? 0) > 1 ||
+    (structure.match(/\|/g)?.length ?? 0) > 4
+  ) {
     return false;
   }
   try {

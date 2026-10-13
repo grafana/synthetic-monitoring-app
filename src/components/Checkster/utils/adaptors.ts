@@ -1,3 +1,5 @@
+import { durationToMilliseconds, parseDuration } from '@grafana/data';
+
 import {
   BrowserCheck,
   Check,
@@ -14,6 +16,7 @@ import {
   TracerouteCheck,
 } from 'types';
 import { getCheckType } from 'utils';
+import { ALERT_PERIODS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 import { DEFAULT_CHECK_CONFIG, DEFAULT_CHECK_CONFIG_MAP } from '../constants';
 import { getBrowserCheckFormValues } from '../transformations/toFormValues.browser';
@@ -44,12 +47,21 @@ export function getDefaultFormValues(checkType: CheckType = CheckType.Http, calN
     }
   }
 
-  const values = toFormValues(check, calNames);
+  return withDefaultFailedChecksAlert(toFormValues(check, calNames));
+}
+
+export function withDefaultFailedChecksAlert(values: CheckFormValues): CheckFormValues {
   const failedChecks = values.alerts?.[CheckAlertType.ProbeFailedExecutionsTooHigh];
   if (failedChecks) {
-    values.alerts = {
-      ...values.alerts,
-      [CheckAlertType.ProbeFailedExecutionsTooHigh]: { ...failedChecks, isSelected: true },
+    const period = ALERT_PERIODS.find(
+      ({ value }) => durationToMilliseconds(parseDuration(value)) >= values.frequency
+    )?.value;
+    return {
+      ...values,
+      alerts: {
+        ...values.alerts,
+        [CheckAlertType.ProbeFailedExecutionsTooHigh]: { ...failedChecks, isSelected: true, period },
+      },
     };
   }
   return values;

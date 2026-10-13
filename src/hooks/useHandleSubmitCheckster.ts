@@ -17,7 +17,7 @@ import {
 } from 'data/initialNotificationSetup';
 import { setPendingAlertSetup } from 'data/pendingAlertSetup';
 import { getUserPermissions } from 'data/permissions';
-import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
+import { QUERY_KEYS as ALERT_QUERY_KEYS, useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS, useCUDChecks } from 'data/useChecks';
 import { fetchNotificationRouting, notificationRoutingQueryKey } from 'data/useNotificationRouting';
 import { getFetchErrorMessage } from 'data/utils';
@@ -111,8 +111,14 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
               if (!firstAttempt) {
                 const current = await smDS.listAlertsForCheck(checkId);
                 checkAlertRetryConflict(current.alerts, previous, desired);
+                if (sameAlertSettings(current.alerts, desired)) {
+                  alertsSaved = true;
+                  queryClient.setQueryData([...ALERT_QUERY_KEYS.listAlertsForCheck, checkId], current);
+                }
               }
-              await updateAlertsForCheck({ alerts: desired, checkId });
+              if (!alertsSaved) {
+                await updateAlertsForCheck({ alerts: desired, checkId });
+              }
               alertsSaved = true;
               setPendingAlertSetup(queryClient, checkId, null);
             } catch (error) {

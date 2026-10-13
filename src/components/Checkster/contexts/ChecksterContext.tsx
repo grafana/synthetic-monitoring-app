@@ -36,7 +36,7 @@ import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { useHydrateCalLabels } from '../hooks/useHydrateCalLabels';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
-import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
+import { getDefaultFormValues, toFormValues, withDefaultFailedChecksAlert } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
 import { flattenObjectKeys } from '../utils/form';
 
@@ -86,6 +86,7 @@ function useFormValuesMeta(
   checkType: CheckType,
   check: Check | undefined,
   probesWithMetadata: ProbeWithMetadata[],
+  useDefaultAlerts: boolean,
   defaultFolderUid?: string,
   requiresFolder = false
 ) {
@@ -95,7 +96,8 @@ function useFormValuesMeta(
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema, { requiresFolder });
-    const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    const initialValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    const formValues = useDefaultAlerts ? withDefaultFailedChecksAlert(initialValues) : initialValues;
 
     if (defaultFolderUid && !formValues.folderUid) {
       formValues.folderUid = defaultFolderUid;
@@ -113,7 +115,7 @@ function useFormValuesMeta(
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder, defaultProbeId]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder, defaultProbeId, useDefaultAlerts]);
 }
 
 export function ChecksterProvider({
@@ -153,6 +155,9 @@ export function ChecksterProvider({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
+  // Examples and Assistant drafts are new checks too. Explicit selections,
+  // including an empty list, and duplicated checks keep their original alerts.
+  const useDefaultAlerts = isNew && !isDuplicate && check?.alerts === undefined;
 
   useTrackingScope({
     check_type: checkType,
@@ -165,6 +170,7 @@ export function ChecksterProvider({
     checkType,
     check,
     probesWithMetadata,
+    useDefaultAlerts,
     seedFolderUid,
     requiresFolder
   );
@@ -204,7 +210,7 @@ export function ChecksterProvider({
   const failedChecksPeriod = formMethods.watch('alerts')?.ProbeFailedExecutionsTooHigh?.period;
   useEffect(() => {
     const field = 'alerts.ProbeFailedExecutionsTooHigh.period' as const;
-    if (check || formMethods.getFieldState(field).isDirty) {
+    if (!useDefaultAlerts || formMethods.getFieldState(field).isDirty) {
       return;
     }
     const period = ALERT_PERIODS.find(({ value }) => durationToMilliseconds(parseDuration(value)) >= frequency)?.value;
@@ -219,7 +225,7 @@ export function ChecksterProvider({
         { shouldValidate: true }
       );
     }
-  }, [check, frequency, failedChecksPeriod, formMethods]);
+  }, [useDefaultAlerts, frequency, failedChecksPeriod, formMethods]);
 
   useEffect(() => {
     if (!isNew && check) {

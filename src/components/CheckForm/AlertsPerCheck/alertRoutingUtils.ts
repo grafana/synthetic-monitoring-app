@@ -44,7 +44,6 @@ export const generateAlertLabels = (
     instance: instance || '',
     check_name: checkType || '',
     frequency: frequency?.toString() || '',
-    label_per_check_alerts: 'true',
   };
 
   const mode = labelMode ?? LabelMode.Prefixed;

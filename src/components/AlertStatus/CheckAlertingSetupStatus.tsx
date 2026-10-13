@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Stack, Text, TextLink } from '@grafana/ui';
 
-import { AlertSensitivity, Check, CheckAlertDraft, CheckType } from 'types';
+import { AlertSensitivity, Check, CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 import { checkAlertRetryConflict, sameAlertSettings } from 'data/alertSetupRecovery';
 import { usePendingAlertSetup } from 'data/pendingAlertSetup';
 import { useUserPermissions } from 'data/permissions';
-import { useListAlertsForCheck, useUpdateAlertsForCheck } from 'data/useCheckAlerts';
+import { QUERY_KEYS as ALERT_QUERY_KEYS, useListAlertsForCheck, useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS } from 'data/useChecks';
 import { useLabelMode } from 'data/useLabelMode';
 import { useNotificationRouting } from 'data/useNotificationRouting';
@@ -34,28 +34,28 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
   const alerts = alertsQuery.data;
 
   useEffect(() => {
-    if (
-      !alertsQuery.isError &&
-      alerts &&
-      pending &&
-      sameAlertSettings(alerts, pending.alerts) &&
-      alerts.every(({ status }) => status === 'OK')
-    ) {
+    if (!alertsQuery.isError && alerts && pending && sameAlertSettings(alerts, pending.alerts)) {
       clear();
     }
   }, [alertsQuery.isError, alerts, pending, clear]);
 
   const retry = async () => {
+    if (!pending) {
+      return;
+    }
     setRetrying(true);
     setRetryError(undefined);
     try {
       const current = await smDS.listAlertsForCheck(checkId);
-      const desired: CheckAlertDraft[] = pending?.alerts ?? alerts ?? [];
-      checkAlertRetryConflict(current.alerts, pending?.previousAlerts ?? alerts ?? [], desired);
-      await update.mutateAsync({
-        checkId,
-        alerts: desired.map(({ name, threshold, period, runbookUrl }) => ({ name, threshold, period, runbookUrl })),
-      });
+      const desired = pending.alerts;
+      checkAlertRetryConflict(current.alerts, pending.previousAlerts, desired);
+      // A lost response may hide a successful save. An unchanged PUT cannot
+      // retry server-side rule creation, which the backend retries itself.
+      if (!sameAlertSettings(current.alerts, desired)) {
+        await update.mutateAsync({ checkId, alerts: desired });
+      } else {
+        client.setQueryData([...ALERT_QUERY_KEYS.listAlertsForCheck, checkId], current);
+      }
       clear();
       await client.invalidateQueries({ queryKey: QUERY_KEYS.list });
     } catch (error) {
@@ -95,7 +95,7 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
           <Text>
             {pending
               ? 'The last attempt to save alerts did not complete.'
-              : 'Some alert rules have not been created successfully yet.'}
+              : 'Alert rule changes are pending. Synthetic Monitoring retries them automatically.'}
           </Text>
           {alerts
             .filter(({ status }) => status !== 'OK')
@@ -106,7 +106,7 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
             ))}
           {retryError && <Text color="error">{retryError}</Text>}
           <Stack gap={2} alignItems="center">
-            {canRetry && (
+            {pending && canRetry && (
               <Button
                 type="button"
                 size="sm"
@@ -116,6 +116,18 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
                 onClick={retry}
               >
                 Retry alert creation
+              </Button>
+            )}
+            {!pending && (
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                disabled={alertsQuery.isFetching}
+                icon={alertsQuery.isFetching ? 'spinner' : 'sync'}
+                onClick={() => alertsQuery.refetch()}
+              >
+                Refresh status
               </Button>
             )}
             {editLink}

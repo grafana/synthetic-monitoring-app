@@ -27,7 +27,7 @@ export function useListAlertsForCheck(checkId?: number) {
   return useQuery({
     ...alertsForCheckQuery(smDS, checkId),
     refetchInterval: (query) =>
-      query.state.data?.alerts.some(({ status, error }) => status.startsWith('PENDING') && !error) ? 5000 : false,
+      query.state.data?.alerts.some(({ status }) => status.startsWith('PENDING')) ? 5000 : false,
   });
 }
 
