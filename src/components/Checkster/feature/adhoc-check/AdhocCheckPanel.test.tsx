@@ -6,13 +6,17 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { mockFeatureToggles } from 'test/utils';
 
-import { CheckType } from 'types';
+import { CheckType, FeatureName } from 'types';
 import { getCheckTypeGroup } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { gotoSection, selectOnlyProbe } from 'components/Checkster/__testHelpers__/formHelpers';
-import { doAdhocCheck } from 'components/Checkster/feature/adhoc-check/__testHelpers__/adhocCheck';
+import {
+  doAdhocCheck,
+  getAdhocCheckTestButton,
+} from 'components/Checkster/feature/adhoc-check/__testHelpers__/adhocCheck';
 import { FormSectionName } from 'components/Checkster/types';
 import { NewCheckV2 } from 'page/NewCheck/NewCheckV2';
 
@@ -40,7 +44,8 @@ function buildLokiLogsResponse() {
                     level: 'info',
                     target: 'https://grafana.com/',
                     probe: PRIVATE_PROBE.name,
-                    check_name: 'JOB FIELD',
+                    // check_name is the check type, not the job name
+                    check_name: 'http',
                     message: 'done',
                     logs: [
                       {
@@ -153,5 +158,22 @@ describe('adhoc-check', () => {
     expect(screen.getByTestId(CHECKSTER_TEST_ID.feature.adhocCheck.TestButton.root)).toBeInTheDocument();
     expect(screen.getByText('Logs: 1, Metrics: 1')).toBeInTheDocument();
     expect(screen.getByTestId(UI_TEST_ID.preformatted)).toHaveTextContent('status_code: 202');
+  });
+
+  it('links to the test run history when the feature is enabled', async () => {
+    mockFeatureToggles({ [FeatureName.AdhocHistory]: true });
+    await renderHttpNewCheckForm();
+
+    expect(await screen.findByRole('link', { name: 'View past runs' })).toHaveAttribute(
+      'href',
+      getRoute(AppRoutes.AdhocHistory)
+    );
+  });
+
+  it('does not link to the test run history when the feature is disabled', async () => {
+    await renderHttpNewCheckForm();
+
+    expect(getAdhocCheckTestButton()).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'View past runs' })).not.toBeInTheDocument();
   });
 });

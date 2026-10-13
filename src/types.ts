@@ -752,6 +752,7 @@ export enum HTTPCompressionAlgo {
 }
 
 export enum FeatureName {
+  AdhocHistory = 'synthetic-monitoring-adhoc-history',
   CheckSuggestions = 'synthetic-monitoring-check-suggestions',
   Folders = 'synthetic-monitoring-folders',
   GRPCChecks = 'grpc-checks',

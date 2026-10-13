@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router';
 import { Spinner, TextLink } from '@grafana/ui';
+import { AdHocHistoryPage } from 'features/adhocHistory';
 import { ReliabilityInboxPage } from 'features/reliabilityInbox';
 
 import { FeatureName } from 'types';
@@ -42,6 +43,7 @@ export const InitialisedRouter = () => {
     FeatureName.CheckSuggestions
   );
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
+  const { isEnabled: isAdhocHistoryEnabled, isReady: isAdhocHistoryReady } = useFeatureFlag(FeatureName.AdhocHistory);
 
   const page = urlSearchParams.get('page');
   useLimits();
@@ -148,6 +150,24 @@ export const InitialisedRouter = () => {
             </PluginPageNotFound>
           ) : canReadChecks ? (
             <ReliabilityInboxPage />
+          ) : (
+            <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+          )
+        }
+      />
+
+      <Route
+        path={AppRoutes.AdhocHistory}
+        element={
+          !isAdhocHistoryReady ? (
+            <Spinner />
+          ) : !isAdhocHistoryEnabled ? (
+            <PluginPageNotFound>
+              The page you are looking for does not exist. Here is a working link to{' '}
+              <TextLink href={getRoute(AppRoutes.Home)}>home</TextLink>.
+            </PluginPageNotFound>
+          ) : canReadChecks ? (
+            <AdHocHistoryPage />
           ) : (
             <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
           )

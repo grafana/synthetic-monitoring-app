@@ -1,4 +1,5 @@
 export enum AppRoutes {
+  AdhocHistory = 'adhoc-history',
   Alerts = 'alerts',
   CheckDashboard = 'checks/:id',
   Checks = 'checks',

@@ -29,6 +29,7 @@ import { createAccessToken, listAccessTokens, revokeAccessToken } from 'test/han
 
 import { ApiEntry } from 'test/handlers/types';
 
+import { getAdHocHistoryLogs } from './adhocHistory';
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
 import { listK6Channels } from './k6Channels';
@@ -87,6 +88,8 @@ const API_ROUTES = {
   listK6Channels,
   reliabilityInboxHealth,
   reliabilityInboxSuggestions,
+  // Must stay after getHttpDashboard: both match /api/ds/query and the first registered wins.
+  getAdHocHistoryLogs,
 };
 
 export type ApiRoutes = typeof API_ROUTES;

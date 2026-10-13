@@ -44,6 +44,11 @@ export function useInfiniteLogs<T, R>({
         refId: pageRefId,
       });
 
+      // no frame at all when nothing matched the query
+      if (!response?.[0]) {
+        return [];
+      }
+
       return parseLokiLogs<T, R>(response[0]);
     },
     getNextPageParam: (lastPage) => {

@@ -11,6 +11,8 @@ export const ASSISTANT_CONTEXT_EXCLUDED_ROUTES: ReadonlySet<AppRoutes> = new Set
   AppRoutes.Redirect,
   AppRoutes.Scene,
   AppRoutes.ReliabilityInbox,
+  // behind the synthetic-monitoring-adhoc-history feature flag
+  AppRoutes.AdhocHistory,
 ]);
 
 interface AssistantPageContextEntry {

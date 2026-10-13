@@ -35,6 +35,10 @@ jest.mock('features/reliabilityInbox', () => ({
   ReliabilityInboxPage: () => <h1>Check suggestions page</h1>,
 }));
 
+jest.mock('features/adhocHistory', () => ({
+  AdHocHistoryPage: () => <h1>Test run history page</h1>,
+}));
+
 const notaRoute = `${PLUGIN_URL_PATH}/404`;
 
 // Would like to have asserted on the h1s but rendering the Grafana pluginpage is tricky
@@ -99,6 +103,19 @@ describe('Routes to pages correctly', () => {
 
   test('Check suggestions route shows a 404 page when the flag is disabled', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
+    const notFoundText = await screen.findByText('Not found', { selector: 'span' });
+    expect(notFoundText).toBeInTheDocument();
+  });
+
+  test('Test run history route renders when the flag is enabled', async () => {
+    mockFeatureToggles({ [FeatureName.AdhocHistory]: true });
+    renderInitialisedRouting({ path: getRoute(AppRoutes.AdhocHistory) });
+    const pageText = await screen.findByText('Test run history page', { selector: 'h1' });
+    expect(pageText).toBeInTheDocument();
+  });
+
+  test('Test run history route shows a 404 page when the flag is disabled', async () => {
+    renderInitialisedRouting({ path: getRoute(AppRoutes.AdhocHistory) });
     const notFoundText = await screen.findByText('Not found', { selector: 'span' });
     expect(notFoundText).toBeInTheDocument();
   });

@@ -1,12 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { dateTime, dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
-import { Button, EmptyState, useStyles2 } from '@grafana/ui';
+import { Button, EmptyState, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { AdHocCheckState, ProbeStateStatus } from './types.adhoc-check';
+import { FeatureName } from 'types';
+import { AppRoutes } from 'routing/types';
+import { getRoute } from 'routing/utils';
 import { useProbes } from 'data/useProbes';
 import { useCanReadLogs } from 'hooks/useDSPermission';
+import { useFeatureFlag } from 'hooks/useFeatureFlag';
 
 import { FaroUserAction } from '../../../../faro';
 import { trackFaroUserAction } from '../../../../features/tracking/userAction';
@@ -32,6 +36,16 @@ function createProbeState(id: number, name: string, isPublic: boolean, state = P
     logs: [],
     timeseries: [],
   };
+}
+
+function PastRunsLink() {
+  const { isEnabled } = useFeatureFlag(FeatureName.AdhocHistory);
+
+  if (!isEnabled) {
+    return null;
+  }
+
+  return <TextLink href={getRoute(AppRoutes.AdhocHistory)}>View past runs</TextLink>;
 }
 
 export function AdhocCheckPanel() {
@@ -199,6 +213,7 @@ export function AdhocCheckPanel() {
         >
           {canReadLogs ? 'Before you save your check, test how it will behave.' : `${INSUFFICIENT_LOG_ACCESS_MESSAGE}.`}
         </EmptyState>
+        <PastRunsLink />
       </div>
     );
   }
@@ -224,6 +239,7 @@ export function AdhocCheckPanel() {
 
       <Column gap={1}>
         <h6>Test results</h6>
+        <PastRunsLink />
         {[...items].reverse().map((item) => (
           <Column gap={1} key={item.id}>
             <div>{dateTimeFormat(item.created)}</div>

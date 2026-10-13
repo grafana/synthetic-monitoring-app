@@ -76,15 +76,28 @@ interface Timeseries {
 
 export type LogEntry = AdHocLogEntry | ScriptedLogEntry;
 
-interface AdHocResultLine {
+export interface AdHocResultLabel {
+  name: string;
+  value: string;
+}
+
+export interface AdHocResultLine {
   level: string;
   id: string;
   target: string;
   probe: string;
+  // The check type (e.g. `http`), not the job name.
   check_name: string;
   logs: LogEntry[] | null;
   timeseries: Timeseries[];
   message: string;
+  // The following fields are only published by agents that include the ad-hoc run metadata.
+  job?: string;
+  labels?: AdHocResultLabel[];
+  client_type?: string;
+  probes_requested?: number;
+  success?: boolean;
+  duration_seconds?: number;
 }
 
 export interface AdHocResult {
