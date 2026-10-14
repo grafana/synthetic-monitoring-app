@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/grafana/plugin-graft/main/pkg/graft/schemas/graft-manifest/v1.schema.json",
+  "$schema": "https://raw.githubusercontent.com/grafana/plugin-graft/main/distributions/grafana/integrations/grafana-development/schemas/graft-manifest/v1.schema.json",
   "workflows": [
     {
       "id": "dev",
