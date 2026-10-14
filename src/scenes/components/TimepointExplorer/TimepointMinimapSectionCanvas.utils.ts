@@ -1,10 +1,16 @@
+import { colorManipulator } from '@grafana/data';
+
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { PARTIAL_FAILURE_SEGMENT_ALPHA } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   StatefulTimepoint,
   TimepointStatus,
   TimepointVizOption,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.types';
-import { getEntryHeight } from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
+import {
+  getEntryHeight,
+  getPartialFailureDisplayHeight,
+} from 'scenes/components/TimepointExplorer/TimepointExplorer.utils';
 
 interface DrawTimepointProps {
   ctx: CanvasRenderingContext2D;
@@ -27,10 +33,11 @@ export function drawUptimeTimepoint({
   vizDisplay,
   vizOptionColors,
 }: DrawTimepointProps) {
-  const { status } = statefulTimepoint;
+  const { status, failureRatio } = statefulTimepoint;
   const vizOption = vizOptionColors[status];
+  const showPartialFailure = failureRatio > 0 && failureRatio < 1 && vizDisplay.includes('failure');
 
-  if (vizDisplay && !vizDisplay.includes(status)) {
+  if (vizDisplay && !vizDisplay.includes(status) && !showPartialFailure) {
     return;
   }
 
@@ -45,6 +52,29 @@ export function drawUptimeTimepoint({
   if (vizOption.backgroundColor !== 'transparent') {
     ctx.fillRect(x, y, width, height);
   }
+
+  if (showPartialFailure && height > 0 && width > 0) {
+    const failureHeight = getPartialFailureDisplayHeight(height, failureRatio);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(x, canvasHeight - failureHeight, width, failureHeight);
+    ctx.clip();
+    ctx.strokeStyle = colorManipulator.alpha(vizOptionColors.failure.statusColor, PARTIAL_FAILURE_SEGMENT_ALPHA);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    // Center a stripe so a short failure segment still contains visible hatching.
+    const stripeSpacing = 8 * Math.SQRT2;
+    const centerOffset = (width - failureHeight) / 2;
+    const firstStripe = Math.floor((-failureHeight - centerOffset) / stripeSpacing);
+    for (let stripe = firstStripe; centerOffset + stripe * stripeSpacing <= width + 2; stripe++) {
+      const offset = centerOffset + stripe * stripeSpacing;
+      ctx.moveTo(x + offset, canvasHeight);
+      ctx.lineTo(x + offset + failureHeight, canvasHeight - failureHeight);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
   if (vizOption.border !== 'transparent') {
     ctx.strokeRect(x, y, width, height);
   }
