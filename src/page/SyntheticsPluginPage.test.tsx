@@ -16,8 +16,16 @@ import {
 } from './SyntheticsPageNav';
 import { SyntheticsPluginPage } from './SyntheticsPluginPage';
 
-const ALL_TABS_VISIBLE: SyntheticsTabVisibility = { checks: true, probes: true, checkSuggestions: true };
-const VISIBLE_TABS = ['Overview', 'Checks', 'Probes', 'Check Suggestions', 'Configuration'];
+const ALL_TABS_VISIBLE: SyntheticsTabVisibility = {
+  checks: true,
+  probes: true,
+  recommendations: true,
+  checkSuggestions: true,
+};
+const VISIBLE_TABS = ['Overview', 'Checks', 'Probes', 'Recommendations', 'Check Suggestions', 'Configuration'];
+// These tabs carry a NEW badge, which is part of their accessible name.
+const RECOMMENDATIONS_TAB = /^recommendations/i;
+const CHECK_SUGGESTIONS_TAB = /^check suggestions/i;
 const AVAILABLE_ASSISTANT: ReturnType<typeof useAssistant> = {
   isAvailable: true,
   isLoading: false,
@@ -26,8 +34,12 @@ const AVAILABLE_ASSISTANT: ReturnType<typeof useAssistant> = {
   toggleAssistant: jest.fn(),
 };
 
+function findTab(activeTab: SyntheticsTab, text: string) {
+  return getSyntheticsPageNav(activeTab, ALL_TABS_VISIBLE).children?.find((tab) => tab.text === text);
+}
+
 describe('getSyntheticsPageNav', () => {
-  it('lists Overview, Checks, Probes, Check Suggestions, and Configuration tabs', () => {
+  it('lists Overview, Checks, Probes, Recommendations, Check Suggestions, and Configuration tabs', () => {
     const nav = getSyntheticsPageNav(SyntheticsTab.Home, ALL_TABS_VISIBLE);
 
     expect(nav.children?.map((tab) => tab.text)).toEqual(VISIBLE_TABS);
@@ -41,15 +53,24 @@ describe('getSyntheticsPageNav', () => {
   });
 
   it('only lists the optional tabs that are visible', () => {
-    const nav = getSyntheticsPageNav(SyntheticsTab.Home, { checks: false, probes: false, checkSuggestions: false });
+    const nav = getSyntheticsPageNav(SyntheticsTab.Home, {
+      checks: false,
+      probes: false,
+      recommendations: false,
+      checkSuggestions: false,
+    });
 
     expect(nav.children?.map((tab) => tab.text)).toEqual(['Overview', 'Configuration']);
   });
 
-  it('links the Check Suggestions tab to its page without marking it active', () => {
-    const checkSuggestions = getSyntheticsPageNav(SyntheticsTab.Home, ALL_TABS_VISIBLE).children?.find(
-      (tab) => tab.text === 'Check Suggestions'
+  it('links the Recommendations tab to its route, tagged as a tab click', () => {
+    expect(findTab(SyntheticsTab.Home, 'Recommendations')?.url).toBe(
+      `${getRoute(AppRoutes.CheckRecommendations)}?source=tab`
     );
+  });
+
+  it('links the Check Suggestions tab to its page without marking it active', () => {
+    const checkSuggestions = findTab(SyntheticsTab.Home, 'Check Suggestions');
 
     expect(checkSuggestions?.url).toBe(getRoute(AppRoutes.ReliabilityInbox));
     expect(checkSuggestions?.active).toBeFalsy();
@@ -70,18 +91,18 @@ describe('getSyntheticsPageNav', () => {
     expect(nav.children?.[0]).toMatchObject({ text: 'Overview', active: true });
   });
 
-  it.each([SyntheticsTab.Checks, SyntheticsTab.Probes, SyntheticsTab.CheckSuggestions, SyntheticsTab.Configuration])(
-    'keeps pageNav out of breadcrumbs on the %s tab so crumbs are not repeated',
-    (tab) => {
-      expect(getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).hideFromBreadcrumbs).toBe(true);
-    }
-  );
+  it.each([
+    SyntheticsTab.Checks,
+    SyntheticsTab.Probes,
+    SyntheticsTab.Recommendations,
+    SyntheticsTab.CheckSuggestions,
+    SyntheticsTab.Configuration,
+  ])('keeps pageNav out of breadcrumbs on the %s tab so crumbs are not repeated', (tab) => {
+    expect(getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).hideFromBreadcrumbs).toBe(true);
+  });
 
-  it("shows Grafana's new-feature badge on the Check Suggestions tab", () => {
-    const checkSuggestions = getSyntheticsPageNav(SyntheticsTab.Home, ALL_TABS_VISIBLE).children?.find(
-      (tab) => tab.text === 'Check Suggestions'
-    );
-    const Suffix = checkSuggestions?.tabSuffix;
+  it.each(['Recommendations', 'Check Suggestions'])('shows the NEW badge on the %s tab', (text) => {
+    const Suffix = findTab(SyntheticsTab.Home, text)?.tabSuffix;
 
     expect(Suffix).toBeDefined();
     if (!Suffix) {
@@ -89,13 +110,14 @@ describe('getSyntheticsPageNav', () => {
     }
 
     rtlRender(<Suffix />);
-    expect(screen.getByText(/New/i)).toBeInTheDocument();
+    expect(screen.getByText('NEW')).toBeInTheDocument();
   });
 
   it.each([
     [SyntheticsTab.Home, 'Overview'],
     [SyntheticsTab.Checks, 'Checks'],
     [SyntheticsTab.Probes, 'Probes'],
+    [SyntheticsTab.Recommendations, 'Recommendations'],
     [SyntheticsTab.CheckSuggestions, 'Check Suggestions'],
     [SyntheticsTab.Configuration, 'Configuration'],
   ])('marks %s as the active tab', (tab, label) => {
@@ -129,26 +151,43 @@ describe('SyntheticsPluginPage', () => {
     [SyntheticsTab.Home, 'Overview'],
     [SyntheticsTab.Checks, 'Checks'],
     [SyntheticsTab.Probes, 'Probes'],
-    [SyntheticsTab.CheckSuggestions, 'Check Suggestions'],
+    [SyntheticsTab.CheckSuggestions, CHECK_SUGGESTIONS_TAB],
     [SyntheticsTab.Configuration, 'Configuration'],
-  ])('shows %s as the active tab', async (tab, label) => {
+  ])('shows %s as the active tab', async (tab, name) => {
     renderPage(tab);
 
-    expect(await screen.findByRole('tab', { name: label, selected: true })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name, selected: true })).toBeInTheDocument();
+  });
+
+  it('hides the Recommendations tab while its flag is disabled', async () => {
+    renderPage();
+
+    expect(await screen.findByRole('tab', { name: 'Checks' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: RECOMMENDATIONS_TAB })).not.toBeInTheDocument();
+  });
+
+  it('shows the Recommendations tab when its flag is enabled, selected on its own page', async () => {
+    mockFeatureToggles({ [FeatureName.Recommendations]: true });
+    renderPage(SyntheticsTab.Recommendations);
+
+    expect(await screen.findByRole('tab', { name: RECOMMENDATIONS_TAB, selected: true })).toHaveAttribute(
+      'href',
+      `${getRoute(AppRoutes.CheckRecommendations)}?source=tab`
+    );
   });
 
   it('hides the Check Suggestions tab while its flag is disabled', async () => {
     renderPage();
 
     expect(await screen.findByRole('tab', { name: 'Checks' })).toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: 'Check Suggestions' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).not.toBeInTheDocument();
   });
 
   it('links the Check Suggestions tab to its page when the flag is enabled', async () => {
     mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
     renderPage();
 
-    expect(await screen.findByRole('tab', { name: 'Check Suggestions' })).toHaveAttribute(
+    expect(await screen.findByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).toHaveAttribute(
       'href',
       getRoute(AppRoutes.ReliabilityInbox)
     );
@@ -160,7 +199,7 @@ describe('SyntheticsPluginPage', () => {
     renderPage();
 
     expect(await screen.findByRole('tab', { name: 'Checks' })).toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: 'Check Suggestions' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).not.toBeInTheDocument();
     expect(checkTerms).not.toHaveBeenCalled();
   });
 
@@ -171,21 +210,21 @@ describe('SyntheticsPluginPage', () => {
 
     await waitFor(() => expect(checkTerms).toHaveBeenCalledTimes(1));
     expect(await screen.findByRole('tab', { name: 'Checks' })).toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: 'Check Suggestions' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).not.toBeInTheDocument();
 
     jest.mocked(checkTerms).mockResolvedValue(true);
     act(() => {
       document.dispatchEvent(new Event(TERMS_AND_CONDITIONS_REFRESH_EVENT));
     });
 
-    expect(await screen.findByRole('tab', { name: 'Check Suggestions' })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).toBeInTheDocument();
   });
 
   it('keeps the Check Suggestions tab across pages without re-checking the Assistant terms', async () => {
     mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
     const { rerender } = renderPage();
 
-    expect(await screen.findByRole('tab', { name: 'Check Suggestions' })).toBeInTheDocument();
+    expect(await screen.findByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).toBeInTheDocument();
 
     // Each page renders its own SyntheticsPluginPage, so moving to another page remounts it.
     rerender(
@@ -195,18 +234,19 @@ describe('SyntheticsPluginPage', () => {
     );
 
     expect(screen.getByRole('tab', { name: 'Checks', selected: true })).toBeInTheDocument();
-    expect(screen.getByRole('tab', { name: 'Check Suggestions' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).toBeInTheDocument();
     expect(checkTerms).toHaveBeenCalledTimes(1);
   });
 
-  it('hides the Checks and Check Suggestions tabs from users who cannot read checks', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+  it('hides the Checks, Recommendations and Check Suggestions tabs from users who cannot read checks', async () => {
+    mockFeatureToggles({ [FeatureName.Recommendations]: true, [FeatureName.CheckSuggestions]: true });
     runTestWithoutPermissions('grafana-synthetic-monitoring-app.checks:read');
     renderPage();
 
     expect(await screen.findByRole('tab', { name: 'Probes' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Checks' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('tab', { name: 'Check Suggestions' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: RECOMMENDATIONS_TAB })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).not.toBeInTheDocument();
   });
 
   it('hides the Probes tab from users who cannot read probes', async () => {

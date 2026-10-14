@@ -49,13 +49,6 @@
       "missingLabels": ""
     }
   },
-  "checksPageLayout": {
-    "tabs": {
-      "checks": "",
-      "recommendations": ""
-    },
-    "title": ""
-  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Etiquetas"
   },
@@ -215,6 +208,11 @@
       "missingCostLabels": "",
       "overlapping": "",
       "paused": ""
+    }
+  },
+  "syntheticsPageNav": {
+    "tabs": {
+      "recommendations": ""
     }
   },
   "testing-and-synthetics-landing": {

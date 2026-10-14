@@ -14,6 +14,7 @@ interface SyntheticsPluginPageProps {
 
 export function SyntheticsPluginPage({ activeTab, children }: SyntheticsPluginPageProps) {
   const { canReadChecks, canReadProbes } = useUserPermissions();
+  const { isEnabled: isRecommendationsEnabled } = useFeatureFlag(FeatureName.Recommendations);
   const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
   const { allowed: isAIAllowed } = useAIAllowed();
   const pageNav = useMemo(
@@ -21,10 +22,11 @@ export function SyntheticsPluginPage({ activeTab, children }: SyntheticsPluginPa
       getSyntheticsPageNav(activeTab, {
         checks: canReadChecks,
         probes: canReadProbes,
+        recommendations: isRecommendationsEnabled && canReadChecks,
         // Same gate as the Check Suggestions banner, plus the permission its page needs.
         checkSuggestions: isCheckSuggestionsEnabled && isAIAllowed && canReadChecks,
       }),
-    [activeTab, canReadChecks, canReadProbes, isCheckSuggestionsEnabled, isAIAllowed]
+    [activeTab, canReadChecks, canReadProbes, isRecommendationsEnabled, isCheckSuggestionsEnabled, isAIAllowed]
   );
 
   return (

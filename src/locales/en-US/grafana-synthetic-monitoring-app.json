@@ -49,13 +49,6 @@
       "missingLabels": "Missing cost attribution labels: {{labelList}}"
     }
   },
-  "checksPageLayout": {
-    "tabs": {
-      "checks": "Checks",
-      "recommendations": "Recommendations"
-    },
-    "title": "Checks"
-  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"
   },
@@ -215,6 +208,11 @@
       "missingCostLabels": "{{affectedCheckCount}} of {{totalCheckCount}} checks are unattributed",
       "overlapping": "{{affectedCheckCount}} of {{totalCheckCount}} checks overlap across {{targetCount}} targets",
       "paused": "{{affectedCheckCount}} of {{totalCheckCount}} checks are paused"
+    }
+  },
+  "syntheticsPageNav": {
+    "tabs": {
+      "recommendations": "Recommendations"
     }
   },
   "testing-and-synthetics-landing": {

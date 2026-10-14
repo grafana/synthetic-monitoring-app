@@ -23,7 +23,7 @@ describe('Checks page tabs', () => {
   describe('with recommendations enabled', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: true }));
 
-    it('offers a Recommendations tab flagged as new, beside the check list', async () => {
+    it('offers a Recommendations tab flagged as new in the Synthetics tabs', async () => {
       renderAt(AppRoutes.Checks);
 
       const recommendations = await screen.findByRole('tab', { name: /recommendations/i });
@@ -61,11 +61,12 @@ describe('Checks page tabs', () => {
   describe('with recommendations disabled', () => {
     beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: false }));
 
-    it('leaves the check list untabbed', async () => {
+    it('leaves Recommendations out of the Synthetics tabs', async () => {
       renderAt(AppRoutes.Checks);
 
       expect(await screen.findByText(/create new check/i)).toBeInTheDocument();
-      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+      expect(screen.getByRole('tab', { name: /^checks$/i })).toHaveAttribute('aria-selected', 'true');
+      expect(screen.queryByRole('tab', { name: /recommendations/i })).not.toBeInTheDocument();
     });
 
     it('shows not found on the recommendations route', async () => {
@@ -76,7 +77,7 @@ describe('Checks page tabs', () => {
         'href',
         expect.stringContaining('/checks')
       );
-      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: /recommendations/i })).not.toBeInTheDocument();
     });
   });
 

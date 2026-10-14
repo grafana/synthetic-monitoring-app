@@ -112,7 +112,7 @@ describe('ReliabilityInboxPage', () => {
   it('keeps the Synthetics tabs with Check Suggestions selected', async () => {
     renderPage();
 
-    expect(await screen.findByRole('tab', { name: 'Check Suggestions', selected: true })).toHaveAttribute(
+    expect(await screen.findByRole('tab', { name: /^check suggestions/i, selected: true })).toHaveAttribute(
       'href',
       getRoute(AppRoutes.ReliabilityInbox)
     );

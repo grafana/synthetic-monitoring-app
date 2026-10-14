@@ -1,15 +1,17 @@
-import React from 'react';
-import { FeatureState, NavModelItem } from '@grafana/data';
-import { FeatureBadge } from '@grafana/ui';
+import { NavModelItem } from '@grafana/data';
+import { t } from '@grafana/i18n';
 
 import { PLUGIN_URL_PATH } from 'routing/constants';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
+import { NewBadge } from 'components/NewStatusBadge';
+import { getRecommendationsTabUrl } from 'page/ChecksPageLayout/tabs/Recommendations/Recommendations.links';
 
 export enum SyntheticsTab {
   Home = 'home',
   Checks = 'checks',
   Probes = 'probes',
+  Recommendations = 'recommendations',
   CheckSuggestions = 'check-suggestions',
   Configuration = 'configuration',
 }
@@ -17,19 +19,12 @@ export enum SyntheticsTab {
 export interface SyntheticsTabVisibility {
   checks: boolean;
   probes: boolean;
+  recommendations: boolean;
   checkSuggestions: boolean;
 }
 
 // Distinct from /home and the plugin root so Grafana does not skip the Synthetics section crumb.
 export const OVERVIEW_BREADCRUMB_URL = `${PLUGIN_URL_PATH.replace(/\/$/, '')}/overview`;
-
-function NewFeatureTabSuffix({ className }: { className?: string }) {
-  return (
-    <span className={className}>
-      <FeatureBadge featureState={FeatureState.new} />
-    </span>
-  );
-}
 
 export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: SyntheticsTabVisibility): NavModelItem {
   const isOverview = activeTab === SyntheticsTab.Home;
@@ -60,13 +55,22 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
     });
   }
 
+  if (visibility.recommendations) {
+    tabs.push({
+      text: t('syntheticsPageNav.tabs.recommendations', 'Recommendations'),
+      url: getRecommendationsTabUrl(getRoute(AppRoutes.CheckRecommendations)),
+      active: activeTab === SyntheticsTab.Recommendations,
+      tabSuffix: NewBadge,
+    });
+  }
+
   // Also shown on its own page, which renders while the AI gate is still loading or closed.
   if (visibility.checkSuggestions || isCheckSuggestions) {
     tabs.push({
       text: 'Check Suggestions',
       url: getRoute(AppRoutes.ReliabilityInbox),
       active: isCheckSuggestions,
-      tabSuffix: NewFeatureTabSuffix,
+      tabSuffix: NewBadge,
     });
   }
 
