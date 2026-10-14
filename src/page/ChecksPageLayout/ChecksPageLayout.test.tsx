@@ -95,5 +95,18 @@ describe('Checks page tabs', () => {
       expect(await screen.findByTestId('Spinner')).toBeInTheDocument();
       expect(screen.queryByText(/page you are looking for does not exist/i)).not.toBeInTheDocument();
     });
+
+    it('keeps the Recommendations tab selected on its own route', async () => {
+      renderAt(AppRoutes.CheckRecommendations);
+
+      expect(await screen.findByRole('tab', { name: /recommendations/i, selected: true })).toBeInTheDocument();
+    });
+
+    it('leaves the Recommendations tab out of the check list until the flag resolves', async () => {
+      renderAt(AppRoutes.Checks);
+
+      expect(await screen.findByRole('tab', { name: /^checks$/i, selected: true })).toBeInTheDocument();
+      expect(screen.queryByRole('tab', { name: /recommendations/i })).not.toBeInTheDocument();
+    });
   });
 });

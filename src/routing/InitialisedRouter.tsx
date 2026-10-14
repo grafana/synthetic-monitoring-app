@@ -78,7 +78,10 @@ export const InitialisedRouter = () => {
           canReadChecks ? (
             <SceneHomepage />
           ) : (
-            <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.checks:read']} />
+            // Keeps the tab row, so a user who can only read probes can still get to the Probes tab.
+            <SyntheticsPluginPage activeTab={SyntheticsTab.Home}>
+              <ContactAdminAlert missingPermissions={['grafana-synthetic-monitoring-app.checks:read']} />
+            </SyntheticsPluginPage>
           )
         }
       />
@@ -149,13 +152,13 @@ export const InitialisedRouter = () => {
         <Route
           index
           element={
-            canReadProbes ? (
-              <SyntheticsPluginPage activeTab={SyntheticsTab.Probes}>
+            <SyntheticsPluginPage activeTab={SyntheticsTab.Probes}>
+              {canReadProbes ? (
                 <Probes />
-              </SyntheticsPluginPage>
-            ) : (
-              <UnauthorizedPage permissions={['grafana-synthetic-monitoring-app.probes:read']} />
-            )
+              ) : (
+                <ContactAdminAlert missingPermissions={['grafana-synthetic-monitoring-app.probes:read']} />
+              )}
+            </SyntheticsPluginPage>
           }
         />
         <Route path="new" element={<NewProbe />} />

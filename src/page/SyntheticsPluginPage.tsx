@@ -14,7 +14,9 @@ interface SyntheticsPluginPageProps {
 
 export function SyntheticsPluginPage({ activeTab, children }: SyntheticsPluginPageProps) {
   const { canReadChecks, canReadProbes } = useUserPermissions();
-  const { isEnabled: isRecommendationsEnabled } = useFeatureFlag(FeatureName.Recommendations);
+  const { isEnabled: isRecommendationsEnabled, isReady: isRecommendationsReady } = useFeatureFlag(
+    FeatureName.Recommendations
+  );
   const { isEnabled: isCheckSuggestionsEnabled } = useFeatureFlag(FeatureName.CheckSuggestions);
   const { allowed: isAIAllowed } = useAIAllowed();
   const pageNav = useMemo(
@@ -22,11 +24,22 @@ export function SyntheticsPluginPage({ activeTab, children }: SyntheticsPluginPa
       getSyntheticsPageNav(activeTab, {
         checks: canReadChecks,
         probes: canReadProbes,
-        recommendations: isRecommendationsEnabled && canReadChecks,
+        // Its route holds a spinner while the flag resolves, so the tab stays there instead of popping in.
+        recommendations:
+          canReadChecks &&
+          (isRecommendationsEnabled || (activeTab === SyntheticsTab.Recommendations && !isRecommendationsReady)),
         // Same gate as the Check Suggestions banner, plus the permission its page needs.
         checkSuggestions: isCheckSuggestionsEnabled && isAIAllowed && canReadChecks,
       }),
-    [activeTab, canReadChecks, canReadProbes, isRecommendationsEnabled, isCheckSuggestionsEnabled, isAIAllowed]
+    [
+      activeTab,
+      canReadChecks,
+      canReadProbes,
+      isRecommendationsEnabled,
+      isRecommendationsReady,
+      isCheckSuggestionsEnabled,
+      isAIAllowed,
+    ]
   );
 
   return (

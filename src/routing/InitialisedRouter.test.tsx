@@ -4,7 +4,7 @@ import { CONFIG_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureToggles, runTestWithoutPermissions } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
@@ -61,6 +61,22 @@ describe('Routes to pages correctly', () => {
     renderInitialisedRouting({ path: `${getRoute(AppRoutes.Checks)}/${BASIC_HTTP_CHECK.id}` });
     expect(await screen.findByText('Dashboard page', { selector: 'h1' })).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Synthetics' })).not.toBeInTheDocument();
+  });
+  test('Home keeps the Synthetics tabs for users who cannot read checks', async () => {
+    runTestWithoutPermissions('grafana-synthetic-monitoring-app.checks:read');
+    renderInitialisedRouting({ path: getRoute(AppRoutes.Home) });
+
+    expect(await screen.findByText('grafana-synthetic-monitoring-app.checks:read')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Probes' })).toHaveAttribute('href', getRoute(AppRoutes.Probes));
+  });
+  test('Probes keeps the Synthetics tabs for users who cannot read probes', async () => {
+    runTestWithoutPermissions('grafana-synthetic-monitoring-app.probes:read');
+    renderInitialisedRouting({ path: getRoute(AppRoutes.Probes) });
+
+    expect(await screen.findByText('grafana-synthetic-monitoring-app.probes:read')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Synthetics' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Checks' })).toBeInTheDocument();
   });
   test('Probes page renders as a Synthetics tab', async () => {
     renderInitialisedRouting({ path: getRoute(AppRoutes.Probes) });
