@@ -2,7 +2,7 @@ import { dataFrameFromJSON, DataSourceInstanceSettings, dateTime, LoadingState }
 import { BackendDataSourceResponse, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
-export async function fetchTraceData(traceId: string, tracesDS: DataSourceInstanceSettings) {
+export async function fetchTraceData(traceId: string, tracesDS: Pick<DataSourceInstanceSettings, 'uid' | 'type'>) {
   const { data } = await firstValueFrom(
     getBackendSrv().fetch<BackendDataSourceResponse>({
       method: 'POST',
