@@ -20,16 +20,23 @@ export const AlertLabelsDisplay: React.FC<AlertLabelsDisplayProps> = ({ alertLab
       <ul className={styles.labelsContainer} aria-label="Alert labels">
         {Object.entries(alertLabels).map(([key, value]) => {
           const isMatched = highlightMatchers.some(({ label }) => label === key);
+          const isEmpty = value === '';
           return (
             <li
               key={key}
               className={cx(styles.labelChip, {
-                [styles.labelChipHighlighted]: isMatched,
-                [styles.labelChipEmpty]: value === '',
+                [styles.labelChipHighlighted]: isMatched && !isEmpty,
+                [styles.labelChipEmpty]: isEmpty,
               })}
               title={isMatched ? 'Used by a matching policy' : undefined}
             >
-              <AlertLabel labelKey={key} value={value === '' ? 'Not set' : value} size="xs" />
+              <AlertLabel
+                labelKey={key}
+                value={isEmpty ? 'Not set' : value}
+                icon={isEmpty ? 'exclamation-triangle' : undefined}
+                size="xs"
+                style={{ minWidth: 0, maxWidth: '100%' }}
+              />
             </li>
           );
         })}
@@ -59,10 +66,9 @@ const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     fontWeight: theme.typography.fontWeightRegular,
     border: '1px solid transparent',
-    borderRadius: theme.shape.radius.default,
+    borderRadius: theme.shape.radius.pill,
     maxWidth: '100%',
     minWidth: 0,
-    '& > div': { minWidth: 0, maxWidth: '100%' },
   }),
 
   labelChipHighlighted: css({
@@ -70,10 +76,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
 
   labelChipEmpty: css({
-    // AlertLabel has no value styling prop. Target only its value segment.
-    '& > div > div > div:last-child': {
-      color: theme.colors.warning.text,
-      fontStyle: 'italic',
-    },
+    borderColor: theme.colors.warning.border,
   }),
 });
