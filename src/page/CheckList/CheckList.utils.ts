@@ -33,6 +33,10 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
   return filterParts.some((filterPart) => matchStrings(filterPart, [target, job, ...labelMatches]));
 };
 
+// Exact, unlike search: a link to "these duplicates" must not pull in checks whose target
+// merely starts with the same string.
+const matchesTargetFilter = ({ target }: Check, targetFilter: string) => !targetFilter || target === targetFilter;
+
 const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
   if (!labelFilters || labelFilters.length === 0) {
     return true;
@@ -93,12 +97,13 @@ const matchesFolderFilter = (check: Check, folderFilters: string[], defaultFolde
 };
 
 export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType, defaultFolderUid?: string) => {
-  const { type, search, labels, status, probes, alerts, folders } = checkFilters;
+  const { type, search, target, labels, status, probes, alerts, folders } = checkFilters;
 
   return (
     Boolean(check.id) &&
     matchesFilterType(check, type) &&
     matchesSearchFilter(check, search) &&
+    matchesTargetFilter(check, target) &&
     matchesLabelFilter(check, labels) &&
     matchesStatusFilter(check, status) &&
     matchesSelectedProbes(check, probes) &&
@@ -109,6 +114,7 @@ export const matchesAllFilters = (check: Check, checkFilters: CheckFiltersType, 
 
 export const defaultFilters: CheckFiltersType = {
   search: '',
+  target: '',
   labels: [],
   type: 'all',
   status: CHECK_LIST_STATUS_OPTIONS[0],

@@ -1,0 +1,1 @@
+export { RecommendationsTab } from './RecommendationsTab';

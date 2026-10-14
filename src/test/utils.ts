@@ -285,6 +285,19 @@ export function runTestWithoutSMAccess() {
   });
 }
 
+export function runTestWithoutCheckReadAccess() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: { ...FULL_READONLY_ACCESS, 'grafana-synthetic-monitoring-app.checks:read': false },
+      },
+    },
+  });
+}
+
 export function runTestAsRBACReader() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {

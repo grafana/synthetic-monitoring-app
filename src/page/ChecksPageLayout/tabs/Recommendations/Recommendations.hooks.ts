@@ -1,0 +1,221 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router';
+import { locationService } from '@grafana/runtime';
+import {
+  TabViewed,
+  trackRecommendationDismissed,
+  trackRecommendationRestored,
+  trackRecommendationShown,
+  trackRecommendationsTabViewed,
+} from 'features/tracking/recommendationEvents';
+import { useLocalStorage } from 'usehooks-ts';
+
+import { DismissedChecks, Recommendation, RecommendationCategoryId, RecommendationId } from './Recommendations.types';
+import { Check } from 'types';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
+
+import { getCategoryForFinding, isCategoryId } from './Recommendations.categories';
+import {
+  CATEGORY_PARAM,
+  DISMISSED_CHECKS_STORAGE_KEY,
+  DISMISSED_FINDINGS_STORAGE_KEY,
+  FOCUS_PARAM,
+} from './Recommendations.constants';
+import { getEntryPoint, RecommendationsEntryPoint, SOURCE_PARAM } from './Recommendations.links';
+import { getDismissedCheckIds } from './Recommendations.utils';
+
+// Browser-local like the app's other dismissible prompts; M1 has no server-side state.
+export function useDismissedRecommendations() {
+  const [stored, setStored] = useLocalStorage<RecommendationId[]>(DISMISSED_FINDINGS_STORAGE_KEY, []);
+  const dismissed = useMemo(() => stored.filter(isRecommendationId), [stored]);
+
+  const dismiss = useCallback(
+    (id: RecommendationId) => {
+      setStored((current) => (current.includes(id) ? current : [...current, id]));
+      trackRecommendationDismissed({ finding: id, scope: 'finding' });
+    },
+    [setStored]
+  );
+
+  const restoreAll = useCallback(() => {
+    dismissed.forEach((id) => trackRecommendationRestored({ finding: id, scope: 'finding' }));
+    setStored([]);
+  }, [dismissed, setStored]);
+
+  return { dismissed, dismiss, restoreAll };
+}
+
+const NO_DISMISSED_CHECKS: DismissedChecks = {};
+
+// Read by the landing view so its action label counts the same rows the panel will.
+export function useDismissedCheckMap(): DismissedChecks {
+  const [stored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
+
+  return useMemo(() => (stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : {}), [stored]);
+}
+
+// Separate from finding dismissals so either can be restored on its own.
+export function useDismissedChecks(finding: RecommendationId) {
+  const [stored, setStored] = useLocalStorage<DismissedChecks>(DISMISSED_CHECKS_STORAGE_KEY, NO_DISMISSED_CHECKS);
+  const dismissedIds = useMemo(() => getDismissedCheckIds(stored, finding), [stored, finding]);
+
+  // Takes a list because one dismissal can resolve several checks at once, and that is one
+  // user action: one write, one event.
+  const dismissChecks = useCallback(
+    (checks: Check[]) => {
+      if (checks.length === 0) {
+        return;
+      }
+
+      setStored((current) => {
+        const ids = getDismissedCheckIds(current, finding);
+        const added = checks.map((check) => check.id!).filter((id) => !ids.includes(id));
+
+        return added.length === 0 ? current : { ...current, [finding]: [...ids, ...added] };
+      });
+      trackRecommendationDismissed({ finding, scope: 'check' });
+    },
+    [finding, setStored]
+  );
+
+  const dismissCheck = useCallback((check: Check) => dismissChecks([check]), [dismissChecks]);
+
+  const restoreChecks = useCallback(() => {
+    setStored(({ [finding]: _removed, ...rest } = {}) => rest);
+    trackRecommendationRestored({ finding, scope: 'check' });
+  }, [finding, setStored]);
+
+  return { dismissedIds, dismissCheck, dismissChecks, restoreChecks };
+}
+
+export function useRowSelection(checks: Check[]) {
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+
+  // Rows leave the list when acted on, dismissed or refetched; the selection follows them out.
+  const selected = useMemo(() => checks.filter((check) => selectedIds.includes(check.id!)), [checks, selectedIds]);
+
+  const toggle = useCallback((check: Check) => {
+    setSelectedIds((current) =>
+      current.includes(check.id!) ? current.filter((id) => id !== check.id) : [...current, check.id!]
+    );
+  }, []);
+
+  const clear = useCallback(() => setSelectedIds([]), []);
+
+  const deselect = useCallback((checks: Check[]) => {
+    const ids = checks.map((check) => check.id);
+    setSelectedIds((current) => current.filter((id) => !ids.includes(id)));
+  }, []);
+
+  const isSelected = useCallback((check: Check) => selectedIds.includes(check.id!), [selectedIds]);
+
+  return { selected, isSelected, toggle, clear, deselect };
+}
+
+interface ImpressionContext {
+  /** Panels on screen right now: the active category's, or none on the landing view. */
+  shown: Recommendation[];
+  /** Builds the visit's event when it is reported, so the duration it carries ends then. */
+  getVisit: () => TabViewed;
+  /** False while a finding's inputs are still loading, so the visit is not counted early. */
+  isComplete: boolean;
+}
+
+// A finding counts as shown the first time its panel renders, so an unopened category is not "seen".
+export function useRecommendationImpressions({ shown, getVisit, isComplete }: ImpressionContext) {
+  const visitReported = useRef(false);
+  const shownReported = useRef(new Set<RecommendationId>());
+
+  useEffect(() => {
+    // The visit is reported once, so reporting it before every finder has its inputs
+    // would freeze counts that are missing findings.
+    if (visitReported.current || !isComplete) {
+      return;
+    }
+
+    visitReported.current = true;
+    trackRecommendationsTabViewed(getVisit());
+  }, [getVisit, isComplete]);
+
+  useEffect(() => {
+    // While inputs are loading the tab renders a placeholder, so nothing has been seen yet.
+    if (!isComplete) {
+      return;
+    }
+
+    shown.forEach(({ id, checks }) => {
+      if (!shownReported.current.has(id)) {
+        shownReported.current.add(id);
+        trackRecommendationShown({ finding: id, affectedCheckCount: checks.length });
+      }
+    });
+  }, [shown, isComplete]);
+}
+
+/**
+ * How the user got onto the tab, read once on arrival. The `source` param is then dropped from the
+ * URL, so a refresh, bookmark or shared link is not counted as having arrived the same way.
+ */
+export function useEntryPoint(): RecommendationsEntryPoint {
+  const source = useURLSearchParams().get(SOURCE_PARAM);
+  const [entryPoint] = useState(() => getEntryPoint(source));
+
+  // Keyed on the param, not mount: clicking the tab while on it puts the param back.
+  useEffect(() => {
+    if (source === null) {
+      return;
+    }
+
+    const { pathname, search } = locationService.getLocation();
+    const next = new URLSearchParams(search);
+    next.delete(SOURCE_PARAM);
+    const query = next.toString();
+    locationService.replace(query ? `${pathname}?${query}` : pathname);
+  }, [source]);
+
+  return entryPoint;
+}
+
+export const ATTENTION_VIEW = 'attention';
+
+export type RecommendationsView = typeof ATTENTION_VIEW | RecommendationCategoryId;
+
+// `?category=<id>`, or `?finding=<RecommendationId>` which wins and selects the finding's category.
+export function useRecommendationsView() {
+  const { pathname, search } = useLocation();
+  const params = useURLSearchParams();
+  const focusParam = params.get(FOCUS_PARAM);
+  const categoryParam = params.get(CATEGORY_PARAM);
+  const focusedId = isRecommendationId(focusParam) ? focusParam : undefined;
+
+  const view: RecommendationsView = focusedId
+    ? getCategoryForFinding(focusedId).id
+    : isCategoryId(categoryParam)
+      ? categoryParam
+      : ATTENTION_VIEW;
+
+  const setView = useCallback(
+    (next: RecommendationsView) => {
+      const nextParams = new URLSearchParams(search);
+      // Otherwise the focused finding keeps pulling the view back to its category.
+      nextParams.delete(FOCUS_PARAM);
+
+      if (next === ATTENTION_VIEW) {
+        nextParams.delete(CATEGORY_PARAM);
+      } else {
+        nextParams.set(CATEGORY_PARAM, next);
+      }
+
+      // Pushed so Back returns to the landing view rather than leaving the tab.
+      const nextSearch = nextParams.toString();
+      locationService.push(nextSearch ? `${pathname}?${nextSearch}` : pathname);
+    },
+    [pathname, search]
+  );
+
+  return { view, setView, focusedId };
+}
+
+function isRecommendationId(value: string | null | undefined): value is RecommendationId {
+  return value != null && Object.values(RecommendationId).includes(value as RecommendationId);
+}

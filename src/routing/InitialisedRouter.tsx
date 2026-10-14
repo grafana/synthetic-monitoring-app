@@ -15,6 +15,8 @@ import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { SceneRedirecter } from 'components/SceneRedirecter';
 import { AlertingPage } from 'page/AlertingPage';
 import { CheckList } from 'page/CheckList';
+import { ChecksPageLayout } from 'page/ChecksPageLayout';
+import { RecommendationsTab } from 'page/ChecksPageLayout/tabs/Recommendations';
 import { ChooseCheckGroup } from 'page/ChooseCheckGroup';
 import { ConfigPageLayout } from 'page/ConfigPageLayout';
 import { AccessTokensTab } from 'page/ConfigPageLayout/tabs/AccessTokensTab';
@@ -22,11 +24,12 @@ import { GeneralTab } from 'page/ConfigPageLayout/tabs/GeneralTab';
 import { LabelMigrationTab } from 'page/ConfigPageLayout/tabs/LabelMigrationTab';
 import { SecretsManagementTab } from 'page/ConfigPageLayout/tabs/SecretsManagementTab';
 import { TerraformTab } from 'page/ConfigPageLayout/tabs/TerraformTab';
+import { ContactAdminAlert } from 'page/ContactAdminAlert';
 import { DashboardPage } from 'page/DashboardPage';
 import { EditProbe } from 'page/EditProbe';
 import { NewProbe } from 'page/NewProbe';
 import { CheckNotFound } from 'page/NotFound/CheckNotFound';
-import { PluginPageNotFound } from 'page/NotFound/NotFound';
+import { NotFound, PluginPageNotFound } from 'page/NotFound/NotFound';
 import { Probes } from 'page/Probes';
 import { SceneHomepage } from 'page/SceneHomepage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
@@ -40,6 +43,9 @@ export const InitialisedRouter = () => {
   const navigate = useNavigation();
   const { isEnabled: isCheckSuggestionsEnabled, isReady: isCheckSuggestionsReady } = useFeatureFlag(
     FeatureName.CheckSuggestions
+  );
+  const { isEnabled: isRecommendationsEnabled, isReady: isRecommendationsReady } = useFeatureFlag(
+    FeatureName.Recommendations
   );
   const { isEnabled: isSecretsManagementEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
 
@@ -75,7 +81,29 @@ export const InitialisedRouter = () => {
       />
 
       <Route path={AppRoutes.Checks}>
-        <Route index element={<CheckList />} />
+        {/* Only the tabbed routes sit under the layout; the editor and dashboard keep their own chrome. */}
+        <Route element={<ChecksPageLayout />}>
+          <Route index element={<CheckList />} />
+          {/* Always registered so an async flag can't drop the route mid-resolution. */}
+          <Route
+            path="recommendations"
+            element={
+              !isRecommendationsReady ? (
+                <Spinner />
+              ) : !isRecommendationsEnabled ? (
+                <NotFound>
+                  The page you are looking for does not exist. Here is a working link to{' '}
+                  <TextLink href={getRoute(AppRoutes.Checks)}>checks listing</TextLink>.
+                </NotFound>
+              ) : canReadChecks ? (
+                <RecommendationsTab />
+              ) : (
+                // The layout already provides the page; UnauthorizedPage would nest a second one.
+                <ContactAdminAlert missingPermissions={['grafana-synthetic-monitoring-app.checks:read']} />
+              )
+            }
+          />
+        </Route>
         <Route path=":id">
           <Route
             index
