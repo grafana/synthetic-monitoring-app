@@ -81,9 +81,10 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
   });
 
   return {
-    // Only Overview adds its own crumb; the other tabs keep the Synthetics section trail unchanged.
-    text: isOverview ? 'Overview' : isConfiguration ? 'Configuration' : 'Synthetics',
-    url: isOverview ? OVERVIEW_BREADCRUMB_URL : isConfiguration ? configurationUrl : getRoute(AppRoutes.Home),
+    // Only Overview adds its own crumb. Grafana dedupes the section crumb against this URL even when it is
+    // hidden, so it must not be a section page's URL (Config's) or that section crumb disappears.
+    text: isOverview ? 'Overview' : 'Synthetics',
+    url: isOverview ? OVERVIEW_BREADCRUMB_URL : getRoute(AppRoutes.Home),
     hideFromBreadcrumbs: !isOverview,
     children: tabs,
   };

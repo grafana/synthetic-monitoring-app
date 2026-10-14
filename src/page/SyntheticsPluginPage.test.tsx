@@ -101,6 +101,13 @@ describe('getSyntheticsPageNav', () => {
     expect(getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).hideFromBreadcrumbs).toBe(true);
   });
 
+  it('keeps the Config breadcrumb on the Configuration tab', () => {
+    // Grafana drops the section crumb when its URL matches the pageNav's, hidden or not.
+    expect(getSyntheticsPageNav(SyntheticsTab.Configuration, ALL_TABS_VISIBLE).url).not.toBe(
+      getRoute(AppRoutes.Config)
+    );
+  });
+
   it.each(['Recommendations', 'Check Suggestions'])('shows the NEW badge on the %s tab', (text) => {
     const Suffix = findTab(SyntheticsTab.Home, text)?.tabSuffix;
 
