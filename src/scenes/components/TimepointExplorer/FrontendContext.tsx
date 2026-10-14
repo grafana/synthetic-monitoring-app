@@ -15,6 +15,7 @@ import {
   useTheme2,
 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { FailureSignature, FaroScope } from 'queries/frontendContext';
 
 import { CheckType } from 'types';
 import { getCheckType } from 'utils';
@@ -40,9 +41,7 @@ import {
   buildFaroErrorHref,
   BuildInsight,
   BuildStart,
-  FailureSignature,
   FaroRunContext,
-  FaroScope,
   formatBuild,
   formatDurationMs,
   formatRelativeDuration,

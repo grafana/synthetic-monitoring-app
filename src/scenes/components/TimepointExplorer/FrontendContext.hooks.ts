@@ -5,6 +5,17 @@ import { getBackendSrv } from '@grafana/runtime';
 import { parseLokiLogs } from 'features/parseLokiLogs/parseLokiLogs';
 import { queryDS } from 'features/queryDatasources/queryDS';
 import { LOKI_LOG_LIMIT, queryLoki } from 'features/queryDatasources/queryLoki';
+import {
+  buildBuildActivityLogQL,
+  buildFailureSessionsLogQL,
+  buildFailureTrendLogQL,
+  buildFaroRunLogQL,
+  buildJourneyErrorSessionsLogQL,
+  buildJourneySessionsLogQL,
+  buildRealUserBuildLoadsLogQL,
+  FailureSignature,
+  FaroScope,
+} from 'queries/frontendContext';
 import { firstValueFrom } from 'rxjs';
 
 import { Check, CheckType } from 'types';
@@ -14,17 +25,8 @@ import { useLogsDS } from 'hooks/useLogsDS';
 import {
   AppBuild,
   BuildActivity,
-  buildBuildActivityLogQL,
-  buildFailureSessionsLogQL,
-  buildFailureTrendLogQL,
-  buildFaroRunLogQL,
-  buildJourneyErrorSessionsLogQL,
-  buildJourneySessionsLogQL,
-  buildRealUserBuildLoadsLogQL,
-  FailureSignature,
   FailureTrend,
   FaroRunContext,
-  FaroScope,
   formatBuild,
   getBuildActivity,
   getBuildChanges,
