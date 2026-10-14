@@ -171,6 +171,7 @@ interface UseAppBuildActivityProps {
   to: number;
   stepMs: number;
   enabled?: boolean;
+  keepPreviousActivity?: boolean;
 }
 
 export function useAppBuildActivity({
@@ -180,6 +181,7 @@ export function useAppBuildActivity({
   to,
   stepMs,
   enabled = true,
+  keepPreviousActivity = false,
 }: UseAppBuildActivityProps) {
   const logsDS = useLogsDS();
   const canQuery = Boolean(logsDS && appId && from < to && enabled);
@@ -216,6 +218,25 @@ export function useAppBuildActivity({
       }
     },
     enabled: canQuery,
+    placeholderData: (previousData, previousQuery) => {
+      if (!keepPreviousActivity || !canQuery || !previousData) {
+        return undefined;
+      }
+
+      const [, previousDatasource, previousApp, previousEnvironment] = previousQuery?.queryKey ?? [];
+      const sameScope =
+        previousDatasource === logsDS?.uid && previousApp === appId && previousEnvironment === appEnvironment;
+      // Keep markers while a live window advances, but not after changing scope,
+      // resolution, or moving to a narrower or unrelated time range.
+      const advancingWindow =
+        previousData.stepMs === stepMs &&
+        from >= previousData.from &&
+        to >= previousData.to &&
+        from < previousData.to &&
+        to - from >= previousData.to - previousData.from;
+
+      return sameScope && advancingWindow ? previousData : undefined;
+    },
     ...QUERY_DEFAULTS,
   });
 }
@@ -479,10 +500,13 @@ export function useAppBuildChangeEvents({
   const { data } = useAppBuildActivity({
     appId: run?.appId,
     appEnvironment: run?.appEnvironment,
-    from,
-    to,
+    // Completed buckets keep live refreshes on the same cache entry. Fixed run
+    // history still uses its exact completion time through useRunBuildHistory.
+    from: Math.floor(from / stepMs) * stepMs,
+    to: Math.floor(to / stepMs) * stepMs,
     stepMs,
     enabled: Boolean(run),
+    keepPreviousActivity: true,
   });
   return useMemo(() => {
     if (!data) {
