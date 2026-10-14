@@ -85,6 +85,11 @@ function readBuild(labels: Record<string, string>): AppBuild {
 // The check run's own Faro session
 // ---------------------------------------------------------------------------
 
+export interface FailureLocation {
+  pageId: string;
+  actionName?: string;
+}
+
 export interface RunError {
   key: string;
   type: string;
@@ -95,10 +100,8 @@ export interface RunError {
   template?: string;
   // Frontend Observability's error group id
   hash?: string;
-  pageId: string;
-  actionName?: string;
   count: number;
-  timestamp: number;
+  locations: FailureLocation[];
 }
 
 export interface RunFailedRequest {
@@ -109,11 +112,10 @@ export interface RunFailedRequest {
   // 0 means the request got no response at all (network failure, CORS, aborted)
   statusCode: number;
   durationMs?: number;
-  pageId: string;
-  actionName?: string;
   traceId?: string;
   count: number;
   timestamp: number;
+  locations: FailureLocation[];
 }
 
 export interface FaroRunContext {
@@ -124,6 +126,8 @@ export interface FaroRunContext {
   sessionId: string;
   // page ids in the order the run first visited them
   pages: string[];
+  lastPageId?: string;
+  isTruncated?: boolean;
   errors: RunError[];
   failedRequests: RunFailedRequest[];
 }
@@ -163,6 +167,12 @@ export function isFailedStatus(statusCode: number): boolean {
   return statusCode === 0 || (statusCode >= 400 && statusCode < 600);
 }
 
+function addLocation(locations: FailureLocation[], pageId: string, actionName?: string) {
+  if (!locations.some((location) => location.pageId === pageId && location.actionName === actionName)) {
+    locations.push({ pageId, actionName });
+  }
+}
+
 /**
  * Distils one check run's Faro records into what matters when the run
  * failed: which build it was served, which pages it visited, and the errors
@@ -187,6 +197,7 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
   const failedRequests = new Map<string, RunFailedRequest>();
   let appName: string | undefined;
   let appEnvironment: string | undefined;
+  let lastPageId: string | undefined;
   let build: AppBuild = {};
 
   records.forEach((record) => {
@@ -200,8 +211,11 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
       build = readBuild(labels);
     }
 
-    if (pageId && !pages.includes(pageId)) {
-      pages.push(pageId);
+    if (pageId) {
+      lastPageId = pageId;
+      if (!pages.includes(pageId)) {
+        pages.push(pageId);
+      }
     }
 
     if (labels.kind === 'exception') {
@@ -212,6 +226,7 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
 
       if (existing) {
         existing.count += 1;
+        addLocation(existing.locations, pageId, nonEmpty(labels.action_name));
         return;
       }
 
@@ -221,10 +236,8 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
         message,
         template,
         hash: nonEmpty(labels.hash),
-        pageId,
-        actionName: nonEmpty(labels.action_name),
         count: 1,
-        timestamp: record.timestamp,
+        locations: [{ pageId, actionName: nonEmpty(labels.action_name) }],
       });
 
       return;
@@ -242,17 +255,22 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
 
       if (existing) {
         existing.count += 1;
+        addLocation(existing.locations, pageId, nonEmpty(labels.action_name));
+        const traceId = nonEmpty(labels.traceID) ?? nonEmpty(labels.trace_id);
+        if (!existing.traceId && traceId) {
+          existing.traceId = traceId;
+          existing.timestamp = record.timestamp;
+        }
         return;
       }
 
       failedRequests.set(key, {
         key,
         ...request,
-        pageId,
-        actionName: nonEmpty(labels.action_name),
         traceId: nonEmpty(labels.traceID) ?? nonEmpty(labels.trace_id),
         count: 1,
         timestamp: record.timestamp,
+        locations: [{ pageId, actionName: nonEmpty(labels.action_name) }],
       });
     }
   });
@@ -264,6 +282,7 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
     build,
     sessionId: session.sessionId,
     pages,
+    lastPageId,
     errors: [...errors.values()],
     failedRequests: [...failedRequests.values()],
   };
@@ -279,13 +298,22 @@ export function parseFaroRunContext(logs: FaroRecord[]): FaroRunContext | null {
  * serving. Only hard navigations carry `ttfb`, so this counts page loads,
  * not every event.
  */
-export function buildBuildActivityLogQL({ appId, step }: { appId: string; step: string }): string {
-  return `sum by (app_version, app_bundle_id) (count_over_time({kind="measurement", app_id="${escapeLogQLString(appId)}"} |= " ttfb=" | logfmt [${step}]))`;
+export interface FaroScope {
+  appId: string;
+  appEnvironment?: string;
+}
+
+function environmentFilter(appEnvironment?: string): string {
+  return appEnvironment ? `| app_environment="${escapeLogQLString(appEnvironment)}"` : '';
+}
+
+export function buildBuildActivityLogQL({ appId, appEnvironment, step }: FaroScope & { step: string }): string {
+  return `sum by (app_version, app_bundle_id) (count_over_time({kind="measurement", app_id="${escapeLogQLString(appId)}"} |= " ttfb=" | logfmt ${environmentFilter(appEnvironment)} [${step}]))`;
 }
 
 /** Real-user page loads per build over `range`, to see which build users were actually on. */
-export function buildRealUserBuildLoadsLogQL({ appId, range }: { appId: string; range: string }): string {
-  return `sum by (app_version, app_bundle_id) (count_over_time({kind="measurement", app_id="${escapeLogQLString(appId)}"} |= " ttfb=" | logfmt ${REAL_USERS_FILTER} [${range}]))`;
+export function buildRealUserBuildLoadsLogQL({ appId, appEnvironment, range }: FaroScope & { range: string }): string {
+  return `sum by (app_version, app_bundle_id) (count_over_time({kind="measurement", app_id="${escapeLogQLString(appId)}"} |= " ttfb=" | logfmt ${environmentFilter(appEnvironment)} ${REAL_USERS_FILTER} [${range}]))`;
 }
 
 export type SeriesPoint = [time: number, value: number];
@@ -326,11 +354,12 @@ export function getBuildActivity(series: LabelledSeries[]): BuildActivity[] {
       entry.points.push([time, value]);
     });
 
-    entry.points.sort((a, b) => a[0] - b[0]);
     byKey.set(key, entry);
   });
 
-  return [...byKey.values()].sort((a, b) => a.firstSeen - b.firstSeen);
+  const activity = [...byKey.values()].sort((a, b) => a.firstSeen - b.firstSeen);
+  activity.forEach((entry) => entry.points.sort((a, b) => a[0] - b[0]));
+  return activity;
 }
 
 function findPreviousBuild(activity: BuildActivity[], current: BuildActivity): AppBuild | undefined {
@@ -352,65 +381,30 @@ export interface BuildChange {
 const MIN_LOADS_FOR_BUILD_CHANGE = 2;
 
 /**
- * Builds that started serving inside the window. A build already serving in
- * the window's first bucket predates the window, so it isn't a change we can
- * date.
+ * Builds first observed after the window's first bucket. These are observations,
+ * not a deployment log: an older build may reappear or have sparse traffic.
  */
-export function getBuildChanges(activity: BuildActivity[]): BuildChange[] {
-  if (activity.length < 2) {
-    return [];
-  }
-
-  const windowStart = Math.min(...activity.map((entry) => entry.firstSeen));
-
+export function getBuildChanges(activity: BuildActivity[], from: number, stepMs: number): BuildChange[] {
   return activity
-    .filter((entry) => entry.firstSeen > windowStart && entry.loads >= MIN_LOADS_FOR_BUILD_CHANGE)
+    .filter((entry) => entry.firstSeen > from + stepMs && entry.loads >= MIN_LOADS_FOR_BUILD_CHANGE)
     .map((entry) => ({ time: entry.firstSeen, build: entry.build, previous: findPreviousBuild(activity, entry) }));
 }
 
 // ---------------------------------------------------------------------------
-// When a build went live
+// When a build was observed
 // ---------------------------------------------------------------------------
-
-/** Source-map upload time per bundle id, from Frontend Observability. */
-export type SourceMapUploads = Record<string, number>;
 
 export interface BuildStart {
   from: number;
   to: number;
-  // `source-maps`: dated by the upload of the build's source maps, so `from`
-  // and `to` are the same moment. `page-loads`: the bucket in which Faro first
-  // saw a page load on the build.
-  source: 'source-maps' | 'page-loads';
 }
 
 /**
  * Page-load buckets only place a build's first appearance somewhere in
- * `(firstSeen - step, firstSeen]`. A source-map upload in or just before that
- * bucket pins it down: pipelines that upload at deploy time land there. An
- * upload well before the bucket was for a build deployed later, so its time
- * says nothing about the deploy.
+ * `(firstSeen - step, firstSeen]`, not at an exact deployment time.
  */
-export function getBuildStart({
-  firstSeen,
-  stepMs,
-  uploadedAt,
-  notAfter = Infinity,
-}: {
-  firstSeen: number;
-  stepMs: number;
-  uploadedAt?: number;
-  // the run was served this build, so it was live by then
-  notAfter?: number;
-}): BuildStart {
-  const bucketStart = firstSeen - stepMs;
-  const latest = Math.min(firstSeen, notAfter);
-
-  if (uploadedAt !== undefined && uploadedAt > bucketStart - stepMs && uploadedAt <= latest) {
-    return { from: uploadedAt, to: uploadedAt, source: 'source-maps' };
-  }
-
-  return { from: bucketStart, to: Math.max(bucketStart, latest), source: 'page-loads' };
+export function getBuildStart({ firstSeen, stepMs }: { firstSeen: number; stepMs: number }): BuildStart {
+  return { from: firstSeen - stepMs, to: firstSeen };
 }
 
 // ---------------------------------------------------------------------------
@@ -423,25 +417,18 @@ export interface BuildShare {
 }
 
 /**
- * - `same`: most real users were on the run's build.
- * - `rolling-out`: the run got a newer build that went live inside the
- *   comparison window, so most of that window's users loaded the page before
- *   the deploy. Expected, not a problem.
- * - `newer`: the run got a newer build that has been live for longer than the
- *   window and most users still don't get it: a partial rollout or canary.
- * - `older`: most real users were on a newer build than the run got: a stale
- *   cache, CDN or instance served the check.
- * - `different`: most users were on another build and the order is unknown.
+ * Comparisons describe observed traffic, not version or deployment order.
+ * `rolling-out` means the run's build was observed later, inside the comparison
+ * window. `newer` / `older` mean observed later / earlier. These observations
+ * alone cannot identify a canary, rollback, or stale cache.
  */
 export type RealUserComparison = 'same' | 'rolling-out' | 'newer' | 'older' | 'different';
 
 export interface BuildInsight {
-  runBuild: AppBuild;
-  // set when the run's build started serving inside the lookback window
+  observedInFirstBucket: boolean;
+  // set when the run's build was first observed after the initial bucket
   start?: BuildStart;
   previous?: AppBuild;
-  // when the run's build's source maps were uploaded, however long ago
-  uploadedAt?: number;
   realUsers?: {
     loads: number;
     runBuildShare: number;
@@ -480,32 +467,27 @@ function compareWithRealUsers({
 
 export function getBuildInsight({
   runBuild,
-  runTime,
   activity,
+  historyFrom,
   stepMs,
   realUserLoads,
   realUserWindowFrom,
-  uploads = {},
 }: {
   runBuild: AppBuild;
-  runTime: number;
   activity: BuildActivity[];
+  historyFrom: number;
   stepMs: number;
   realUserLoads: LabelledSeries[];
   realUserWindowFrom: number;
-  uploads?: SourceMapUploads;
 }): BuildInsight {
   const runKey = getBuildKey(runBuild);
   const runEntry = activity.find((entry) => entry.key === runKey);
-  const windowStart = activity.length ? Math.min(...activity.map((entry) => entry.firstSeen)) : undefined;
-  const uploadedAt = runBuild.bundleId ? uploads[runBuild.bundleId] : undefined;
 
-  // Unlike getBuildChanges, one page load is enough: the run itself proves
-  // the build was serving, and right after a deploy it may be the only one.
-  const isNew = runEntry !== undefined && windowStart !== undefined && runEntry.firstSeen > windowStart;
-  const start = isNew
-    ? getBuildStart({ firstSeen: runEntry.firstSeen, stepMs, uploadedAt, notAfter: runTime })
-    : undefined;
+  // One page load is enough to describe the run's build. Missing observations
+  // remain unknown rather than evidence that a build predates this window.
+  const observedInFirstBucket = runEntry !== undefined && runEntry.firstSeen <= historyFrom + stepMs;
+  const isNew = runEntry !== undefined && !observedInFirstBucket;
+  const start = isNew ? getBuildStart({ firstSeen: runEntry.firstSeen, stepMs }) : undefined;
 
   const loadsByBuild = new Map<string, { build: AppBuild; loads: number }>();
 
@@ -544,10 +526,9 @@ export function getBuildInsight({
   }
 
   return {
-    runBuild,
+    observedInFirstBucket,
     start,
     previous: isNew ? findPreviousBuild(activity, runEntry) : undefined,
-    uploadedAt,
     realUsers,
   };
 }
@@ -570,7 +551,7 @@ export function getBuildSegments(activity: BuildActivity[], from: number, to: nu
     const bucketEnd = Math.min(to, bucketStart + stepMs);
     let winner: { key: string; loads: number } | null = null;
 
-    activity.forEach((entry) => {
+    for (const entry of activity) {
       // a point at time t covers [t - step, t]
       const loads = entry.points
         .filter(([time]) => time > bucketStart && time <= bucketEnd)
@@ -579,9 +560,9 @@ export function getBuildSegments(activity: BuildActivity[], from: number, to: nu
       if (loads > 0 && (!winner || loads > winner.loads)) {
         winner = { key: entry.key, loads };
       }
-    });
+    }
 
-    const key = winner ? (winner as { key: string }).key : null;
+    const key = winner?.key ?? null;
     const last = segments.at(-1);
 
     if (last && last.key === key) {
@@ -621,7 +602,7 @@ function eitherLabel(names: string[], matcher: string): string {
 }
 
 /** Log stream selecting real-user records that match the run's failure. */
-export function buildFailureStream(appId: string, signature: FailureSignature): string {
+export function buildFailureStream(appId: string, signature: FailureSignature, appEnvironment?: string): string {
   const app = escapeLogQLString(appId);
 
   if (signature.kind === 'exception') {
@@ -629,7 +610,7 @@ export function buildFailureStream(appId: string, signature: FailureSignature): 
       ? `| value_template="${escapeLogQLString(signature.template)}"`
       : `| value="${escapeLogQLString(signature.message)}"`;
 
-    return `{kind="exception", app_id="${app}"} | logfmt ${REAL_USERS_FILTER} ${match}`;
+    return `{kind="exception", app_id="${app}"} | logfmt ${environmentFilter(appEnvironment)} ${REAL_USERS_FILTER} ${match}`;
   }
 
   const urlMatch = signature.urlTemplate
@@ -640,7 +621,7 @@ export function buildFailureStream(appId: string, signature: FailureSignature): 
       );
 
   return [
-    `{kind="event", app_id="${app}"} |~ "event_name=faro.tracing.(fetch|xml-http-request)" | logfmt ${REAL_USERS_FILTER}`,
+    `{kind="event", app_id="${app}"} |~ "event_name=faro.tracing.(fetch|xml-http-request)" | logfmt ${environmentFilter(appEnvironment)} ${REAL_USERS_FILTER}`,
     urlMatch,
     eitherLabel(
       ['event_data_http_request_method', 'event_data_http_method'],
@@ -652,26 +633,26 @@ export function buildFailureStream(appId: string, signature: FailureSignature): 
 
 export function buildFailureSessionsLogQL({
   appId,
+  appEnvironment,
   signature,
   range,
-}: {
-  appId: string;
+}: FaroScope & {
   signature: FailureSignature;
   range: string;
 }): string {
-  return `count(sum by (session_id) (count_over_time(${buildFailureStream(appId, signature)} [${range}])))`;
+  return `count(sum by (session_id) (count_over_time(${buildFailureStream(appId, signature, appEnvironment)} [${range}])))`;
 }
 
 export function buildFailureTrendLogQL({
   appId,
+  appEnvironment,
   signature,
   step,
-}: {
-  appId: string;
+}: FaroScope & {
   signature: FailureSignature;
   step: string;
 }): string {
-  return `sum(count_over_time(${buildFailureStream(appId, signature)} [${step}]))`;
+  return `sum(count_over_time(${buildFailureStream(appId, signature, appEnvironment)} [${step}]))`;
 }
 
 export interface FailureTrend {
@@ -679,6 +660,7 @@ export interface FailureTrend {
   buckets: number[];
   // when the failure first appeared, if that was inside the window
   firstSeen?: number;
+  firstSeenTo?: number;
 }
 
 /**
@@ -689,7 +671,7 @@ export interface FailureTrend {
 export function getFailureTrend(points: SeriesPoint[], from: number, to: number, stepMs: number): FailureTrend {
   const bucketCount = Math.max(1, Math.ceil((to - from) / stepMs));
   const buckets = new Array<number>(bucketCount).fill(0);
-  const active = points.filter(([, value]) => value > 0).sort((a, b) => a[0] - b[0]);
+  const active = points.filter(([time, value]) => value > 0 && time > from && time <= to).sort((a, b) => a[0] - b[0]);
 
   active.forEach(([time, value]) => {
     const index = Math.min(bucketCount - 1, Math.max(0, Math.ceil((time - from) / stepMs) - 1));
@@ -700,7 +682,8 @@ export function getFailureTrend(points: SeriesPoint[], from: number, to: number,
 
   return {
     buckets,
-    firstSeen: firstIndex > 0 ? active[0]?.[0] : undefined,
+    firstSeen: firstIndex > 0 ? Math.max(from, active[0][0] - stepMs) : undefined,
+    firstSeenTo: firstIndex > 0 ? active[0][0] : undefined,
   };
 }
 
@@ -715,34 +698,34 @@ function pagePattern(pageIds: string[]): string {
 /** Distinct real-user sessions per page, for the pages the run visited. */
 export function buildJourneySessionsLogQL({
   appId,
+  appEnvironment,
   pageIds,
   range,
-}: {
-  appId: string;
+}: FaroScope & {
   pageIds: string[];
   range: string;
 }) {
-  return `count by (page_id) (sum by (page_id, session_id) (count_over_time({kind=~"event|measurement", app_id="${escapeLogQLString(appId)}"} | logfmt ${REAL_USERS_FILTER} | page_id=~"${pagePattern(pageIds)}" [${range}])))`;
+  return `count by (page_id) (sum by (page_id, session_id) (count_over_time({kind=~"event|measurement|exception", app_id="${escapeLogQLString(appId)}"} | logfmt ${environmentFilter(appEnvironment)} ${REAL_USERS_FILTER} | page_id=~"${pagePattern(pageIds)}" [${range}])))`;
 }
 
 /** Distinct real-user sessions per page that threw at least one JS error there. */
 export function buildJourneyErrorSessionsLogQL({
   appId,
+  appEnvironment,
   pageIds,
   range,
-}: {
-  appId: string;
+}: FaroScope & {
   pageIds: string[];
   range: string;
 }) {
-  return `count by (page_id) (sum by (page_id, session_id) (count_over_time({kind="exception", app_id="${escapeLogQLString(appId)}"} | logfmt ${REAL_USERS_FILTER} | page_id=~"${pagePattern(pageIds)}" [${range}])))`;
+  return `count by (page_id) (sum by (page_id, session_id) (count_over_time({kind="exception", app_id="${escapeLogQLString(appId)}"} | logfmt ${environmentFilter(appEnvironment)} ${REAL_USERS_FILTER} | page_id=~"${pagePattern(pageIds)}" [${range}])))`;
 }
 
 export interface JourneyStep {
   pageId: string;
   sessions: number;
   errorSessions: number;
-  runFailedHere: boolean;
+  runHadErrorHere: boolean;
   runEndedHere: boolean;
 }
 
@@ -751,23 +734,23 @@ export function getJourneySteps({
   sessionsByPage,
   errorSessionsByPage,
 }: {
-  run: Pick<FaroRunContext, 'pages' | 'errors' | 'failedRequests'>;
+  run: Pick<FaroRunContext, 'pages' | 'lastPageId' | 'errors' | 'failedRequests'>;
   sessionsByPage: Record<string, number>;
   errorSessionsByPage: Record<string, number>;
 }): JourneyStep[] {
   const failedPages = new Set([
-    ...run.errors.map((error) => error.pageId),
-    ...run.failedRequests.map((request) => request.pageId),
+    ...run.errors.flatMap((error) => error.locations.map((location) => location.pageId)),
+    ...run.failedRequests.flatMap((request) => request.locations.map((location) => location.pageId)),
   ]);
 
-  return run.pages.map((pageId, index) => ({
+  return run.pages.map((pageId) => ({
     pageId,
     sessions: sessionsByPage[pageId] ?? 0,
     // error sessions are a subset of visiting sessions; clamp in case the two
     // instant queries saw slightly different data
     errorSessions: Math.min(errorSessionsByPage[pageId] ?? 0, sessionsByPage[pageId] ?? 0),
-    runFailedHere: failedPages.has(pageId),
-    runEndedHere: index === run.pages.length - 1,
+    runHadErrorHere: failedPages.has(pageId),
+    runEndedHere: pageId === run.lastPageId,
   }));
 }
 
@@ -854,7 +837,7 @@ export function formatShare(share: number): string {
 }
 
 export function escapeLogQLString(value: string): string {
-  return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+  return JSON.stringify(value).slice(1, -1);
 }
 
 export function escapeRegExp(value: string): string {

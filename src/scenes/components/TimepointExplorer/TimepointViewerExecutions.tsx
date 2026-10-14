@@ -2,7 +2,9 @@ import React, { useCallback, useId, useRef } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Alert,
+  Badge,
   Box,
+  Combobox,
   Icon,
   IconName,
   Spinner,
@@ -10,6 +12,7 @@ import {
   Tab,
   TabContent,
   TabsBar,
+  Text,
   useStyles2,
   VerticalTab,
 } from '@grafana/ui';
@@ -47,6 +50,10 @@ interface TimepointViewerExecutionsProps {
   selectedSource: TimepointViewerSource;
   timepoint: StatelessTimepoint;
 }
+
+const NewContextBadge = ({ className }: { className?: string }) => (
+  <Badge text="NEW" color="blue" className={className} />
+);
 
 export const TimepointViewerExecutions = ({
   isLoading,
@@ -177,17 +184,52 @@ export const TimepointViewerExecutions = ({
 
   const otherSource = selectedSource === 'synthetic' ? 'frontend' : 'synthetic';
   const handleRailKeyDown = (event: React.KeyboardEvent<HTMLAnchorElement>) => {
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    const nextSource =
+      event.key === 'Home'
+        ? 'synthetic'
+        : event.key === 'End'
+          ? 'frontend'
+          : event.key === 'ArrowDown' || event.key === 'ArrowUp'
+            ? otherSource
+            : undefined;
+
+    if (nextSource) {
       event.preventDefault();
-      onChangeSource(otherSource);
-      (otherSource === 'synthetic' ? syntheticTabRef : frontendTabRef).current?.focus();
+      onChangeSource(nextSource);
+      (nextSource === 'synthetic' ? syntheticTabRef : frontendTabRef).current?.focus();
     }
   };
+  const selectedProbe = tabsToRender.find(({ probeName }) => probeName === probeNameToView);
+  const executionOptions = (selectedProbe?.executions ?? []).map((_, index, executions) => ({
+    label: `Execution ${index + 1} of ${executions.length}`,
+    value: index,
+  }));
 
   return (
     <>
       {probeTabs}
       <TabContent>
+        {selectedProbe && executionOptions.length > 0 && (
+          <Box paddingY={1}>
+            {executionOptions.length > 1 ? (
+              <Combobox<number>
+                aria-label="Execution"
+                width={28}
+                options={executionOptions}
+                value={viewerExecutionIndex}
+                onChange={({ value }) => {
+                  if (value !== undefined) {
+                    handleViewerStateChange([timepoint, selectedProbe.probeName, value]);
+                  }
+                }}
+              />
+            ) : (
+              <Text color="secondary" variant="bodySmall">
+                Execution 1 of 1
+              </Text>
+            )}
+          </Box>
+        )}
         <div className={styles.railLayout}>
           <div className={styles.rail} role="tablist" aria-label="Timepoint data sources" aria-orientation="vertical">
             <VerticalTab
@@ -203,6 +245,7 @@ export const TimepointViewerExecutions = ({
               }
               aria-label="Execution logs"
               active={selectedSource === 'synthetic'}
+              tabIndex={selectedSource === 'synthetic' ? 0 : -1}
               aria-controls={`${tabId}-panel`}
               onChangeTab={(event) => {
                 event.preventDefault();
@@ -216,8 +259,11 @@ export const TimepointViewerExecutions = ({
               href={`#${tabId}-panel`}
               label="Real user context"
               aria-label="Real user context"
+              aria-description="New feature"
+              suffix={NewContextBadge}
               icon="frontend-observability"
               active={selectedSource === 'frontend'}
+              tabIndex={selectedSource === 'frontend' ? 0 : -1}
               aria-controls={`${tabId}-panel`}
               onChangeTab={(event) => {
                 event.preventDefault();
@@ -343,7 +389,12 @@ const MultipleExecutions = ({
                   [styles.multipleExecutionsSelected]: isSelected,
                 })}
               >
-                <PlainButton className={styles.executionSelector} onClick={() => handleSelectExecution(index)}>
+                <PlainButton
+                  className={styles.executionSelector}
+                  onClick={() => handleSelectExecution(index)}
+                  aria-label={`Select execution ${index + 1}`}
+                  aria-pressed={isSelected}
+                >
                   <Stack direction="column" gap={2} alignItems="center">
                     <div className={styles.executionIndex}>{index + 1}</div>
                     <Icon
@@ -382,7 +433,8 @@ const getStyles = (theme: GrafanaTheme2) => {
     `,
     rail: css`
       display: flex;
-      flex: 0 0 190px;
+      flex: 0 0 auto;
+      min-width: 190px;
       flex-direction: column;
       justify-content: flex-start;
       border-right: 1px solid ${theme.colors.border.weak};
@@ -390,6 +442,7 @@ const getStyles = (theme: GrafanaTheme2) => {
 
       > [role='tab'] {
         height: auto;
+        white-space: nowrap;
       }
 
       ${theme.breakpoints.down('sm')} {

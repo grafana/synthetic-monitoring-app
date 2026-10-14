@@ -1,6 +1,11 @@
 import {
+  buildBuildActivityLogQL,
   buildFailureStream,
   buildFaroErrorHref,
+  buildJourneyErrorSessionsLogQL,
+  buildJourneySessionsLogQL,
+  buildRealUserBuildLoadsLogQL,
+  escapeLogQLString,
   FaroRecord,
   getBuildActivity,
   getBuildChanges,
@@ -63,8 +68,8 @@ describe('parseFaroRunContext', () => {
         statusCode: 500,
         urlTemplate: 'https://shop.example/api/products',
         durationMs: 120,
-        actionName: 'view-products',
         traceId: 'abc',
+        locations: [{ pageId: '/', actionName: 'view-products' }],
       }),
     ]);
   });
@@ -150,8 +155,8 @@ describe('build history', () => {
     [4 * HOUR, 498],
   ]);
 
-  it('dates a deploy that kept the same version string by its bundle id', () => {
-    const changes = getBuildChanges(getBuildActivity([OLD, NEW]));
+  it('distinguishes observed builds with the same version string by bundle id', () => {
+    const changes = getBuildChanges(getBuildActivity([OLD, NEW]), 0, HOUR);
 
     expect(changes).toEqual([
       {
@@ -163,13 +168,13 @@ describe('build history', () => {
   });
 
   it('does not report a build that was already serving when the window starts', () => {
-    expect(getBuildChanges(getBuildActivity([NEW]))).toEqual([]);
+    expect(getBuildChanges(getBuildActivity([NEW]), 2 * HOUR, HOUR)).toEqual([]);
   });
 
   it('ignores a single stray page load on another build', () => {
     const stray = buildSeries('1.0.0', 'stale', [[4 * HOUR, 1]]);
 
-    expect(getBuildChanges(getBuildActivity([OLD, stray]))).toEqual([]);
+    expect(getBuildChanges(getBuildActivity([OLD, stray]), 0, HOUR)).toEqual([]);
   });
 
   it('collapses buckets into segments of the build serving the most page loads', () => {
@@ -207,8 +212,8 @@ describe('getBuildInsight', () => {
 
     return getBuildInsight({
       runBuild: NEW_BUILD,
-      runTime: RUN_TIME,
       activity: getBuildActivity([OLD, newSeries]),
+      historyFrom: HOUR - STEP,
       stepMs: STEP,
       realUserLoads: [],
       realUserWindowFrom: REAL_USER_WINDOW_FROM,
@@ -216,15 +221,14 @@ describe('getBuildInsight', () => {
     });
   }
 
-  it('treats a build deployed just before the run as rolling out, not as the wrong build', () => {
+  it('keeps a build first observed inside the comparison window neutral', () => {
     const insight = insightFor({
       // the run itself is the only page load on the new build so far
       newSeries: buildSeries('1.0.0', 'new', [[3 * HOUR, 1]]),
       realUserLoads: realUsers(980, 20),
-      uploads: { new: RUN_TIME - 4 * MINUTE },
     });
 
-    expect(insight.start).toEqual({ from: RUN_TIME - 4 * MINUTE, to: RUN_TIME - 4 * MINUTE, source: 'source-maps' });
+    expect(insight.start).toEqual({ from: 3 * HOUR - STEP, to: 3 * HOUR });
     expect(insight.previous).toEqual(OLD_BUILD);
     expect(insight.realUsers).toEqual({
       loads: 1000,
@@ -234,18 +238,7 @@ describe('getBuildInsight', () => {
     });
   });
 
-  it('dates the deploy to its page-load bucket when no upload pins it down, never after the run', () => {
-    const insight = insightFor({
-      newSeries: buildSeries('1.0.0', 'new', [[3 * HOUR, 3]]),
-      // uploaded long before the bucket: built then, deployed later
-      uploads: { new: 1 * HOUR },
-    });
-
-    expect(insight.start).toEqual({ from: 3 * HOUR - STEP, to: RUN_TIME, source: 'page-loads' });
-    expect(insight.uploadedAt).toBe(1 * HOUR);
-  });
-
-  it('flags a newer build that most users still do not get long after it went live', () => {
+  it('flags a later-observed build that most users do not get after the comparison window', () => {
     const insight = insightFor({
       newSeries: buildSeries('1.0.0', 'new', [
         [2 * HOUR, 40],
@@ -309,7 +302,7 @@ describe('getFailureTrend', () => {
       HOUR
     );
 
-    expect(trend).toEqual({ buckets: [0, 0, 5, 9], firstSeen: 3 * HOUR });
+    expect(trend).toEqual({ buckets: [0, 0, 5, 9], firstSeen: 2 * HOUR, firstSeenTo: 3 * HOUR });
   });
 
   it('does not date a failure already happening at the start of the window', () => {
@@ -324,6 +317,75 @@ describe('getFailureTrend', () => {
     );
 
     expect(trend.firstSeen).toBeUndefined();
+  });
+});
+
+describe('getJourneySteps', () => {
+  it('marks observed browser errors separately from the final visited page', () => {
+    const steps = getJourneySteps({
+      run: {
+        pages: ['/', '/cart'],
+        lastPageId: '/cart',
+        errors: [{ locations: [{ pageId: '/' }] } as never],
+        failedRequests: [],
+      },
+      sessionsByPage: { '/': 10 },
+      errorSessionsByPage: { '/': 12, '/cart': 3 },
+    });
+
+    expect(steps).toEqual([
+      { pageId: '/', sessions: 10, errorSessions: 10, runHadErrorHere: true, runEndedHere: false },
+      { pageId: '/cart', sessions: 0, errorSessions: 0, runHadErrorHere: false, runEndedHere: true },
+    ]);
+  });
+});
+
+describe('buildFaroErrorHref', () => {
+  it('pins the error group page to the given window instead of its 30-minute default', () => {
+    const to = Date.UTC(2026, 9, 7, 17, 21, 30);
+
+    expect(
+      buildFaroErrorHref({ pluginId: 'grafana-kowalski-app', appId: '5385', hash: '1531466', from: to - HOUR, to })
+    ).toBe(`/a/grafana-kowalski-app/apps/5385/errors/1531466?from=${to - HOUR}&to=${to}`);
+  });
+});
+
+describe('Faro observation boundaries', () => {
+  it('distinguishes unknown history, a first-bucket observation, and a single recently observed build', () => {
+    const params = {
+      runBuild: { version: '1.0.0', bundleId: 'only' },
+      historyFrom: 0,
+      stepMs: HOUR,
+      realUserLoads: [],
+      realUserWindowFrom: 23 * HOUR,
+    };
+    const unknown = getBuildInsight({ ...params, activity: [] });
+    expect(unknown.start).toBeUndefined();
+    expect(unknown.observedInFirstBucket).toBe(false);
+    const atStart = getBuildInsight({
+      ...params,
+      activity: getBuildActivity([buildSeries('1.0.0', 'only', [[HOUR, 2]])]),
+    });
+    expect(atStart.observedInFirstBucket).toBe(true);
+    const recentActivity = getBuildActivity([buildSeries('1.0.0', 'only', [[24 * HOUR, 2]])]);
+    const recent = getBuildInsight({ ...params, activity: recentActivity });
+    expect(recent.observedInFirstBucket).toBe(false);
+    expect(recent.start).toEqual({ from: 23 * HOUR, to: 24 * HOUR });
+    expect(getBuildChanges(recentActivity, 0, HOUR)).toHaveLength(1);
+  });
+
+  it('ignores points outside the comparison window and reports an onset interval', () => {
+    const trend = getFailureTrend(
+      [
+        [0, 8],
+        [3 * HOUR, 2],
+        [5 * HOUR, 100],
+      ],
+      0,
+      4 * HOUR,
+      HOUR
+    );
+    expect(trend).toEqual({ buckets: [0, 0, 2, 0], firstSeen: 2 * HOUR, firstSeenTo: 3 * HOUR });
   });
 });
 
@@ -352,31 +414,34 @@ describe('buildFailureStream', () => {
   });
 });
 
-describe('getJourneySteps', () => {
-  it('marks where the run failed and ended, and never reports more error sessions than visits', () => {
-    const steps = getJourneySteps({
-      run: {
-        pages: ['/', '/cart'],
-        errors: [{ pageId: '/' } as never],
-        failedRequests: [],
-      },
-      sessionsByPage: { '/': 10 },
-      errorSessionsByPage: { '/': 12, '/cart': 3 },
-    });
-
-    expect(steps).toEqual([
-      { pageId: '/', sessions: 10, errorSessions: 10, runFailedHere: true, runEndedHere: false },
-      { pageId: '/cart', sessions: 0, errorSessions: 0, runFailedHere: false, runEndedHere: true },
-    ]);
+describe('Faro comparison scope', () => {
+  it('scopes every comparison to the reported environment, escaping its value', () => {
+    const scope = { appId: '5385', appEnvironment: 'prod"blue' };
+    const queries = [
+      buildBuildActivityLogQL({ ...scope, step: '15m' }),
+      buildRealUserBuildLoadsLogQL({ ...scope, range: '1h' }),
+      buildFailureStream(scope.appId, { kind: 'exception', message: 'Oops' }, scope.appEnvironment),
+      buildJourneySessionsLogQL({ ...scope, pageIds: ['/cart'], range: '1h' }),
+      buildJourneyErrorSessionsLogQL({ ...scope, pageIds: ['/cart'], range: '1h' }),
+    ];
+    for (const query of queries) {
+      expect(query).toContain('| app_environment="prod\\"blue"');
+    }
+    expect(buildBuildActivityLogQL({ appId: '5385', step: '15m' })).not.toContain('app_environment');
   });
-});
 
-describe('buildFaroErrorHref', () => {
-  it('pins the error group page to the given window instead of its 30-minute default', () => {
-    const to = Date.UTC(2026, 9, 7, 17, 21, 30);
+  it('includes exception-only sessions in the journey visitor population', () => {
+    expect(buildJourneySessionsLogQL({ appId: '5385', pageIds: ['/cart'], range: '1h' })).toContain(
+      'kind=~"event|measurement|exception"'
+    );
+  });
 
-    expect(
-      buildFaroErrorHref({ pluginId: 'grafana-kowalski-app', appId: '5385', hash: '1531466', from: to - HOUR, to })
-    ).toBe(`/a/grafana-kowalski-app/apps/5385/errors/1531466?from=${to - HOUR}&to=${to}`);
+  it('escapes control characters in multiline error messages and templates', () => {
+    const message = 'Failed "request"\nreason:\tserver\r\npath: C:\\app\u0000';
+    expect(escapeLogQLString(message)).not.toMatch(/[\n\r\t\u0000]/);
+    expect(JSON.parse(`"${escapeLogQLString(message)}"`)).toBe(message);
+    expect(buildFailureStream('5385', { kind: 'exception', message })).toContain(
+      `value="${escapeLogQLString(message)}"`
+    );
   });
 });

@@ -50,7 +50,7 @@ export enum CheckEventType {
   AlertsFiring = 'Alerts firing',
   AlertsPending = 'Alerts pending',
   NoData = 'No data',
-  AppBuildChanged = 'New app build',
+  AppBuildChanged = 'App build first observed',
 }
 
 export type CheckEvent = {

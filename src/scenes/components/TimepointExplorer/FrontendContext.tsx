@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import {
   Badge,
@@ -19,11 +18,10 @@ import { css, cx } from '@emotion/css';
 
 import { CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { ONE_HOUR_IN_MS } from 'utils.constants';
 import { useTracesDS } from 'hooks/useTracesDS';
 import { Feedback } from 'components/Feedback';
-import { fetchTraceData } from 'scenes/components/LogsRenderer/LogLine.utils';
-import { getExploreTraceUrl } from 'scenes/components/LogsRenderer/TraceLink.utils';
-import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
+import { AddRUMLink } from 'scenes/components/TimepointExplorer/AddRUMLink';
 import {
   BUILD_LOOKBACK_MS,
   FailureImpact,
@@ -33,7 +31,7 @@ import {
   useJourneySessions,
   useRealUserBuildLoads,
   useRunBuildHistory,
-  useSourceMapUploads,
+  useSourceMapUpload,
 } from 'scenes/components/TimepointExplorer/FrontendContext.hooks';
 import {
   AppBuild,
@@ -44,6 +42,7 @@ import {
   BuildStart,
   FailureSignature,
   FaroRunContext,
+  FaroScope,
   formatBuild,
   formatDurationMs,
   formatRelativeDuration,
@@ -61,6 +60,7 @@ import {
   RunError,
   RunFailedRequest,
 } from 'scenes/components/TimepointExplorer/FrontendContext.utils';
+import { FrontendRequestTrace } from 'scenes/components/TimepointExplorer/FrontendRequestTrace';
 import { FARO_APP_PLUGIN_ID } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import { useTimepointExplorerContext } from 'scenes/components/TimepointExplorer/TimepointExplorer.context';
 import { useStatefulTimepoint } from 'scenes/components/TimepointExplorer/TimepointExplorer.hooks';
@@ -84,8 +84,14 @@ export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }
   // Faro records can arrive after the timepoint closes, so look a little past it.
   const sessionSearchTo = timepointEnd + timepoint.config.frequency;
 
-  const { data: run, isLoading } = useFaroRunContext({
+  const {
+    data: run,
+    isLoading,
+    isError,
+    refetch,
+  } = useFaroRunContext({
     executionId: executionId ?? '',
+    executionTime: selectedExecution?.timestamp ?? 0,
     from: timepoint.adjustedTime,
     to: sessionSearchTo,
     enabled: isBrowserCheck && Boolean(executionId),
@@ -103,12 +109,26 @@ export const FrontendContext = ({ timepoint }: { timepoint: StatelessTimepoint }
     return <Spinner size={24} />;
   }
 
+  if (isError) {
+    return (
+      <Stack direction="column" gap={1}>
+        <Unavailable>Couldn&apos;t load the Frontend Observability session for this execution.</Unavailable>
+        <div>
+          <Button size="sm" variant="secondary" onClick={() => void refetch()}>
+            Retry
+          </Button>
+        </div>
+      </Stack>
+    );
+  }
+
   if (!run) {
     return (
       <EmptyState
         hideImage
         variant="not-found"
         message="Frontend Observability has no session for this execution, so it can't be compared with real users."
+        button={<AddRUMLink />}
       />
     );
   }
@@ -170,6 +190,21 @@ const RealUserContextPanel = ({ run, runTime, to, probeSuccess }: PanelProps) =>
         <Feedback feature="real-user-context" about={{ text: 'Experimental' }} />
       </header>
 
+      {!run.appEnvironment && (
+        <div className={styles.notice}>
+          <Text color="secondary" variant="bodySmall">
+            Environment not reported; comparing across environments.
+          </Text>
+        </div>
+      )}
+      {run.isTruncated && (
+        <div className={styles.notice}>
+          <Text color="warning" variant="bodySmall">
+            This session may be incomplete. Open the frontend session for the complete run.
+          </Text>
+        </div>
+      )}
+
       <div className={styles.facts}>
         <FactRow label="App build" detail="last 24 h">
           <BuildFact run={run} runTime={runTime} to={to} />
@@ -220,30 +255,39 @@ function formatClockTime(time: number, reference: number): string {
   return dateTimeFormat(time, { format: sameDay ? 'HH:mm' : 'MMM D, HH:mm' });
 }
 
-// A deploy this close to the run is worth leading with.
-const RECENT_BUILD_MS = 2 * 60 * 60 * 1000;
+// An observation this close to the run is worth leading with.
+const RECENT_BUILD_MS = 2 * ONE_HOUR_IN_MS;
 // Below this, "most real users" is a handful of page loads, not a pattern.
 const MIN_REAL_USER_LOADS = 20;
 
 const NEW_BUILD_TOOLTIP =
-  "A new build means a new deploy, not necessarily a change to this app's code: some pipelines rebuild every app on every merge.";
+  'This build was first observed in page loads during this window. Its deployment time may differ.';
 
 type RealUsers = NonNullable<BuildInsight['realUsers']>;
 
-// Only the comparisons that point at a problem get a badge; a build that is
-// still rolling out right after its deploy is expected.
+// Unknown build order stays neutral, including while history is loading or unavailable.
 const COMPARISON_BADGES: Partial<Record<RealUserComparison, string>> = {
-  newer: 'Most users on an older build',
-  older: 'Older than most users get',
-  different: 'Not the build most users get',
+  newer: 'Most users on an earlier-observed build',
+  older: 'Most users on a later-observed build',
 };
 
 const BuildFact = ({ run, runTime, to }: { run: FaroRunContext; runTime: number; to: number }) => {
-  const { data: history, isLoading: isHistoryLoading } = useRunBuildHistory({ appId: run.appId, to });
-  const { data: realUserLoads, isLoading: isLoadsLoading } = useRealUserBuildLoads({ appId: run.appId, to });
-  const { uploads } = useSourceMapUploads({ appId: run.appId, bundleIds: [run.build.bundleId] });
+  const hasIdentity = hasBuildIdentity(run.build);
+  const { data: history, isLoading: isHistoryLoading } = useRunBuildHistory({
+    appId: run.appId,
+    appEnvironment: run.appEnvironment,
+    to,
+    enabled: hasIdentity,
+  });
+  const { data: realUserLoads, isLoading: isLoadsLoading } = useRealUserBuildLoads({
+    appId: run.appId,
+    appEnvironment: run.appEnvironment,
+    to,
+    enabled: hasIdentity,
+  });
+  const { data: uploadedAt } = useSourceMapUpload({ appId: run.appId, bundleId: run.build.bundleId });
 
-  if (!hasBuildIdentity(run.build)) {
+  if (!hasIdentity) {
     return (
       <Unavailable>
         This app doesn&apos;t report a version or bundle id to Faro, so builds can&apos;t be compared. Set{' '}
@@ -254,13 +298,12 @@ const BuildFact = ({ run, runTime, to }: { run: FaroRunContext; runTime: number;
 
   const insight = getBuildInsight({
     runBuild: run.build,
-    runTime,
     activity: history?.activity ?? [],
+    historyFrom: history?.from ?? to - BUILD_LOOKBACK_MS,
     // only used when there is history to date the build from
     stepMs: history?.stepMs ?? 0,
     realUserLoads: realUserLoads ?? [],
     realUserWindowFrom: to - REAL_USER_WINDOW_MS,
-    uploads,
   });
   const { start } = insight;
   const isRecent = start !== undefined && runTime - start.from <= RECENT_BUILD_MS;
@@ -271,7 +314,9 @@ const BuildFact = ({ run, runTime, to }: { run: FaroRunContext; runTime: number;
     <Stack direction="column" gap={1}>
       <Stack direction="row" gap={1} alignItems="center" wrap="wrap">
         <BuildName build={run.build} />
-        {start && <Badge text="New build" color="orange" icon="rocket" tooltip={NEW_BUILD_TOOLTIP} />}
+        {start && (
+          <Badge text="First seen in window" color="orange" icon="rocket" tooltip={NEW_BUILD_TOOLTIP} />
+        )}
         {comparisonBadge && <Badge text={comparisonBadge} color="orange" icon="exclamation-triangle" />}
       </Stack>
 
@@ -283,13 +328,21 @@ const BuildFact = ({ run, runTime, to }: { run: FaroRunContext; runTime: number;
         <BuildStartText start={start} previous={insight.previous} runTime={runTime} isRecent={isRecent} />
       ) : (
         <Text color="secondary" variant="bodySmall">
-          Already serving at the start of the 24 h before this run.
-          {insight.uploadedAt !== undefined &&
-            ` Its source maps were uploaded ${formatClockTime(insight.uploadedAt, runTime)}.`}
+          {insight.observedInFirstBucket
+            ? 'Observed in the first interval of this 24 h window; the exact start time is unknown.'
+            : 'Not enough build history to determine when this build started serving.'}
         </Text>
       )}
 
-      {isLoadsLoading ? null : realUsers ? (
+      {uploadedAt != null && (
+        <Text color="secondary" variant="bodySmall">
+          Source maps uploaded at {formatClockTime(uploadedAt, runTime)}.
+        </Text>
+      )}
+
+      {isLoadsLoading ? null : realUserLoads === null ? (
+        <Unavailable>Couldn&apos;t load real-user build comparisons.</Unavailable>
+      ) : realUsers ? (
         <RealUserBuildText realUsers={realUsers} />
       ) : (
         <Text variant="bodySmall" color="secondary">
@@ -370,26 +423,18 @@ const BuildStartText = ({
   runTime: number;
   isRecent: boolean;
 }) => {
-  const replacing = previous ? `, replacing ${formatBuild(previous)}` : '';
+  const previousObservation = previous ? ` The previously observed build was ${formatBuild(previous)}.` : '';
 
   return (
     <Stack direction="row" gap={0.5} alignItems="center" wrap="wrap">
       <Text variant="body" color={isRecent ? 'warning' : undefined} weight={isRecent ? 'medium' : undefined}>
-        {start.source === 'source-maps'
-          ? `Deployed at ${formatClockTime(start.from, runTime)}, ${formatRelativeDuration(
-              runTime - start.from
-            )} before this run${replacing}.`
-          : `First served between ${formatClockTime(start.from, runTime)} and ${formatClockTime(
-              start.to,
-              runTime
-            )}, at most ${formatRelativeDuration(runTime - start.from)} before this run${replacing}.`}
+        {`First observed between ${formatClockTime(start.from, runTime)} and ${formatClockTime(
+          start.to,
+          runTime
+        )}.${previousObservation}`}
       </Text>
       <Tooltip
-        content={
-          start.source === 'source-maps'
-            ? "Dated by when this build's source maps were uploaded to Frontend Observability."
-            : "From Faro page loads, counted in 15-minute buckets. Upload the build's source maps at deploy time to get an exact time."
-        }
+        content="From Faro page loads, counted in 15-minute buckets. This is an observation window, not an exact deployment time."
       >
         <Icon name="info-circle" size="sm" tabIndex={0} aria-label="Where this time comes from" />
       </Tooltip>
@@ -402,41 +447,19 @@ const RealUserBuildText = ({ realUsers }: { realUsers: RealUsers }) => {
   const dominantShare = formatShare(realUsers.dominant.share);
   const dominant = formatBuild(realUsers.dominant.build);
 
-  switch (realUsers.comparison) {
-    case 'same':
-      return (
-        <Text variant="bodySmall" color="secondary">
-          {share} of real-user page loads in the last hour were on this build.
-        </Text>
-      );
-    case 'rolling-out':
-      return (
-        <Text variant="bodySmall" color="secondary">
-          {share} of real-user page loads in the last hour were on this build and {dominantShare} on {dominant}.
-          That&apos;s expected right after a deploy.
-        </Text>
-      );
-    case 'newer':
-      return (
-        <Text variant="bodySmall" color="warning">
-          Only {share} of real-user page loads in the last hour were on this build; {dominantShare} were on the older{' '}
-          {dominant}. Is this a partial rollout or a canary?
-        </Text>
-      );
-    case 'older':
-      return (
-        <Text variant="bodySmall" color="warning">
-          {dominantShare} of real-user page loads in the last hour were on the newer {dominant}; only {share} on this
-          one. A stale cache, CDN or instance may have served this check.
-        </Text>
-      );
-    case 'different':
-      return (
-        <Text variant="bodySmall" color="warning">
-          Only {share} of real-user page loads in the last hour were on this build; {dominantShare} were on {dominant}.
-        </Text>
-      );
-  }
+  const descriptions: Record<RealUserComparison, string> = {
+    same: `${share} of real-user page loads in the last hour were on this build.`,
+    'rolling-out': `${share} of real-user page loads in the last hour were on this build and ${dominantShare} on ${dominant}. Both builds were observed during this window.`,
+    newer: `Only ${share} of real-user page loads in the last hour were on this build; ${dominantShare} were on ${dominant}, which was first observed earlier.`,
+    older: `${dominantShare} of real-user page loads in the last hour were on ${dominant}, which was first observed later; only ${share} were on this build.`,
+    different: `${share} of real-user page loads in the last hour were on this build; ${dominantShare} were on ${dominant}. Build order is unknown.`,
+  };
+
+  return (
+    <Text variant="bodySmall" color={COMPARISON_BADGES[realUsers.comparison] ? 'warning' : 'secondary'}>
+      {descriptions[realUsers.comparison]}
+    </Text>
+  );
 };
 
 const BUILD_COLORS = ['blue', 'purple', 'orange', 'yellow', 'green'];
@@ -530,15 +553,18 @@ const FailuresFact = ({ run, to, probeSuccess }: { run: FaroRunContext; to: numb
   ];
 
   if (!items.length) {
+    const observation = run.isTruncated
+      ? 'No JS errors or failed requests were captured in the loaded records.'
+      : 'No JS errors or failed requests were captured for this run.';
+
     return probeSuccess ? (
       <Text color="secondary" variant="bodySmall">
-        No JS errors or failed requests during this run.
+        {observation}
       </Text>
     ) : (
       <Text variant="bodySmall">
-        The browser reported no JS errors or failed requests during this run, so this failure isn&apos;t visible in
-        real-user monitoring. It&apos;s more likely the script&apos;s expectations than the app. To see what the page
-        showed, open the replay with <strong>View frontend session</strong>.
+        {observation} This doesn&apos;t explain why the check failed. To see what the page showed, open the replay with{' '}
+        <strong>View frontend session</strong>.
       </Text>
     );
   }
@@ -549,9 +575,21 @@ const FailuresFact = ({ run, to, probeSuccess }: { run: FaroRunContext; to: numb
     <Stack direction="column" gap={1.5}>
       {visible.map((item) =>
         item.kind === 'error' ? (
-          <ErrorRow key={item.error.key} appId={run.appId} error={item.error} to={to} />
+          <ErrorRow
+            key={`error:${item.error.key}`}
+            appId={run.appId}
+            appEnvironment={run.appEnvironment}
+            error={item.error}
+            to={to}
+          />
         ) : (
-          <RequestRow key={item.request.key} appId={run.appId} request={item.request} to={to} />
+          <RequestRow
+            key={`request:${item.request.key}`}
+            appId={run.appId}
+            appEnvironment={run.appEnvironment}
+            request={item.request}
+            to={to}
+          />
         )
       )}
       {items.length > COLLAPSED_FAILURE_COUNT && (
@@ -565,17 +603,25 @@ const FailuresFact = ({ run, to, probeSuccess }: { run: FaroRunContext; to: numb
   );
 };
 
-function getWhereText({ pageId, actionName, count }: { pageId: string; actionName?: string; count: number }) {
-  return [
-    pageId ? `on ${pageId}` : undefined,
-    actionName ? `during ${actionName}` : undefined,
-    count > 1 ? `${count}× in this run` : undefined,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+function getWhereText({ locations, count }: Pick<RunError, 'locations' | 'count'>) {
+  const places = locations
+    .map(({ pageId, actionName }) =>
+      [pageId ? `on ${pageId}` : undefined, actionName ? `during ${actionName}` : undefined].filter(Boolean).join(' ')
+    )
+    .filter(Boolean);
+
+  return [places.join('; '), count > 1 ? `${count}× in this run` : undefined].filter(Boolean).join(' · ');
 }
 
-const ErrorRow = ({ appId, error, to }: { appId: string; error: RunError; to: number }) => {
+const ErrorRow = ({
+  appId,
+  appEnvironment,
+  error,
+  to,
+}: FaroScope & {
+  error: RunError;
+  to: number;
+}) => {
   const styles = useStyles2(getStyles);
   const signature = getErrorSignature(error);
 
@@ -592,7 +638,7 @@ const ErrorRow = ({ appId, error, to }: { appId: string; error: RunError; to: nu
           {[error.type, getWhereText(error)].filter(Boolean).join(' · ')}
         </Text>
       </div>
-      <FailureImpactCell appId={appId} signature={signature} to={to} />
+      <FailureImpactCell appId={appId} appEnvironment={appEnvironment} signature={signature} to={to} />
       <div className={styles.failureLinks}>
         {error.hash && (
           <TextLink
@@ -614,7 +660,15 @@ const ErrorRow = ({ appId, error, to }: { appId: string; error: RunError; to: nu
   );
 };
 
-const RequestRow = ({ appId, request, to }: { appId: string; request: RunFailedRequest; to: number }) => {
+const RequestRow = ({
+  appId,
+  appEnvironment,
+  request,
+  to,
+}: FaroScope & {
+  request: RunFailedRequest;
+  to: number;
+}) => {
   const styles = useStyles2(getStyles);
   const tracesDS = useTracesDS();
   const [isTraceOpen, setIsTraceOpen] = useState(false);
@@ -641,7 +695,7 @@ const RequestRow = ({ appId, request, to }: { appId: string; request: RunFailedR
               .join(' · ')}
           </Text>
         </div>
-        <FailureImpactCell appId={appId} signature={signature} to={to} />
+        <FailureImpactCell appId={appId} appEnvironment={appEnvironment} signature={signature} to={to} />
         <div className={styles.failureLinks}>
           {tracesDS && request.traceId && (
             <Button
@@ -651,13 +705,13 @@ const RequestRow = ({ appId, request, to }: { appId: string; request: RunFailedR
               onClick={() => setIsTraceOpen(!isTraceOpen)}
               aria-expanded={isTraceOpen}
             >
-              {isTraceOpen ? 'Hide trace' : 'Trace'}
+              Trace
             </Button>
           )}
         </div>
       </div>
       {isTraceOpen && tracesDS && request.traceId && (
-        <RequestTrace
+        <FrontendRequestTrace
           traceId={request.traceId}
           timestamp={request.timestamp}
           tracesDS={tracesDS}
@@ -668,9 +722,17 @@ const RequestRow = ({ appId, request, to }: { appId: string; request: RunFailedR
   );
 };
 
-const FailureImpactCell = ({ appId, signature, to }: { appId: string; signature: FailureSignature; to: number }) => {
+const FailureImpactCell = ({
+  appId,
+  appEnvironment,
+  signature,
+  to,
+}: FaroScope & {
+  signature: FailureSignature;
+  to: number;
+}) => {
   const styles = useStyles2(getStyles);
-  const { data: impact, isLoading } = useFailureImpact({ appId, signature, to });
+  const { data: impact, isLoading } = useFailureImpact({ appId, appEnvironment, signature, to });
 
   if (isLoading) {
     return (
@@ -688,15 +750,19 @@ const FailureImpactCell = ({ appId, signature, to }: { appId: string; signature:
     );
   }
 
+  const matchNotice = signature.kind === 'exception' && !signature.template && (
+    <Text color="secondary" variant="bodySmall">
+      Only exact error-message matches are counted; messages with different values may be missed.
+    </Text>
+  );
+
   if (impact.sessions === 0) {
     return (
       <div className={styles.failureImpact}>
         <Text color="secondary" variant="bodySmall">
-          No real-user sessions
+          No matching real-user sessions in the last hour
         </Text>
-        <Text color="secondary" variant="bodySmall">
-          likely specific to this run
-        </Text>
+        {matchNotice}
       </div>
     );
   }
@@ -710,10 +776,13 @@ const FailureImpactCell = ({ appId, signature, to }: { appId: string; signature:
         <Sparkline impact={impact} />
       </Stack>
       <Text color="secondary" variant="bodySmall">
-        {impact.trend.firstSeen !== undefined
-          ? `started ${formatClockTime(impact.trend.firstSeen, to)}`
-          : 'ongoing for 24 h or more'}
+        {impact.trend.firstSeen !== undefined && impact.trend.firstSeenTo !== undefined
+          ? `First observed between ${formatClockTime(impact.trend.firstSeen, to)} and ${formatClockTime(impact.trend.firstSeenTo, to)}`
+          : impact.trend.buckets[0] > 0
+            ? 'Observed at the start of the 24 h window'
+            : 'Not enough history to determine when this error started.'}
       </Text>
+      {matchNotice}
     </div>
   );
 };
@@ -735,59 +804,18 @@ const Sparkline = ({ impact }: { impact: FailureImpact }) => {
   );
 };
 
-const RequestTrace = ({
-  traceId,
-  timestamp,
-  tracesDS,
-  onClose,
-}: {
-  traceId: string;
-  timestamp: number;
-  tracesDS: NonNullable<ReturnType<typeof useTracesDS>>;
-  onClose: () => void;
-}) => {
-  const { data: traceData, isLoading } = useQuery({
-    // eslint-disable-next-line @tanstack/query/exhaustive-deps -- tracesDS.uid is a stable identifier
-    queryKey: ['faro-request-trace', traceId, tracesDS.uid],
-    queryFn: () => fetchTraceData(traceId, tracesDS),
-    staleTime: Infinity,
-    retry: false,
-  });
-
-  if (isLoading) {
-    return <Spinner />;
-  }
-
-  if (!traceData || traceData.series.length === 0) {
-    return (
-      <Text color="secondary" italic variant="bodySmall">
-        No trace found for this request. The backend may not have sampled it.{' '}
-        <TextLink href={getExploreTraceUrl(tracesDS.uid, traceId)} inline={false} variant="bodySmall">
-          Try in Explore
-        </TextLink>
-      </Text>
-    );
-  }
-
-  return (
-    <TracePanel
-      traceId={traceId}
-      tracesDS={tracesDS}
-      traceData={traceData}
-      logTimestamp={timestamp}
-      arrowOffset={null}
-      onClose={onClose}
-    />
-  );
-};
-
 // ---------------------------------------------------------------------------
 // Real users on these pages
 // ---------------------------------------------------------------------------
 
 const JourneyFact = ({ run, to }: { run: FaroRunContext; to: number }) => {
   const styles = useStyles2(getStyles);
-  const { data, isLoading } = useJourneySessions({ appId: run.appId, pageIds: run.pages, to });
+  const { data, isLoading } = useJourneySessions({
+    appId: run.appId,
+    appEnvironment: run.appEnvironment,
+    pageIds: run.pages,
+    to,
+  });
 
   if (!run.pages.length) {
     return <Unavailable>This run didn&apos;t report any pages.</Unavailable>;
@@ -834,9 +862,9 @@ const JourneyFact = ({ run, to }: { run: FaroRunContext; to: number }) => {
               {step.sessions ? `${formatShare(errorShare)} with JS errors` : '–'}
             </Text>
             <span role="cell">
-              {step.runFailedHere ? (
+              {step.runHadErrorHere ? (
                 <Text variant="bodySmall" color="error">
-                  this run failed here
+                  Browser error observed here
                 </Text>
               ) : step.runEndedHere ? (
                 <Text variant="bodySmall" color="secondary">
@@ -870,6 +898,9 @@ const getStyles = (theme: GrafanaTheme2) => {
       flexWrap: 'wrap',
       gap: theme.spacing(1),
       justifyContent: 'space-between',
+      paddingBottom: theme.spacing(2),
+    }),
+    notice: css({
       paddingBottom: theme.spacing(2),
     }),
     facts: css({
@@ -1003,17 +1034,33 @@ const getStyles = (theme: GrafanaTheme2) => {
       height: 1,
     }),
     journey: css({
-      alignItems: 'center',
       display: 'grid',
       gap: theme.spacing(1, 2),
       gridTemplateColumns: 'minmax(80px, max-content) minmax(80px, 240px) max-content max-content 1fr',
 
       [narrow]: {
-        gridTemplateColumns: 'minmax(80px, max-content) minmax(60px, 1fr) max-content',
+        gridTemplateColumns: 'minmax(0, 1fr)',
       },
     }),
     journeyRow: css({
-      display: 'contents',
+      alignItems: 'center',
+      display: 'grid',
+      gap: theme.spacing(1, 2),
+      gridColumn: '1 / -1',
+      gridTemplateColumns: 'subgrid',
+
+      [narrow]: {
+        gridTemplateColumns: 'minmax(0, 1fr) max-content',
+        paddingBottom: theme.spacing(1),
+        borderBottom: `1px solid ${theme.colors.border.weak}`,
+
+        '& > :first-child, & > :last-child': {
+          gridColumn: '1 / -1',
+        },
+        '& > :nth-child(4)': {
+          gridColumn: 2,
+        },
+      },
     }),
     journeyPage: css({
       overflow: 'hidden',
