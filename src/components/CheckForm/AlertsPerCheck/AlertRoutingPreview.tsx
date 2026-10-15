@@ -13,13 +13,13 @@ import { useNotificationRouting } from 'data/useNotificationRouting';
 import { AlertLabelsDisplay } from './AlertLabelsDisplay';
 import { generateAlertLabels, getPolicyIdentifier } from './alertRoutingUtils';
 import { getMatchingNotificationRoutes } from './notificationRouting';
+import { RouteTreeDisplay } from './RouteTreeDisplay';
 
 interface AlertRoutingPreviewProps {
   alertType: CheckAlertType;
-  contactPointName: string;
 }
 
-const AlertRoutingPreviewContent = ({ alertType, contactPointName }: AlertRoutingPreviewProps) => {
+const AlertRoutingPreviewContent = ({ alertType }: AlertRoutingPreviewProps) => {
   const styles = useStyles2(getStyles);
   const { watch } = useFormContext<CheckFormValues>();
   const { checkType, frequency, labels, job, target, alerts } = watch();
@@ -45,20 +45,8 @@ const AlertRoutingPreviewContent = ({ alertType, contactPointName }: AlertRoutin
     if (routing.isLoading || routing.isError || labelMode.isLoading || labelMode.isError || !routing.data) {
       return [];
     }
-    return (
-      getMatchingNotificationRoutes(routing.data.trees, alertLabels)?.filter(
-        ({ route }) => 'receiver' in route && route.receiver === contactPointName
-      ) ?? []
-    );
-  }, [
-    routing.data,
-    routing.isLoading,
-    routing.isError,
-    labelMode.isLoading,
-    labelMode.isError,
-    alertLabels,
-    contactPointName,
-  ]);
+    return getMatchingNotificationRoutes(routing.data.trees, alertLabels) ?? [];
+  }, [routing.data, routing.isLoading, routing.isError, labelMode.isLoading, labelMode.isError, alertLabels]);
 
   if (routing.isLoading || labelMode.isLoading) {
     return (
@@ -77,34 +65,31 @@ const AlertRoutingPreviewContent = ({ alertType, contactPointName }: AlertRoutin
 
   return (
     <div className={styles.preview}>
-      <div className={styles.routes}>
-        {routes.map(({ route, matchDetails, routeTree }) => (
-          <Text key={route.id} variant="bodySmall" color="primary" weight="regular">
-            Routes through{' '}
-            {matchDetails.matchingJourney.map(({ route }, index) => (
-              <React.Fragment key={route.id}>
-                {index > 0 && ' → '}
-                <TextLink
-                  href={`/alerting/routes/policy/${USER_DEFINED_TREE_NAME}/edit?alertmanager=grafana`}
-                  external
-                  variant="bodySmall"
-                  weight="regular"
-                >
-                  {getPolicyIdentifier(route, index === 0, routeTree.metadata.name).text}
-                </TextLink>
-              </React.Fragment>
-            ))}
-          </Text>
-        ))}
-      </div>
-      <AlertLabelsDisplay
-        alertLabels={alertLabels}
-        highlightMatchers={routes.flatMap(({ matchDetails }) =>
-          matchDetails.matchingJourney.flatMap(({ matchDetails }) =>
-            matchDetails.flatMap((detail) => (detail.match ? [detail.matcher] : []))
-          )
-        )}
-      />
+      {routes.length > 1 ? (
+        <RouteTreeDisplay routeMatch={{ matchedRoutes: routes }} />
+      ) : (
+        <div className={styles.routes}>
+          {routes.map(({ route, matchDetails, routeTree }) => (
+            <Text key={route.id} variant="bodySmall" color="primary" weight="regular">
+              Routes through{' '}
+              {matchDetails.matchingJourney.map(({ route }, index) => (
+                <React.Fragment key={route.id}>
+                  {index > 0 && ' → '}
+                  <TextLink
+                    href={`/alerting/routes/policy/${USER_DEFINED_TREE_NAME}/edit?alertmanager=grafana`}
+                    external
+                    variant="bodySmall"
+                    weight="regular"
+                  >
+                    {getPolicyIdentifier(route, index === 0, routeTree.metadata.name).text}
+                  </TextLink>
+                </React.Fragment>
+              ))}
+            </Text>
+          ))}
+        </div>
+      )}
+      <AlertLabelsDisplay alertLabels={alertLabels} />
     </div>
   );
 };

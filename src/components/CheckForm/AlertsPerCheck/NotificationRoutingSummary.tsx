@@ -19,7 +19,7 @@ import { getNotificationSetupEligibility, parseNotificationEmails, validNotifica
 
 export function NotificationRoutingSummary({ alert }: { alert: PredefinedAlertInterface }) {
   const styles = useStyles2(getStyles);
-  const [expandedDestination, setExpandedDestination] = useState<string>();
+  const [expanded, setExpanded] = useState(false);
   const detailsId = useId();
   const { watch, setFocus, formState } = useFormContext<CheckFormValues>();
   const { checkType, frequency, labels, job, target, alerts, notificationEmails } = watch();
@@ -120,66 +120,76 @@ export function NotificationRoutingSummary({ alert }: { alert: PredefinedAlertIn
     );
   }
 
-  const destination = result.destinations.find(({ name }) => name === expandedDestination);
-
   return (
     <div>
-      <div className={styles.destinations}>
-        <Icon name="bell" size="sm" />
-        <Text color="secondary" variant="bodySmall" weight="regular">
-          Notify
-        </Text>
-        {result.destinations.map(({ name, status }) => (
-          <div key={name} className={styles.destination}>
-            <TextLink
-              href={`/alerting/notifications/receivers/${encodeReceiverForUrl(name)}/edit`}
-              external
-              variant="bodySmall"
-              weight="regular"
-            >
-              {name}
-            </TextLink>
-            {status === 'missing' && (
-              <Text color="warning" variant="bodySmall">
-                Not configured
-              </Text>
-            )}
-            <Button
-              type="button"
-              variant="secondary"
-              fill="text"
-              size="sm"
-              className={styles.previewButton}
-              aria-label={`${destination?.name === name ? 'Hide' : 'Show'} routing to ${name}`}
-              aria-expanded={destination?.name === name}
-              aria-controls={detailsId}
-              onClick={() => {
-                const expanded = destination?.name !== name;
-                setExpandedDestination(expanded ? name : undefined);
-                trackRoutingPreviewToggled({ name: alert.type, action: expanded ? 'show' : 'hide' });
-              }}
-            >
-              {destination?.name === name ? 'Hide routing' : 'Show routing'}
-              <Icon name={destination?.name === name ? 'angle-up' : 'angle-down'} size="sm" />
-            </Button>
-          </div>
-        ))}
+      <div className={styles.summaryHeader}>
+        <div className={styles.summaryDestinations}>
+          <span className={styles.notifyLabel}>
+            <Icon name="bell" size="sm" className={styles.notifyIcon} />
+            <Text color="secondary" variant="bodySmall" weight="regular">
+              Notify
+            </Text>
+          </span>
+          <ul className={styles.destinationList} aria-label={`${alert.category} contact points`}>
+            {result.destinations.map(({ name, status }, index) => (
+              <li key={name} className={styles.destination}>
+                <TextLink
+                  href={`/alerting/notifications/receivers/${encodeReceiverForUrl(name)}/edit`}
+                  external
+                  variant="bodySmall"
+                  weight="regular"
+                >
+                  {name}
+                </TextLink>
+                {status === 'missing' && (
+                  <Text color="warning" variant="bodySmall">
+                    Not configured
+                  </Text>
+                )}
+                {index < result.destinations.length - 1 && (
+                  <span aria-hidden="true" className={styles.separator}>
+                    ·
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          fill="text"
+          size="sm"
+          className={styles.previewButton}
+          aria-label={`${expanded ? 'Hide' : 'Show'} routing for ${alert.category}`}
+          aria-expanded={expanded}
+          aria-controls={detailsId}
+          onClick={() => {
+            setExpanded(!expanded);
+            trackRoutingPreviewToggled({ name: alert.type, action: expanded ? 'hide' : 'show' });
+          }}
+        >
+          {expanded ? 'Hide routing' : 'Show routing'}
+          <Icon name={expanded ? 'angle-up' : 'angle-down'} size="sm" />
+        </Button>
       </div>
       {result.status === 'missing' && (
         <div className={styles.warning}>
           <Text color="warning" variant="bodySmall">
-            Notification setup is incomplete. Alerts may fire without notifying anyone.
+            {result.destinations.some(({ status }) => status === 'configured')
+              ? 'Some contact points are not configured. Notifications may not reach all intended recipients.'
+              : 'Notification setup is incomplete. Alerts may fire without notifying anyone.'}
           </Text>
         </div>
       )}
-      {destination && (
+      {expanded && (
         <div
           id={detailsId}
           role="region"
-          aria-label={`${destination.name} contact point details`}
+          aria-label={`${alert.category} notification routing`}
           className={styles.details}
         >
-          <AlertRoutingPreview alertType={alert.type} contactPointName={destination.name} />
+          <AlertRoutingPreview alertType={alert.type} />
         </div>
       )}
     </div>
@@ -187,6 +197,39 @@ export function NotificationRoutingSummary({ alert }: { alert: PredefinedAlertIn
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
+  summaryHeader: css({
+    display: 'flex',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1, 2),
+  }),
+  summaryDestinations: css({
+    display: 'flex',
+    flex: '1 1 24rem',
+    alignItems: 'baseline',
+    gap: theme.spacing(1),
+    minWidth: 0,
+  }),
+  notifyLabel: css({
+    display: 'inline-flex',
+    alignItems: 'baseline',
+    gap: theme.spacing(1),
+    flexShrink: 0,
+    color: theme.colors.text.secondary,
+  }),
+  notifyIcon: css({
+    alignSelf: 'center',
+  }),
+  destinationList: css({
+    display: 'flex',
+    flexWrap: 'wrap',
+    alignItems: 'baseline',
+    gap: theme.spacing(0.5, 1),
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    minWidth: 0,
+  }),
   destinations: css({
     display: 'flex',
     minHeight: theme.spacing(3),
@@ -198,16 +241,20 @@ const getStyles = (theme: GrafanaTheme2) => ({
   destination: css({
     display: 'flex',
     flexWrap: 'wrap',
-    alignItems: 'center',
+    alignItems: 'baseline',
     gap: theme.spacing(1),
     minWidth: 0,
     maxWidth: '100%',
     overflowWrap: 'anywhere',
   }),
+  separator: css({
+    color: theme.colors.text.secondary,
+  }),
   previewButton: css({
     color: theme.colors.text.secondary,
     fontWeight: theme.typography.fontWeightRegular,
-    marginLeft: theme.spacing(1),
+    marginLeft: 'auto',
+    flexShrink: 0,
     padding: theme.spacing(0, 0.5),
     gap: theme.spacing(0.5),
     maxWidth: '100%',
