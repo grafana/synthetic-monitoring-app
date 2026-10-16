@@ -81,7 +81,7 @@ export function SuggestedCheckPanel({
           <CheckIdentity
             proposedCheck={proposedCheck}
             ownerHint={opportunity.ownerHint}
-            methodUnknown={opportunity.suggestion.needsConfiguration}
+            methodUnknown={opportunity.methodUnknown}
           />
         </ConfigurationSection>
 

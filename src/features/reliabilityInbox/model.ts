@@ -27,6 +27,9 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
     p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
     proposedCheck,
     setup: getSetupGuide(suggestion),
+    // Only the request case leaves the method to the user: a Kubernetes API
+    // server still takes the draft's GET, with its CA certificate.
+    methodUnknown: suggestion.needsConfiguration && !isKubernetesApiServer(suggestion),
   };
 }
 
@@ -62,7 +65,7 @@ function getSetupGuide({
   authRequired,
   evidence,
 }: ReliabilitySuggestion): SetupGuide | undefined {
-  if (needsConfiguration && evidence.families.includes(KUBERNETES_CLIENT_FAMILY)) {
+  if (isKubernetesApiServer({ needsConfiguration, evidence })) {
     return {
       label: 'TLS',
       needs: "cluster's CA certificate",
@@ -104,6 +107,13 @@ function getSetupGuide({
   }
 
   return undefined;
+}
+
+function isKubernetesApiServer({
+  needsConfiguration,
+  evidence,
+}: Pick<ReliabilitySuggestion, 'needsConfiguration' | 'evidence'>) {
+  return !!needsConfiguration && evidence.families.includes(KUBERNETES_CLIENT_FAMILY);
 }
 
 /**

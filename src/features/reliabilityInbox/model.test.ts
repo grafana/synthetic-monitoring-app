@@ -160,6 +160,10 @@ describe('Reliability Inbox model', () => {
     );
     expect(toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION).setup).toBeUndefined();
 
+    // Only the request case leaves the method open; an API server keeps its GET.
+    expect(toReliabilityOpportunity(postOnly).methodUnknown).toBe(true);
+    expect(toReliabilityOpportunity(apiServer).methodUnknown).toBe(false);
+
     // A blank reason still says what to provide, just without a why.
     expect(toReliabilityOpportunity({ ...postOnly, configurationReason: ' ' }).setup).toEqual(
       expect.objectContaining({ needs: 'method and body', why: undefined })
