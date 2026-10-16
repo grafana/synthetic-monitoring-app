@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
-import { Alert, InlineField, Input, Stack, Text } from '@grafana/ui';
+import { Alert, Field, Input } from '@grafana/ui';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValues } from 'types';
@@ -39,25 +39,22 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
           The runbook URL for this alert was not found. You can configure it below.
         </Alert>
       )}
-      <Stack direction="row" alignItems="center" gap={1}>
-        <Text variant="bodySmall">Runbook URL (optional): </Text>
-        <InlineField
-          htmlFor={`alert-runbook-url-${alertType}`}
-          invalid={!!runbookUrlError}
-          error={runbookUrlError}
-          validationMessageHorizontalOverflow={true}
-          grow={true}
-          disabled={!selected || disabled}
-        >
-          <Input
-            {...field}
-            id={`alert-runbook-url-${alertType}`}
-            data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
-            placeholder="https://example.com/runbook"
-            width={35}
-          />
-        </InlineField>
-      </Stack>
+      <Field
+        label="Runbook URL (optional)"
+        description="Link to instructions for investigating and resolving this alert."
+        htmlFor={`alert-runbook-url-${alertType}`}
+        invalid={!!runbookUrlError}
+        error={runbookUrlError}
+        disabled={!selected || disabled}
+      >
+        <Input
+          {...field}
+          value={field.value ?? ''}
+          id={`alert-runbook-url-${alertType}`}
+          data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
+          placeholder="https://example.com/runbook"
+        />
+      </Field>
     </>
   );
 };

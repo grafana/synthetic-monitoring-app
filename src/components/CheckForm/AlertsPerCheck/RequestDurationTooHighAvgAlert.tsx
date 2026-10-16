@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import {
-  Checkbox,
   Combobox,
   Icon,
   InlineField,
@@ -13,39 +12,27 @@ import {
   Tooltip,
   useStyles2,
 } from '@grafana/ui';
-import { trackChangePeriod, trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
+import { trackChangePeriod } from 'features/tracking/perCheckAlertsEvents';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CheckAlertType, CheckFormValues } from 'types';
+import { CheckFormValues } from 'types';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
-import { getAlertItemStyles } from './AlertItem';
 import { ALERT_PERIODS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
-import { RunbookUrl } from './RunbookUrl';
+import { getAlertItemStyles } from './AlertsPerCheck.styles';
 import { ThresholdSelector } from './ThresholdSelector';
 
 export const RequestDurationTooHighAvgAlert = ({
   alert,
   selected,
-  onSelectionChange,
   tooltipContent,
 }: {
   alert: PredefinedAlertInterface;
   selected: boolean;
-  onSelectionChange: (type: CheckAlertType) => void;
   tooltipContent: PopoverContent;
 }) => {
   const { getValues, control, formState } = useFormContext<CheckFormValues>();
   const revalidateForm = useRevalidateForm();
-
-  const handleToggleAlert = (type: CheckAlertType) => {
-    onSelectionChange(type);
-    if (selected) {
-      trackUnSelectAlert({ name: type });
-    } else {
-      trackSelectAlert({ name: type });
-    }
-  };
 
   const isFormDisabled = formState.disabled;
   const styles = useStyles2(getAlertItemStyles);
@@ -77,14 +64,6 @@ export const RequestDurationTooHighAvgAlert = ({
   return (
     <Stack direction={'column'}>
       <InlineFieldRow className={styles.alertRow}>
-        <Checkbox
-          aria-label={`Enable ${alert.name} alert`}
-          className={styles.alertCheckbox}
-          id={`alert-${alert.type}`}
-          data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
-          onClick={() => handleToggleAlert(alert.type)}
-          checked={selected}
-        />
         <Text>Alert if the average {checkType} request duration exceeds </Text>{' '}
         <ThresholdSelector alert={alert} selected={selected} suffix={alert.unit} width={9} />
         <Text>over the last </Text>
@@ -97,6 +76,7 @@ export const RequestDurationTooHighAvgAlert = ({
         >
           <Combobox
             {...periodField}
+            aria-label={`${alert.category} period`}
             data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].periodCombobox}
             id={`alert-period-${alert.type}`}
             options={validPeriods}
@@ -119,7 +99,6 @@ export const RequestDurationTooHighAvgAlert = ({
           </Tooltip>
         </div>
       </InlineFieldRow>
-      <RunbookUrl alertType={alert.type} selected={selected} disabled={isFormDisabled} />
     </Stack>
   );
 };

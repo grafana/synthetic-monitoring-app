@@ -6,6 +6,9 @@ import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { Check, CheckFormValues } from 'types';
+import { AlertingConfirmationRequired, CheckAlertingSaveError } from 'data/alertSetupRecovery';
+import { useLabelMode } from 'data/useLabelMode';
+import { useNotificationRouting } from 'data/useNotificationRouting';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
@@ -16,6 +19,7 @@ import { CheckSection } from './sections/CheckSection';
 import { ExecutionSection } from './sections/ExecutionSection';
 import { LabelSection } from './sections/LabelSection';
 import { UptimeSection } from './sections/UptimeSection';
+import { AlertingSaveDialog } from './AlertingSaveDialog';
 import { FormFooter } from './FormFooter';
 
 export function FormRoot({
@@ -24,6 +28,9 @@ export function FormRoot({
   onSave(payload: Check, formValues: CheckFormValues): Promise<Function | void>;
 }) {
   const styles = useStyles2(getStyles);
+  // Start routing inspection on the first step so Alerting usually opens ready.
+  useNotificationRouting();
+  useLabelMode();
   const formRef = useRef<HTMLFormElement>(null);
 
   const {
@@ -56,9 +63,27 @@ export function FormRoot({
   }, [onSaveCallback, isDirty]);
 
   const [saveError, setSaveError] = useState<unknown | undefined>(undefined);
+  const [resolvingAlerting, setResolvingAlerting] = useState(false);
+  const submittedValues = useRef<CheckFormValues | undefined>(undefined);
+  const resolveAlerting = async (action: () => Promise<Function | void>) => {
+    setResolvingAlerting(true);
+    try {
+      const callback = await action();
+      reset(submittedValues.current);
+      setSaveError(undefined);
+      if (callback) {
+        setOnSaveCallback(() => callback);
+      }
+    } catch (error) {
+      setSaveError(error);
+    } finally {
+      setResolvingAlerting(false);
+    }
+  };
 
   const onValid = useCallback(
     async (data: CheckFormValues) => {
+      submittedValues.current = data;
       const check = toPayload(data);
       try {
         const callback = await onSave(check, data);
@@ -104,20 +129,32 @@ export function FormRoot({
           <OverLimitAlert checkType={checkType} />
         </div>
       )}
-      {!!saveError && (
-        <Alert
-          className={styles.alertContainer}
-          title="Save failed"
-          severity="error"
-          buttonContent="Retry"
-          onRemove={() => {
-            formRef.current?.requestSubmit();
-          }}
-        >
-          {saveError && typeof saveError === 'object' && 'message' in saveError && typeof saveError.message === 'string'
-            ? saveError.message
-            : 'It was not possible to save check.'}
-        </Alert>
+      {saveError instanceof AlertingConfirmationRequired || saveError instanceof CheckAlertingSaveError ? (
+        <AlertingSaveDialog
+          error={saveError}
+          busy={resolvingAlerting}
+          onAction={resolveAlerting}
+          onCancel={() => setSaveError(undefined)}
+        />
+      ) : (
+        !!saveError && (
+          <Alert
+            className={styles.alertContainer}
+            title="Save failed"
+            severity="error"
+            buttonContent="Retry"
+            onRemove={() => {
+              formRef.current?.requestSubmit();
+            }}
+          >
+            {saveError &&
+            typeof saveError === 'object' &&
+            'message' in saveError &&
+            typeof saveError.message === 'string'
+              ? saveError.message
+              : 'It was not possible to save check.'}
+          </Alert>
+        )
       )}
 
       <CheckSection />

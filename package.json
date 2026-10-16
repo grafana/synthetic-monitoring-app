@@ -113,6 +113,7 @@
   "dependencies": {
     "@emotion/css": "11.13.5",
     "@grafana/alerting": "13.2.2",
+    "@grafana/api-clients": "13.2.2",
     "@grafana/assistant": "0.1.25",
     "@grafana/data": "13.2.2",
     "@grafana/faro-core": "2.7.1",

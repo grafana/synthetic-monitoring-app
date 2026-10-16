@@ -1,38 +1,25 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Field, Stack, TextLink, useStyles2 } from '@grafana/ui';
+import { LoadingPlaceholder, Stack, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { CheckAlertType, CheckFormValues } from 'types';
+import { useNotificationRouting } from 'data/useNotificationRouting';
 import { useRevalidateForm } from 'hooks/useRevalidateForm';
 
 import { AlertsList } from './AlertsList';
-import { PREDEFINED_ALERTS, PredefinedAlertInterface } from './AlertsPerCheck.constants';
+import { PREDEFINED_ALERTS } from './AlertsPerCheck.constants';
+import { InitialNotificationSetup } from './InitialNotificationSetup';
 
 export const AlertsPerCheck = () => {
   const styles = useStyles2(getStyles);
   const revalidateForm = useRevalidateForm();
+  const routing = useNotificationRouting();
   const { getValues, setValue, watch } = useFormContext<CheckFormValues>();
 
   const checkType = getValues('checkType');
-
-  const groupedByCategory = useMemo(
-    () =>
-      PREDEFINED_ALERTS[checkType].reduce(
-        (acc: Record<string, PredefinedAlertInterface[]>, curr: PredefinedAlertInterface) => {
-          const category = curr.category;
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(curr);
-          return acc;
-        },
-        {}
-      ),
-    [checkType]
-  );
 
   const handleSelectAlert = (type: CheckAlertType) => {
     const alerts = getValues('alerts');
@@ -55,14 +42,25 @@ export const AlertsPerCheck = () => {
 
   const selectedAlerts = watch('alerts');
 
+  if (routing.isLoading) {
+    return (
+      <div className={styles.loading} role="status" aria-label="Loading alerting setup" aria-busy="true">
+        <LoadingPlaceholder text="Loading alerting setup..." />
+      </div>
+    );
+  }
+
   return (
-    <>
-      <div className={styles.marginBottom}>
-        <div>
-          <p>
-            Enable and configure thresholds for common alerting scenarios. Use Grafana Alerting to{' '}
+    <div className={styles.marginBottom}>
+      <Stack direction="column" gap={2}>
+        <Stack direction="column" gap={1}>
+          <Text element="h2" variant="h5">
+            Enable alerts for common scenarios
+          </Text>
+          <Text element="p" color="secondary">
+            Configure thresholds below. Use{' '}
             <TextLink
-              href="alerting/new/alerting"
+              href="/alerting/new/alerting"
               external={true}
               onClick={() => {
                 const url = new URL('/alerting/new/alerting', window.location.origin);
@@ -75,11 +73,11 @@ export const AlertsPerCheck = () => {
                 });
               }}
             >
-              create a custom alert rule
-            </TextLink>{' '}
-            and configure{' '}
+              Grafana Alerting
+            </TextLink>
+            {' to create custom rules and '}
             <TextLink
-              href="alerting/routes"
+              href="/alerting/routes"
               external={true}
               onClick={() => {
                 const url = new URL('/alerting/routes', window.location.origin);
@@ -94,52 +92,30 @@ export const AlertsPerCheck = () => {
             >
               notification policies
             </TextLink>{' '}
-            to define where your alerts will be routed.
-          </p>
-        </div>
-
-        <Field>
-          <Field>
-            <Stack direction="column">
-              {Object.entries(groupedByCategory).map(([category, allAlerts]) => (
-                <AlertsList
-                  key={category}
-                  title={category}
-                  alerts={allAlerts}
-                  selectedAlerts={selectedAlerts}
-                  onSelectionChange={handleSelectAlert}
-                />
-              ))}
-            </Stack>
-          </Field>
-        </Field>
-      </div>
-    </>
+            to choose where alerts are sent.
+          </Text>
+        </Stack>
+        <InitialNotificationSetup />
+        <AlertsList
+          alerts={PREDEFINED_ALERTS[checkType]}
+          selectedAlerts={selectedAlerts}
+          onSelectionChange={handleSelectAlert}
+        />
+      </Stack>
+    </div>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => {
-  const headingDisplay = `h4`;
-
   return {
+    loading: css({
+      minHeight: theme.spacing(36),
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }),
     marginBottom: css({
       marginBottom: theme.spacing(3),
-    }),
-    link: css({
-      textDecoration: `underline`,
-    }),
-    list: css({
-      display: 'grid',
-      listStyle: 'none',
-    }),
-    badge: css({
-      fontSize: theme.typography.body.fontSize,
-      marginBottom: theme.spacing(1),
-    }),
-    title: css({
-      fontSize: theme.typography[headingDisplay].fontSize,
-      fontWeight: theme.typography[headingDisplay].fontWeight,
-      lineHeight: theme.typography[headingDisplay].lineHeight,
     }),
   };
 };

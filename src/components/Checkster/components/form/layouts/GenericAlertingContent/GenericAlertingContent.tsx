@@ -17,6 +17,14 @@ export function GenericAlertingContent() {
     return <CenteredSpinner />;
   }
 
+  if (!isLegacyEnabled) {
+    return (
+      <SectionContent>
+        <GenericAlertingField field="alerts" />
+      </SectionContent>
+    );
+  }
+
   return (
     <SectionContent>
       <FormTabs>
@@ -36,11 +44,9 @@ export function GenericAlertingContent() {
         >
           <GenericAlertingField field="alerts" />
         </FormTabContent>
-        {isLegacyEnabled && (
-          <FormTabContent label="Legacy alerts">
-            <GenericLegacyAlertingField />
-          </FormTabContent>
-        )}
+        <FormTabContent label="Legacy alerts">
+          <GenericLegacyAlertingField />
+        </FormTabContent>
       </FormTabs>
     </SectionContent>
   );

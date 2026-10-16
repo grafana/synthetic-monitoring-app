@@ -11,6 +11,7 @@ import { Check, CheckType } from 'types';
 import { checkHasAlerting } from 'utils';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { CheckAlertingSetupStatus } from 'components/AlertStatus/CheckAlertingSetupStatus';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
 import { useDashboardContainerAnnotations } from 'scenes/Common/DashboardContainer.hooks';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
@@ -87,6 +88,7 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
               <Stack direction="column" gap={2}>
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
+                  <CheckAlertingSetupStatus check={check} checkType={checkType} />
                   {children}
                 </DashboardContainerAnnotations>
               </Stack>
