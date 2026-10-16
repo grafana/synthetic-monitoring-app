@@ -5,8 +5,6 @@ import { type LandingProduct, type SyntheticsTile } from './testingSyntheticsLan
 const testingSyntheticsLandingEvents = createSMEventFactory('testing_synthetics_landing');
 
 interface LandingViewed extends TrackingEventProps {
-  /** Whether the Agentic testing section was shown. */
-  hasAgentic: boolean;
   /** Whether the Performance testing section was shown. */
   hasK6: boolean;
   /** Whether the Synthetic monitoring section was shown. */
@@ -16,14 +14,6 @@ interface LandingViewed extends TrackingEventProps {
 /** Tracks when the Testing & synthetics landing page is viewed. */
 export const trackTestingSyntheticsLandingViewed =
   testingSyntheticsLandingEvents<LandingViewed>('viewed');
-
-/** Tracks when the Agentic Learn more button is clicked. */
-export const trackAgenticLearnMoreButtonClicked = testingSyntheticsLandingEvents(
-  'agentic_learn_more_button_clicked'
-);
-
-/** Tracks when the Agentic Create a test button is clicked. */
-export const trackAgenticCreateButtonClicked = testingSyntheticsLandingEvents('agentic_create_button_clicked');
 
 interface OpenLinkClicked extends TrackingEventProps {
   /** The product panel the Open link belongs to. */
