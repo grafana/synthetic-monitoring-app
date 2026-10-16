@@ -32,7 +32,7 @@ function getStyles(theme: GrafanaTheme2) {
       border-radius: ${theme.shape.radius.default};
       overflow: hidden;
       margin-bottom: ${theme.spacing(2)};
-      background-color: ${theme.colors.background.primary};
+      background-color: ${theme.colors.background.secondary};
       padding: ${theme.spacing(2)};
     `,
     title: css`

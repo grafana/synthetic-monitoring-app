@@ -47,10 +47,14 @@ function getStyles(theme: GrafanaTheme2) {
     secondary: css`
       display: flex;
       flex-direction: column;
+      background-color: ${theme.colors.background.primary};
+      border: 1px solid ${theme.colors.border.medium};
+      border-radius: ${theme.shape.radius.lg};
+      overflow: hidden;
     `,
     splitter: css`
       &::before {
-        border-right: 1px solid ${theme.colors.border.medium};
+        border-right: none;
       }
     `,
     secondaryContent: css`

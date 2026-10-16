@@ -74,7 +74,6 @@ function getStyles(theme: GrafanaTheme2) {
     `,
     container: css`
       min-height: 100%;
-      border: 1px solid ${theme.colors.border.medium};
     `,
   };
 }
