@@ -1,0 +1,48 @@
+apiVersion: 1
+
+datasources:
+  # Stubs, not real Cloud datasources. The SM datasource backend's
+  # CheckHealth only requires *some* datasource UID to be configured for
+  # these names (see pkg/plugin/datasource.go) — none of the current
+  # Playwright tests assert on metrics/log data, so there's nothing here
+  # worth spending a real Loki/Prometheus Cloud credential on. Point these at
+  # a real Cloud stack later if a test actually needs to read dashboard data
+  # back (and then also fill in `metrics`/`logs` below with their real
+  # hostedId/uid).
+  - name: sm-e2e-stub-logs
+    uid: sm-e2e-stub-logs
+    type: loki
+    access: proxy
+    url: http://localhost:3100
+
+  - name: sm-e2e-stub-metrics
+    uid: sm-e2e-stub-metrics
+    type: prometheus
+    access: proxy
+    url: http://localhost:9090
+
+  # The SM datasource itself, pre-initialized. Provisioning this directly
+  # skips the "Get Started" flow entirely (src/components/AppInitializer.tsx,
+  # via src/contexts/SMDatasourceContext.tsx: it only renders that flow when
+  # no `type: synthetic-monitoring-datasource` datasource exists yet). That
+  # flow validates the app's publisherToken against real Grafana Cloud
+  # Prometheus/Loki (see CONTRIBUTING.md) and mints this accessToken from
+  # the real synthetic-monitoring-api — that validation has to happen once,
+  # by hand, against a real dev stack; what's reused here is just its output.
+  - name: synthetic-monitoring-datasource
+    type: synthetic-monitoring-datasource
+    access: proxy
+    jsonData:
+      apiHost: $__env{SM_E2E_API_HOST}
+      metrics:
+        grafanaName: sm-e2e-stub-metrics
+        uid: sm-e2e-stub-metrics
+        type: prometheus
+        hostedId: 1
+      logs:
+        grafanaName: sm-e2e-stub-logs
+        uid: sm-e2e-stub-logs
+        type: loki
+        hostedId: 1
+    secureJsonData:
+      accessToken: $__env{SM_E2E_ACCESS_TOKEN}
