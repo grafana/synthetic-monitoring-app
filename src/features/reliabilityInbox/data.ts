@@ -1,5 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
-import { TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant, useTerms } from '@grafana/assistant';
+import { useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { checkTerms, TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant } from '@grafana/assistant';
 import { DataFrame, DataSourceInstanceSettings } from '@grafana/data';
 import { queryDS } from 'features/queryDatasources/queryDS';
 import { useLocalStorage } from 'usehooks-ts';
@@ -57,27 +58,55 @@ function useReliabilityInboxAvailable(enabled: boolean) {
   });
 }
 
+const aiTermsQueryKey = ['assistant', 'terms'] as const;
+
 /**
  * Whether suggestions may be generated here. Generating sends a summary of the
  * stack's telemetry to an LLM, so it is an AI feature: it needs Grafana
  * Assistant available and its AI terms accepted by an admin. Agentic Testing
  * uses the same gate, so one acceptance in Assistant covers every AI feature.
+ *
+ * The terms answer is shared and kept for the session because the Synthetics
+ * tab bar asks on every page.
  */
 export function useAIAllowed() {
   const assistant = useAssistant();
-  const terms = useTerms();
+  const terms = useAITermsAccepted(assistant.isAvailable);
 
   return {
-    allowed: assistant.isAvailable && terms.accepted,
-    isLoading: assistant.isLoading || terms.loading,
+    allowed: assistant.isAvailable && terms.isSuccess && terms.data,
+    // No answer yet, or a Retry re-checking after a failure.
+    isLoading:
+      assistant.isLoading || (assistant.isAvailable && (terms.isPending || (terms.isError && terms.isFetching))),
     // A terms check that failed (a timeout, a 5xx) is not a refusal: it still
     // blocks generation, but is reported apart so the page can offer a retry.
     // Without Assistant there are no terms to check, so its failure is moot.
-    error: assistant.isAvailable ? terms.error : null,
+    error: assistant.isAvailable && terms.isError ? terms.error.message : null,
   };
 }
 
-// useTerms has no refetch of its own; it re-checks whenever this event fires.
+function useAITermsAccepted(enabled: boolean) {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    // Every mounted caller listens; without cancelRefetch: false each would restart the check.
+    const recheck = () => queryClient.invalidateQueries({ queryKey: aiTermsQueryKey }, { cancelRefetch: false });
+
+    document.addEventListener(TERMS_AND_CONDITIONS_REFRESH_EVENT, recheck);
+    return () => document.removeEventListener(TERMS_AND_CONDITIONS_REFRESH_EVENT, recheck);
+  }, [queryClient]);
+
+  return useQuery({
+    queryKey: aiTermsQueryKey,
+    queryFn: checkTerms,
+    enabled,
+    retry: false,
+    staleTime: Infinity,
+    gcTime: Infinity,
+  });
+}
+
+// useAIAllowed re-checks the terms on this event, which Assistant also fires once they are accepted.
 function retryTermsCheck() {
   document.dispatchEvent(new Event(TERMS_AND_CONDITIONS_REFRESH_EVENT));
 }

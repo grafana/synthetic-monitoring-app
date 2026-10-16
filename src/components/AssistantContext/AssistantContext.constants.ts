@@ -528,7 +528,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
   {
     id: 'sm-alerts',
     route: AppRoutes.Alerts,
-    urlPattern: `${root}/alerts`,
+    urlPattern: `${root}/config/alerts`,
     createContextItems: () => [
       structured('Synthetic Monitoring alerts (legacy)', {
         name: 'Alerts (legacy)',
@@ -551,7 +551,7 @@ export const ASSISTANT_PAGE_CONTEXTS: readonly AssistantPageContextEntry[] = [
   {
     id: 'sm-config',
     route: AppRoutes.Config,
-    urlPattern: new RegExp(`^${escapedRoot}/config(/.*)?$`),
+    urlPattern: new RegExp(`^${escapedRoot}/config(?:/(?!alerts$)[^/]+)?/?$`),
     createContextItems: () => [
       structured('Synthetic Monitoring configuration', {
         name: 'Configuration',
