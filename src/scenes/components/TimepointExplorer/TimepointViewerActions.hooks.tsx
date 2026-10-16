@@ -87,7 +87,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       },
       {
         icon: 'gf-logs',
-        label: 'View Logs in Explore',
+        label: 'View logs in Explore',
         href: exploreLogsURL,
         onClick: () => {
           trackTimepointViewerActionClicked({
@@ -98,7 +98,7 @@ export function useTimepointViewerActions(timepoint: StatelessTimepoint) {
       },
       {
         icon: `gf-prometheus`,
-        label: 'View Metrics in Explore',
+        label: 'View metrics in Explore',
         href: exploreMetricsURL,
         onClick: () => {
           trackTimepointViewerActionClicked({

@@ -8,7 +8,6 @@ interface TraceIconButtonProps {
   isError: boolean;
   traceExists: boolean;
   isAwaitingPropagation: boolean;
-  expanded: boolean;
   onToggle: () => void;
   onRetry: () => void;
   logoUrl?: string;
@@ -19,7 +18,6 @@ export const TraceIconButton = ({
   isError,
   traceExists,
   isAwaitingPropagation,
-  expanded,
   onToggle,
   onRetry,
   logoUrl,

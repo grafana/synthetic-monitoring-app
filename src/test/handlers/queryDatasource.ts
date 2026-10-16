@@ -7,7 +7,13 @@ import {
   REF_ID_UNIQUE_CHECK_CONFIGS,
 } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 
-export const getHttpDashboard: ApiEntry<unknown> = {
+export interface DatasourceQueryRequest {
+  from: string;
+  to: string;
+  queries: Array<{ refId: string; expr: string }>;
+}
+
+export const queryDatasource: ApiEntry = {
   route: `/api/ds/query`,
   method: `post`,
   result: async (req) => {
@@ -27,8 +33,7 @@ export const getHttpDashboard: ApiEntry<unknown> = {
       };
     }
 
-    return {
-      json: [],
-    };
+    const { queries } = (await req.json()) as DatasourceQueryRequest;
+    return { json: { results: Object.fromEntries(queries.map(({ refId }) => [refId, { frames: [] }])) } };
   },
 };
