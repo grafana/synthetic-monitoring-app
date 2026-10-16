@@ -47,8 +47,8 @@ describe('AgentSkillPicker', () => {
 
     for (const { name } of AGENT_SKILL_TOOLS) {
       expect(await screen.findByRole('button', { name: new RegExp(name) })).toBeInTheDocument();
+      expect(screen.getByRole('radio', { name })).not.toBeChecked();
     }
-    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
     expect(screen.queryByText(/Install the skill/)).not.toBeInTheDocument();
     expect(trackAgentSkillSectionViewed).not.toHaveBeenCalled();
   });
@@ -69,15 +69,18 @@ describe('AgentSkillPicker', () => {
     expect(trackAgentSkillSectionViewed).toHaveBeenCalledTimes(1);
   });
 
-  it('deselects a tool on a second click and hides the install steps', async () => {
+  it('marks the selected tool and keeps it selected when clicked again', async () => {
     const { user } = render(<AgentSkillPicker source={SOURCE} />);
     const claudeTile = await screen.findByRole('button', { name: new RegExp(CLAUDE_CODE.name) });
 
     await user.click(claudeTile);
     expect(await screen.findByText(/Install the skill/)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: CLAUDE_CODE.name })).toBeChecked();
+    expect(screen.getByRole('radio', { name: AGENT_SKILLS.name })).not.toBeChecked();
 
     await user.click(claudeTile);
-    expect(screen.queryByText(/Install the skill/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Install the skill/)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: CLAUDE_CODE.name })).toBeChecked();
     expect(trackAgentSkillToolSelected).toHaveBeenCalledTimes(1);
   });
 
