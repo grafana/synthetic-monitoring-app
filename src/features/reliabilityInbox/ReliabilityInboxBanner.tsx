@@ -26,7 +26,8 @@ export function ReliabilityInboxBanner() {
   const readyCount = opportunities.length - needsSetupCount;
   const suggestionSummary = [
     readyCount > 0 && `${readyCount} ${readyCount === 1 ? 'suggestion is' : 'suggestions are'} ready to review`,
-    needsSetupCount > 0 && `${needsSetupCount} ${needsSetupCount === 1 ? 'needs' : 'need'} setup`,
+    needsSetupCount > 0 &&
+      `${needsSetupCount} ${needsSetupCount === 1 ? 'suggestion needs' : 'suggestions need'} setup`,
     'turn traffic signals into proactive monitoring',
   ]
     .filter(Boolean)

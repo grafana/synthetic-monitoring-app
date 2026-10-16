@@ -767,18 +767,24 @@ describe('ReliabilityInboxPage', () => {
 
     const suggestedCheck = await screen.findByRole('region', { name: 'Suggested HTTP check' });
     expect(within(suggestedCheck).getByText('Needs setup')).toBeVisible();
-    expect(within(suggestedCheck).getByText('Creating this check will ask you for the request to send')).toBeVisible();
-    expect(within(suggestedCheck).getByText(/^Open Request options → Body/)).toBeVisible();
+    // One line in Configuration, not the steps: those go to the editor and Assistant.
+    expect(within(suggestedCheck).getByText('Request: Method and body asked for during creation')).toBeVisible();
     expect(
-      within(suggestedCheck).getByText('Why: Only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat.')
+      within(suggestedCheck).getByText('Only OPTIONS/POST requests observed, no GET or HEAD a probe could repeat.')
     ).toBeVisible();
+    expect(within(suggestedCheck).queryByText(/^Open Request options → Body/)).not.toBeInTheDocument();
     expect(within(suggestedCheck).getByText('Any 2xx')).toBeVisible();
+    // Its method is part of what to configure, so the draft's GET isn't proposed.
+    expect(within(suggestedCheck).queryByText('GET')).not.toBeInTheDocument();
     expect(within(screen.getByLabelText('Recommendations')).getByText(/^Needs setup/)).toBeInTheDocument();
 
     await user.click(within(suggestedCheck).getByRole('button', { name: 'Create with Grafana Assistant' }));
 
     expect(trackSetupWithAssistant).toHaveBeenCalledWith({ opportunityId: 'faro-suggestion', needsSetup: true });
     expect(openAssistant.mock.calls[0][0].context[0].data).not.toHaveProperty('suggestedDraft');
+    expect(openAssistant.mock.calls[0][0].context[0].data.setup).toEqual(
+      expect.objectContaining({ needs: 'method and body' })
+    );
 
     // The same steps travel to the check editor, where they apply.
     await user.click(within(suggestedCheck).getByRole('button', { name: 'Create manually' }));
@@ -788,6 +794,16 @@ describe('ReliabilityInboxPage', () => {
         setupSteps: expect.arrayContaining([expect.stringMatching(/^Open Request options → Body/)]),
       })
     );
+  });
+
+  it('gives Assistant the draft and what to ask for when only credentials are missing', async () => {
+    const { user } = renderPage([{ ...HTTP_RELIABILITY_SUGGESTION, authRequired: true }]);
+
+    await user.click(await screen.findByRole('button', { name: 'Create with Grafana Assistant' }));
+
+    const { data } = openAssistant.mock.calls[0][0].context[0];
+    expect(data.suggestedDraft).toEqual(expect.objectContaining({ target: 'https://mcp.goagain.dev/', method: 'GET' }));
+    expect(data.setup).toEqual(expect.objectContaining({ needs: 'credentials' }));
   });
 
   it('defers probe location selection to the review flow', async () => {

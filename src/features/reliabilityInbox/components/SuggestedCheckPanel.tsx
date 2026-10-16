@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Alert, Badge, Button, ClipboardButton, Icon, IconName, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { upperFirst } from 'lodash';
 
 import { HttpMethod } from 'types';
 import { formatDuration, getMethodColor } from 'utils';
 
-import { ReliabilityOpportunity, SetupGuide } from '../model';
+import { ReliabilityOpportunity } from '../model';
 import { ProposedHttpCheckDraft } from '../proposedCheck';
 import { RecommendationEvidence } from './RecommendationEvidence';
 
@@ -53,7 +54,8 @@ export function SuggestedCheckPanel({
                 Suggested check
               </Text>
               <Badge color="darkgrey" icon="globe" text="HTTP" />
-              {opportunity.setup && <Badge color="orange" icon="exclamation-triangle" text="Needs setup" />}
+              {/* Blue, not a warning: the user hasn't done anything wrong. */}
+              {opportunity.setup && <Badge color="blue" text="Needs setup" />}
               {opportunity.namespace && (
                 <Badge
                   color="darkgrey"
@@ -76,8 +78,11 @@ export function SuggestedCheckPanel({
         />
 
         <ConfigurationSection>
-          {opportunity.setup && <SetupGuideAlert setup={opportunity.setup} />}
-          <CheckIdentity proposedCheck={proposedCheck} ownerHint={opportunity.ownerHint} />
+          <CheckIdentity
+            proposedCheck={proposedCheck}
+            ownerHint={opportunity.ownerHint}
+            methodUnknown={opportunity.suggestion.needsConfiguration}
+          />
         </ConfigurationSection>
 
         <ConfigurationSection titleId="reliability-inbox-uptime-heading">
@@ -113,6 +118,18 @@ export function SuggestedCheckPanel({
               Configured during creation
             </CheckField>
           </OptionGrid>
+          {/* One line in Configuration, in info blue rather than a warning above
+              the check: the user hasn't done anything wrong, and the editor and
+              Assistant carry the steps. */}
+          {opportunity.setup && (
+            <Alert
+              severity="info"
+              title={`${opportunity.setup.label}: ${upperFirst(opportunity.setup.needs)} asked for during creation`}
+              bottomSpacing={0}
+            >
+              {opportunity.setup.why}
+            </Alert>
+          )}
         </ConfigurationSection>
         <SuggestedCheckActions
           assistantDisabled={assistantDisabled}
@@ -130,32 +147,6 @@ export function SuggestedCheckPanel({
 
 function selectCreationEncouragement() {
   return CREATION_ENCOURAGEMENT[Math.floor(Math.random() * CREATION_ENCOURAGEMENT.length)];
-}
-
-/** What creating the check will ask for, and where the editor takes it. */
-function SetupGuideAlert({ setup }: { setup: SetupGuide }) {
-  const styles = useStyles2(getSetupGuideStyles);
-
-  return (
-    <Alert severity="warning" title={setup.title} bottomSpacing={0}>
-      <Stack direction="column" gap={1}>
-        <Text>In the check editor:</Text>
-        <ol className={styles.steps}>
-          {setup.steps.map((step) => (
-            <li key={step}>{step}</li>
-          ))}
-        </ol>
-        <Text variant="bodySmall" color="secondary">
-          Or choose Create with Grafana Assistant, which asks you for them and shows the check before saving it.
-        </Text>
-        {setup.why && (
-          <Text variant="bodySmall" color="secondary">
-            Why: {setup.why}
-          </Text>
-        )}
-      </Stack>
-    </Alert>
-  );
 }
 
 function ConfigurationSection({ children, titleId }: { children: React.ReactNode; titleId?: string }) {
@@ -178,9 +169,11 @@ const ConfigurationTitle = ({ title, id }: { title: string; id?: string }) => {
 function CheckIdentity({
   proposedCheck,
   ownerHint,
+  methodUnknown,
 }: {
   proposedCheck: ProposedHttpCheckDraft;
   ownerHint?: string;
+  methodUnknown?: boolean;
 }) {
   return (
     <div>
@@ -188,7 +181,9 @@ function CheckIdentity({
         {proposedCheck.job}
       </CheckField>
       <CheckField icon="link" label="Target URL" layout="row">
-        <TargetUrl method={proposedCheck.method} target={proposedCheck.target} />
+        {/* The draft's GET is only the editor's starting point when the
+            endpoint takes another method, so it isn't shown as the proposal. */}
+        <TargetUrl method={methodUnknown ? undefined : proposedCheck.method} target={proposedCheck.target} />
       </CheckField>
       {/* On screen rather than in the namespace badge's tooltip: a tooltip is
           undiscoverable and unavailable on touch, and this is the evidence for
@@ -228,12 +223,12 @@ function CheckField({
   );
 }
 
-function TargetUrl({ method, target }: { method: string; target: string }) {
+function TargetUrl({ method, target }: { method?: string; target: string }) {
   const styles = useStyles2(getTargetUrlStyles, method as HttpMethod);
 
   return (
     <div className={styles.value}>
-      <span className={styles.method}>{method}</span>
+      {method && <span className={styles.method}>{method}</span>}
       <code>{target}</code>
       <ClipboardButton
         aria-label="Copy target URL"
@@ -344,15 +339,6 @@ function getStyles(theme: GrafanaTheme2) {
       gap: theme.spacing(0.75),
       marginLeft: 'auto',
       textAlign: 'right',
-    }),
-  };
-}
-
-function getSetupGuideStyles(theme: GrafanaTheme2) {
-  return {
-    steps: css({
-      margin: 0,
-      paddingLeft: theme.spacing(2.5),
     }),
   };
 }

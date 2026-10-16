@@ -137,7 +137,8 @@ describe('Reliability Inbox model', () => {
     }
 
     expect(toReliabilityOpportunity(postOnly).setup).toEqual({
-      title: 'Creating this check will ask you for the request to send',
+      label: 'Request',
+      needs: 'method and body',
       steps: [
         expect.stringContaining('Request method'),
         expect.stringContaining('Request options → Body'),
@@ -147,17 +148,22 @@ describe('Reliability Inbox model', () => {
     });
     expect(toReliabilityOpportunity(apiServer).setup).toEqual(
       expect.objectContaining({
-        title: "Creating this check will ask you for the cluster's CA certificate",
+        needs: "cluster's CA certificate",
         steps: expect.arrayContaining([expect.stringContaining('Request options → TLS')]),
       })
     );
     expect(toReliabilityOpportunity(authRequired).setup).toEqual(
       expect.objectContaining({
-        title: 'Creating this check will ask you for credentials',
+        needs: 'credentials',
         steps: expect.arrayContaining([expect.stringContaining('Request options → Authentication')]),
       })
     );
     expect(toReliabilityOpportunity(HTTP_RELIABILITY_SUGGESTION).setup).toBeUndefined();
+
+    // A blank reason still says what to provide, just without a why.
+    expect(toReliabilityOpportunity({ ...postOnly, configurationReason: ' ' }).setup).toEqual(
+      expect.objectContaining({ needs: 'method and body', why: undefined })
+    );
   });
 
   it('leaves the expected status open when the request itself needs configuring', () => {

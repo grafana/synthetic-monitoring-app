@@ -66,7 +66,7 @@ describe('ReliabilityInboxBanner', () => {
 
     expect(
       await screen.findByText(
-        '1 suggestion is ready to review · 1 needs setup · turn traffic signals into proactive monitoring'
+        '1 suggestion is ready to review · 1 suggestion needs setup · turn traffic signals into proactive monitoring'
       )
     ).toBeInTheDocument();
     await waitFor(() =>

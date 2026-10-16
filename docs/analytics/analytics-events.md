@@ -498,11 +498,11 @@ Tracks when the compact Reliability Inbox entry point is shown, whether or not i
 
 ##### Properties
 
-| name             | type                  | description                                                                                                  |
-| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| name             | type                  | description                                                                                                                                                                                  |
+| ---------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | opportunityCount | `number`              | Number of recommendations ready to create shown by the inbox entry point; 0 when none are ready (either because it offers to generate them or because all shown recommendations need setup). |
-| needsSetupCount  | `number`              | Number of recommendations shown that need configuration or credentials first; not part of opportunityCount.  |
-| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.        |
+| needsSetupCount  | `number`              | Number of recommendations shown that need configuration or credentials first; not part of opportunityCount.                                                                                  |
+| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.                                                                                        |
 
 #### synthetic-monitoring_reliability_inbox_review_entry_clicked
 

@@ -32,7 +32,7 @@ export function getAssistantActionState({
 }
 
 export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
-  const { suggestion, proposedCheck, subject } = opportunity;
+  const { suggestion, proposedCheck, subject, setup } = opportunity;
   const { reqPerS, errorRatio, p99Ms } = suggestion.evidence;
 
   const context = createAssistantContextItem('structured', {
@@ -49,8 +49,10 @@ export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
         evidence: { reqPerS, errorRatio, p99Ms },
       },
       // Without a draft when it needs configuration: the service's prompt says
-      // what to ask the user for, and a GET draft would contradict it.
+      // what to ask the user for, and a GET draft would contradict it. A draft
+      // that only lacks credentials stays, alongside what to ask for.
       ...(!suggestion.needsConfiguration && { suggestedDraft: proposedCheck }),
+      ...(setup && { setup }),
     },
   });
 

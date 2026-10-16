@@ -33,8 +33,10 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
 export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>;
 
 export interface SetupGuide {
-  /** What creating the check will ask the user for. */
-  title: string;
+  /** The part of the check it's about, such as Authentication. */
+  label: string;
+  /** What creating the check will ask the user for, such as credentials. */
+  needs: string;
   /** Where to provide it, in the check editor's own labels. */
   steps: string[];
   /** The evidence that the draft alone would not pass. */
@@ -62,7 +64,8 @@ function getSetupGuide({
 }: ReliabilitySuggestion): SetupGuide | undefined {
   if (needsConfiguration && evidence.families.includes(KUBERNETES_CLIENT_FAMILY)) {
     return {
-      title: "Creating this check will ask you for the cluster's CA certificate",
+      label: 'TLS',
+      needs: "cluster's CA certificate",
       steps: [
         'Add a path the API server answers without credentials to Request target, such as /version.',
         "Open Request options → TLS and paste the cluster's CA certificate in PEM format into CA certificate. Your kubeconfig holds it, base64-encoded, as certificate-authority-data.",
@@ -74,21 +77,24 @@ function getSetupGuide({
 
   if (needsConfiguration) {
     return {
-      title: 'Creating this check will ask you for the request to send',
+      label: 'Request',
+      needs: 'method and body',
       steps: [
         'Choose the Request method this endpoint expects, such as POST, and add its path to Request target.',
         'Open Request options → Body and add a payload it accepts. Or point Request target at a health endpoint instead.',
         TEST_THEN_SAVE,
       ],
       // The service words its reasons "<what it saw>: <what to configure>"; the
-      // steps above already cover the second half.
-      why: configurationReason && `${upperFirst(configurationReason.split(': ')[0])}.`,
+      // steps above already cover the second half. A blank reason leaves the
+      // steps standing without a why.
+      why: configurationReason?.trim() ? `${upperFirst(configurationReason.split(': ')[0].trim())}.` : undefined,
     };
   }
 
   if (authRequired) {
     return {
-      title: 'Creating this check will ask you for credentials',
+      label: 'Authentication',
+      needs: 'credentials',
       steps: [
         'Open Request options → Authentication and add a Bearer Token or Basic Auth credentials.',
         TEST_THEN_SAVE,
