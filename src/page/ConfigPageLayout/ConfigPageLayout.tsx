@@ -59,6 +59,14 @@ export function ConfigPageLayout() {
         active: activeTab('secrets'),
       });
     }
+
+    navModel.children!.push({
+      icon: 'flask',
+      text: 'Features',
+      url: getConfigTabUrl('features'),
+      active: activeTab('features'),
+    });
+
     return navModel;
   }, [activeTab, getConfigTabUrl, isSecretsManagementEnabled]);
 
