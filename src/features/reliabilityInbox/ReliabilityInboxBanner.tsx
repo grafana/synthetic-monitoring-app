@@ -136,7 +136,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
   }),
   action: css({
     label: 'reliability-inbox-banner-action',
-    minHeight: theme.spacing(5.75),
     [`@container ${CONTAINER_NAME} (max-width: ${theme.breakpoints.values.sm}px)`]: {
       width: '100%',
       justifyContent: 'center',
