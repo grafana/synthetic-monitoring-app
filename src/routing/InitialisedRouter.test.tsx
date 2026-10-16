@@ -27,8 +27,8 @@ jest.mock('page/DashboardPage', () => ({
   DashboardPage: () => <h1>Dashboard page</h1>,
 }));
 
-jest.mock('page/SceneHomepage', () => ({
-  SceneHomepage: () => <h1>Home page</h1>,
+jest.mock('page/Home', () => ({
+  HomePage: () => <h1>Home page</h1>,
 }));
 
 jest.mock('features/reliabilityInbox', () => ({

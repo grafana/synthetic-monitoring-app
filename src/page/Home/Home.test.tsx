@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, waitFor, within } from '@testing-library/react';
-import { DataTestIds } from 'test/dataTestIds';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK } from 'test/fixtures/checks';
 import { OFFLINE_PROBE, PRIVATE_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -11,6 +11,14 @@ import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
 import { HomePage } from './Home';
+
+jest.mock('@grafana/scenes-react', () => ({
+  SceneContextProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+jest.mock('scenes/Common/SceneTimeRangePicker', () => ({
+  SceneTimeRangePicker: () => null,
+}));
 
 jest.mock('./components/TrendCharts', () => ({
   TrendCharts: () => <div data-testid="trend-charts" />,
@@ -29,7 +37,7 @@ describe('HomePage', () => {
 
     render(<HomePage />);
 
-    expect(await screen.findByTestId(DataTestIds.ChecksEmptyState, { exact: false })).toBeInTheDocument();
+    expect(await screen.findByTestId(CHECKS_TEST_ID.emptyState, { exact: false })).toBeInTheDocument();
   });
 
   it('shows the down check count in the KPI strip', async () => {

@@ -48,10 +48,12 @@ const ErrorRateViz = () => {
   const viz = VizConfigBuilders.timeseries()
     .setUnit('percentunit')
     .setMin(0)
+    // Without a ceiling, an all-zero series autoscales to an absurd 0–10000% axis
+    .setCustomFieldConfig('axisSoftMax', 0.1)
     .setCustomFieldConfig('spanNulls', true)
     .setCustomFieldConfig('fillOpacity', 10)
     .setOption('tooltip', { mode: TooltipDisplayMode.Single, sort: SortOrder.None })
-    .setOption('legend', { showLegend: false, displayMode: LegendDisplayMode.Hidden, placement: 'bottom', calcs: [] })
+    .setOption('legend', { showLegend: false, placement: 'bottom', calcs: [] })
     .setColor({ mode: 'fixed', fixedColor: 'red' })
     .build();
 

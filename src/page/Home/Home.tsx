@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { PluginPage } from '@grafana/runtime';
-import { SceneContextProvider, TimeRangePicker } from '@grafana/scenes-react';
+import { SceneContextProvider } from '@grafana/scenes-react';
 import { Alert, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
@@ -11,6 +11,7 @@ import { useMetricsDS } from 'hooks/useMetricsDS';
 import { AddNewCheckButton } from 'components/AddNewCheckButton';
 import { ChecksEmptyState } from 'components/ChecksEmptyState';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+import { SceneTimeRangePicker } from 'scenes/Common/SceneTimeRangePicker';
 
 import { AttentionList } from './components/AttentionList';
 import { HomeFilters, HomeFiltersState } from './components/HomeFilters';
@@ -89,7 +90,7 @@ const HomePageActions = () => {
 
   return (
     <Stack direction="row" gap={1} alignItems="center">
-      {metricsDS && <TimeRangePicker />}
+      {metricsDS && <SceneTimeRangePicker />}
       <AddNewCheckButton source="homepage" />
     </Stack>
   );
