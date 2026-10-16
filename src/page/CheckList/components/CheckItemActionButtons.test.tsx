@@ -1,5 +1,6 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
+import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
@@ -21,7 +22,10 @@ describe('CheckItemActionButtons', () => {
   describe(`View dashboard`, () => {
     it(`should render the view dashboard button`, async () => {
       renderWithProvider();
-      expect(await screen.findByText('View dashboard')).toBeInTheDocument();
+      expect(await screen.findByText('View dashboard')).toHaveAttribute(
+        'data-testid',
+        CHECKS_TEST_ID.listItem.dashboardLink
+      );
     });
 
     it(`should render both a text link and icon link when responsiveDashboardLink is true`, async () => {
@@ -31,6 +35,10 @@ describe('CheckItemActionButtons', () => {
         </CheckFolderAccessProvider>
       );
       expect(await screen.findByText('View dashboard')).toBeInTheDocument();
+      expect(screen.getAllByTestId(CHECKS_TEST_ID.listItem.dashboardLink)).toHaveLength(2);
+      for (const link of screen.getAllByTestId(CHECKS_TEST_ID.listItem.dashboardLink)) {
+        expect(link).toHaveAttribute('data-check-id', String(BASIC_HTTP_CHECK.id));
+      }
       expect(screen.getByLabelText('Go to dashboard')).toBeInTheDocument();
     });
 
@@ -40,7 +48,7 @@ describe('CheckItemActionButtons', () => {
           <CheckItemActionButtons check={BASIC_HTTP_CHECK} viewDashboardAsIcon />
         </CheckFolderAccessProvider>
       );
-      expect(await screen.findByLabelText('Go to dashboard')).toBeInTheDocument();
+      expect(await screen.findByTestId(CHECKS_TEST_ID.listItem.dashboardLink)).toHaveAccessibleName('Go to dashboard');
       expect(screen.queryByText('View dashboard')).not.toBeInTheDocument();
     });
   });

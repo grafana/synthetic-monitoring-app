@@ -9,6 +9,7 @@ import {
   trackSLOIntegrationWizardCancelled,
   trackSLOIntegrationWizardCompleted,
 } from 'features/tracking/sloIntegrationEvents';
+import { SLO_INTEGRATION_TEST_ID } from 'test/dataTestIds';
 
 import { type SLO, type SLOComponentPropsV1, type SLOWizardInitialValues, StepKey } from './grafanaSLOApp.types';
 import { Check } from 'types';
@@ -118,13 +119,19 @@ export function SLOIntegration({ check }: SLOIntegrationProps) {
 
   return (
     <>
-      <Button variant="secondary" icon={<SLOIcon />} onClick={handleOpenDrawer}>
+      <Button
+        data-testid={SLO_INTEGRATION_TEST_ID.openButton}
+        data-slo-count={slos.length}
+        variant="secondary"
+        icon={<SLOIcon />}
+        onClick={handleOpenDrawer}
+      >
         {countLabel}
       </Button>
 
       {drawerOpen && (
         <Drawer title={drawerTitle} onClose={() => setDrawerOpen(false)}>
-          <Stack direction="column" gap={2}>
+          <Stack direction="column" gap={2} data-testid={SLO_INTEGRATION_TEST_ID.drawer}>
             <TabsBar>
               {slos.map((slo) => (
                 <Tab

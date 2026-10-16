@@ -1,6 +1,7 @@
 import React from 'react';
 import { usePluginComponent } from '@grafana/runtime';
 import { screen, waitFor, within } from '@testing-library/react';
+import { SLO_INTEGRATION_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
 
@@ -105,10 +106,14 @@ describe('SLOIntegration', () => {
 
     const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
 
-    await user.click(await screen.findByRole('button', { name: /slos/i }));
+    const opener = await screen.findByTestId(SLO_INTEGRATION_TEST_ID.openButton);
+    expect(opener).toHaveAttribute('data-slo-count', '0');
+    await user.click(opener);
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('tab', { name: prefilledSLOTabName })).toBeInTheDocument();
-    expect(within(dialog).getByText('Mock SLO Wizard')).toBeInTheDocument();
+    expect(within(dialog).getByTestId(SLO_INTEGRATION_TEST_ID.drawer)).toContainElement(
+      within(dialog).getByText('Mock SLO Wizard')
+    );
   });
 
   it('closes the drawer when cancel is clicked and there are no SLOs', async () => {
@@ -141,7 +146,9 @@ describe('SLOIntegration', () => {
     mockHookReturn({ slos: [slo] });
 
     const { user } = render(<SLOIntegration check={BASIC_HTTP_CHECK} />);
-    await user.click(await screen.findByRole('button', { name: '1 SLO' }));
+    const opener = await screen.findByTestId(SLO_INTEGRATION_TEST_ID.openButton);
+    expect(opener).toHaveAttribute('data-slo-count', '1');
+    await user.click(opener);
 
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByRole('tab', { name: 'Only SLO' })).toBeInTheDocument();
