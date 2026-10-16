@@ -30,7 +30,7 @@ export const ProbeCard = ({ probe }: { probe: ExtendedProbe }) => {
   const styles = useStyles2(getStyles2);
 
   return (
-    <Card>
+    <Card className={styles.card}>
       <Card.Heading>
         <div className={styles.titleRow}>
           <ProbeStatus probe={probe} />
@@ -123,6 +123,8 @@ const getStyles2 = (theme: GrafanaTheme2) => {
   return {
     card: css({
       containerName,
+      backgroundColor: theme.colors.background.primary,
+      borderRadius: theme.shape.radius.lg,
     }),
     titleRow: css({
       display: 'flex',
