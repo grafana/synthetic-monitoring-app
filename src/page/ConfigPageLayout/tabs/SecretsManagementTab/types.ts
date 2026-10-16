@@ -37,4 +37,5 @@ export interface SecretWithMetadata extends SecretWithUuid, SecretMetadata {}
 export type SecretsManagementSource =
   | 'check_editor_sidepanel_feature_tabs'
   | 'config_page_secrets_tab'
-  | 'check_editor_feature_secret_scanner';
+  | 'check_editor_feature_secret_scanner'
+  | 'check_template_llm_provider';

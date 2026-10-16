@@ -132,7 +132,8 @@ export function validateBrowserScript(script: string, context: RefinementCtx) {
   if (browserImport === null) {
     return context.addIssue({
       code: 'custom',
-      message: "Script must import { browser } from 'k6/browser'",
+      message:
+        "Script must import { browser } from 'k6/browser' or from 'https://jslib.k6.io/k6-browser-ai/<version>/index.js'",
     });
   }
 }
