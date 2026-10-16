@@ -50,3 +50,12 @@ export const DEFAULT_PROBES = [PRIVATE_PROBE, PUBLIC_PROBE, UNKNOWN_VERSION_PROB
 
 export const ADD_PROBE_TOKEN_RESPONSE = `A very tasty added token`;
 export const UPDATED_PROBE_TOKEN_RESPONSE = `A very tasty updated token`;
+
+export const DEPRECATED_PROBE: Probe = {
+  ...PUBLIC_PROBE,
+  id: 9999,
+  name: 'UAE',
+  public: true,
+  deprecated: true,
+  region: 'EMEA',
+};

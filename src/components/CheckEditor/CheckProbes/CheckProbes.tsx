@@ -11,6 +11,7 @@ import { ProbesList } from './ProbesList';
 interface CheckProbesProps {
   probes: number[];
   availableProbes: ProbeWithMetadata[];
+  assignedProbes?: number[];
   disabled?: boolean;
   onChange: (probes: number[]) => void;
   onBlur?: () => void;
@@ -20,7 +21,7 @@ interface CheckProbesProps {
 
 export const PROBES_FILTER_ID = 'check-probes-filter';
 
-export function CheckProbes({ probes, availableProbes, onChange, error, disabled }: CheckProbesProps) {
+export function CheckProbes({ probes, availableProbes, onChange, error, disabled, assignedProbes }: CheckProbesProps) {
   const [filterText, setFilterText] = useState('');
 
   const filteredProbes = useMemo(() => filterProbes(availableProbes, filterText), [availableProbes, filterText]);
@@ -73,6 +74,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error, disabled
                     title={region}
                     probes={allProbes}
                     selectedProbes={probes}
+                    assignedProbes={assignedProbes}
                     onSelectionChange={onChange}
                     disabled={disabled}
                   />
@@ -84,6 +86,7 @@ export function CheckProbes({ probes, availableProbes, onChange, error, disabled
                 title="Private probes"
                 probes={privateProbes}
                 selectedProbes={probes}
+                assignedProbes={assignedProbes}
                 onSelectionChange={onChange}
                 disabled={disabled}
               />

@@ -15,6 +15,7 @@ interface ProbeOptionsProps {
   onlyProbes?: boolean; // TODO: Remove when CheckEditor v1 is removed
   onChange: (probes: number[]) => void;
   selectedProbes: number[];
+  assignedProbes?: number[];
 }
 
 export const ProbeOptions = ({
@@ -25,6 +26,7 @@ export const ProbeOptions = ({
   onlyProbes,
   onChange,
   selectedProbes,
+  assignedProbes,
 }: ProbeOptionsProps) => {
   const { data: probes = [] } = useProbesWithMetadata();
 
@@ -32,6 +34,7 @@ export const ProbeOptions = ({
     <>
       <CheckProbes
         probes={selectedProbes}
+        assignedProbes={assignedProbes}
         availableProbes={getAvailableProbes(probes, checkType)}
         disabled={disabled}
         invalid={Boolean(errors)}

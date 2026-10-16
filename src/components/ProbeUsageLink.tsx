@@ -15,7 +15,7 @@ interface ProbeUsageLinkProps {
   className?: string;
 }
 
-function getChecksListHref(probeName: string) {
+export function getChecksListHref(probeName: string) {
   const path = getRoute(AppRoutes.Checks);
   const params = new URLSearchParams({ probes: probeName });
   return `${path}?${params.toString()}`;
@@ -36,7 +36,7 @@ function getChecksLinkCopy(checksCount: number) {
 export function ProbeUsageLink({ probe, className, variant, showWhenUnused = false }: ProbeUsageLinkProps) {
   const hasChecks = probe.checks.length > 0;
   const checksCount = hasChecks ? probe.checks.length : 0;
-  const checksHref = getChecksListHref(probe.name);
+  const checksHref = getChecksListHref(probe.displayName);
   const linkText = getChecksLinkCopy(checksCount);
 
   if (!hasChecks && !showWhenUnused) {
