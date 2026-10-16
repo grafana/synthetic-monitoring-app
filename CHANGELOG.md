@@ -1,5 +1,22 @@
 # Changelog
 
+## [1.66.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.65.0...v1.66.0) (2026-10-16)
+
+
+### Features
+
+* add Recommendations tab to the Checks page (M1) ([#1854](https://github.com/grafana/synthetic-monitoring-app/issues/1854)) ([f415b98](https://github.com/grafana/synthetic-monitoring-app/commit/f415b98e464a61add5958cae71de12f2ba83fb3e))
+
+
+### Fixes
+
+* Style issues to align with the re-design ([#1932](https://github.com/grafana/synthetic-monitoring-app/issues/1932)) ([c62cb7c](https://github.com/grafana/synthetic-monitoring-app/commit/c62cb7cab8018b49ad1bf12a4df5fffd847c78a1))
+
+
+### Miscellaneous Chores
+
+* update Graft manifest schema URL ([#1931](https://github.com/grafana/synthetic-monitoring-app/issues/1931)) ([dde50d3](https://github.com/grafana/synthetic-monitoring-app/commit/dde50d356ce613d32a1d7f49bd959c7c7cd7eb55))
+
 ## [1.65.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.64.0...v1.65.0) (2026-10-09)
 
 
