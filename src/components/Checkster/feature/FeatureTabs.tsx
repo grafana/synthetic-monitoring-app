@@ -14,7 +14,7 @@ export function FeatureTabs() {
       className={css`
         flex-grow: 1;
         align-self: flex-end;
-        margin-left: -7px; // Need to hug the splitter
+        padding-left: 8px;
       `}
     >
       {tabs.map(([label], index) => {
