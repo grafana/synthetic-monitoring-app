@@ -1,6 +1,12 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { RECOMMENDATIONS_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
-import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
+import {
+  DEFAULT_FOLDER,
+  FOLDER_EXTERNAL,
+  FOLDER_PRODUCTION,
+  FOLDER_STAGING,
+  MOCK_FOLDERS,
+} from 'test/fixtures/folders';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { mockFeatureToggles, mockReportInteraction, selectOption } from 'test/utils';
@@ -373,7 +379,7 @@ describe('Recommendations tab filters', () => {
           { path: 'checks/recommendations?category=alerting' }
         );
 
-        await selectOption(user, { label: 'Folders', option: DEFAULT_FOLDER.title });
+        await selectOption(user, { label: 'Folders', option: `${DEFAULT_FOLDER.title} (default)` });
 
         const section = await findSection(/1 of 2 checks match your filters/);
         expect(within(section).getByText('default-check')).toBeInTheDocument();
@@ -436,6 +442,22 @@ describe('Recommendations tab filters', () => {
         const section = await findSection(/1 of 2 checks match your filters/);
         expect(within(section).getByText('staging-prod-check')).toBeInTheDocument();
         expect(within(section).queryByText('prod-check')).not.toBeInTheDocument();
+      });
+
+      it('tells the default folder apart from a stray copy with its title', async () => {
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 32, job: 'default-check', target: 'https://b.com', folderUid: undefined }),
+            buildCheck({ id: 34, job: 'stray-check', target: 'https://d.com', folderUid: FOLDER_EXTERNAL.uid }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await selectOption(user, { label: 'Folders', option: FOLDER_EXTERNAL.title });
+
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('stray-check')).toBeInTheDocument();
+        expect(within(section).queryByText('default-check')).not.toBeInTheDocument();
       });
     });
   });

@@ -204,8 +204,21 @@ describe('getFolderOptions', () => {
     expect(getFolderOptions(checks, 'default-uid', known, ['picked'])).toEqual([
       { value: 'picked', label: 'picked' },
       { value: 'prod', label: 'Production' },
-      { value: 'default-uid', label: 'Synthetic Monitoring' },
+      { value: 'default-uid', label: 'Synthetic Monitoring (default)' },
       { value: 'untitled', label: 'untitled' },
+    ]);
+  });
+
+  it('marks the default folder, so a stray top-level copy of it reads differently', () => {
+    const checks = [
+      buildCheck(CheckType.Http, { folderUid: undefined }),
+      buildCheck(CheckType.Http, { folderUid: 'copy' }),
+    ];
+    const known = byUid(folder('default-uid', 'Synthetic Monitoring'), folder('copy', 'Synthetic Monitoring'));
+
+    expect(getFolderOptions(checks, 'default-uid', known, [])).toEqual([
+      { value: 'copy', label: 'Synthetic Monitoring' },
+      { value: 'default-uid', label: 'Synthetic Monitoring (default)' },
     ]);
   });
 

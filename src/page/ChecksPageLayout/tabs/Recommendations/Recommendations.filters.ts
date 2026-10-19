@@ -1,9 +1,12 @@
+import { t } from '@grafana/i18n';
+
 import { Recommendation, RecommendationGroup } from './Recommendations.types';
 import { Check, CheckType, GrafanaFolder } from 'types';
 import { getCheckType } from 'utils';
 import { getFolderPath } from 'data/useFolders';
 import { matchesFolderFilter, matchesLabelFilter } from 'page/CheckList/CheckList.utils';
 
+import { UNESCAPED } from './Recommendations.constants';
 import { describeCheckTypes } from './Recommendations.utils';
 
 /** What the rail's filters have selected. A group with nothing selected doesn't constrain. */
@@ -106,7 +109,8 @@ export interface FolderOption {
 
 /**
  * The folders checks are in, by title, or by path where two share one: folders under different
- * parents can. A folder missing from `foldersByUid` shows its uid.
+ * parents can. The default folder is marked as on the check list, since a stray copy of it can
+ * share its title at the top level. A folder missing from `foldersByUid` shows its uid.
  */
 export function getFolderOptions(
   checks: Check[],
@@ -127,11 +131,20 @@ export function getFolderOptions(
   const titles = folders.flatMap(({ folder }) => (folder ? [folder.title] : []));
   const isShared = (title: string) => titles.indexOf(title) !== titles.lastIndexOf(title);
 
+  const getLabel = (uid: string, folder?: GrafanaFolder) => {
+    if (!folder) {
+      return uid;
+    }
+
+    if (uid === defaultFolderUid) {
+      return t('recommendations.filters.defaultFolder', '{{title}} (default)', { title: folder.title, ...UNESCAPED });
+    }
+
+    return isShared(folder.title) ? getFolderPath(folder, foldersByUid) : folder.title;
+  };
+
   return folders
-    .map(({ uid, folder }) => ({
-      value: uid,
-      label: folder ? (isShared(folder.title) ? getFolderPath(folder, foldersByUid) : folder.title) : uid,
-    }))
+    .map(({ uid, folder }) => ({ value: uid, label: getLabel(uid, folder) }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
 
