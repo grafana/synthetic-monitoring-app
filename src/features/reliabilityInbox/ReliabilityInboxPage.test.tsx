@@ -806,6 +806,23 @@ describe('ReliabilityInboxPage', () => {
     expect(data.setup).toEqual(expect.objectContaining({ needs: 'credentials' }));
   });
 
+  it('gives Assistant the GET draft for a Kubernetes API server, alongside its CA certificate', async () => {
+    const { user } = renderPage([
+      {
+        ...HTTP_RELIABILITY_SUGGESTION,
+        needsConfiguration: true,
+        configurationReason: "Kubernetes API server (seen in client-go traffic): add the cluster's CA certificate",
+        evidence: { ...HTTP_RELIABILITY_SUGGESTION.evidence, families: ['rest_client_requests_total'] },
+      },
+    ]);
+
+    await user.click(await screen.findByRole('button', { name: 'Create with Grafana Assistant' }));
+
+    const { data } = openAssistant.mock.calls[0][0].context[0];
+    expect(data.suggestedDraft).toEqual(expect.objectContaining({ target: 'https://mcp.goagain.dev/', method: 'GET' }));
+    expect(data.setup).toEqual(expect.objectContaining({ needs: "cluster's CA certificate" }));
+  });
+
   it('defers probe location selection to the review flow', async () => {
     renderPage([
       {

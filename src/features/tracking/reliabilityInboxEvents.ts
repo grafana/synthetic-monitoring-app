@@ -3,7 +3,7 @@ import { createSMEventFactory, TrackingEventProps } from 'features/tracking/util
 const reliabilityInboxEvents = createSMEventFactory('reliability_inbox');
 
 interface InboxExposureEvent extends TrackingEventProps {
-/** Number of recommendations ready to create shown by the inbox entry point; 0 when none are ready (either because it offers to generate them or because all shown recommendations need setup). */
+  /** Number of recommendations ready to create shown by the inbox entry point; 0 when none are ready (either because it offers to generate them or because all shown recommendations need setup). */
   opportunityCount: number;
   /** Number of recommendations shown that need configuration or credentials first; not part of opportunityCount. */
   needsSetupCount: number;

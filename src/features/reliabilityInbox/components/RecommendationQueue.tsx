@@ -63,7 +63,7 @@ export function RecommendationQueue({
                 {totalCount} {pluralize('Recommendation', totalCount)}
               </strong>
               <Text variant="bodySmall" color="secondary">
-                Ordered by technical signals
+                Ready to create first, then by technical signals
               </Text>
             </Stack>
           </div>

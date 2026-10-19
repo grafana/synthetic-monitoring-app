@@ -168,6 +168,19 @@ describe('Reliability Inbox model', () => {
     expect(toReliabilityOpportunity({ ...postOnly, configurationReason: ' ' }).setup).toEqual(
       expect.objectContaining({ needs: 'method and body', why: undefined })
     );
+
+    // The service flags auth whatever else is missing, so one guide asks for both.
+    expect(toReliabilityOpportunity({ ...postOnly, authRequired: true }).setup).toEqual({
+      label: 'Request',
+      needs: 'method, body and credentials',
+      steps: [
+        expect.stringContaining('Request method'),
+        expect.stringContaining('Request options → Body'),
+        expect.stringContaining('Request options → Authentication'),
+        expect.stringContaining('Click Test'),
+      ],
+      why: 'Only OPTIONS/POST requests observed. Most requests to this endpoint are answered with 401 or 403.',
+    });
   });
 
   it('leaves the expected status open when the request itself needs configuring', () => {

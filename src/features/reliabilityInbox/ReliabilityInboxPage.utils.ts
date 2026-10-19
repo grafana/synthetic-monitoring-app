@@ -48,10 +48,10 @@ export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
         rationale: suggestion.rationale,
         evidence: { reqPerS, errorRatio, p99Ms },
       },
-      // Without a draft when it needs configuration: the service's prompt says
+      // Without a draft when the method is unknown: the service's prompt says
       // what to ask the user for, and a GET draft would contradict it. A draft
-      // that only lacks credentials stays, alongside what to ask for.
-      ...(!suggestion.needsConfiguration && { suggestedDraft: proposedCheck }),
+      // that only lacks credentials or a CA certificate stays, alongside what to ask for.
+      ...(!opportunity.methodUnknown && { suggestedDraft: proposedCheck }),
       ...(setup && { setup }),
     },
   });

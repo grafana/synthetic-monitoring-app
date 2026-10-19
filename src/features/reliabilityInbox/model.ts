@@ -48,6 +48,8 @@ export interface SetupGuide {
 
 const KUBERNETES_CLIENT_FAMILY = 'rest_client_requests_total';
 const TEST_THEN_SAVE = 'Click Test to confirm the check passes, then save it.';
+const AUTHENTICATION_STEP = 'Open Request options → Authentication and add a Bearer Token or Basic Auth credentials.';
+const AUTHENTICATION_WHY = 'Most requests to this endpoint are answered with 401 or 403.';
 
 /**
  * What the user must provide before the check can pass, or undefined when the
@@ -55,7 +57,7 @@ const TEST_THEN_SAVE = 'Click Test to confirm the check passes, then save it.';
  * credentials, so these suggestions say what is needed and where, instead of
  * being hidden.
  *
- * ponytail: the kind is inferred from evidence the service already sends (its
+ * TODO: the kind is inferred from evidence the service already sends (its
  * client-go family, the auth flag); a configuration kind from the service would
  * keep the two in step if more cases appear.
  */
@@ -79,18 +81,23 @@ function getSetupGuide({
   }
 
   if (needsConfiguration) {
+    // The service words its reasons "<what it saw>: <what to configure>"; the
+    // steps below already cover the second half.
+    const observed = configurationReason?.trim() && `${upperFirst(configurationReason.split(': ')[0].trim())}.`;
+
+    // The service flags 401/403 traffic whatever else is missing, so a
+    // POST-only endpoint behind a login needs both.
     return {
       label: 'Request',
-      needs: 'method and body',
+      needs: authRequired ? 'method, body and credentials' : 'method and body',
       steps: [
         'Choose the Request method this endpoint expects, such as POST, and add its path to Request target.',
         'Open Request options → Body and add a payload it accepts. Or point Request target at a health endpoint instead.',
+        ...(authRequired ? [AUTHENTICATION_STEP] : []),
         TEST_THEN_SAVE,
       ],
-      // The service words its reasons "<what it saw>: <what to configure>"; the
-      // steps above already cover the second half. A blank reason leaves the
-      // steps standing without a why.
-      why: configurationReason?.trim() ? `${upperFirst(configurationReason.split(': ')[0].trim())}.` : undefined,
+      // A blank reason without auth leaves the steps standing without a why.
+      why: [observed, authRequired && AUTHENTICATION_WHY].filter(Boolean).join(' ') || undefined,
     };
   }
 
@@ -98,11 +105,8 @@ function getSetupGuide({
     return {
       label: 'Authentication',
       needs: 'credentials',
-      steps: [
-        'Open Request options → Authentication and add a Bearer Token or Basic Auth credentials.',
-        TEST_THEN_SAVE,
-      ],
-      why: 'Most requests to this endpoint are answered with 401 or 403.',
+      steps: [AUTHENTICATION_STEP, TEST_THEN_SAVE],
+      why: AUTHENTICATION_WHY,
     };
   }
 
