@@ -60,7 +60,8 @@
         "applying": "Adding alerts...",
         "body": "This adds {{alertCount}} alerts across {{checkCount}} checks, using the default thresholds for each check type. You can tune or remove any of them from the check editor afterwards.",
         "confirm": "Add alerts",
-        "title": "Set up alerts for all checks"
+        "title": "Set up alerts for all checks",
+        "titleMatching": "Set up alerts for matching checks"
       },
       "description": "These checks are running but have no alerting configured, so a failure will go unnoticed until someone looks.",
       "row": {
@@ -82,6 +83,8 @@
         "thresholdWithPeriod": "{{threshold}} over {{period}}"
       },
       "setUpAll": "Set up alerts for all {{checkCount}}",
+      "setUpMatching": "Set up alerts for {{checkCount}} matching checks",
+      "setUpMatchingSingle": "Set up alerts for 1 matching check",
       "setUpSelected": "Set up alerts for {{checkCount}} checks",
       "setUpSelectedSingle": "Set up alerts for 1 check",
       "title": "Alerting",
@@ -130,6 +133,19 @@
     "emptyState": {
       "body": "Every check is alerting, attributed, running and pointed at something nothing else covers.",
       "message": "Nothing needs your attention"
+    },
+    "filters": {
+      "clear": "Clear filters",
+      "count": "{{filterCount}} filters",
+      "countSingle": "1 filter",
+      "emptyFinding": "No checks in this finding match your filters.",
+      "headline": "{{matchedCount}} of {{totalCount}} checks match your filters. {{leadFinding}} is the gap to close first.",
+      "headlineNone": "No checks match your filters.",
+      "headlineSingle": "1 of 1 check matches your filters. {{leadFinding}} is the gap to close first.",
+      "summary": "{{matchedCount}} of {{totalCount}} checks match your filters",
+      "summarySingle": "{{matchedCount}} of 1 check matches your filters",
+      "title": "Filters",
+      "type": "Type"
     },
     "group": {
       "count": "{{checkCount}} checks",

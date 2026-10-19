@@ -27,6 +27,7 @@ import {
   DISMISSED_FINDINGS_STORAGE_KEY,
   FOCUS_PARAM,
 } from './Recommendations.constants';
+import { countSelected, FilterSelection, parseFilters, withFilters } from './Recommendations.filters';
 import { getEntryPoint, RecommendationsEntryPoint, SOURCE_PARAM } from './Recommendations.links';
 import { getDismissedCheckIds } from './Recommendations.utils';
 
@@ -180,6 +181,23 @@ export function useEntryPoint(): RecommendationsEntryPoint {
   }, [source]);
 
   return entryPoint;
+}
+
+/** The rail's filters, held in the URL so a filtered view can be shared and survives a reload. */
+export function useRecommendationFilters() {
+  const { pathname, search } = useLocation();
+  const selection = useMemo(() => parseFilters(new URLSearchParams(search)), [search]);
+
+  const setSelection = useCallback(
+    (next: FilterSelection) => {
+      const query = withFilters(new URLSearchParams(search), next).toString();
+      // Replaced, not pushed: Back should leave the tab, not step back through each tick.
+      locationService.replace(query ? `${pathname}?${query}` : pathname);
+    },
+    [pathname, search]
+  );
+
+  return { selection, setSelection, isActive: countSelected(selection) > 0 };
 }
 
 export const ATTENTION_VIEW = 'attention';

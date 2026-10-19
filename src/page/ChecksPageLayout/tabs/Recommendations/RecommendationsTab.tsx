@@ -4,6 +4,7 @@ import { Alert, Button, EmptyState, LoadingPlaceholder, Stack, Text, useStyles2 
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
 import { CategorySummary, Recommendation, RecommendationId } from './Recommendations.types';
+import { Check } from 'types';
 import {
   CheckFolderAccessProvider,
   useIsVisibilitySettling,
@@ -19,16 +20,19 @@ import { AlertingGapsFinding } from './findings/AlertingGapsFinding';
 import { MissingCostLabelsFinding } from './findings/MissingCostLabelsFinding';
 import { PausedChecksFinding } from './findings/PausedChecksFinding';
 import { RedundancyFinding } from './findings/RedundancyFinding';
+import { RecommendationFilters } from './RecommendationFilters';
 import { countDismissedChecks, getFindingSnapshot } from './Recommendations.analytics';
 import { countDistinctChecks, summariseCategories } from './Recommendations.categories';
 import { AttentionRow, CategoryRail, SeverityLegend } from './Recommendations.components';
 import { UNESCAPED } from './Recommendations.constants';
 import { getCategoryCopy, getRecommendationCopy } from './Recommendations.copy';
+import { filterFindings, FindingFilter, getTypeOptions, matchesRecommendationFilters } from './Recommendations.filters';
 import {
   ATTENTION_VIEW,
   useDismissedCheckMap,
   useDismissedRecommendations,
   useEntryPoint,
+  useRecommendationFilters,
   useRecommendationImpressions,
   useRecommendationsView,
 } from './Recommendations.hooks';
@@ -91,6 +95,21 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
   const dismissedCount = recommendations.length - visible.length;
   const categories = useMemo(() => summariseCategories(visible), [visible]);
   const { view, setView, focusedId } = useRecommendationsView();
+
+  // Structure (categories, panels, impressions) stays on `visible`; only counts and copy read
+  // `matched`. Findings are never filtered away, just narrowed, so the page keeps its shape.
+  const { selection, setSelection, isActive: isFiltering } = useRecommendationFilters();
+  const matches = useCallback((check: Check) => matchesRecommendationFilters(check, selection), [selection]);
+  const filter = useMemo<FindingFilter>(() => ({ isActive: isFiltering, matches }), [isFiltering, matches]);
+  const matched = useMemo(
+    () => (isFiltering ? filterFindings(visible, matches) : visible),
+    [isFiltering, visible, matches]
+  );
+  const matchedCategories = useMemo(
+    () => (isFiltering ? summariseCategories(matched) : categories),
+    [isFiltering, matched, categories]
+  );
+  const typeOptions = useMemo(() => getTypeOptions(checks, selection.types), [checks, selection.types]);
   // The URL's category can empty out (dismissed, resolved); land instead.
   const active = categories.find(({ category }) => category.id === view);
   const dismissedChecks = useDismissedCheckMap();
@@ -132,11 +151,26 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
 
   return (
     <div className={styles.layout}>
-      <CategoryRail categories={categories} view={active ? view : ATTENTION_VIEW} onSelect={setView} />
+      <div className={styles.railColumn}>
+        <CategoryRail categories={matchedCategories} view={active ? view : ATTENTION_VIEW} onSelect={setView} />
+        {visible.length > 0 && (
+          <>
+            <div className={styles.railDivider} role="presentation" />
+            <RecommendationFilters typeOptions={typeOptions} selection={selection} onChange={setSelection} />
+          </>
+        )}
+      </div>
       <div className={styles.content}>
         {/* Feedback shows with the empty state too: finding nothing is a signal as well. */}
         <Stack direction="row" gap={2} alignItems="flex-start" justifyContent="space-between">
-          <Heading active={active} visible={visible} totalCheckCount={checks.length} calNames={calNames} />
+          <Heading
+            active={active}
+            visible={visible}
+            matched={matched}
+            isFiltering={isFiltering}
+            totalCheckCount={checks.length}
+            calNames={calNames}
+          />
           <div className={styles.feedback}>
             <Feedback feature="recommendations" about={{ text: 'Experimental' }} />
           </div>
@@ -172,6 +206,7 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
                 totalCheckCount={checks.length}
                 isSolo={active.findings.length === 1}
                 isFocused={recommendation.id === focusedId}
+                filter={filter}
                 onDismiss={() => dismiss(recommendation.id)}
               />
             ))
@@ -181,6 +216,9 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
                 summary={summary}
                 totalCheckCount={checks.length}
                 dismissedChecks={dismissedChecks}
+                matchedCheckCount={
+                  isFiltering ? getMatchedCheckCount(matchedCategories, summary.category.id) : undefined
+                }
                 onSelect={() => setView(summary.category.id)}
               />
             ))}
@@ -207,12 +245,20 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
 interface HeadingProps {
   active?: CategorySummary;
   visible: Recommendation[];
+  matched: Recommendation[];
+  isFiltering: boolean;
   totalCheckCount: number;
   calNames: string[];
 }
 
-function Heading({ active, visible, totalCheckCount, calNames }: HeadingProps) {
-  const headline = active ? getCategoryCopy(active.category.id).label : getOverview(visible, totalCheckCount, calNames);
+function Heading({ active, visible, matched, isFiltering, totalCheckCount, calNames }: HeadingProps) {
+  // With nothing visible the filters are hidden too, so they must not take the blame for an empty page.
+  const headline = active
+    ? getCategoryCopy(active.category.id).label
+    : isFiltering && visible.length > 0
+      ? getFilteredOverview(visible, matched, calNames)
+      : getOverview(visible, totalCheckCount, calNames);
+  const legendFindings = active ? matched.filter(({ id }) => active.category.findings.includes(id)) : matched;
   const caption = active ? (
     getCategoryCopy(active.category.id).caption
   ) : (
@@ -225,7 +271,7 @@ function Heading({ active, visible, totalCheckCount, calNames }: HeadingProps) {
     <Stack direction="column" gap={0.25}>
       <Stack direction="row" gap={2} alignItems="center" wrap="wrap">
         {headline && <Text weight="medium">{headline}</Text>}
-        <SeverityLegend findings={active ? active.findings : visible} />
+        <SeverityLegend findings={legendFindings} />
       </Stack>
       <Text variant="bodySmall" color="secondary">
         {caption}
@@ -251,6 +297,35 @@ function getOverview(visible: Recommendation[], totalCheckCount: number, calName
   );
 }
 
+function getFilteredOverview(visible: Recommendation[], matched: Recommendation[], calNames: string[]) {
+  const matchedCount = countDistinctChecks(matched);
+  // Rail order, as unfiltered: the first finding that still has a check to show.
+  const lead = matched.find(({ checks }) => checks.length > 0);
+
+  if (matchedCount === 0 || !lead) {
+    return t('recommendations.filters.headlineNone', 'No checks match your filters.');
+  }
+
+  const totalCount = countDistinctChecks(visible);
+  const leadFinding = getRecommendationCopy(lead.id, calNames).title;
+
+  return totalCount === 1
+    ? t(
+        'recommendations.filters.headlineSingle',
+        '1 of 1 check matches your filters. {{leadFinding}} is the gap to close first.',
+        { leadFinding, ...UNESCAPED }
+      )
+    : t(
+        'recommendations.filters.headline',
+        '{{matchedCount}} of {{totalCount}} checks match your filters. {{leadFinding}} is the gap to close first.',
+        { matchedCount, totalCount, leadFinding, ...UNESCAPED }
+      );
+}
+
+function getMatchedCheckCount(matchedCategories: CategorySummary[], id: CategorySummary['category']['id']) {
+  return matchedCategories.find(({ category }) => category.id === id)?.checkCount ?? 0;
+}
+
 function getDismissedSummary(dismissedCount: number) {
   switch (dismissedCount) {
     case 0:
@@ -268,6 +343,7 @@ interface FindingDispatchProps {
   totalCheckCount: number;
   isSolo: boolean;
   isFocused: boolean;
+  filter: FindingFilter;
   onDismiss: () => void;
 }
 

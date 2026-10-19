@@ -28,12 +28,20 @@ import { getPausedSince } from '../Recommendations.utils';
 import { useFindingPanel } from './Finding.hooks';
 
 // Resuming is reversible so it is offered here; deleting stays with the check list, which confirms it.
-export function PausedChecksFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
+export function PausedChecksFinding({
+  recommendation,
+  totalCheckCount,
+  isSolo,
+  isFocused,
+  filter,
+  onDismiss,
+}: FindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
     recommendation,
     totalCheckCount,
     isSolo,
+    filter,
   });
   const queryClient = useQueryClient();
   // Same call as the check list's bulk actions: one request, one toast.
