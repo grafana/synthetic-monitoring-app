@@ -7,7 +7,7 @@ import { DB } from 'test/db';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsSMViewer } from 'test/utils';
+import { mockReportInteraction, runTestAsSMViewer } from 'test/utils';
 
 import { RecommendationCategoryId } from './Recommendations.types';
 import { AlertSensitivity, Check, CheckAlertDraft, CheckAlertType, CheckType } from 'types';
@@ -48,13 +48,6 @@ function renderCategory(checks: Check[], category: RecommendationCategoryId, opt
 /** Toasts go through app_events, which the test setup stubs; spy on it to read the message. */
 function spyOnToasts() {
   return jest.spyOn(appEvents, 'emit').mockImplementation(() => {});
-}
-
-function mockReportInteraction() {
-  const reportInteraction = jest.fn();
-  jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
-
-  return reportInteraction;
 }
 
 // A solo finding's heading is its summary ("1 of 2 checks have no alerts"); siblings use their names.

@@ -8,7 +8,7 @@ import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
 import { countDistinctChecks } from './Recommendations.categories';
-import { getRecommendationSource } from './Recommendations.links';
+import { getLinkedFinding } from './Recommendations.links';
 
 export interface FindingSnapshot {
   affectedCheckCount: number;
@@ -53,7 +53,7 @@ export function countDismissedChecks(recommendations: Recommendation[], dismisse
  * not count, since the check is still in the finding.
  */
 export function useTrackCostLabelsAdded(check?: Check) {
-  const finding = getRecommendationSource(useURLSearchParams());
+  const finding = getLinkedFinding(useURLSearchParams());
   const { data } = useTenantCostAttributionLabels();
 
   return useCallback(

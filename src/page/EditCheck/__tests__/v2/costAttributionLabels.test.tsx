@@ -3,7 +3,7 @@ import { ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { mockCmabCostAttributionWrite } from 'test/utils';
+import { mockCmabCostAttributionWrite, mockReportInteraction } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
 import { Check } from 'types';
@@ -171,13 +171,6 @@ describe('cost attribution labels on the check form', () => {
   describe('when the cost labels recommendation opened the editor', () => {
     const FROM_RECOMMENDATION = '?recommendation=missing-cost-labels';
     const COMPLETED = 'synthetic-monitoring_recommendations_action_completed';
-
-    function mockReportInteraction() {
-      const reportInteraction = jest.fn();
-      jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
-
-      return reportInteraction;
-    }
 
     async function fillServiceAndSave(search = FROM_RECOMMENDATION) {
       const { user, read } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, search);

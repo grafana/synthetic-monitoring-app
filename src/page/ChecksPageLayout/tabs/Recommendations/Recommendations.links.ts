@@ -42,7 +42,7 @@ export function getEditCheckUrl(checkId: number, section?: FormSectionName, find
 }
 
 /** The finding whose link opened this page, if a Recommendations link did. */
-export function getRecommendationSource(params: URLSearchParams): RecommendationId | undefined {
+export function getLinkedFinding(params: URLSearchParams): RecommendationId | undefined {
   const finding = params.get(RECOMMENDATION_PARAM);
 
   return isRecommendationId(finding) ? finding : undefined;
