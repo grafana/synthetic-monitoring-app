@@ -10,6 +10,10 @@ export enum RecommendationId {
   PausedChecks = 'paused-checks',
 }
 
+export function isRecommendationId(value: string | null | undefined): value is RecommendationId {
+  return value != null && Object.values(RecommendationId).includes(value as RecommendationId);
+}
+
 /** Also the `?category=` URL value. */
 export enum RecommendationCategoryId {
   Alerting = 'alerting',

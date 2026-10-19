@@ -18,7 +18,7 @@ import {
 import { cx } from '@emotion/css';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
-import { CategorySummary, DismissedChecks, RecommendationSeverity } from './Recommendations.types';
+import { CategorySummary, DismissedChecks, RecommendationId, RecommendationSeverity } from './Recommendations.types';
 import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { useCheckPermissions, useGetCheckPermissions } from 'contexts/CheckFolderAccessContext';
@@ -328,6 +328,8 @@ interface CheckRowProps {
   showEditButton?: boolean;
   /** The editor section the edit button opens on. */
   editSection?: FormSectionName;
+  /** The finding to credit when an edit made through the edit button fixes it. */
+  editFinding?: RecommendationId;
   onEditClick?: () => void;
   /** The dismiss button only renders when given. */
   onDismiss?: (check: Check) => void;
@@ -343,6 +345,7 @@ export function CheckRow({
   expansion,
   showEditButton = true,
   editSection,
+  editFinding,
   onEditClick,
   onDismiss,
 }: CheckRowProps) {
@@ -373,6 +376,7 @@ export function CheckRow({
                 <EditCheckButton
                   check={check}
                   section={editSection}
+                  finding={editFinding}
                   variant="secondary"
                   fill="outline"
                   icon="pen"
@@ -406,6 +410,8 @@ interface EditCheckButtonProps {
   check: Check;
   /** The editor section to open on. */
   section?: FormSectionName;
+  /** The finding to credit when a save in the editor fixes it. */
+  finding?: RecommendationId;
   variant?: ButtonProps['variant'];
   fill?: ButtonProps['fill'];
   icon?: ButtonProps['icon'];
@@ -418,7 +424,7 @@ interface EditCheckButtonProps {
  * A link into the check's editor. Without write access the editor would only bounce the user back,
  * so the same button is disabled instead, saying why.
  */
-export function EditCheckButton({ check, section, onClick, children, ...buttonProps }: EditCheckButtonProps) {
+export function EditCheckButton({ check, section, finding, onClick, children, ...buttonProps }: EditCheckButtonProps) {
   const { canWrite } = useCheckPermissions(check);
 
   if (!canWrite) {
@@ -435,7 +441,7 @@ export function EditCheckButton({ check, section, onClick, children, ...buttonPr
   }
 
   return (
-    <LinkButton size="sm" {...buttonProps} href={getEditCheckUrl(check.id!, section)} onClick={onClick}>
+    <LinkButton size="sm" {...buttonProps} href={getEditCheckUrl(check.id!, section, finding)} onClick={onClick}>
       {children}
     </LinkButton>
   );

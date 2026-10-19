@@ -955,9 +955,15 @@ describe('Recommendations tab', () => {
       const section = await findSection(/1 of 1 checks are unattributed/);
 
       expect(within(section).getByText('Missing team')).toBeInTheDocument();
+      // Tagged with the finding, so a save in the editor that adds the labels can be credited to it.
+      const editorUrl = '/checks/12/edit?section=labels&recommendation=missing-cost-labels';
       expect(within(section).getByRole('link', { name: 'Add labels to unattributed' })).toHaveAttribute(
         'href',
-        expect.stringContaining('/checks/12/edit?section=labels')
+        expect.stringContaining(editorUrl)
+      );
+      expect(within(section).getByRole('link', { name: 'Edit unattributed' })).toHaveAttribute(
+        'href',
+        expect.stringContaining(editorUrl)
       );
       expect(within(section).getByRole('link', { name: /view in check list/i })).toHaveAttribute(
         'href',

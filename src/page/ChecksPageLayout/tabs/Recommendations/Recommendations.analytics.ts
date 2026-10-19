@@ -1,6 +1,14 @@
+import { useCallback } from 'react';
+import { trackRecommendationActionCompleted } from 'features/tracking/recommendationEvents';
+
 import { DismissedChecks, Recommendation, RecommendationId } from './Recommendations.types';
+import { Check } from 'types';
+import { useTenantCostAttributionLabels } from 'data/useTenantCostAttributionLabels';
+import { useURLSearchParams } from 'hooks/useURLSearchParams';
+import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
 import { countDistinctChecks } from './Recommendations.categories';
+import { getRecommendationSource } from './Recommendations.links';
 
 export interface FindingSnapshot {
   affectedCheckCount: number;
@@ -37,4 +45,30 @@ export function countDismissedChecks(recommendations: Recommendation[], dismisse
 
     return total + checks.filter((check) => dismissedIds.has(check.id!)).length;
   }, 0);
+}
+
+/**
+ * For the check editor, where cost attribution labels are added: reports a save that leaves the
+ * check missing none, when the cost-labels finding's link opened the editor. A partial fill does
+ * not count, since the check is still in the finding.
+ */
+export function useTrackCostLabelsAdded(check?: Check) {
+  const finding = getRecommendationSource(useURLSearchParams());
+  const { data } = useTenantCostAttributionLabels();
+
+  return useCallback(
+    (saved: Check) => {
+      if (finding !== RecommendationId.MissingCostLabels || !check) {
+        return;
+      }
+
+      const calNames = data?.names ?? [];
+      const wasMissing = getMissingCalNames(check.labels, calNames).length > 0;
+
+      if (wasMissing && getMissingCalNames(saved.labels, calNames).length === 0) {
+        trackRecommendationActionCompleted({ finding, action: 'labels_added', checkCount: 1, scope: 'check' });
+      }
+    },
+    [finding, check, data?.names]
+  );
 }

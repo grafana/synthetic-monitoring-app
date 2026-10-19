@@ -10,7 +10,13 @@ import {
 } from 'features/tracking/recommendationEvents';
 import { useLocalStorage } from 'usehooks-ts';
 
-import { DismissedChecks, Recommendation, RecommendationCategoryId, RecommendationId } from './Recommendations.types';
+import {
+  DismissedChecks,
+  isRecommendationId,
+  Recommendation,
+  RecommendationCategoryId,
+  RecommendationId,
+} from './Recommendations.types';
 import { Check } from 'types';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
@@ -214,8 +220,4 @@ export function useRecommendationsView() {
   );
 
   return { view, setView, focusedId };
-}
-
-function isRecommendationId(value: string | null | undefined): value is RecommendationId {
-  return value != null && Object.values(RecommendationId).includes(value as RecommendationId);
 }

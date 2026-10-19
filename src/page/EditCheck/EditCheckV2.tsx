@@ -6,7 +6,7 @@ import { Alert, Button, LinkButton, Modal, Text, useStyles2 } from '@grafana/ui'
 import { css } from '@emotion/css';
 import { UI_TEST_ID } from 'test/dataTestIds';
 
-import { CheckPageParams } from 'types';
+import { Check, CheckFormValues, CheckPageParams } from 'types';
 import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
@@ -20,6 +20,7 @@ import { Checkster } from 'components/Checkster';
 import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
+import { useTrackCostLabelsAdded } from 'page/ChecksPageLayout/tabs/Recommendations/Recommendations.analytics';
 
 export const EditCheckV2 = () => {
   const { id } = useParams<CheckPageParams>();
@@ -31,6 +32,16 @@ export const EditCheckV2 = () => {
   const permissions = getPermissions({ folderUid: check?.folderUid });
 
   const handleSubmit = useHandleSubmitCheckster(check);
+  const trackCostLabelsAdded = useTrackCostLabelsAdded(check);
+  const handleSave = useCallback(
+    async (payload: Check, formValues: CheckFormValues) => {
+      const onSaved = await handleSubmit(payload, formValues);
+      trackCostLabelsAdded(payload);
+
+      return onSaved;
+    },
+    [handleSubmit, trackCostLabelsAdded]
+  );
 
   const styles = useStyles2(getStyles);
 
@@ -75,7 +86,7 @@ export const EditCheckV2 = () => {
     >
       <div className={styles.wrapper} data-testid={isReady ? UI_TEST_ID.page.ready : UI_TEST_ID.page.notReady}>
         <ChecksterProvider check={check} initialSection={initialSection} disabled={!permissions.canWrite}>
-          <Checkster onSave={handleSubmit} />
+          <Checkster onSave={handleSave} />
         </ChecksterProvider>
         {checks && !check && <NotFoundModal />}
         {error && <ErrorModal error={error} onClick={refetch} />}

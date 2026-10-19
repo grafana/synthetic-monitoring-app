@@ -167,4 +167,69 @@ describe('cost attribution labels on the check form', () => {
       expect(screen.queryByText('Cost attribution labels')).not.toBeInTheDocument();
     });
   });
+
+  describe('when the cost labels recommendation opened the editor', () => {
+    const FROM_RECOMMENDATION = '?recommendation=missing-cost-labels';
+    const COMPLETED = 'synthetic-monitoring_recommendations_action_completed';
+
+    function mockReportInteraction() {
+      const reportInteraction = jest.fn();
+      jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+      return reportInteraction;
+    }
+
+    async function fillServiceAndSave(search = FROM_RECOMMENDATION) {
+      const { user, read } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, search);
+      await gotoSection(user, FormSectionName.Labels);
+      await user.type(await screen.findByRole('textbox', { name: 'Cost attribution label 2 value' }), 'checkout');
+      await submitForm(user);
+      await readSavedCheck(read);
+    }
+
+    it('credits the finding when the save fills in the last missing label', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      await fillServiceAndSave();
+
+      expect(reportInteraction).toHaveBeenCalledWith(
+        COMPLETED,
+        expect.objectContaining({
+          finding: 'missing-cost-labels',
+          action: 'labels_added',
+          checkCount: 1,
+          scope: 'check',
+        })
+      );
+    });
+
+    it('credits nothing while another label is still missing', async () => {
+      const reportInteraction = mockReportInteraction();
+      mockCalNames([SET_CAL, UNSET_CAL, 'Region']);
+
+      await fillServiceAndSave();
+
+      expect(reportInteraction).not.toHaveBeenCalledWith(COMPLETED, expect.anything());
+    });
+
+    it('credits nothing for a check that already had every label', async () => {
+      const reportInteraction = mockReportInteraction();
+      mockCalNames([SET_CAL]);
+      const { user, read } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, FROM_RECOMMENDATION);
+
+      await user.type(await screen.findByLabelText(/Job name/i), '-renamed');
+      await submitForm(user);
+      await readSavedCheck(read);
+
+      expect(reportInteraction).not.toHaveBeenCalledWith(COMPLETED, expect.anything());
+    });
+
+    it('credits nothing when the recommendation did not open the editor', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      await fillServiceAndSave('');
+
+      expect(reportInteraction).not.toHaveBeenCalledWith(COMPLETED, expect.anything());
+    });
+  });
 });
