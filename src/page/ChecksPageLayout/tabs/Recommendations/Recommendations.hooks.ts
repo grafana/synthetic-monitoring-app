@@ -18,6 +18,8 @@ import {
   RecommendationId,
 } from './Recommendations.types';
 import { Check } from 'types';
+import { useGetCheckFolderStatus, useIsFoldersAvailable } from 'contexts/CheckFolderAccessContext';
+import { useAllFolders } from 'data/useFolders';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
 import { getCategoryForFinding, isCategoryId } from './Recommendations.categories';
@@ -27,7 +29,15 @@ import {
   DISMISSED_FINDINGS_STORAGE_KEY,
   FOCUS_PARAM,
 } from './Recommendations.constants';
-import { countSelected, FilterSelection, parseFilters, withFilters } from './Recommendations.filters';
+import {
+  countSelected,
+  FilterSelection,
+  getFolderOptions,
+  getLabelOptions,
+  getTypeOptions,
+  parseFilters,
+  withFilters,
+} from './Recommendations.filters';
 import { getEntryPoint, RecommendationsEntryPoint, SOURCE_PARAM } from './Recommendations.links';
 import { getDismissedCheckIds } from './Recommendations.utils';
 
@@ -186,7 +196,13 @@ export function useEntryPoint(): RecommendationsEntryPoint {
 /** The rail's filters, held in the URL so a filtered view can be shared and survives a reload. */
 export function useRecommendationFilters() {
   const { pathname, search } = useLocation();
-  const selection = useMemo(() => parseFilters(new URLSearchParams(search)), [search]);
+  const isFoldersAvailable = useIsFoldersAvailable();
+  const selection = useMemo(() => {
+    const parsed = parseFilters(new URLSearchParams(search));
+
+    // Without folders there is no Folders control, so a folder in the URL could be neither seen nor cleared.
+    return isFoldersAvailable ? parsed : { ...parsed, folders: [] };
+  }, [search, isFoldersAvailable]);
 
   const setSelection = useCallback(
     (next: FilterSelection) => {
@@ -198,6 +214,32 @@ export function useRecommendationFilters() {
   );
 
   return { selection, setSelection, isActive: countSelected(selection) > 0 };
+}
+
+/** What each filter group offers: the values the visible checks have, plus whatever is selected. */
+export function useFilterOptions(checks: Check[], selection: FilterSelection) {
+  const isFoldersAvailable = useIsFoldersAvailable();
+  const { defaultFolderUid } = useAllFolders();
+  const getFolderStatus = useGetCheckFolderStatus();
+
+  const typeOptions = useMemo(() => getTypeOptions(checks, selection.types), [checks, selection.types]);
+  const labelOptions = useMemo(() => getLabelOptions(checks, selection.labels), [checks, selection.labels]);
+  const folderOptions = useMemo(() => {
+    if (!isFoldersAvailable) {
+      return [];
+    }
+
+    // Statuses rather than the folder list: the list misses folders outside the default folder's tree.
+    const getTitle = (check: Check) => {
+      const status = getFolderStatus(check);
+
+      return status.type === 'accessible' ? status.folder?.title : undefined;
+    };
+
+    return getFolderOptions(checks, defaultFolderUid, getTitle, selection.folders);
+  }, [isFoldersAvailable, defaultFolderUid, getFolderStatus, checks, selection.folders]);
+
+  return { typeOptions, labelOptions, folderOptions, defaultFolderUid };
 }
 
 export const ATTENTION_VIEW = 'attention';

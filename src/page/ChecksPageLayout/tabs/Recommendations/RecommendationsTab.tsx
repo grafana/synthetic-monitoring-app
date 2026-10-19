@@ -26,12 +26,13 @@ import { countDistinctChecks, summariseCategories } from './Recommendations.cate
 import { AttentionRow, CategoryRail, SeverityLegend } from './Recommendations.components';
 import { UNESCAPED } from './Recommendations.constants';
 import { getCategoryCopy, getRecommendationCopy } from './Recommendations.copy';
-import { filterFindings, FindingFilter, getTypeOptions, matchesRecommendationFilters } from './Recommendations.filters';
+import { filterFindings, FindingFilter, matchesRecommendationFilters } from './Recommendations.filters';
 import {
   ATTENTION_VIEW,
   useDismissedCheckMap,
   useDismissedRecommendations,
   useEntryPoint,
+  useFilterOptions,
   useRecommendationFilters,
   useRecommendationImpressions,
   useRecommendationsView,
@@ -99,7 +100,11 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
   // Structure (categories, panels, impressions) stays on `visible`; only counts and copy read
   // `matched`. Findings are never filtered away, just narrowed, so the page keeps its shape.
   const { selection, setSelection, isActive: isFiltering } = useRecommendationFilters();
-  const matches = useCallback((check: Check) => matchesRecommendationFilters(check, selection), [selection]);
+  const { typeOptions, labelOptions, folderOptions, defaultFolderUid } = useFilterOptions(checks, selection);
+  const matches = useCallback(
+    (check: Check) => matchesRecommendationFilters(check, selection, defaultFolderUid),
+    [selection, defaultFolderUid]
+  );
   const filter = useMemo<FindingFilter>(() => ({ isActive: isFiltering, matches }), [isFiltering, matches]);
   const matched = useMemo(
     () => (isFiltering ? filterFindings(visible, matches) : visible),
@@ -109,7 +114,6 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
     () => (isFiltering ? summariseCategories(matched) : categories),
     [isFiltering, matched, categories]
   );
-  const typeOptions = useMemo(() => getTypeOptions(checks, selection.types), [checks, selection.types]);
   // The URL's category can empty out (dismissed, resolved); land instead.
   const active = categories.find(({ category }) => category.id === view);
   const dismissedChecks = useDismissedCheckMap();
@@ -156,7 +160,13 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
         {visible.length > 0 && (
           <>
             <div className={styles.railDivider} role="presentation" />
-            <RecommendationFilters typeOptions={typeOptions} selection={selection} onChange={setSelection} />
+            <RecommendationFilters
+              typeOptions={typeOptions}
+              labelOptions={labelOptions}
+              folderOptions={folderOptions}
+              selection={selection}
+              onChange={setSelection}
+            />
           </>
         )}
       </div>

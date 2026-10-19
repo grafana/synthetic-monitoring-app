@@ -1,12 +1,17 @@
 import { Recommendation, RecommendationGroup } from './Recommendations.types';
 import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
+import { matchesFolderFilter, matchesLabelFilter } from 'page/CheckList/CheckList.utils';
 
 import { describeCheckTypes } from './Recommendations.utils';
 
 /** What the rail's filters have selected. A group with nothing selected doesn't constrain. */
 export interface FilterSelection {
   types: CheckType[];
+  /** `name: value`, as the check list's label filter writes them, so its matcher applies. */
+  labels: string[];
+  /** Folder uids. A check without a folder is in the default folder, as on the check list. */
+  folders: string[];
 }
 
 /** The filters as a finding's panel needs them. */
@@ -15,31 +20,46 @@ export interface FindingFilter {
   matches: (check: Check) => boolean;
 }
 
-export const NO_FILTERS: FilterSelection = { types: [] };
+export const NO_FILTERS: FilterSelection = { types: [], labels: [], folders: [] };
 
-// Repeated rather than comma-joined, so a value never needs escaping.
-const TYPE_PARAM = 'type';
+// Repeated rather than comma-joined: label values can hold commas and colons.
+const PARAMS: Record<keyof FilterSelection, string> = { types: 'type', labels: 'label', folders: 'folder' };
 
 export function parseFilters(params: URLSearchParams): FilterSelection {
-  return { types: params.getAll(TYPE_PARAM).filter(isCheckType) };
+  return {
+    types: params.getAll(PARAMS.types).filter(isCheckType),
+    labels: params.getAll(PARAMS.labels),
+    folders: params.getAll(PARAMS.folders),
+  };
 }
 
-/** A copy of `params` holding `filters` in place of any it had, every other param kept. */
-export function withFilters(params: URLSearchParams, { types }: FilterSelection): URLSearchParams {
+/** A copy of `params` holding `selection` in place of any filters it had, every other param kept. */
+export function withFilters(params: URLSearchParams, selection: FilterSelection): URLSearchParams {
   const next = new URLSearchParams(params);
-  next.delete(TYPE_PARAM);
-  types.forEach((type) => next.append(TYPE_PARAM, type));
+
+  (Object.keys(PARAMS) as Array<keyof FilterSelection>).forEach((group) => {
+    next.delete(PARAMS[group]);
+    selection[group].forEach((value) => next.append(PARAMS[group], value));
+  });
 
   return next;
 }
 
-export function countSelected({ types }: FilterSelection): number {
-  return types.length;
+export function countSelected({ types, labels, folders }: FilterSelection): number {
+  return types.length + labels.length + folders.length;
 }
 
-// OR within a group, AND across groups.
-export function matchesRecommendationFilters(check: Check, { types }: FilterSelection): boolean {
-  return types.length === 0 || types.includes(getCheckType(check.settings));
+// OR within a group, AND across groups. Labels and folders match as the check list's filters do.
+export function matchesRecommendationFilters(
+  check: Check,
+  { types, labels, folders }: FilterSelection,
+  defaultFolderUid?: string
+): boolean {
+  return (
+    (types.length === 0 || types.includes(getCheckType(check.settings))) &&
+    matchesLabelFilter(check, labels) &&
+    matchesFolderFilter(check, folders, defaultFolderUid)
+  );
 }
 
 /**
@@ -68,6 +88,40 @@ export function filterGroups(groups: RecommendationGroup[], matches: (check: Che
 // What is selected stays an option, so a type from a shared link can still be unticked.
 export function getTypeOptions(checks: Check[], selected: CheckType[]): CheckType[] {
   return [...new Set([...checks.map((check) => getCheckType(check.settings)), ...selected])].sort();
+}
+
+export function getLabelOptions(checks: Check[], selected: string[]): string[] {
+  const labels = checks.flatMap((check) =>
+    check.labels.filter(({ value }) => value).map(({ name, value }) => `${name}: ${value}`)
+  );
+
+  return [...new Set([...labels, ...selected])].sort();
+}
+
+export interface FolderOption {
+  value: string;
+  label: string;
+}
+
+/** The folders checks are in, titled by `getTitle` where it knows the folder, by uid otherwise. */
+export function getFolderOptions(
+  checks: Check[],
+  defaultFolderUid: string | undefined,
+  getTitle: (check: Check) => string | undefined,
+  selected: string[]
+): FolderOption[] {
+  const titles = new Map<string, string>();
+
+  checks.forEach((check) => {
+    const uid = check.folderUid ?? defaultFolderUid;
+
+    if (uid && !titles.has(uid)) {
+      titles.set(uid, getTitle(check) ?? uid);
+    }
+  });
+  selected.filter((uid) => !titles.has(uid)).forEach((uid) => titles.set(uid, uid));
+
+  return [...titles].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
 }
 
 function isCheckType(value: string): value is CheckType {

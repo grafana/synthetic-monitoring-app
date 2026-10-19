@@ -37,7 +37,7 @@ const matchesSearchFilter = ({ target, job, labels }: Check, searchFilter: strin
 // merely starts with the same string.
 const matchesTargetFilter = ({ target }: Check, targetFilter: string) => !targetFilter || target === targetFilter;
 
-const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
+export const matchesLabelFilter = ({ labels }: Check, labelFilters: string[]) => {
   if (!labelFilters || labelFilters.length === 0) {
     return true;
   }
@@ -87,7 +87,7 @@ const matchesAlertsFilter = (check: Check, alertsFilter: CheckAlertsFilter) => {
   return !hasAlerts;
 };
 
-const matchesFolderFilter = (check: Check, folderFilters: string[], defaultFolderUid?: string) => {
+export const matchesFolderFilter = (check: Check, folderFilters: string[], defaultFolderUid?: string) => {
   if (folderFilters.length === 0) {
     return true;
   }
