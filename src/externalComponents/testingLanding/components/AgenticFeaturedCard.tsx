@@ -80,7 +80,7 @@ function getStyles(theme: GrafanaTheme2) {
       overflow: 'hidden',
       padding: theme.spacing(3),
       borderRadius: theme.shape.radius.default,
-      background: theme.colors.background.secondary,
+      background: theme.colors.background.primary,
       '&:hover [data-testing-synthetics-open-link] svg': {
         transform: 'translateX(2px)',
       },

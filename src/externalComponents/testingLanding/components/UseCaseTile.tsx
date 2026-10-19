@@ -76,9 +76,9 @@ export function UseCaseTile({ tile, title, description, href, actionLabel, icon 
 }
 
 function getStyles(theme: GrafanaTheme2) {
-  const tileBackground = theme.colors.emphasize(theme.colors.background.secondary, 0.03);
-  const tileHoverBackground = theme.colors.emphasize(theme.colors.background.secondary, 0.06);
-  const actionButtonHoverBackground = theme.colors.emphasize(theme.colors.background.secondary, 0.08);
+  const tileBackground = theme.colors.background.secondary;
+  const tileHoverBackground = theme.colors.emphasize(theme.colors.background.secondary, 0.03);
+  const actionButtonHoverBackground = theme.colors.emphasize(theme.colors.background.secondary, 0.06);
 
   return {
     tile: css({
