@@ -138,6 +138,8 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     padding: theme.spacing(0.5, 1, 0.5, 3),
   }),
   filterOption: css({
+    // Not stretched: Checkbox is a two-column grid that would split the spare width between box and label.
+    alignSelf: 'flex-start',
     fontFamily: theme.typography.fontFamilyMonospace,
   }),
   railCount: css({
