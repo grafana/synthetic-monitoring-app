@@ -16,4 +16,5 @@ export const PAGE_ROUTE_PATTERNS: string[] = [
   'config/terraform',
   'config/label-migration',
   'config/secrets',
+  'config/alerts',
 ];

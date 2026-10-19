@@ -257,25 +257,39 @@ jest.mock('@grafana/runtime', () => {
     getLocationSrv: () => ({ update: (args: any) => args }),
     getAppEvents: () => appEvents,
     // Renders pageNav.children as tabs with their `tabSuffix`, as Grafana's PageTabs does.
-    PluginPage: ({ actions, children, pageNav }: { actions: any; children: ReactNode; pageNav: NavModelItem }) => (
-      <div>
-        <h2>{pageNav?.text}</h2>
-        <div>{actions}</div>
-        {pageNav?.children && (
-          <div role="tablist">
-            {pageNav.children.map(({ text, url, active, tabSuffix: TabSuffix }) => (
-              <a key={url} role="tab" href={url} aria-selected={Boolean(active)}>
-                {text}
-                {TabSuffix && <TabSuffix />}
-              </a>
-            ))}
+    PluginPage: ({
+      actions,
+      children,
+      pageNav,
+      renderTitle,
+    }: {
+      actions: any;
+      children: ReactNode;
+      pageNav: NavModelItem;
+      renderTitle?: (title: string) => ReactNode;
+    }) => {
+      const tabs = pageNav?.children?.filter((child) => !child.hideFromTabs);
+
+      return (
+        <div>
+          {renderTitle ? renderTitle(pageNav?.text) : <h2>{pageNav?.text}</h2>}
+          <div>{actions}</div>
+          {tabs && (
+            <div role="tablist">
+              {tabs.map(({ text, url, active, tabSuffix: TabSuffix }) => (
+                <a key={url} role="tab" href={url} aria-selected={Boolean(active)}>
+                  {text}
+                  {TabSuffix && <TabSuffix />}
+                </a>
+              ))}
+            </div>
+          )}
+          {children}
+          <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
+            {tabs?.find((tab) => tab.active)?.text ?? 'No active tab'}
           </div>
-        )}
-        {children}
-        <div data-testid={CONFIG_TEST_ID.layout.activeTab}>
-          {pageNav?.children?.find((c) => c.active)?.text ?? 'No active tab'}
         </div>
-      </div>
-    ),
+      );
+    },
   };
 });
