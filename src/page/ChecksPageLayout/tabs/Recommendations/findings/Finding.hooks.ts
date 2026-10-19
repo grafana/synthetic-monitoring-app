@@ -31,13 +31,18 @@ export function useFindingPanel(
   );
   // A stale dismissal of a check since fixed is nothing to restore.
   const dismissedCount = checks.length - unfilteredRows.length;
+  // Dismissed rows count, as they do in the rail, the landing rows and the unfiltered summary.
+  const matchedCount = useMemo(
+    () => (filter.isActive ? checks.filter(filter.matches).length : checks.length),
+    [filter, checks]
+  );
   // Rows the user dismissed are not the filters' doing, so with none left the panel reads as unfiltered.
   const isNarrowed = filter.isActive && unfilteredRows.length > 0;
   const summary = isNarrowed
-    ? getFilteredSummary(rows.length, unfilteredRows.length)
+    ? getFilteredSummary(matchedCount, checks.length)
     : getRecommendationSummary(recommendation, totalCheckCount);
   const emptyMessage =
-    isNarrowed && rows.length === 0
+    isNarrowed && matchedCount === 0
       ? t('recommendations.filters.emptyFinding', 'No checks in this finding match your filters.')
       : undefined;
 

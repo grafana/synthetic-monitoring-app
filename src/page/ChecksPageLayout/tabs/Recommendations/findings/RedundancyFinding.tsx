@@ -123,15 +123,7 @@ export function RedundancyFinding({
           <GroupRow
             key={group.key}
             label={group.label}
-            detail={
-              group.detail
-                ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
-                    detail: group.detail,
-                    checkCount: group.checks.length,
-                    ...UNESCAPED,
-                  })
-                : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: group.checks.length })
-            }
+            detail={getGroupDetail(group)}
             checks={group.checks}
             href={getChecksByTargetUrl(group.label, group.type)}
             onLinkClick={() => trackRecommendationActioned({ finding: id, scope: 'group' })}
@@ -141,4 +133,20 @@ export function RedundancyFinding({
       />
     </RecommendationSection>
   );
+}
+
+function getGroupDetail({ detail, checks }: RecommendationGroup) {
+  if (checks.length === 1) {
+    return detail
+      ? t('recommendations.group.detailSingle', '{{detail}} · 1 check', { detail, ...UNESCAPED })
+      : t('recommendations.group.countSingle', '1 check');
+  }
+
+  return detail
+    ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
+        detail,
+        checkCount: checks.length,
+        ...UNESCAPED,
+      })
+    : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: checks.length });
 }

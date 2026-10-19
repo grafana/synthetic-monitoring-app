@@ -80,6 +80,34 @@ describe('Recommendations tab filters', () => {
     expect(within(paused).getByText('Review')).not.toBeVisible();
   });
 
+  it('counts a matching dismissed row in the panel, as the landing row does', async () => {
+    localStorage.setItem(DISMISSED_CHECKS_STORAGE_KEY, JSON.stringify({ 'alerting-gaps': [1] }));
+    const { user } = await renderTab([UNALERTED_HTTP(), UNALERTED_DNS(), UNALERTED_HTTP_2()], {
+      path: 'checks/recommendations?type=http',
+    });
+
+    const [alerting] = await screen.findAllByTestId(RECOMMENDATIONS_TEST_ID.attentionRow);
+    expect(within(alerting).getByText('2 of 3 checks match your filters')).toBeInTheDocument();
+
+    await user.click(alerting);
+
+    const section = await findSection(/2 of 3 checks match your filters/);
+    expect(within(section).getByText('unalerted-http-2')).toBeInTheDocument();
+    expect(within(section).queryByText('unalerted-http')).not.toBeInTheDocument();
+  });
+
+  it('does not blame the filters when every matching row was dismissed', async () => {
+    localStorage.setItem(DISMISSED_CHECKS_STORAGE_KEY, JSON.stringify({ 'alerting-gaps': [1, 3] }));
+
+    await renderTab([UNALERTED_HTTP(), UNALERTED_DNS(), UNALERTED_HTTP_2()], {
+      path: 'checks/recommendations?category=alerting&type=http',
+    });
+
+    const section = await findSection(/2 of 3 checks match your filters/);
+    expect(within(section).getByText(/2 checks dismissed/)).toBeInTheDocument();
+    expect(within(section).queryByText('No checks in this finding match your filters.')).not.toBeInTheDocument();
+  });
+
   it('says how many checks match and which finding leads, counting only those in the legend', async () => {
     const { user } = await renderTab([UNALERTED_HTTP(), PAUSED_DNS(), ...DUPLICATE_HTTP(), HEALTHY_PING()]);
     expect(
@@ -180,7 +208,7 @@ describe('Recommendations tab filters', () => {
 
     const overlapping = await findSection(/Overlapping targets/);
     expect(within(overlapping).getByText('1 of 2 checks match your filters')).toBeInTheDocument();
-    expect(within(overlapping).getByText('dns · 1 checks')).toBeInTheDocument();
+    expect(within(overlapping).getByText('dns · 1 check')).toBeInTheDocument();
 
     await user.click(within(overlapping).getByRole('button', { name: 'example.com' }));
     await user.click(within(overlapping).getByRole('button', { name: 'Dismiss dns-on-example from this finding' }));
