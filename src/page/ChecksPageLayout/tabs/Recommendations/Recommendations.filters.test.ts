@@ -1,7 +1,7 @@
 import { DB } from 'test/db';
 
 import { Recommendation, RecommendationId } from './Recommendations.types';
-import { Check, CheckType } from 'types';
+import { Check, CheckType, GrafanaFolder } from 'types';
 
 import {
   filterFindings,
@@ -184,6 +184,14 @@ describe('getLabelOptions', () => {
 });
 
 describe('getFolderOptions', () => {
+  const folder = (uid: string, title: string, parentUid?: string): GrafanaFolder => ({
+    uid,
+    title,
+    url: '',
+    parentUid,
+  });
+  const byUid = (...folders: GrafanaFolder[]) => new Map(folders.map((known) => [known.uid, known]));
+
   it("lists the checks' folders once, titled where known, the default folder standing in for none", () => {
     const checks = [
       buildCheck(CheckType.Http, { folderUid: 'prod' }),
@@ -191,14 +199,34 @@ describe('getFolderOptions', () => {
       buildCheck(CheckType.Http, { folderUid: 'prod' }),
       buildCheck(CheckType.Http, { folderUid: 'untitled' }),
     ];
-    const titles: Record<string, string> = { prod: 'Production', 'default-uid': 'Synthetic Monitoring' };
-    const getTitle = (check: Check) => titles[check.folderUid ?? 'default-uid'];
+    const known = byUid(folder('default-uid', 'Synthetic Monitoring'), folder('prod', 'Production', 'default-uid'));
 
-    expect(getFolderOptions(checks, 'default-uid', getTitle, ['picked'])).toEqual([
+    expect(getFolderOptions(checks, 'default-uid', known, ['picked'])).toEqual([
       { value: 'picked', label: 'picked' },
       { value: 'prod', label: 'Production' },
       { value: 'default-uid', label: 'Synthetic Monitoring' },
       { value: 'untitled', label: 'untitled' },
+    ]);
+  });
+
+  it('tells folders sharing a title apart by their paths', () => {
+    const checks = [
+      buildCheck(CheckType.Http, { folderUid: 'a-prod' }),
+      buildCheck(CheckType.Http, { folderUid: 'b-prod' }),
+      buildCheck(CheckType.Http, { folderUid: 'a' }),
+    ];
+    const known = byUid(
+      folder('root', 'SM'),
+      folder('a', 'Team A', 'root'),
+      folder('b', 'Team B', 'root'),
+      folder('a-prod', 'prod', 'a'),
+      folder('b-prod', 'prod', 'b')
+    );
+
+    expect(getFolderOptions(checks, 'root', known, [])).toEqual([
+      { value: 'a-prod', label: 'SM > Team A > prod' },
+      { value: 'b-prod', label: 'SM > Team B > prod' },
+      { value: 'a', label: 'Team A' },
     ]);
   });
 });

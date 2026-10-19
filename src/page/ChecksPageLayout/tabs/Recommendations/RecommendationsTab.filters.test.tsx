@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { RECOMMENDATIONS_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
-import { DEFAULT_FOLDER, FOLDER_PRODUCTION } from 'test/fixtures/folders';
+import { DEFAULT_FOLDER, FOLDER_PRODUCTION, FOLDER_STAGING, MOCK_FOLDERS } from 'test/fixtures/folders';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import { mockFeatureToggles, mockReportInteraction, selectOption } from 'test/utils';
@@ -397,6 +397,45 @@ describe('Recommendations tab filters', () => {
         await waitFor(() =>
           expect(screen.getByTestId(ROUTER_TEST_ID.search)).toHaveTextContent(`folder=${FOLDER_PRODUCTION.uid}`)
         );
+      });
+
+      it('tells folders sharing a title apart by their paths', async () => {
+        const stagingProduction = {
+          ...FOLDER_PRODUCTION,
+          uid: 'folder-staging-production',
+          parentUid: FOLDER_STAGING.uid,
+        };
+        server.use(
+          apiRoute('getFolder', {
+            result: (req) => {
+              const uid = new URL(req.url).pathname.split('/').pop();
+              const folder = [...MOCK_FOLDERS, stagingProduction].find((known) => known.uid === uid);
+
+              return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
+            },
+          })
+        );
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 31, job: 'prod-check', target: 'https://a.com', folderUid: FOLDER_PRODUCTION.uid }),
+            buildCheck({
+              id: 33,
+              job: 'staging-prod-check',
+              target: 'https://c.com',
+              folderUid: stagingProduction.uid,
+            }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await selectOption(user, {
+          label: 'Folders',
+          option: `${DEFAULT_FOLDER.title} > ${FOLDER_STAGING.title} > ${FOLDER_PRODUCTION.title}`,
+        });
+
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('staging-prod-check')).toBeInTheDocument();
+        expect(within(section).queryByText('prod-check')).not.toBeInTheDocument();
       });
     });
   });

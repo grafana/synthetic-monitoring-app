@@ -219,7 +219,7 @@ export function useRecommendationFilters() {
 /** What each filter group offers: the values the visible checks have, plus whatever is selected. */
 export function useFilterOptions(checks: Check[], selection: FilterSelection) {
   const isFoldersAvailable = useIsFoldersAvailable();
-  const { defaultFolderUid } = useAllFolders();
+  const { folders, defaultFolderUid } = useAllFolders();
   const getFolderStatus = useGetCheckFolderStatus();
 
   const typeOptions = useMemo(() => getTypeOptions(checks, selection.types), [checks, selection.types]);
@@ -229,15 +229,16 @@ export function useFilterOptions(checks: Check[], selection: FilterSelection) {
       return [];
     }
 
-    // Statuses rather than the folder list: the list misses folders outside the default folder's tree.
-    const getTitle = (check: Check) => {
+    // The list holds the default folder's tree, for paths; statuses add the folders outside it.
+    const checkFolders = checks.flatMap((check) => {
       const status = getFolderStatus(check);
 
-      return status.type === 'accessible' ? status.folder?.title : undefined;
-    };
+      return status.type === 'accessible' && status.folder ? [status.folder] : [];
+    });
+    const foldersByUid = new Map([...folders, ...checkFolders].map((folder) => [folder.uid, folder]));
 
-    return getFolderOptions(checks, defaultFolderUid, getTitle, selection.folders);
-  }, [isFoldersAvailable, defaultFolderUid, getFolderStatus, checks, selection.folders]);
+    return getFolderOptions(checks, defaultFolderUid, foldersByUid, selection.folders);
+  }, [isFoldersAvailable, folders, defaultFolderUid, getFolderStatus, checks, selection.folders]);
 
   return { typeOptions, labelOptions, folderOptions, defaultFolderUid };
 }

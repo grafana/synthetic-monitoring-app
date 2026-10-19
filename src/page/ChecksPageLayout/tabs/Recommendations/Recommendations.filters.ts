@@ -1,6 +1,7 @@
 import { Recommendation, RecommendationGroup } from './Recommendations.types';
-import { Check, CheckType } from 'types';
+import { Check, CheckType, GrafanaFolder } from 'types';
 import { getCheckType } from 'utils';
+import { getFolderPath } from 'data/useFolders';
 import { matchesFolderFilter, matchesLabelFilter } from 'page/CheckList/CheckList.utils';
 
 import { describeCheckTypes } from './Recommendations.utils';
@@ -103,25 +104,35 @@ export interface FolderOption {
   label: string;
 }
 
-/** The folders checks are in, titled by `getTitle` where it knows the folder, by uid otherwise. */
+/**
+ * The folders checks are in, by title, or by path where two share one: folders under different
+ * parents can. A folder missing from `foldersByUid` shows its uid.
+ */
 export function getFolderOptions(
   checks: Check[],
   defaultFolderUid: string | undefined,
-  getTitle: (check: Check) => string | undefined,
+  foldersByUid: Map<string, GrafanaFolder>,
   selected: string[]
 ): FolderOption[] {
-  const titles = new Map<string, string>();
-
+  const uids = new Set(selected);
   checks.forEach((check) => {
     const uid = check.folderUid ?? defaultFolderUid;
 
-    if (uid && !titles.has(uid)) {
-      titles.set(uid, getTitle(check) ?? uid);
+    if (uid) {
+      uids.add(uid);
     }
   });
-  selected.filter((uid) => !titles.has(uid)).forEach((uid) => titles.set(uid, uid));
 
-  return [...titles].map(([value, label]) => ({ value, label })).sort((a, b) => a.label.localeCompare(b.label));
+  const folders = [...uids].map((uid) => ({ uid, folder: foldersByUid.get(uid) }));
+  const titles = folders.flatMap(({ folder }) => (folder ? [folder.title] : []));
+  const isShared = (title: string) => titles.indexOf(title) !== titles.lastIndexOf(title);
+
+  return folders
+    .map(({ uid, folder }) => ({
+      value: uid,
+      label: folder ? (isShared(folder.title) ? getFolderPath(folder, foldersByUid) : folder.title) : uid,
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
 }
 
 function isCheckType(value: string): value is CheckType {
