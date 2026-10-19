@@ -18,6 +18,7 @@ import { Check, CheckType } from 'types';
 import { getCheckType } from 'utils';
 import { useLogsRetentionPeriod } from 'data/useLogsRetention';
 import { useSceneVar } from 'scenes/Common/useSceneVar';
+import { useAppBuildChangeEvents } from 'scenes/components/TimepointExplorer/FrontendContext.hooks';
 import {
   MAX_MINIMAP_SECTIONS,
   TIMEPOINT_EXPLORER_VIEW_OPTIONS,
@@ -181,7 +182,7 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     to: timeRange.to.valueOf(),
   });
 
-  const checkEvents = useMemo(
+  const checkConfigEvents = useMemo(
     () =>
       buildCheckEvents({
         checkConfigs,
@@ -231,6 +232,17 @@ export const TimepointExplorerProvider = ({ children, check }: TimepointExplorer
     timepoints: visibleTimepoints, // no point building anything that is not visible
     timeRange: miniMapCurrentPageTimeRange,
   });
+
+  const appBuildEvents = useAppBuildChangeEvents({
+    check,
+    listLogsMap,
+    from: explorerTimeFrom,
+    to: timeRange.to.valueOf(),
+  });
+  const checkEvents = useMemo(
+    () => [...checkConfigEvents, ...appBuildEvents],
+    [checkConfigEvents, appBuildEvents]
+  );
 
   const isLoading =
     isLogsRetentionLoading || isCheckConfigsLoading || isExecutionDurationLogsLoading || isMaxProbeDurationLoading;
