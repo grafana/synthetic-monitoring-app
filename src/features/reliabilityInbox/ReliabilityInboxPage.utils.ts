@@ -32,7 +32,7 @@ export function getAssistantActionState({
 }
 
 export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
-  const { suggestion, proposedCheck, subject } = opportunity;
+  const { suggestion, proposedCheck, subject, setup } = opportunity;
   const { reqPerS, errorRatio, p99Ms } = suggestion.evidence;
 
   const context = createAssistantContextItem('structured', {
@@ -48,7 +48,11 @@ export function getAssistantOpenPayload(opportunity: ReliabilityOpportunity) {
         rationale: suggestion.rationale,
         evidence: { reqPerS, errorRatio, p99Ms },
       },
-      suggestedDraft: proposedCheck,
+      // Without a draft when the method is unknown: the service's prompt says
+      // what to ask the user for, and a GET draft would contradict it. A draft
+      // that only lacks credentials or a CA certificate stays, alongside what to ask for.
+      ...(!opportunity.methodUnknown && { suggestedDraft: proposedCheck }),
+      ...(setup && { setup }),
     },
   });
 
@@ -90,6 +94,8 @@ export function getManualCreateLocation(opportunity: ReliabilityOpportunity) {
           },
         },
       },
+      // Shown above the form, so what to provide is in view where it goes.
+      setupSteps: opportunity.setup?.steps,
     },
   };
 }

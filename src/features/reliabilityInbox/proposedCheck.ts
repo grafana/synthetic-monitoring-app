@@ -24,7 +24,10 @@ export function getProposedHttpCheckDraft(suggestion: ReliabilitySuggestion) {
   const parsed = parseSuggestedHttpCheckConfig(suggestion.prompt);
   const frequencyMs = parsed.frequencyMs ?? ONE_MINUTE_IN_MS;
   const timeoutMs = parsed.timeoutMs ?? THREE_SECONDS_IN_MS;
-  const validStatusCodes = parsed.validStatusCodes.length > 0 ? parsed.validStatusCodes : [200];
+  // A suggestion that needs configuration gets a different request (Faro
+  // answers its POSTs with 202), so it keeps SM's default of any 2xx.
+  const validStatusCodes =
+    parsed.validStatusCodes.length > 0 ? parsed.validStatusCodes : suggestion.needsConfiguration ? [] : [200];
   const probeIds = parsed.probeIds;
 
   return {

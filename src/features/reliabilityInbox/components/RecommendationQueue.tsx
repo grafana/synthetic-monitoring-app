@@ -63,7 +63,7 @@ export function RecommendationQueue({
                 {totalCount} {pluralize('Recommendation', totalCount)}
               </strong>
               <Text variant="bodySmall" color="secondary">
-                Ordered by technical signals
+                Ready to create first, then by technical signals
               </Text>
             </Stack>
           </div>
@@ -125,7 +125,9 @@ export function RecommendationQueue({
                     <Text variant="bodySmall" color="secondary">
                       {view === 'dismissed'
                         ? 'Dismissed in this browser'
-                        : `Missing check${opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''}`}
+                        : `${opportunity.setup ? 'Needs setup' : 'Missing check'}${
+                            opportunity.requestRate ? ` · ${opportunity.requestRate}` : ''
+                          }`}
                     </Text>
                     {opportunity.namespace && (
                       <Text variant="bodySmall" color="secondary">
