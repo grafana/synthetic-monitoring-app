@@ -214,7 +214,7 @@ export function RecommendationSection({
       <div className={styles.panelHeader} data-testid={RECOMMENDATIONS_TEST_ID.sectionHeader}>
         <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.caret} />
-          <Stack direction="column" gap={0.25}>
+          <Stack direction="column" gap={0.25} minWidth={0}>
             <h3 className={styles.sectionTitle}>
               <span className={styles.sectionTitleText}>{title}</span>
               {tooltip && (
