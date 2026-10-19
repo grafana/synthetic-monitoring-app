@@ -49,6 +49,25 @@
       "missingLabels": ""
     }
   },
+  "checksEmptyState": {
+    "getStarted": "",
+    "noChecks": "",
+    "otherWaysToCreateChecks": "",
+    "wizardDescription": ""
+  },
+  "cloudSetupCliPanel": {
+    "copy": "",
+    "copyCommand": "",
+    "copyFailed": "",
+    "requirements": ""
+  },
+  "codingAgentSetup": {
+    "copy": "",
+    "copyFailed": "",
+    "description": "",
+    "promptLabel": "",
+    "title": ""
+  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Etiquetas"
   },

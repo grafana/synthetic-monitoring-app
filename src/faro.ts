@@ -23,6 +23,7 @@ export enum FaroEvent {
   UpdateCheckAlerts = 'update_check_alerts',
   NoProbeMappingFound = 'no_probe_mapping_found',
   CloudSetupCliCommandCopyFailed = 'cloud_setup_cli_command_copy_failed',
+  CloudSetupAgentPromptCopyFailed = 'cloud_setup_agent_prompt_copy_failed',
 }
 
 export enum FaroUserAction {

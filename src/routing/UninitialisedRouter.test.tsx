@@ -32,6 +32,8 @@ describe('Renders non-auto-initializing routes when app is not initialized', () 
     renderUninitialisedRouting({ path: getRoute(AppRoutes.Home) });
 
     expect(await screen.findByText('Up and running in seconds, no instrumentation required')).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Get started' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Copy command' })).not.toBeInTheDocument();
     expect(requests).toHaveLength(0);
   });
 

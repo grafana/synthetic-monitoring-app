@@ -49,6 +49,25 @@
       "missingLabels": "Missing cost attribution labels: {{labelList}}"
     }
   },
+  "checksEmptyState": {
+    "getStarted": "Get started monitoring your services with Grafana Cloud",
+    "noChecks": "You haven't created any checks yet",
+    "otherWaysToCreateChecks": "Other ways to create checks",
+    "wizardDescription": "Run the setup wizard in your terminal to create your first checks."
+  },
+  "cloudSetupCliPanel": {
+    "copy": "Copy",
+    "copyCommand": "Copy command",
+    "copyFailed": "Could not copy. Select and copy the command above.",
+    "requirements": "Requires Node.js 22.6+ · Uses Grafana Assistant tokens"
+  },
+  "codingAgentSetup": {
+    "copy": "Copy prompt",
+    "copyFailed": "Could not copy. Select and copy the prompt below.",
+    "description": "Use this prompt to create checks for your project.",
+    "promptLabel": "Coding agent prompt",
+    "title": "Use your coding agent"
+  },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"
   },
