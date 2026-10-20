@@ -9,9 +9,10 @@ import { sanitizeScreenshotSrc } from './screenshots.utils';
 interface ScreenshotThumbnailProps {
   url?: string;
   caption?: string;
+  onError?: () => void;
 }
 
-export const ScreenshotThumbnail = ({ url, caption }: ScreenshotThumbnailProps) => {
+export const ScreenshotThumbnail = ({ url, caption, onError }: ScreenshotThumbnailProps) => {
   const styles = useStyles2(getStyles);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const src = sanitizeScreenshotSrc(url);
@@ -41,7 +42,7 @@ export const ScreenshotThumbnail = ({ url, caption }: ScreenshotThumbnailProps) 
           onClick={handleExpand}
           aria-label={`View full size: ${alt}`}
         >
-          <img src={src} alt={alt} className={styles.thumbnail} />
+          <img onError={onError} src={src} alt={alt} className={styles.thumbnail} />
         </button>
       </div>
       {isModalOpen && (
@@ -53,7 +54,7 @@ export const ScreenshotThumbnail = ({ url, caption }: ScreenshotThumbnailProps) 
           contentClassName={styles.modalContent}
         >
           <div className={styles.modalImageContainer}>
-            <img src={src} alt={alt} className={styles.modalImage} />
+            <img onError={onError} src={src} alt={alt} className={styles.modalImage} />
           </div>
         </Modal>
       )}

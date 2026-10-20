@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { ScreenshotData } from './screenshots.types';
 
@@ -12,7 +12,9 @@ const STATUS_TEXT = {
 };
 
 export function ResolvedScreenshot({ screenshot }: { screenshot: ScreenshotData }) {
-  const status = screenshot.status;
+  const [failedURL, setFailedURL] = useState<string>();
+  const imageFailed = !!failedURL && failedURL === screenshot.url;
+  const status = screenshot.status ?? (imageFailed ? 'error' : undefined);
   if (status) {
     return (
       <div role="status">
@@ -21,6 +23,7 @@ export function ResolvedScreenshot({ screenshot }: { screenshot: ScreenshotData 
           <button
             type="button"
             onClick={() => {
+              setFailedURL(undefined);
               screenshot.retry?.();
             }}
           >
@@ -30,5 +33,20 @@ export function ResolvedScreenshot({ screenshot }: { screenshot: ScreenshotData 
       </div>
     );
   }
-  return <ScreenshotThumbnail url={screenshot.url} />;
+  return (
+    <ScreenshotThumbnail
+      url={screenshot.url}
+      onError={
+        screenshot.expiresAt
+          ? () => {
+              if (screenshot.expiresAt! <= Date.now()) {
+                screenshot.retry?.();
+              } else {
+                setFailedURL(screenshot.url);
+              }
+            }
+          : undefined
+      }
+    />
+  );
 }

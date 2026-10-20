@@ -24,6 +24,7 @@ export function useScreenshots(
   useEffect(() => {
     const ids: string[] = JSON.parse(uuidKey);
     let cancelled = false;
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
     const inFlight = new Set<string>();
     const update = (id: string, image: ScreenshotData) => {
       if (!cancelled) {
@@ -36,18 +37,33 @@ export function useScreenshots(
       if (cancelled || inFlight.has(id)) {
         return;
       }
+      clearTimeout(timers.get(id));
       if (!datasourceUID) {
         update(id, { id, status: 'missing-datasource' });
         return;
       }
       inFlight.add(id);
-      update(id, { id, status: 'loading' });
+      // Keep the mounted thumbnail/modal while refreshing a previously resolved URL.
+      setState((prev) => ({
+        scope,
+        images: new Map(prev.images).set(
+          id,
+          prev.images.get(id)?.url ? prev.images.get(id)! : { id, status: 'loading' }
+        ),
+      }));
       try {
         const image = await lookupSagaScreenshot(id, datasourceUID);
         if (cancelled) {
           return;
         }
         update(id, { ...image, retry: () => void fetchSaga(id) });
+        // Refresh just before expiry. Reject already-expired metadata in the adapter
+        // so a bad response cannot create an immediate, unbounded refresh loop.
+        const remaining = image.expiresAt! - Date.now();
+        timers.set(
+          id,
+          setTimeout(() => void fetchSaga(id), Math.min(Math.max(remaining - 1000, remaining / 2), 2147483647))
+        );
       } catch (error) {
         update(id, {
           id,
@@ -62,6 +78,7 @@ export function useScreenshots(
     ids.forEach((id) => void fetchSaga(id));
     return () => {
       cancelled = true;
+      timers.forEach(clearTimeout);
     };
   }, [uuidKey, scope, datasourceUID]);
 
