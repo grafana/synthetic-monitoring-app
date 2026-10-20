@@ -6,7 +6,7 @@ interface ScreenshotExpandedEvent extends TrackingEventProps {
   /** Whether the screenshot has a caption. */
   hasCaption: boolean;
   /** The source type of the screenshot. */
-  source: 'base64' | 'url';
+  source: 'url';
 }
 
 /** Tracks when a screenshot thumbnail is clicked to expand. */
@@ -22,4 +22,3 @@ interface HideScreenshotsToggledEvent extends TrackingEventProps {
 
 /** Tracks when the hide screenshots toggle is changed. */
 export const trackHideScreenshotsToggled = screenshotEvents<HideScreenshotsToggledEvent>('hide_toggled');
-

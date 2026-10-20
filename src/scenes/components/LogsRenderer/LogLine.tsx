@@ -5,6 +5,7 @@ import { css, cx } from '@emotion/css';
 import { MSG_STRINGS_HTTP } from 'features/parseCheckLogs/checkLogs.constants.msgs';
 import { trackTraceIconClicked } from 'features/tracking/timepointExplorerEvents';
 
+import { ScreenshotData } from './screenshots/screenshots.types';
 import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.http';
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { useTracesDS } from 'hooks/useTracesDS';
@@ -15,15 +16,16 @@ import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
 import { useTraceData } from 'scenes/components/LogsRenderer/useTraceData';
 
-import { ScreenshotThumbnail } from './screenshots/ScreenshotThumbnail';
+import { ResolvedScreenshot } from './screenshots/ResolvedScreenshot';
 
 interface LogLineProps {
   log: ParsedLokiRecord<Record<string, string>, Record<string, string>>;
   mainKey: string;
   hasTraceColumn: boolean;
+  screenshot?: ScreenshotData;
 }
 
-export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
+export const LogLine = ({ log, mainKey, hasTraceColumn, screenshot }: LogLineProps) => {
   const styles = useStyles2(getStyles);
   const tracesDS = useTracesDS();
   const [expanded, setExpanded] = useState(false);
@@ -97,11 +99,7 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
           {level.toUpperCase()}
         </div>
         <div className={styles.mainKey}>
-          {labels.screenshot_base64 || labels.screenshot_url ? (
-            <ScreenshotThumbnail base64={labels.screenshot_base64} url={labels.screenshot_url} caption={labels.caption} />
-          ) : (
-            labels[mainKey]
-          )}
+          {screenshot ? <ResolvedScreenshot screenshot={screenshot} /> : labels[mainKey]}
         </div>
         {hasTraceColumn && (
           <div className={styles.traceIconCell} ref={traceIconRef}>

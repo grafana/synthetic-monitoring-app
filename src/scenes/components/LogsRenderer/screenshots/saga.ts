@@ -1,6 +1,8 @@
 import { config, getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom, timeout } from 'rxjs';
 
+import { ScreenshotData } from './screenshots.types';
+
 import { sanitizeScreenshotSrc } from './screenshots.utils';
 
 export const INFINITY_DATASOURCE_TYPE = 'yesoreyeram-infinity-datasource';
@@ -38,7 +40,7 @@ export class ScreenshotLookupError extends Error {
 }
 
 /** Infinity makes the authenticated GET on the server; no CAP token enters this query. */
-export async function lookupSagaScreenshot(uuid: string, datasourceUID: string): Promise<{ id: string; url: string; expiresAt: number }> {
+export async function lookupSagaScreenshot(uuid: string, datasourceUID: string): Promise<ScreenshotData> {
   const refId = uuid;
   const response = await firstValueFrom(
     getBackendSrv()

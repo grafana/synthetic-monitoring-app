@@ -44,42 +44,16 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
 
   const screenshotDataByUUID = useScreenshots(screenshotUUIDs, from, to);
 
-  const enrichedLogs = useMemo(() => {
-    if (!screenshotsEnabled || screenshotDataByUUID.size === 0) {
+  const filteredLogs = useMemo(() => {
+    if (!screenshotsEnabled || !hideScreenshots) {
       return logs;
     }
 
-    return logs.map((log) => {
-      const message = log.labels[mainKey];
-      const match = message?.match(SCREENSHOT_PATTERN);
-
-      if (!match?.[1]) {
-        return log;
-      }
-
-      const screenshotData = screenshotDataByUUID.get(match[1]);
-
-      if (!screenshotData) {
-        return log;
-      }
-
-      return {
-        ...log,
-        labels: { ...log.labels, ...screenshotData },
-      };
-    });
-  }, [logs, mainKey, screenshotDataByUUID, screenshotsEnabled]);
-
-  const filteredLogs = useMemo(() => {
-    if (!screenshotsEnabled || !hideScreenshots) {
-      return enrichedLogs;
-    }
-
-    return enrichedLogs.filter((log) => {
+    return logs.filter((log) => {
       const message = log.labels[mainKey];
       return !message || !SCREENSHOT_PATTERN.test(message);
     });
-  }, [enrichedLogs, hideScreenshots, mainKey, screenshotsEnabled]);
+  }, [logs, hideScreenshots, mainKey, screenshotsEnabled]);
 
   const hasTraceColumn = useMemo(
     () =>
@@ -111,7 +85,17 @@ export const LogsEvent = <T extends UnknownParsedLokiRecord>({
         </div>
       )}
       {filteredLogs.map((log) => (
-        <LogLine key={log.id} log={log} mainKey={mainKey} hasTraceColumn={hasTraceColumn} />
+        <LogLine
+          key={log.id}
+          log={log}
+          mainKey={mainKey}
+          hasTraceColumn={hasTraceColumn}
+          screenshot={
+            screenshotsEnabled
+              ? screenshotDataByUUID.get(log.labels[mainKey]?.match(SCREENSHOT_PATTERN)?.[1] ?? '')
+              : undefined
+          }
+        />
       ))}
     </div>
   );
