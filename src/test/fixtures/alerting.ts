@@ -1,5 +1,6 @@
 import { type InstanceMatchResult, USER_DEFINED_TREE_NAME } from '@grafana/alerting';
 
+import { PrometheusAlertingRule, PrometheusAlertsGroup } from 'types';
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
 
 import {
@@ -146,6 +147,85 @@ export const GRAFANA_ALERTING_RULES: ListPrometheusAlertsResponse = {
         evaulationTime: 0.480036517,
       },*/
     ],
+  },
+  status: `success`,
+};
+
+const LEGACY_GMA_EVALUATION = '2026-10-01T10:00:00Z';
+
+const legacyGMAlertingRule = (name: string, sensitivity: string, threshold: number): PrometheusAlertingRule => ({
+  annotations: getDefaultAlertAnnotations(threshold),
+  duration: 300,
+  evaluationTime: 0.01,
+  health: 'ok',
+  labels: {
+    ...DEFAULT_ALERT_LABELS,
+    __grafana_origin: 'plugin/synthetic-monitoring-app-legacy',
+  },
+  lastEvaluation: LEGACY_GMA_EVALUATION,
+  name,
+  query: `${ALERT_PROBE_SUCCESS_RECORDING_METRIC}{alert_sensitivity="${sensitivity}"} < ${threshold}`,
+  state: 'inactive',
+  type: 'alerting',
+  uid: `sm-legacy-${sensitivity}`,
+});
+
+export const LEGACY_GMA_HIGH_SENSITIVITY_RULE = legacyGMAlertingRule(
+  'SyntheticMonitoringCheckFailureAtHighSensitivity',
+  'high',
+  95
+);
+
+export const LEGACY_GMA_ALERTS_GROUP: PrometheusAlertsGroup = {
+  name: 'default',
+  file: 'Synthetic Monitoring legacy alerts',
+  folderUid: 'sm-legacy-alerts',
+  interval: 60,
+  lastEvaluation: LEGACY_GMA_EVALUATION,
+  evaulationTime: 0.04,
+  totals: null,
+  rules: [
+    {
+      evaluationTime: 0.01,
+      health: 'ok',
+      lastEvaluation: LEGACY_GMA_EVALUATION,
+      name: ALERT_PROBE_SUCCESS_RECORDING_METRIC,
+      query: ALERT_PROBE_SUCCESS_RECORDING_EXPR,
+      type: 'recording',
+    },
+    LEGACY_GMA_HIGH_SENSITIVITY_RULE,
+    legacyGMAlertingRule('SyntheticMonitoringCheckFailureAtMediumSensitivity', 'medium', 90),
+    legacyGMAlertingRule('SyntheticMonitoringCheckFailureAtLowSensitivity', 'low', 75),
+  ],
+};
+
+// Grafana can omit `labels` and drops a zero `duration`.
+const UNLABELED_GMA_ALERTS_GROUP: PrometheusAlertsGroup = {
+  name: 'Team alerts',
+  file: 'Team folder',
+  folderUid: 'team-folder',
+  interval: 60,
+  lastEvaluation: LEGACY_GMA_EVALUATION,
+  evaulationTime: 0.01,
+  totals: null,
+  rules: [
+    {
+      annotations: { description: 'The error rate is above 1 per second', summary: 'High error rate' },
+      evaluationTime: 0.01,
+      health: 'ok',
+      lastEvaluation: LEGACY_GMA_EVALUATION,
+      name: 'HighErrorRate',
+      query: 'sum(rate(http_errors_total[5m])) > 1',
+      state: 'inactive',
+      type: 'alerting',
+      uid: 'team-high-error-rate',
+    },
+  ],
+};
+
+export const LEGACY_GMA_ALERTING_RULES: ListPrometheusAlertsResponse = {
+  data: {
+    groups: [...GRAFANA_ALERTING_RULES.data.groups, UNLABELED_GMA_ALERTS_GROUP, LEGACY_GMA_ALERTS_GROUP],
   },
   status: `success`,
 };
@@ -330,62 +410,127 @@ export const MOCK_MULTI_TREE_ROUTE_MATCH: InstanceMatchResult = instanceMatchRes
 });
 
 export const MOCK_HTTP_DURATION_ROUTE_MATCH: InstanceMatchResult = {
-  "labels": [
-    ["job", "test_http"], ["instance", "http://example.com"], ["check_name", "http"], ["frequency", "10000"],
-    ["namespace", "synthetic_monitoring"], ["grafana_folder", "Grafana Synthetic Monitoring"],
-    ["label_per_check_alerts", "true"], ["alertname", "HTTPRequestDurationTooHighAvg"], ["label_notification", "email"]
+  labels: [
+    ['job', 'test_http'],
+    ['instance', 'http://example.com'],
+    ['check_name', 'http'],
+    ['frequency', '10000'],
+    ['namespace', 'synthetic_monitoring'],
+    ['grafana_folder', 'Grafana Synthetic Monitoring'],
+    ['label_per_check_alerts', 'true'],
+    ['alertname', 'HTTPRequestDurationTooHighAvg'],
+    ['label_notification', 'email'],
   ],
-  "matchedRoutes": [
+  matchedRoutes: [
     {
-      "route": {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true},
-      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
-      "matchDetails": {
-        "route": {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true},
-        "labels": [
-          ["job", "test_http"], ["instance", "http://example.com"], ["check_name", "http"], ["frequency", "10000"],
-          ["namespace", "synthetic_monitoring"], ["grafana_folder", "Grafana Synthetic Monitoring"],
-          ["label_per_check_alerts", "true"], ["alertname", "HTTPRequestDurationTooHighAvg"], ["label_notification", "email"]
+      route: { id: 'route-8', receiver: 'Grafana Alerting ❤️', continue: true },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-3' } },
+      matchDetails: {
+        route: { id: 'route-8', receiver: 'Grafana Alerting ❤️', continue: true },
+        labels: [
+          ['job', 'test_http'],
+          ['instance', 'http://example.com'],
+          ['check_name', 'http'],
+          ['frequency', '10000'],
+          ['namespace', 'synthetic_monitoring'],
+          ['grafana_folder', 'Grafana Synthetic Monitoring'],
+          ['label_per_check_alerts', 'true'],
+          ['alertname', 'HTTPRequestDurationTooHighAvg'],
+          ['label_notification', 'email'],
         ],
-        "matchingJourney": [
-          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": [], "routes": [
-            {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true},
-            {"id": "route-9", "receiver": "Grafana Alerting 👻", "continue": true},
-            {"id": "route-10", "receiver": "Grafana Alerting Name change 2 😊", "continue": true},
-            {"id": "route-12", "matchers": [{"type": "=", "label": "label_notification", "value": "email"}], "continue": true, "receiver": "grafana-default-email"}
-          ]}, "matchDetails": [], "matched": true},
-          {"route": {"id": "route-8", "receiver": "Grafana Alerting ❤️", "continue": true}, "matchDetails": [], "matched": true}
-        ]
-      }
+        matchingJourney: [
+          {
+            route: {
+              id: 'route-3',
+              receiver: 'grafana-default-email',
+              continue: false,
+              matchers: [],
+              routes: [
+                { id: 'route-8', receiver: 'Grafana Alerting ❤️', continue: true },
+                { id: 'route-9', receiver: 'Grafana Alerting 👻', continue: true },
+                { id: 'route-10', receiver: 'Grafana Alerting Name change 2 😊', continue: true },
+                {
+                  id: 'route-12',
+                  matchers: [{ type: '=', label: 'label_notification', value: 'email' }],
+                  continue: true,
+                  receiver: 'grafana-default-email',
+                },
+              ],
+            },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: { id: 'route-8', receiver: 'Grafana Alerting ❤️', continue: true },
+            matchDetails: [],
+            matched: true,
+          },
+        ],
+      },
     },
     {
-      "route": {"id": "route-9", "receiver": "Grafana Alerting 👻", "continue": true},
-      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
-      "matchDetails": {
-        "matchingJourney": [
-          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": []}, "matchDetails": [], "matched": true},
-          {"route": {"id": "route-9", "receiver": "Grafana Alerting 👻", "continue": true}, "matchDetails": [], "matched": true}
-        ]
-      }
+      route: { id: 'route-9', receiver: 'Grafana Alerting 👻', continue: true },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-3' } },
+      matchDetails: {
+        matchingJourney: [
+          {
+            route: { id: 'route-3', receiver: 'grafana-default-email', continue: false, matchers: [] },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: { id: 'route-9', receiver: 'Grafana Alerting 👻', continue: true },
+            matchDetails: [],
+            matched: true,
+          },
+        ],
+      },
     },
     {
-      "route": {"id": "route-10", "receiver": "Grafana Alerting Name change 2 😊", "continue": true},
-      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
-      "matchDetails": {
-        "matchingJourney": [
-          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": []}, "matchDetails": [], "matched": true},
-          {"route": {"id": "route-10", "receiver": "Grafana Alerting Name change 2 😊", "continue": true}, "matchDetails": [], "matched": true}
-        ]
-      }
+      route: { id: 'route-10', receiver: 'Grafana Alerting Name change 2 😊', continue: true },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-3' } },
+      matchDetails: {
+        matchingJourney: [
+          {
+            route: { id: 'route-3', receiver: 'grafana-default-email', continue: false, matchers: [] },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: { id: 'route-10', receiver: 'Grafana Alerting Name change 2 😊', continue: true },
+            matchDetails: [],
+            matched: true,
+          },
+        ],
+      },
     },
     {
-      "route": {"id": "route-12", "matchers": [{"type": "=", "label": "label_notification", "value": "email"}], "continue": true, "receiver": "grafana-default-email"},
-      "routeTree": {"metadata": {"name": "user-defined"}, "expandedSpec": {"id": "route-3"}},
-      "matchDetails": {
-        "matchingJourney": [
-          {"route": {"id": "route-3", "receiver": "grafana-default-email", "continue": false, "matchers": []}, "matchDetails": [], "matched": true},
-          {"route": {"id": "route-12", "matchers": [{"type": "=", "label": "label_notification", "value": "email"}], "continue": true, "receiver": "grafana-default-email"}, "matchDetails": [], "matched": true}
-        ]
-      }
-    }
-  ]
+      route: {
+        id: 'route-12',
+        matchers: [{ type: '=', label: 'label_notification', value: 'email' }],
+        continue: true,
+        receiver: 'grafana-default-email',
+      },
+      routeTree: { metadata: { name: 'user-defined' }, expandedSpec: { id: 'route-3' } },
+      matchDetails: {
+        matchingJourney: [
+          {
+            route: { id: 'route-3', receiver: 'grafana-default-email', continue: false, matchers: [] },
+            matchDetails: [],
+            matched: true,
+          },
+          {
+            route: {
+              id: 'route-12',
+              matchers: [{ type: '=', label: 'label_notification', value: 'email' }],
+              continue: true,
+              receiver: 'grafana-default-email',
+            },
+            matchDetails: [],
+            matched: true,
+          },
+        ],
+      },
+    },
+  ],
 } as unknown as InstanceMatchResult;

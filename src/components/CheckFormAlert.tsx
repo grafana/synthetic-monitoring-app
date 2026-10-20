@@ -6,6 +6,8 @@ import { css } from '@emotion/css';
 import { ALERT_TEST_ID } from 'test/dataTestIds';
 
 import { CheckFormValues } from 'types';
+import { AppRoutes } from 'routing/types';
+import { getRoute } from 'routing/utils';
 
 import { ALERT_SENSITIVITY_OPTIONS } from './constants';
 
@@ -28,20 +30,19 @@ export const CheckFormAlert = () => {
       <div className={styles.marginBottom}>
         <p>
           Synthetic Monitoring provides some default alert rules via Cloud Alerting. By selecting an alert sensitivity,
-          the metrics this check publishes will be associated with a Cloud Alerting rule. Default rules can be created
-          and edited in the &nbsp;
-          <a
-            href="a/grafana-synthetic-monitoring-app/?page=alerts"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.link}
-          >
+          the metrics this check publishes will be associated with a Cloud Alerting rule. Default rules are listed in
+          the{' '}
+          <a href={getRoute(AppRoutes.Alerts)} target="_blank" rel="noopener noreferrer" className={styles.link}>
             alerts tab.
           </a>
         </p>
         <p>Tip: adding multiple probes can help to prevent alert flapping for less frequent checks</p>
       </div>
-      <Field label="Select alert sensitivity" htmlFor="alert-sensitivity-select" data-fs-element="Alert sensitivity select">
+      <Field
+        label="Select alert sensitivity"
+        htmlFor="alert-sensitivity-select"
+        data-fs-element="Alert sensitivity select"
+      >
         <Combobox
           {...alertSensitivityField}
           id="alert-sensitivity-select"
@@ -50,9 +51,7 @@ export const CheckFormAlert = () => {
           disabled={isFormDisabled || isCustomSensitivity}
           data-testid={ALERT_TEST_ID.sensitivityInput}
           options={
-            isCustomSensitivity
-              ? [{ label: alertSensitivity, value: alertSensitivity }]
-              : ALERT_SENSITIVITY_OPTIONS
+            isCustomSensitivity ? [{ label: alertSensitivity, value: alertSensitivity }] : ALERT_SENSITIVITY_OPTIONS
           }
           onChange={(e) => {
             alertSensitivityField.onChange(e.value);

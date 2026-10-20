@@ -4,6 +4,7 @@ import { Alert, Button, Modal, Spinner, Stack, TextLink, useStyles2 } from '@gra
 import { css } from '@emotion/css';
 
 import { AlertFormValues, AlertRule } from 'types';
+import { useLegacyGMAlerts } from 'data/useGMAlerts';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useAlerts } from 'hooks/useAlerts';
 import { useLegacyAlertsRestriction } from 'hooks/useLegacyAlertsRestriction';
@@ -12,6 +13,7 @@ import { AlertRuleForm } from 'components/AlertRuleForm';
 import { ConfigContent } from 'page/ConfigPageLayout';
 
 import { ContactAdminAlert } from './ContactAdminAlert';
+import { MigratedLegacyAlerts } from './MigratedLegacyAlerts';
 
 type SplitAlertRules = {
   recordingRules: AlertRule[];
@@ -93,10 +95,6 @@ const Alerting = () => {
       </Alert>
 
       <div className={styles.contentSection}>
-        <p>
-          View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
-          select the alert sensitivity from the Alerting section of the check form when creating a check.
-        </p>
         {canReadAlerts ? (
           <AlertingPageContent />
         ) : (
@@ -108,8 +106,35 @@ const Alerting = () => {
 };
 
 const AlertingPageContent = () => {
+  const { data: migratedGroups, isLoading, isError, refetch } = useLegacyGMAlerts();
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
+  if (migratedGroups?.length) {
+    return <MigratedLegacyAlerts groups={migratedGroups} />;
+  }
+
+  return (
+    <>
+      {isError && (
+        <Alert title="Couldn't check for migrated legacy alerts" severity="warning">
+          <Stack justifyContent="space-between" alignItems="center" gap={2}>
+            <span>Showing the alerts stored in your metrics data source instead.</span>
+            <Button size="sm" variant="secondary" onClick={() => refetch()}>
+              Retry
+            </Button>
+          </Stack>
+        </Alert>
+      )}
+      <DatasourceLegacyAlerts />
+    </>
+  );
+};
+
+const DatasourceLegacyAlerts = () => {
   const styles = useStyles2(getStyles);
-  const [updatingDefaultRules, setUpdatingDefaultRules] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const { alertRules, setDefaultRules, setRules, alertError } = useAlerts();
   const { canWriteAlerts, hasWriterRole } = useAlertAccessControl();
@@ -125,12 +150,6 @@ const AlertingPageContent = () => {
     },
     { recordingRules: [], alertingRules: [] }
   ) ?? { recordingRules: [], alertingRules: [] };
-
-  const populateDefaultAlerts = async () => {
-    setUpdatingDefaultRules(true);
-    await setDefaultRules();
-    setUpdatingDefaultRules(false);
-  };
 
   const getUpdateRules = (updatedIndex: number) => async (alertValues: AlertFormValues) => {
     const updatedRule = transformAlertFormValues(alertValues);
@@ -150,6 +169,10 @@ const AlertingPageContent = () => {
 
   return (
     <>
+      <p>
+        View and edit default alerts for Synthetic Monitoring here. To tie one of these alerts to a check, you must
+        select the alert sensitivity from the Alerting section of the check form when creating a check.
+      </p>
       {!alertRules && <Spinner />}
       {alertError && (
         <Alert title="Error fetching alert rules" severity="error">
@@ -161,13 +184,8 @@ const AlertingPageContent = () => {
       )}
       {alertRules?.length === 0 && !Boolean(alertError) && (
         <div className={styles.emptyCard}>
-          <span className={styles.defaultAlerts}>
-            You do not have any default alerts for Synthetic Monitoring yet. Click below to get some default alerts. You
-            can also create custom alerts for checks using Grafana Cloud Alerting.
-          </span>
-          <Button size="md" disabled={updatingDefaultRules || !canWriteAlerts} onClick={populateDefaultAlerts}>
-            Populate default alerts
-          </Button>
+          You do not have any legacy alerts for Synthetic Monitoring. To alert on your checks, set up per-check alerts
+          in the Alerting section of the check form.
         </div>
       )}
       {alertingRules.map((alertRule, index) => (
@@ -198,7 +216,7 @@ const AlertingPageContent = () => {
             type="button"
             variant="destructive"
             onClick={() => {
-              populateDefaultAlerts();
+              setDefaultRules();
               setShowResetModal(false);
             }}
           >
@@ -221,9 +239,6 @@ const getStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     justifyContent: 'center',
     padding: '48px 100px',
-  }),
-  defaultAlerts: css({
-    marginBottom: theme.spacing(4),
     textAlign: 'center',
   }),
   contentSection: css({

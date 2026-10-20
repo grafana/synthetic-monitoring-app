@@ -860,10 +860,10 @@ export type PrometheusAlertingRule = {
     description: string;
     summary: string;
   };
-  duration: number;
+  duration?: number;
   evaluationTime: number;
   health: `ok`; // fill in others
-  labels: {
+  labels?: {
     [key: string]: string;
   };
   lastEvaluation: string;

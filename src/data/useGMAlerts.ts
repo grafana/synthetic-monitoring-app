@@ -2,16 +2,24 @@ import { type QueryKey, useQuery } from '@tanstack/react-query';
 import { getBackendSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 
-import { Check, PrometheusAlertsGroup } from 'types';
+import { Check, PrometheusAlertingRule, PrometheusAlertRecord, PrometheusAlertsGroup } from 'types';
 import { ListPrometheusAlertsResponse } from 'datasource/responses.types';
 import { ALL_PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 
 import { constructError, showAlert } from './utils';
 
 const GRAFANA_SM_FOLDER_UID = 'grafana-synthetic-monitoring-app';
+const GRAFANA_ORIGIN_LABEL = '__grafana_origin';
+const LEGACY_ALERTS_ORIGIN = 'plugin/synthetic-monitoring-app-legacy';
 
 export const QUERY_KEYS: Record<'list', QueryKey> = {
   list: ['alerts'],
+};
+
+export type MigratedLegacyAlertRule = PrometheusAlertingRule & Required<Pick<PrometheusAlertingRule, 'labels'>>;
+
+export type MigratedLegacyAlertGroup = Omit<PrometheusAlertsGroup, 'rules'> & {
+  rules: MigratedLegacyAlertRule[];
 };
 
 export function useGMAlerts() {
@@ -20,6 +28,18 @@ export function useGMAlerts() {
     queryFn: () => {
       return queryAlertApi();
     },
+  });
+}
+
+export function useLegacyGMAlerts() {
+  return useQuery({
+    queryKey: [...QUERY_KEYS.list],
+    queryFn: () => {
+      return queryAlertApi();
+    },
+    select: selectMigratedLegacyAlertGroups,
+    // The rules are edited in Alerting, so the app's cache can't know when they change.
+    refetchOnMount: 'always',
   });
 }
 
@@ -39,6 +59,17 @@ function queryAlertApi() {
       showAlert('error', err);
       throw error;
     });
+}
+
+const isMigratedLegacyAlert = (rule: PrometheusAlertRecord): rule is MigratedLegacyAlertRule =>
+  rule.type === 'alerting' && rule.labels?.[GRAFANA_ORIGIN_LABEL] === LEGACY_ALERTS_ORIGIN;
+
+function selectMigratedLegacyAlertGroups({ groups }: ListPrometheusAlertsResponse['data']) {
+  return groups.reduce<MigratedLegacyAlertGroup[]>((acc, group) => {
+    const rules = group.rules.filter(isMigratedLegacyAlert);
+
+    return rules.length ? [...acc, { ...group, rules }] : acc;
+  }, []);
 }
 
 function findGroupWithMatchingRule(
