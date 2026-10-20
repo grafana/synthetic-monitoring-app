@@ -11,9 +11,16 @@ import { constructError, showAlert } from './utils';
 const GRAFANA_SM_FOLDER_UID = 'grafana-synthetic-monitoring-app';
 const GRAFANA_ORIGIN_LABEL = '__grafana_origin';
 const LEGACY_ALERTS_ORIGIN = 'plugin/synthetic-monitoring-app-legacy';
+const LEGACY_ALERTS_MATCHER = JSON.stringify({
+  name: GRAFANA_ORIGIN_LABEL,
+  value: LEGACY_ALERTS_ORIGIN,
+  isRegex: false,
+  isEqual: true,
+});
 
-export const QUERY_KEYS: Record<'list', QueryKey> = {
+export const QUERY_KEYS: Record<'list' | 'legacy', QueryKey> = {
   list: ['alerts'],
+  legacy: ['alerts', 'legacy'],
 };
 
 export type MigratedLegacyAlertRule = PrometheusAlertingRule & Required<Pick<PrometheusAlertingRule, 'labels'>>;
@@ -33,13 +40,31 @@ export function useGMAlerts() {
 
 export function useLegacyGMAlerts() {
   return useQuery({
-    queryKey: [...QUERY_KEYS.list],
+    queryKey: QUERY_KEYS.legacy,
     queryFn: () => {
-      return queryAlertApi();
+      return queryLegacyAlertApi();
     },
     select: selectMigratedLegacyAlertGroups,
-    // The rules are edited in Alerting, so the app's cache can't know when they change.
+    // Rules can change in Alerting while the plugin stays open, and the cache never goes stale.
     refetchOnMount: 'always',
+  });
+}
+
+// No error toast: the page shows its own warning when the lookup fails.
+function queryLegacyAlertApi() {
+  return firstValueFrom(
+    getBackendSrv().fetch<ListPrometheusAlertsResponse>({
+      method: `GET`,
+      url: `/api/prometheus/grafana/api/v1/rules`,
+      params: {
+        rule_matcher: LEGACY_ALERTS_MATCHER,
+        rule_type: 'alerting',
+        limit_alerts: 0,
+      },
+      showErrorAlert: false,
+    })
+  ).then((res) => {
+    return res.data.data;
   });
 }
 

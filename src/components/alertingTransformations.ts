@@ -23,8 +23,8 @@ export const transformAlertFormValues = (alertValues: AlertFormValues | undefine
 };
 
 const isAlertSensitivity = (value: string): AlertSensitivity | undefined => {
-  return (Object.values(AlertSensitivity) as unknown as string[]).includes(value)
-    ? (value as unknown as AlertSensitivity)
+  return ((Object.values(AlertSensitivity) as unknown) as string[]).includes(value)
+    ? ((value as unknown) as AlertSensitivity)
     : undefined;
 };
 

@@ -144,6 +144,25 @@ describe('looking up migrated alerts', () => {
     }
   );
 
+  it('asks Grafana for only the migrated legacy alert rules', async () => {
+    const { record, read } = getServerRequests();
+    server.use(apiRoute('getGrafanaAlertRules', {}, record));
+    render(<AlertingPage />);
+
+    expect(await screen.findByText(/View and edit default alerts/)).toBeInTheDocument();
+    const { request } = await read();
+    const params = new URL(request.url).searchParams;
+
+    expect(JSON.parse(params.get('rule_matcher') ?? '{}')).toEqual({
+      name: '__grafana_origin',
+      value: 'plugin/synthetic-monitoring-app-legacy',
+      isRegex: false,
+      isEqual: true,
+    });
+    expect(params.get('rule_type')).toBe('alerting');
+    expect(params.get('limit_alerts')).toBe('0');
+  });
+
   it('shows changes made in Alerting when the page is opened again', async () => {
     serveGrafanaAlertRules(LEGACY_GMA_ALERTING_RULES);
     const { rerender } = render(<AlertingPage />);

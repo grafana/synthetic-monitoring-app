@@ -16,7 +16,7 @@ export const MigratedLegacyAlerts = ({ groups }: MigratedLegacyAlertsProps) => {
   return (
     <Stack direction="column" gap={2}>
       <p>
-        These legacy alerts have been migrated to Grafana-managed alerting and are read-only here. Edit them in Alerts
+        These legacy alerts have been migrated to Grafana-managed alerting and are read-only here. Manage them in Alerts
         &amp; IRM. To tie one of these alerts to a check, select its alert sensitivity in the Alerting section of the
         check form.
       </p>

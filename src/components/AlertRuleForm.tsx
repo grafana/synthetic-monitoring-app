@@ -233,12 +233,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
               <Stack alignItems="center" justifyContent="flex-start" wrap="wrap">
                 <span className={styles.inlineText}>Checks with a sensitivity level of</span>
                 <div className={styles.selectInput}>
-                  <Combobox
-                    {...sensitivityField}
-                    options={ALERT_SENSITIVITY_OPTIONS}
-                    disabled={!canEdit}
-                    value={sensitivityField.value.value}
-                  />
+                  <Combobox {...sensitivityField} options={ALERT_SENSITIVITY_OPTIONS} disabled={!canEdit} value={sensitivityField.value.value} />
                 </div>
                 <span className={styles.inlineText}>will fire an alert if less than </span>
                 <Field
