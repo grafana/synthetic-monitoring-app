@@ -196,6 +196,23 @@ describe('cost attribution labels on the check form', () => {
       );
     });
 
+    it('credits the finding even when saving the alerts fails afterwards', async () => {
+      const reportInteraction = mockReportInteraction();
+      const alertsRequested = jest.fn();
+      server.use(apiRoute(`updateAlertsForCheck`, { result: () => ({ status: 500, json: {} }) }, alertsRequested));
+      const { user } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, FROM_RECOMMENDATION);
+
+      await gotoSection(user, FormSectionName.Labels);
+      await user.type(await screen.findByRole('textbox', { name: 'Cost attribution label 2 value' }), 'checkout');
+      await submitForm(user);
+      await waitFor(() => expect(alertsRequested).toHaveBeenCalled());
+
+      expect(reportInteraction).toHaveBeenCalledWith(
+        COMPLETED,
+        expect.objectContaining({ finding: 'missing-cost-labels', action: 'labels_added' })
+      );
+    });
+
     it('credits nothing while another label is still missing', async () => {
       const reportInteraction = mockReportInteraction();
       mockCalNames([SET_CAL, UNSET_CAL, 'Region']);
