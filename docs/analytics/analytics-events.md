@@ -539,16 +539,16 @@ Tracks a click through to the check list or a check's editor.
 
 #### synthetic-monitoring_recommendations_action_completed
 
-Tracks an action carried out from the tab itself.
+Tracks an action on a finding's checks, made in the tab or, for cost labels, saved in the check editor.
 
 ##### Properties
 
-| name       | type                                  | description                                                               |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------- |
-| finding    | `string`                              | The `RecommendationId` of the finding.                                    |
-| action     | `"alerts_added" \| "check_resumed"`   | What was changed.                                                         |
-| checkCount | `number`                              | How many checks the change reached.                                       |
-| scope      | `"finding" \| "check" \| "selection"` | Whether it ran for the whole finding, the ticked rows, or a single check. |
+| name       | type                                                  | description                                                               |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| finding    | `string`                                              | The `RecommendationId` of the finding.                                    |
+| action     | `"alerts_added" \| "check_resumed" \| "labels_added"` | What was changed.                                                         |
+| checkCount | `number`                                              | How many checks the change reached.                                       |
+| scope      | `"finding" \| "check" \| "selection"`                 | Whether it ran for the whole finding, the ticked rows, or a single check. |
 
 #### synthetic-monitoring_recommendations_action_failed
 

@@ -608,6 +608,14 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
   });
 }
 
+/** Swaps in a fresh `reportInteraction` mock and returns it, to assert which analytics events fired. */
+export function mockReportInteraction() {
+  const reportInteraction = jest.fn();
+  jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+  return reportInteraction;
+}
+
 // Chris: seems non-standard across languages
 // example: 2025-08-20T15:03:51.793479631Z
 // example: 2024-06-20 02:40:00.86273212Z +0000 UTC

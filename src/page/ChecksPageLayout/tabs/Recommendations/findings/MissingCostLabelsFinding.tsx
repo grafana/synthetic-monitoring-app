@@ -73,11 +73,13 @@ export function MissingCostLabelsFinding({
             })}
             onDismiss={dismissCheck}
             editSection={FormSectionName.Labels}
+            editFinding={id}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             action={
               <EditCheckButton
                 check={check}
                 section={FormSectionName.Labels}
+                finding={id}
                 variant="primary"
                 onClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
                 aria-label={t('recommendations.missingCostLabels.row.addLabelsLabel', 'Add labels to {{job}}', {

@@ -1,3 +1,4 @@
+import { isRecommendationId, RecommendationId } from './Recommendations.types';
 import { CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
@@ -7,6 +8,9 @@ import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
 /** How the user got onto the tab. */
 export const SOURCE_PARAM = 'source';
+
+/** On the check editor, the finding whose link opened it, so a save that fixes it can be credited. */
+const RECOMMENDATION_PARAM = 'recommendation';
 
 /** The ways onto the tab a dashboard can tell apart. Anything without a `source` is `direct`. */
 const ENTRY_POINTS = ['tab'] as const;
@@ -20,10 +24,28 @@ export function getRecommendationsTabUrl(tabUrl: string) {
   return `${tabUrl}?${SOURCE_PARAM}=tab`;
 }
 
-export function getEditCheckUrl(checkId: number, section?: FormSectionName) {
+export function getEditCheckUrl(checkId: number, section?: FormSectionName, finding?: RecommendationId) {
   const url = generateRoutePath(AppRoutes.EditCheck, { id: checkId });
+  const params = new URLSearchParams();
 
-  return section ? `${url}?${FORM_SECTION_QUERY_PARAM}=${section}` : url;
+  if (section) {
+    params.set(FORM_SECTION_QUERY_PARAM, section);
+  }
+
+  if (finding) {
+    params.set(RECOMMENDATION_PARAM, finding);
+  }
+
+  const query = params.toString();
+
+  return query ? `${url}?${query}` : url;
+}
+
+/** The finding whose link opened this page, if a Recommendations link did. */
+export function getLinkedFinding(params: URLSearchParams): RecommendationId | undefined {
+  const finding = params.get(RECOMMENDATION_PARAM);
+
+  return isRecommendationId(finding) ? finding : undefined;
 }
 
 // Param names and encodings have to match what `useCheckFilters` decodes.

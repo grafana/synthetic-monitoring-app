@@ -7,7 +7,7 @@ import { DB } from 'test/db';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { runTestAsSMViewer } from 'test/utils';
+import { mockReportInteraction, runTestAsSMViewer } from 'test/utils';
 
 import { RecommendationCategoryId } from './Recommendations.types';
 import { AlertSensitivity, Check, CheckAlertDraft, CheckAlertType, CheckType } from 'types';
@@ -48,13 +48,6 @@ function renderCategory(checks: Check[], category: RecommendationCategoryId, opt
 /** Toasts go through app_events, which the test setup stubs; spy on it to read the message. */
 function spyOnToasts() {
   return jest.spyOn(appEvents, 'emit').mockImplementation(() => {});
-}
-
-function mockReportInteraction() {
-  const reportInteraction = jest.fn();
-  jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
-
-  return reportInteraction;
 }
 
 // A solo finding's heading is its summary ("1 of 2 checks have no alerts"); siblings use their names.
@@ -955,9 +948,15 @@ describe('Recommendations tab', () => {
       const section = await findSection(/1 of 1 checks are unattributed/);
 
       expect(within(section).getByText('Missing team')).toBeInTheDocument();
+      // Tagged with the finding, so a save in the editor that adds the labels can be credited to it.
+      const editorUrl = '/checks/12/edit?section=labels&recommendation=missing-cost-labels';
       expect(within(section).getByRole('link', { name: 'Add labels to unattributed' })).toHaveAttribute(
         'href',
-        expect.stringContaining('/checks/12/edit?section=labels')
+        expect.stringContaining(editorUrl)
+      );
+      expect(within(section).getByRole('link', { name: 'Edit unattributed' })).toHaveAttribute(
+        'href',
+        expect.stringContaining(editorUrl)
       );
       expect(within(section).getByRole('link', { name: /view in check list/i })).toHaveAttribute(
         'href',

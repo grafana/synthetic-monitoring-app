@@ -3,7 +3,7 @@ import { ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_SCRIPTED_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { mockCmabCostAttributionWrite } from 'test/utils';
+import { mockCmabCostAttributionWrite, mockReportInteraction } from 'test/utils';
 
 import { FormSectionName } from '../../../../components/Checkster/types';
 import { Check } from 'types';
@@ -165,6 +165,81 @@ describe('cost attribution labels on the check form', () => {
         expect(screen.getByRole('textbox', { name: 'Custom labels 1 name' })).toHaveValue(SET_CAL);
       });
       expect(screen.queryByText('Cost attribution labels')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('when the cost labels recommendation opened the editor', () => {
+    const FROM_RECOMMENDATION = '?recommendation=missing-cost-labels';
+    const COMPLETED = 'synthetic-monitoring_recommendations_action_completed';
+
+    async function fillServiceAndSave(search = FROM_RECOMMENDATION) {
+      const { user, read } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, search);
+      await gotoSection(user, FormSectionName.Labels);
+      await user.type(await screen.findByRole('textbox', { name: 'Cost attribution label 2 value' }), 'checkout');
+      await submitForm(user);
+      await readSavedCheck(read);
+    }
+
+    it('credits the finding when the save fills in the last missing label', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      await fillServiceAndSave();
+
+      expect(reportInteraction).toHaveBeenCalledWith(
+        COMPLETED,
+        expect.objectContaining({
+          finding: 'missing-cost-labels',
+          action: 'labels_added',
+          checkCount: 1,
+          scope: 'check',
+        })
+      );
+    });
+
+    it('credits the finding even when saving the alerts fails afterwards', async () => {
+      const reportInteraction = mockReportInteraction();
+      const alertsRequested = jest.fn();
+      server.use(apiRoute(`updateAlertsForCheck`, { result: () => ({ status: 500, json: {} }) }, alertsRequested));
+      const { user } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, FROM_RECOMMENDATION);
+
+      await gotoSection(user, FormSectionName.Labels);
+      await user.type(await screen.findByRole('textbox', { name: 'Cost attribution label 2 value' }), 'checkout');
+      await submitForm(user);
+      await waitFor(() => expect(alertsRequested).toHaveBeenCalled());
+
+      expect(reportInteraction).toHaveBeenCalledWith(
+        COMPLETED,
+        expect.objectContaining({ finding: 'missing-cost-labels', action: 'labels_added' })
+      );
+    });
+
+    it('credits nothing while another label is still missing', async () => {
+      const reportInteraction = mockReportInteraction();
+      mockCalNames([SET_CAL, UNSET_CAL, 'Region']);
+
+      await fillServiceAndSave();
+
+      expect(reportInteraction).not.toHaveBeenCalledWith(COMPLETED, expect.anything());
+    });
+
+    it('credits nothing for a check that already had every label', async () => {
+      const reportInteraction = mockReportInteraction();
+      mockCalNames([SET_CAL]);
+      const { user, read } = await renderEditForm(BASIC_SCRIPTED_CHECK.id, FROM_RECOMMENDATION);
+
+      await user.type(await screen.findByLabelText(/Job name/i), '-renamed');
+      await submitForm(user);
+      await readSavedCheck(read);
+
+      expect(reportInteraction).not.toHaveBeenCalledWith(COMPLETED, expect.anything());
+    });
+
+    it('credits nothing when the recommendation did not open the editor', async () => {
+      const reportInteraction = mockReportInteraction();
+
+      await fillServiceAndSave('');
+
+      expect(reportInteraction).not.toHaveBeenCalledWith(COMPLETED, expect.anything());
     });
   });
 });
