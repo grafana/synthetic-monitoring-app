@@ -24,7 +24,7 @@ describe('ChecksEmptyState', () => {
     expect(screen.queryByRole('region', { name: 'Coding agent prompt' })).not.toBeInTheDocument();
 
     const command = screen.getByRole('button', { name: 'Copy command' });
-    const createCheck = screen.getByRole('link', { name: 'Other ways to create checks' });
+    const createCheck = screen.getByRole('link', { name: 'Create check manually' });
     expect(createCheck).toHaveAttribute('href', '/a/grafana-synthetic-monitoring-app/checks/choose-type');
 
     await user.tab();
@@ -32,7 +32,7 @@ describe('ChecksEmptyState', () => {
     await user.tab();
     expect(createCheck).toHaveFocus();
     await user.tab();
-    const agentButton = screen.getByRole('button', { name: 'Use your coding agent' });
+    const agentButton = screen.getByRole('button', { name: 'Or use a coding agent' });
     expect(agentButton).toHaveFocus();
 
     await user.keyboard('{Enter}');
@@ -59,10 +59,10 @@ describe('ChecksEmptyState', () => {
 
     await renderComponent();
 
-    expect(await screen.findByText('Other ways to create checks')).toBeInTheDocument();
+    expect(await screen.findByText('Create check manually')).toBeInTheDocument();
     expect(screen.getByText('Get started monitoring your services with Grafana Cloud')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Copy command' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Use your coding agent' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Other ways to create checks' })).toHaveAttribute('aria-disabled', 'true');
+    expect(screen.queryByRole('button', { name: 'Or use a coding agent' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Create check manually' })).toHaveAttribute('aria-disabled', 'true');
   });
 });

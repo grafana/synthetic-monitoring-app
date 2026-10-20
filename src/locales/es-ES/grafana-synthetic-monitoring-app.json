@@ -50,9 +50,9 @@
     }
   },
   "checksEmptyState": {
+    "createCheck": "",
     "getStarted": "",
     "noChecks": "",
-    "otherWaysToCreateChecks": "",
     "wizardDescription": ""
   },
   "cloudSetupCliPanel": {

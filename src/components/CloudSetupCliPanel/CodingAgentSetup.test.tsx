@@ -7,7 +7,7 @@ import { CodingAgentSetup } from './CodingAgentSetup';
 
 async function renderComponent() {
   const result = render(<CodingAgentSetup />);
-  await screen.findByRole('button', { name: 'Use your coding agent' });
+  await screen.findByRole('button', { name: 'Or use a coding agent' });
   return result;
 }
 
@@ -25,7 +25,7 @@ describe('CodingAgentSetup', () => {
     reportInteraction.mockClear();
 
     expect(screen.queryByRole('region', { name: 'Coding agent prompt' })).not.toBeInTheDocument();
-    await user.click(screen.getByText('Use your coding agent'));
+    await user.click(screen.getByText('Or use a coding agent'));
     const prompt = await screen.findByRole('region', { name: 'Coding agent prompt' });
     expect(prompt).toHaveTextContent('https://my-stack.grafana.net');
     expect(prompt).toHaveTextContent('Install gcx if needed');
@@ -39,7 +39,7 @@ describe('CodingAgentSetup', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Copied');
     expect(writeTextSpy).toHaveBeenCalledWith(prompt.textContent);
     expect(prompt).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Use your coding agent' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('button', { name: 'Or use a coding agent' })).toHaveAttribute('aria-expanded', 'true');
     expect(reportInteraction).toHaveBeenCalledWith(
       'synthetic-monitoring_cloud_setup_agent_prompt_copied',
       expect.anything()
@@ -49,13 +49,13 @@ describe('CodingAgentSetup', () => {
       expect.anything()
     );
 
-    await user.click(screen.getByText('Use your coding agent'));
+    await user.click(screen.getByText('Or use a coding agent'));
     expect(screen.queryByRole('region', { name: 'Coding agent prompt' })).not.toBeInTheDocument();
   });
 
   it('should keep the prompt selectable and allow retrying when clipboard access fails', async () => {
     const { user } = await renderComponent();
-    await user.click(screen.getByRole('button', { name: 'Use your coding agent' }));
+    await user.click(screen.getByRole('button', { name: 'Or use a coding agent' }));
     const writeTextSpy = jest
       .spyOn(navigator.clipboard, 'writeText')
       .mockRejectedValueOnce(new Error('Clipboard denied'));

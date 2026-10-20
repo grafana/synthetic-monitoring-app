@@ -23,7 +23,7 @@ export function CodingAgentSetup() {
         contentClassName={styles.content}
         label={
           <Text variant="bodySmall" color="secondary" weight="regular">
-            <Trans i18nKey="codingAgentSetup.title">Use your coding agent</Trans>
+            <Trans i18nKey="codingAgentSetup.title">Or use a coding agent</Trans>
           </Text>
         }
         isOpen={isOpen}

@@ -50,9 +50,9 @@
     }
   },
   "checksEmptyState": {
+    "createCheck": "Create check manually",
     "getStarted": "Get started monitoring your services with Grafana Cloud",
     "noChecks": "You haven't created any checks yet",
-    "otherWaysToCreateChecks": "Other ways to create checks",
     "wizardDescription": "Run the setup wizard in your terminal to create your first checks."
   },
   "cloudSetupCliPanel": {
@@ -66,7 +66,7 @@
     "copyFailed": "Could not copy. Select and copy the prompt below.",
     "description": "Use this prompt to create checks for your project.",
     "promptLabel": "Coding agent prompt",
-    "title": "Use your coding agent"
+    "title": "Or use a coding agent"
   },
   "labelFilterInput": {
     "buttonCascaderLabel": "Labels"

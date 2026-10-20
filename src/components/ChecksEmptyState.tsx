@@ -35,7 +35,7 @@ export function ChecksEmptyState({ className }: ChecksEmptyStatePageProps) {
                     icon="arrow-right"
                     iconPlacement="right"
                   >
-                    <Trans i18nKey="checksEmptyState.otherWaysToCreateChecks">Other ways to create checks</Trans>
+                    <Trans i18nKey="checksEmptyState.createCheck">Create check manually</Trans>
                   </AddNewCheckButton>
                 </Stack>
                 {canWriteChecks && <CodingAgentSetup />}
