@@ -4,6 +4,7 @@ import {
   DEFAULT_FOLDER,
   FOLDER_EXTERNAL,
   FOLDER_PRODUCTION,
+  FOLDER_ROOT,
   FOLDER_STAGING,
   MOCK_FOLDERS,
 } from 'test/fixtures/folders';
@@ -375,14 +376,16 @@ describe('Recommendations tab filters', () => {
           [
             buildCheck({ id: 31, job: 'prod-check', target: 'https://a.com', folderUid: FOLDER_PRODUCTION.uid }),
             buildCheck({ id: 32, job: 'default-check', target: 'https://b.com', folderUid: undefined }),
+            buildCheck({ id: 35, job: 'empty-folder-check', target: 'https://g.com', folderUid: '' }),
           ],
           { path: 'checks/recommendations?category=alerting' }
         );
 
         await selectOption(user, { label: 'Folders', option: `${DEFAULT_FOLDER.title} (default)` });
 
-        const section = await findSection(/1 of 2 checks match your filters/);
+        const section = await findSection(/2 of 3 checks match your filters/);
         expect(within(section).getByText('default-check')).toBeInTheDocument();
+        expect(within(section).getByText('empty-folder-check')).toBeInTheDocument();
         expect(within(section).queryByText('prod-check')).not.toBeInTheDocument();
       });
 
@@ -458,6 +461,46 @@ describe('Recommendations tab filters', () => {
         const section = await findSection(/1 of 2 checks match your filters/);
         expect(within(section).getByText('stray-check')).toBeInTheDocument();
         expect(within(section).queryByText('default-check')).not.toBeInTheDocument();
+      });
+
+      it("tells same-named folders outside the default folder's tree apart by their paths", async () => {
+        const teamBeta = { ...FOLDER_ROOT, uid: 'team-beta', title: 'Team Beta' };
+        // Outside the tree, a folder's parents come only from its detail response.
+        const alphaProduction = {
+          ...FOLDER_PRODUCTION,
+          uid: 'alpha-production',
+          parentUid: FOLDER_ROOT.uid,
+          parents: [FOLDER_ROOT],
+        };
+        const betaProduction = {
+          ...FOLDER_PRODUCTION,
+          uid: 'beta-production',
+          parentUid: teamBeta.uid,
+          parents: [teamBeta],
+        };
+        server.use(
+          apiRoute('getFolder', {
+            result: (req) => {
+              const uid = new URL(req.url).pathname.split('/').pop();
+              const folder = [...MOCK_FOLDERS, alphaProduction, betaProduction].find((known) => known.uid === uid);
+
+              return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
+            },
+          })
+        );
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 36, job: 'alpha-check', target: 'https://e.com', folderUid: alphaProduction.uid }),
+            buildCheck({ id: 37, job: 'beta-check', target: 'https://f.com', folderUid: betaProduction.uid }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await selectOption(user, { label: 'Folders', option: `${teamBeta.title} > ${FOLDER_PRODUCTION.title}` });
+
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('beta-check')).toBeInTheDocument();
+        expect(within(section).queryByText('alpha-check')).not.toBeInTheDocument();
       });
     });
   });

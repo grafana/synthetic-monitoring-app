@@ -107,6 +107,9 @@ describe('matchesRecommendationFilters across groups', () => {
     expect(
       matchesRecommendationFilters(buildCheck(CheckType.Http, { folderUid: undefined }), selection, 'default-uid')
     ).toBe(true);
+    expect(matchesRecommendationFilters(buildCheck(CheckType.Http, { folderUid: '' }), selection, 'default-uid')).toBe(
+      true
+    );
     expect(
       matchesRecommendationFilters(buildCheck(CheckType.Http, { folderUid: 'other' }), selection, 'default-uid')
     ).toBe(false);
@@ -191,6 +194,14 @@ describe('getFolderOptions', () => {
     parentUid,
   });
   const byUid = (...folders: GrafanaFolder[]) => new Map(folders.map((known) => [known.uid, known]));
+
+  it('offers the default folder for a check with an empty folderUid', () => {
+    const known = byUid(folder('default-uid', 'Synthetic Monitoring'));
+
+    expect(getFolderOptions([buildCheck(CheckType.Http, { folderUid: '' })], 'default-uid', known, [])).toEqual([
+      { value: 'default-uid', label: 'Synthetic Monitoring (default)' },
+    ]);
+  });
 
   it("lists the checks' folders once, titled where known, the default folder standing in for none", () => {
     const checks = [

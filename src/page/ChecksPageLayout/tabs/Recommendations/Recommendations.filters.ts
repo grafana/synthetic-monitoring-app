@@ -120,7 +120,7 @@ export function getFolderOptions(
 ): FolderOption[] {
   const uids = new Set(selected);
   checks.forEach((check) => {
-    const uid = check.folderUid ?? defaultFolderUid;
+    const uid = check.folderUid || defaultFolderUid;
 
     if (uid) {
       uids.add(uid);

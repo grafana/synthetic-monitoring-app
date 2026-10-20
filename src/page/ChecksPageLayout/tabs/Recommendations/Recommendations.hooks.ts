@@ -229,11 +229,12 @@ export function useFilterOptions(checks: Check[], selection: FilterSelection) {
       return [];
     }
 
-    // The list holds the default folder's tree, for paths; statuses add the folders outside it.
+    // The list holds the default folder's tree. Statuses add the folders outside it, and their
+    // parents so that paths can reach the top level.
     const checkFolders = checks.flatMap((check) => {
       const status = getFolderStatus(check);
 
-      return status.type === 'accessible' && status.folder ? [status.folder] : [];
+      return status.type === 'accessible' && status.folder ? [...(status.folder.parents ?? []), status.folder] : [];
     });
     const foldersByUid = new Map([...folders, ...checkFolders].map((folder) => [folder.uid, folder]));
 

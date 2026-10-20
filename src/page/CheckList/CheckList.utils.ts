@@ -92,7 +92,8 @@ export const matchesFolderFilter = (check: Check, folderFilters: string[], defau
     return true;
   }
 
-  const checkFolder = check.folderUid ?? defaultFolderUid ?? '';
+  // `||`, not `??`: an empty folderUid is the default folder too, as for visibility and the folder view.
+  const checkFolder = check.folderUid || defaultFolderUid || '';
   return folderFilters.includes(checkFolder);
 };
 
