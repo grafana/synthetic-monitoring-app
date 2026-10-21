@@ -13,14 +13,7 @@ export function OpenLink({ href, label = 'Open', onClick }: OpenLinkProps) {
   const styles = useStyles2(getStyles);
 
   return (
-    <TextLink
-      href={href}
-      inline={false}
-      variant="bodySmall"
-      className={styles.openLink}
-      data-testing-synthetics-open-link
-      onClick={onClick}
-    >
+    <TextLink href={href} inline={false} variant="bodySmall" className={styles.openLink} onClick={onClick}>
       <span className={styles.label}>{label}</span>
       <Icon name="arrow-right" className={styles.arrow} />
     </TextLink>
