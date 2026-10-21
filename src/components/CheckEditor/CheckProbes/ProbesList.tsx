@@ -60,7 +60,7 @@ export const ProbesList = ({
 
   const canSelectProbe = (probe: ProbeWithMetadata) =>
     (!probe.deprecated || assignedProbes.includes(probe.id!)) && isProbeCompatible(probe);
-  const selectableProbes = probes.filter(canSelectProbe);
+  const selectableProbes = probes.filter((probe) => !probe.deprecated && isProbeCompatible(probe));
 
   const handleToggleAll = () => {
     if (disabled) {

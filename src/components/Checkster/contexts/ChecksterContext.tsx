@@ -175,6 +175,12 @@ export function ChecksterProvider({
     requiresFolder
   );
 
+  const deprecatedProbeKey = probesWithMetadata
+    .filter((probe) => probe.deprecated)
+    .map((probe) => probe.id)
+    .sort((a, b) => a! - b!)
+    .join(',');
+
   // Validate against the saved assignment, never the editable form values.
   // Probe polling updates this resolver without resetting an in-progress draft.
   const schema = useMemo(
@@ -192,7 +198,9 @@ export function ChecksterProvider({
           });
         }
       }),
-    [baseSchema, probesWithMetadata, isNew, check]
+    // Probe objects change on polling; rebuild only when deprecation membership changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [baseSchema, deprecatedProbeKey, isNew, check]
   );
 
   const [stashedValues, setStashedValues] = useState<Partial<StashedValues>>({});

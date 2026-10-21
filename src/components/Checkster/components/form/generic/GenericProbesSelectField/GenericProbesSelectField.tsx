@@ -2,6 +2,7 @@ import React, { ReactNode, useCallback, useMemo } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { Alert, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { PROBE_CHANNEL_INCOMPATIBILITY_MESSAGE } from 'schemas/forms/utils/probeCompatibilityRefinement';
 
 import { FormSectionName } from '../../../../types';
 import { CheckFormValues, FeatureName } from 'types';
@@ -34,7 +35,7 @@ export function GenericProbesSelectField() {
 
   const enhancedError: ReactNode | undefined = useMemo(() => {
     const message = errors.probes?.message;
-    if (!message || !isVersionManagementEnabled || !message.includes('are not compatible with channel')) {
+    if (!message || !isVersionManagementEnabled || !message.includes(PROBE_CHANNEL_INCOMPATIBILITY_MESSAGE)) {
       return undefined;
     }
 

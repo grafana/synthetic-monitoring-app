@@ -74,3 +74,21 @@ it('lets users remove and undo removal of a saved deprecated assignment', async 
   await user.click(probe);
   expect(probe).toBeChecked();
 });
+
+it('does not restore a removed deprecated assignment when selecting its region', async () => {
+  const { user } = render(<ProbeSelection deprecated assignedProbes={[2]} initialProbes={[2]} />);
+  const deprecatedProbe = await screen.findByRole('checkbox', { name: /Montreal/ });
+  const header = screen.getByRole('checkbox', { name: /AMER/ });
+
+  await user.click(deprecatedProbe);
+  expect(deprecatedProbe).not.toBeChecked();
+  await user.click(header);
+
+  expect(screen.getByRole('checkbox', { name: /Calgary/ })).toBeChecked();
+  expect(deprecatedProbe).not.toBeChecked();
+  expect(header).toBeChecked();
+
+  // Individual selection still allows undoing an unsaved removal.
+  await user.click(deprecatedProbe);
+  expect(deprecatedProbe).toBeChecked();
+});

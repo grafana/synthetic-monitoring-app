@@ -2,6 +2,8 @@ import { RefinementCtx } from 'zod';
 
 import { CheckFormValuesBase, ProbeWithMetadata } from 'types';
 
+export const PROBE_CHANNEL_INCOMPATIBILITY_MESSAGE = 'are not compatible with channel';
+
 export function createProbeCompatibilityRefinement<T extends CheckFormValuesBase>(
   availableProbes: ProbeWithMetadata[]
 ) {
@@ -39,9 +41,8 @@ export function createProbeCompatibilityRefinement<T extends CheckFormValuesBase
       ctx.addIssue({
         code: 'custom',
         path: ['probes'],
-        message: `Some of the selected probes above (${probeList}) are not compatible with channel "${selectedChannel}".`,
+        message: `Some of the selected probes above (${probeList}) ${PROBE_CHANNEL_INCOMPATIBILITY_MESSAGE} "${selectedChannel}".`,
       });
     }
   };
 }
-
