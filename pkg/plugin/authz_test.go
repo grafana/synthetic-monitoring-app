@@ -21,6 +21,8 @@ import (
 const (
 	lookupAdmin   = `[{"userId":1,"uid":"bftoov3dms4jkf","login":"admin","avatarUrl":"/avatar/46d2"}]`
 	lookupNoUsers = `[]`
+	// A real user who chose the alert scheduler's login.
+	lookupSchedulerNamedUser = `[{"userId":5,"uid":"x","login":"grafana_scheduler","avatarUrl":""}]`
 	// GET /api/serviceaccounts/search?query=sa-1-test.
 	searchServiceAccount = `{"totalCount":1,"serviceAccounts":[{"id":7,"login":"sa-1-test","role":"None"}],"page":1,"perPage":50}`
 	searchNoServiceAccts = `{"totalCount":0,"serviceAccounts":[],"page":1,"perPage":50}`
@@ -132,6 +134,28 @@ func TestAuthorize(t *testing.T) {
 			lookup:      lookupAdmin,
 			permissions: permissionsWildcard,
 			wantErr:     "could not resolve an identity",
+		},
+		{
+			// Alert rules evaluate as Grafana's synthetic scheduler user (ngalert
+			// schedule.SchedulerUserFor: Login "grafana_scheduler", UserID -1, Admin).
+			// No account backs it; without a rule uid there is nobody to check
+			// (authz_rule_test.go covers the rule case).
+			name:        "denied for the alert scheduler identity without a rule",
+			user:        &backend.User{Login: "grafana_scheduler", Role: "Admin"},
+			token:       "plugin-token",
+			lookup:      lookupNoUsers,
+			permissions: permissionsWildcard,
+			wantErr:     "could not resolve an identity",
+		},
+		{
+			// a real account that happens to use the scheduler's login resolves,
+			// so its own permissions decide
+			name:        "a real user named grafana_scheduler still needs permission",
+			user:        &backend.User{Login: "grafana_scheduler"},
+			token:       "plugin-token",
+			lookup:      lookupSchedulerNamedUser,
+			permissions: permissionsNone,
+			wantErr:     "not allowed to query",
 		},
 	}
 

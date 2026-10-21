@@ -5,6 +5,7 @@
   "metrics": true,
   "logs": true,
   "backend": true,
+  "alerting": true,
   "executable": "gpx_sm_datasource",
 
   "iam": {
@@ -13,7 +14,9 @@
       { "action": "datasources:query", "scope": "datasources:*" },
       { "action": "org.users:read", "scope": "users:*" },
       { "action": "serviceaccounts:read", "scope": "serviceaccounts:*" },
-      { "action": "users.permissions:read", "scope": "users:*" }
+      { "action": "users.permissions:read", "scope": "users:*" },
+      { "action": "alert.rules:read", "scope": "folders:*" },
+      { "action": "folders:read", "scope": "folders:*" }
     ]
   },
 

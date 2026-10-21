@@ -29,6 +29,11 @@ type queryGroup struct {
 // trip per group rather than one per query.
 func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 	response := backend.NewQueryDataResponse()
+
+	// Which alert rule is being evaluated, if any. Only trusted for the
+	// scheduler login (see authorize).
+	ctx = withAlertRule(ctx, req.GetHTTPHeader("X-Rule-Uid"))
+
 	groups := d.groupQueries(req.Queries, response)
 	d.runGroups(ctx, req.PluginContext.User, groups, response)
 

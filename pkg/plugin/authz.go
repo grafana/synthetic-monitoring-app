@@ -70,6 +70,14 @@ func (a *authorizer) authorize(ctx context.Context, appURL, token string, user *
 	}
 
 	identity, err := a.lookupIdentity(ctx, appURL, token, user.Login)
+	if ruleUID := alertRuleFrom(ctx); errors.Is(err, errNoIdentity) && user.Login == alertSchedulerLogin && ruleUID != "" {
+		// Alert evaluation has no account of its own, so the rule's last editor
+		// stands in for it. The rule uid is only trusted here, for the scheduler
+		// login no account has: anyone else can send X-Rule-Uid themselves, and
+		// Grafana forwards it.
+		return a.authorizeRuleEditor(ctx, appURL, token, ruleUID, ds)
+	}
+
 	if err != nil {
 		return err
 	}
@@ -112,8 +120,17 @@ func (a *authorizer) lookupIdentity(ctx context.Context, appURL, token, login st
 		return fmt.Sprintf("service-account:%d", serviceAccountID), nil
 	}
 
-	return "", fmt.Errorf("could not resolve an identity for %q", login)
+	return "", fmt.Errorf("%w for %q", errNoIdentity, login)
 }
+
+// errNoIdentity means the lookups succeeded but no user or service account has
+// the login, as opposed to a lookup that failed.
+var errNoIdentity = errors.New("could not resolve an identity")
+
+// alertSchedulerLogin is the login of the synthetic user Grafana evaluates alert
+// and recording rules as (ngalert schedule.SchedulerUserFor). No user or service
+// account record backs it.
+const alertSchedulerLogin = "grafana_scheduler"
 
 // lookupUserID returns the id of the user with exactly this login, or 0 if there
 // is none. A missing user is not an error here -- it may be a service account.
@@ -211,4 +228,55 @@ func (a *authorizer) get(ctx context.Context, endpoint, token string, into any) 
 	}
 
 	return json.NewDecoder(resp.Body).Decode(into)
+}
+
+type alertRuleKey struct{}
+
+// withAlertRule records the uid of the alert rule a query is evaluated for, from
+// ngalert's X-Rule-Uid header.
+func withAlertRule(ctx context.Context, ruleUID string) context.Context {
+	return context.WithValue(ctx, alertRuleKey{}, ruleUID)
+}
+
+func alertRuleFrom(ctx context.Context) string {
+	uid, _ := ctx.Value(alertRuleKey{}).(string)
+
+	return uid
+}
+
+// ruleResponse is the part of GET /api/ruler/grafana/api/v1/rule/{uid} we need.
+type ruleResponse struct {
+	GrafanaAlert struct {
+		UpdatedBy *struct {
+			UID  string `json:"uid"`
+			Name string `json:"name"`
+		} `json:"updated_by"`
+	} `json:"grafana_alert"`
+}
+
+// authorizeRuleEditor allows the query if the alert rule's last editor may query
+// the datasource. Grafana resolves `user:<uid>` for service accounts too.
+//
+// Last editor, not creator: Grafana records only who last saved the rule.
+func (a *authorizer) authorizeRuleEditor(ctx context.Context, appURL, token, ruleUID string, ds linkedDatasource) error {
+	var rule ruleResponse
+	if err := a.get(ctx, appURL+"/api/ruler/grafana/api/v1/rule/"+url.PathEscape(ruleUID), token, &rule); err != nil {
+		return fmt.Errorf("reading alert rule %s: %w", ruleUID, err)
+	}
+
+	editor := rule.GrafanaAlert.UpdatedBy
+	if editor == nil || editor.UID == "" {
+		return fmt.Errorf("rule %s records no editor, so permission to query %s cannot be established", ruleUID, ds.UID)
+	}
+
+	allowed, err := a.canQuery(ctx, appURL, token, "user:"+editor.UID, ds.UID)
+	if err != nil {
+		return err
+	}
+
+	if !allowed {
+		return fmt.Errorf("rule %s was last edited by %q, who is not allowed to query the %s datasource", ruleUID, editor.Name, ds.Type)
+	}
+
+	return nil
 }
