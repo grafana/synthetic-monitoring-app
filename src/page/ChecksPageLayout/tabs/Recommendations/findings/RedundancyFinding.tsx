@@ -125,7 +125,7 @@ export function RedundancyFinding({
             label={group.label}
             detail={getGroupDetail(group)}
             checks={group.checks}
-            href={getChecksByTargetUrl(group.label, getGroupType(group))}
+            href={getChecksByTargetUrl(group.label, getGroupType(group), filter.selection)}
             onLinkClick={() => trackRecommendationActioned({ finding: id, scope: 'group' })}
             renderCheck={renderCheck}
           />

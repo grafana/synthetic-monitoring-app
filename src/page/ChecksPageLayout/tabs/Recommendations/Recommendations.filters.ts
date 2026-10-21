@@ -22,6 +22,8 @@ export interface FilterSelection {
 export interface FindingFilter {
   isActive: boolean;
   matches: (check: Check) => boolean;
+  /** For links to the check list, so it shows the checks the panel did. */
+  selection: FilterSelection;
 }
 
 export const NO_FILTERS: FilterSelection = { types: [], labels: [], folders: [] };

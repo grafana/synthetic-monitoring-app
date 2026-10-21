@@ -105,7 +105,10 @@ function RecommendationsTabContent({ openedAt, entryPoint }: VisitOrigin) {
     (check: Check) => matchesRecommendationFilters(check, selection, defaultFolderUid),
     [selection, defaultFolderUid]
   );
-  const filter = useMemo<FindingFilter>(() => ({ isActive: isFiltering, matches }), [isFiltering, matches]);
+  const filter = useMemo<FindingFilter>(
+    () => ({ isActive: isFiltering, matches, selection }),
+    [isFiltering, matches, selection]
+  );
   const matched = useMemo(
     () => (isFiltering ? filterFindings(visible, matches) : visible),
     [isFiltering, visible, matches]

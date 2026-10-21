@@ -135,7 +135,9 @@
       "message": "Nothing needs your attention"
     },
     "filters": {
-      "clear": "Clear filters",
+      "clear": "Clear",
+      "clearAll": "Clear all",
+      "clearGroup": "Clear {{group}} filters",
       "count": "{{filterCount}} filters",
       "countSingle": "1 filter",
       "defaultFolder": "{{title}} (default)",
@@ -145,6 +147,7 @@
       "headlineNone": "No checks match your filters.",
       "headlineSingle": "1 of 1 check matches your filters. {{leadFinding}} is the gap to close first.",
       "labels": "Labels",
+      "remove": "Remove {{value}}",
       "searchFolders": "Search {{optionCount}} folders",
       "searchFoldersSingle": "Search 1 folder",
       "searchLabels": "Search {{optionCount}} labels",

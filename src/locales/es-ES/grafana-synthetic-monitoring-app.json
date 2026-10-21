@@ -136,6 +136,8 @@
     },
     "filters": {
       "clear": "",
+      "clearAll": "",
+      "clearGroup": "",
       "count": "",
       "countSingle": "",
       "defaultFolder": "",
@@ -145,6 +147,7 @@
       "headlineNone": "",
       "headlineSingle": "",
       "labels": "",
+      "remove": "",
       "searchFolders": "",
       "searchFoldersSingle": "",
       "searchLabels": "",
