@@ -287,7 +287,10 @@
     }
   ],
   "dependencies": {
-    "grafanaDependency": ">=13.2.0-0"
+    "grafanaDependency": ">=13.2.0-0",
+    "extensions": {
+      "exposedComponents": ["grafana/add-to-notebook-form/v2"]
+    }
   },
   "languages": ["en-US", "es-ES"]
 }
