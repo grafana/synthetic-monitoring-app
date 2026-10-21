@@ -217,6 +217,37 @@ describe('Recommendations tab filters', () => {
     expect(await within(overlapping).findByText(/2 checks dismissed/)).toBeInTheDocument();
   });
 
+  describe("an overlapping group's check list link", () => {
+    const OVERLAPPING = () => [
+      buildCheck(
+        { id: 12, job: 'dns-on-example', target: 'example.com', alertSensitivity: AlertSensitivity.High },
+        CheckType.Dns
+      ),
+      buildCheck(
+        { id: 13, job: 'ping-on-example', target: 'example.com', alertSensitivity: AlertSensitivity.High },
+        CheckType.Ping
+      ),
+    ];
+
+    async function findViewInList() {
+      const section = await findSection(/match your filters/);
+
+      return within(section).getByRole('link', { name: 'Show these checks in the check list' });
+    }
+
+    it('keeps the type the filters narrowed the group to', async () => {
+      await renderTab(OVERLAPPING(), { path: 'checks/recommendations?category=redundancy&type=dns' });
+
+      expect(await findViewInList()).toHaveAttribute('href', expect.stringMatching(/\?target=example\.com&type=dns$/));
+    });
+
+    it('links by target alone while the group still spans several types', async () => {
+      await renderTab(OVERLAPPING(), { path: 'checks/recommendations?category=redundancy&type=dns&type=ping' });
+
+      expect(await findViewInList()).toHaveAttribute('href', expect.stringMatching(/\?target=example\.com$/));
+    });
+  });
+
   it('counts the filters set and clears them all at once', async () => {
     const { user } = await renderTab([UNALERTED_HTTP(), PAUSED_DNS()], {
       path: 'checks/recommendations?type=http&type=dns',

@@ -125,7 +125,7 @@ export function RedundancyFinding({
             label={group.label}
             detail={getGroupDetail(group)}
             checks={group.checks}
-            href={getChecksByTargetUrl(group.label, group.type)}
+            href={getChecksByTargetUrl(group.label, getGroupType(group))}
             onLinkClick={() => trackRecommendationActioned({ finding: id, scope: 'group' })}
             renderCheck={renderCheck}
           />
@@ -133,6 +133,14 @@ export function RedundancyFinding({
       />
     </RecommendationSection>
   );
+}
+
+// The check list filters by one type at most, so only a group whose checks share a type, such as an
+// overlapping group the type filter narrowed to one, can link to just those checks.
+function getGroupType({ type, checks }: RecommendationGroup) {
+  const types = new Set(checks.map((check) => getCheckType(check.settings)));
+
+  return type ?? (types.size === 1 ? [...types][0] : undefined);
 }
 
 function getGroupDetail({ detail, checks }: RecommendationGroup) {
