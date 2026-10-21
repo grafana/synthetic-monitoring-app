@@ -1,6 +1,6 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
-import { CHECKS_TEST_ID } from 'test/dataTestIds';
+import { CHECKS_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
 import { BASIC_DNS_CHECK, BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
@@ -46,6 +46,36 @@ const renderCheckList = async (checks = [BASIC_DNS_CHECK, BASIC_HTTP_CHECK], sea
 function getModalContainer() {
   return document.body.querySelector(`[role="dialog"]`) as HTMLElement;
 }
+
+describe('CheckList - exact target filter', () => {
+  const COPY_OF_HTTP_CHECK: Check = { ...BASIC_HTTP_CHECK, id: 99, job: 'Copy of the http check' };
+
+  test('shows a target set by a link among the filters, and clears it on its own', async () => {
+    const { user } = await renderCheckList(
+      [BASIC_DNS_CHECK, BASIC_HTTP_CHECK, COPY_OF_HTTP_CHECK],
+      `target=${encodeURIComponent(BASIC_HTTP_CHECK.target)}`
+    );
+    expect(await screen.findAllByTestId(CHECKS_TEST_ID.card)).toHaveLength(2);
+
+    await user.click(screen.getByRole('button', { name: 'Additional filters (1 active)' }));
+    const dialog = getModalContainer();
+    expect(within(dialog).getByRole('textbox', { name: /^Target/ })).toHaveValue(BASIC_HTTP_CHECK.target);
+
+    await user.click(within(dialog).getByRole('button', { name: 'Clear target filter' }));
+
+    expect(within(dialog).queryByRole('textbox', { name: /^Target/ })).not.toBeInTheDocument();
+    expect(await screen.findAllByTestId(CHECKS_TEST_ID.card)).toHaveLength(3);
+    expect(screen.getByTestId(ROUTER_TEST_ID.search)).not.toHaveTextContent('target');
+  });
+
+  test('has no target filter to show until a link sets one', async () => {
+    const { user } = await renderCheckList();
+
+    await user.click(await screen.findByRole('button', { name: /^Additional filters/ }));
+
+    expect(within(getModalContainer()).queryByRole('textbox', { name: /^Target/ })).not.toBeInTheDocument();
+  });
+});
 
 describe('CheckList - Filtering', () => {
   const DNS_CHECK_WITHOUT_ALERTS: Check = {

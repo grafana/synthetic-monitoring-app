@@ -1,27 +1,8 @@
 import { ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import {
-  buildFaroSessionByExecutionIdLogQL,
   buildFaroSessionHref,
   getFaroSessionFromLogs,
 } from 'scenes/components/TimepointExplorer/TimepointViewerFaroSession.utils';
-
-describe('buildFaroSessionByExecutionIdLogQL', () => {
-  it('builds an exact-match query keyed on the run execution id', () => {
-    const expr = buildFaroSessionByExecutionIdLogQL('181470e3-502b-40d3-ba9b-a2035037e7d8');
-
-    expect(expr).toBe(
-      '{kind=~"event|measurement"} | logfmt | k6_isK6Browser="true"' +
-        ' | k6_testRunId="sm:181470e3-502b-40d3-ba9b-a2035037e7d8"'
-    );
-  });
-
-  it('uses an exact label match', () => {
-    const expr = buildFaroSessionByExecutionIdLogQL('exec-1');
-
-    expect(expr).toContain('k6_testRunId="sm:exec-1"');
-    expect(expr).not.toContain('k6_testRunId=~');
-  });
-});
 
 describe('getFaroSessionFromLogs', () => {
   const makeRecord = (

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Badge, Button, ClipboardButton, Icon, IconName, Stack, Text, useStyles2 } from '@grafana/ui';
+import { Alert, Badge, Button, ClipboardButton, Icon, IconName, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { upperFirst } from 'lodash';
 
 import { HttpMethod } from 'types';
 import { formatDuration, getMethodColor } from 'utils';
@@ -53,6 +54,8 @@ export function SuggestedCheckPanel({
                 Suggested check
               </Text>
               <Badge color="darkgrey" icon="globe" text="HTTP" />
+              {/* Blue, not a warning: the user hasn't done anything wrong. */}
+              {opportunity.setup && <Badge color="blue" text="Needs setup" />}
               {opportunity.namespace && (
                 <Badge
                   color="darkgrey"
@@ -75,7 +78,11 @@ export function SuggestedCheckPanel({
         />
 
         <ConfigurationSection>
-          <CheckIdentity proposedCheck={proposedCheck} ownerHint={opportunity.ownerHint} />
+          <CheckIdentity
+            proposedCheck={proposedCheck}
+            ownerHint={opportunity.ownerHint}
+            methodUnknown={opportunity.methodUnknown}
+          />
         </ConfigurationSection>
 
         <ConfigurationSection titleId="reliability-inbox-uptime-heading">
@@ -85,7 +92,9 @@ export function SuggestedCheckPanel({
               {formatDuration(proposedCheck.timeoutMs)}
             </CheckField>
             <CheckField icon="check-circle" label="Expected response">
-              HTTP {proposedCheck.validStatusCodes.join(', ')}
+              {proposedCheck.validStatusCodes.length > 0
+                ? `HTTP ${proposedCheck.validStatusCodes.join(', ')}`
+                : 'Any 2xx'}
             </CheckField>
             <CheckField icon="shield" label="TLS requirement">
               {proposedCheck.failIfNotSSL ? 'Require HTTPS' : 'Not required'}
@@ -109,6 +118,18 @@ export function SuggestedCheckPanel({
               Configured during creation
             </CheckField>
           </OptionGrid>
+          {/* One line in Configuration, in info blue rather than a warning above
+              the check: the user hasn't done anything wrong, and the editor and
+              Assistant carry the steps. */}
+          {opportunity.setup && (
+            <Alert
+              severity="info"
+              title={`${opportunity.setup.label}: ${upperFirst(opportunity.setup.needs)} asked for during creation`}
+              bottomSpacing={0}
+            >
+              {opportunity.setup.why}
+            </Alert>
+          )}
         </ConfigurationSection>
         <SuggestedCheckActions
           assistantDisabled={assistantDisabled}
@@ -148,9 +169,11 @@ const ConfigurationTitle = ({ title, id }: { title: string; id?: string }) => {
 function CheckIdentity({
   proposedCheck,
   ownerHint,
+  methodUnknown,
 }: {
   proposedCheck: ProposedHttpCheckDraft;
   ownerHint?: string;
+  methodUnknown?: boolean;
 }) {
   return (
     <div>
@@ -158,7 +181,9 @@ function CheckIdentity({
         {proposedCheck.job}
       </CheckField>
       <CheckField icon="link" label="Target URL" layout="row">
-        <TargetUrl method={proposedCheck.method} target={proposedCheck.target} />
+        {/* The draft's GET is only the editor's starting point when the
+            endpoint takes another method, so it isn't shown as the proposal. */}
+        <TargetUrl method={methodUnknown ? undefined : proposedCheck.method} target={proposedCheck.target} />
       </CheckField>
       {/* On screen rather than in the namespace badge's tooltip: a tooltip is
           undiscoverable and unavailable on touch, and this is the evidence for
@@ -198,12 +223,12 @@ function CheckField({
   );
 }
 
-function TargetUrl({ method, target }: { method: string; target: string }) {
+function TargetUrl({ method, target }: { method?: string; target: string }) {
   const styles = useStyles2(getTargetUrlStyles, method as HttpMethod);
 
   return (
     <div className={styles.value}>
-      <span className={styles.method}>{method}</span>
+      {method && <span className={styles.method}>{method}</span>}
       <code>{target}</code>
       <ClipboardButton
         aria-label="Copy target URL"

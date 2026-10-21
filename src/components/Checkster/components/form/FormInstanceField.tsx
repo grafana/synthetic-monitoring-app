@@ -27,7 +27,6 @@ export function FormInstanceField({ field }: { field: 'target' }) {
             }
           >
             <Icon
-              color="primary"
               name="info-circle"
               className={css`
                 font-weight: ${theme.typography.fontWeightLight};

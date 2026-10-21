@@ -1,26 +1,21 @@
 import React from 'react';
 import { useAssistant } from '@grafana/assistant';
-import { PluginPage } from '@grafana/runtime';
 import { Button, EmptyState, Stack, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { Feedback } from 'components/Feedback';
+import { SyntheticsTab } from 'page/SyntheticsPageNav';
+import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
 
 import { ReliabilityInboxReview } from './components/ReliabilityInboxReview';
 import { SuggestionsRefreshControl } from './components/SuggestionsRefreshControl';
 import { useReliabilityInboxSuggestions } from './data';
-import {
-  ASSISTANT_ORIGIN,
-  RELIABILITY_INBOX_CONTAINER,
-  RELIABILITY_INBOX_PAGE_NAV,
-} from './ReliabilityInboxPage.constants';
-
-export { RELIABILITY_INBOX_PAGE_NAV };
+import { ASSISTANT_ORIGIN, RELIABILITY_INBOX_CONTAINER } from './ReliabilityInboxPage.constants';
 
 export function ReliabilityInboxPageTitle() {
   return (
     <Stack alignItems="center" gap={1.5}>
-      <Text element="h1">Check Suggestions</Text>
+      <Text element="h2">Check Suggestions</Text>
       <Feedback
         feature="reliability-inbox"
         placement="bottom-start"
@@ -35,21 +30,19 @@ export function ReliabilityInboxPage() {
   const suggestionsQuery = useReliabilityInboxSuggestions({ includeDismissed: true });
 
   return (
-    <PluginPage
-      actions={
-        suggestionsQuery.aiRequired ? undefined : (
-          <SuggestionsRefreshControl
-            generatedAt={suggestionsQuery.dataUpdatedAt || undefined}
-            isFetching={suggestionsQuery.isFetching}
-            onRefresh={() => void suggestionsQuery.refetch()}
-          />
-        )
-      }
-      pageNav={RELIABILITY_INBOX_PAGE_NAV}
-      renderTitle={() => <ReliabilityInboxPageTitle />}
-    >
+    <SyntheticsPluginPage activeTab={SyntheticsTab.CheckSuggestions}>
       <div className={styles.container}>
         <Stack direction="column" gap={2}>
+          <Stack alignItems="center" justifyContent="space-between" gap={2} wrap="wrap">
+            <ReliabilityInboxPageTitle />
+            {!suggestionsQuery.aiRequired && (
+              <SuggestionsRefreshControl
+                generatedAt={suggestionsQuery.dataUpdatedAt || undefined}
+                isFetching={suggestionsQuery.isFetching}
+                onRefresh={() => void suggestionsQuery.refetch()}
+              />
+            )}
+          </Stack>
           <Text element="p" color="secondary">
             Review monitoring gaps discovered from recent traffic.
           </Text>
@@ -60,7 +53,7 @@ export function ReliabilityInboxPage() {
           )}
         </Stack>
       </div>
-    </PluginPage>
+    </SyntheticsPluginPage>
   );
 }
 

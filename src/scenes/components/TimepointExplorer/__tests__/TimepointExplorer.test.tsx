@@ -38,7 +38,7 @@ const TIME_MODIFIED_HTTP_CHECK: HTTPCheck = {
 
 function setupMSWHandlers() {
   server.use(
-    apiRoute('getHttpDashboard', {
+    apiRoute('queryDatasource', {
       result: async (req) => {
         const url = new URL(req.url);
         const refId = url.searchParams.get('refId');

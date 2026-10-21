@@ -39,7 +39,7 @@ toggled locally exactly like legacy ones:
 
 ```ini
 [feature_toggles]
-synthetic-monitoring.cost-attribution = true
+synthetic-monitoring.folders = true
 ```
 
 Restart Grafana after editing (`docker compose restart` — the ini is only read at startup),
@@ -82,7 +82,7 @@ therefore two independent steps — switch the read path first, move the definit
 
    ```ts
    export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
-     [FeatureName.CALs]: 'synthetic-monitoring-cost-attribution',
+     [FeatureName.Folders]: 'synthetic-monitoring-folders',
    };
    ```
 
@@ -105,7 +105,7 @@ resolve it (see above); once the GOFF definition is live in a wave, it is ignore
    before code evaluates them:
 
    ```jsonnet
-   'synthetic-monitoring.cost-attribution': goff.BooleanFlag(true),
+   'synthetic-monitoring.folders': goff.BooleanFlag(true),
    ```
 
    > Naming: `synthetic-monitoring.<kebab-feature>`. Reviewed by `@grafana-feature-flags`.

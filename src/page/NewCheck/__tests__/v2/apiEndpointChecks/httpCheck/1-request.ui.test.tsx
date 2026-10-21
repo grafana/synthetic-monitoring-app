@@ -34,4 +34,26 @@ describe(`HttpCheck - Section 1 (Request) UI`, () => {
     const err = await screen.findByText(`Header name is required`);
     expect(err).toBeInTheDocument();
   });
+
+  it(`hints https:// and http:// variants when the target has no protocol`, async () => {
+    const { user } = await renderNewForm(checkType);
+    const targetInput = screen.getByLabelText('Request target', { exact: false });
+
+    await user.type(targetInput, 'grafana.com');
+
+    expect(await screen.findByText(/Did you mean/)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'https://grafana.com' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'http://grafana.com' })).toBeInTheDocument();
+  });
+
+  it(`fills in the target with the selected protocol hint`, async () => {
+    const { user } = await renderNewForm(checkType);
+    const targetInput = screen.getByLabelText('Request target', { exact: false });
+
+    await user.type(targetInput, 'grafana.com');
+    await user.click(await screen.findByRole('button', { name: 'https://grafana.com' }));
+
+    expect(targetInput).toHaveValue('https://grafana.com');
+    expect(screen.queryByText(/Did you mean/)).not.toBeInTheDocument();
+  });
 });

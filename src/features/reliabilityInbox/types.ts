@@ -36,6 +36,9 @@ export const reliabilitySuggestionSchema = z.object({
   dedupStatus: z.string(),
   authRequired: z.boolean(),
   needsConfiguration: z.boolean().optional(),
+  // What telemetry could not supply (a request body, a CA certificate…), set
+  // with needsConfiguration.
+  configurationReason: z.string().optional(),
   relevance: z.number().optional(),
   rationale: z.string().optional(),
   prompt: z.string(),

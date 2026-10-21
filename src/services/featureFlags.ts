@@ -9,13 +9,12 @@ export const SM_OPEN_FEATURE_DOMAIN = pluginJson.id;
 // Adding an entry routes all consumers of that FeatureName through OpenFeature instead
 // of legacy config.featureToggles. See docs/development/openfeature-migration.md
 export const OPEN_FEATURE_KEYS: Partial<Record<FeatureName, string>> = {
-  [FeatureName.CALs]: 'synthetic-monitoring.cost-attribution',
   [FeatureName.CheckSuggestions]: 'synthetic-monitoring.check-suggestions',
   [FeatureName.Folders]: 'synthetic-monitoring.folders',
   [FeatureName.GRPCChecks]: 'synthetic-monitoring.grpc-checks',
   [FeatureName.KnowledgeGraph]: 'synthetic-monitoring.knowledge-graph',
   [FeatureName.KnowledgeGraphFrontend]: 'synthetic-monitoring.knowledge-graph-frontend',
-  [FeatureName.LabelMigration]: 'synthetic-monitoring.label-migration',
+  [FeatureName.Recommendations]: 'synthetic-monitoring.recommendations',
   [FeatureName.Screenshots]: 'synthetic-monitoring.screenshots',
   [FeatureName.SecretsManagement]: 'synthetic-monitoring.secrets-management',
   [FeatureName.TimepointExplorer]: 'synthetic-monitoring.timepoint-explorer',

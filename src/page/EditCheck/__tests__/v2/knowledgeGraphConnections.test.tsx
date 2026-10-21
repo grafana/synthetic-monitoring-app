@@ -96,7 +96,6 @@ it.each([false, true])('synchronizes and saves the CAL-managed frontend (clear: 
   mockFeatureToggles({
     [FeatureName.KnowledgeGraph]: true,
     [FeatureName.KnowledgeGraphFrontend]: true,
-    [FeatureName.CALs]: true,
   });
   server.use(
     apiRoute('getTenantCostAttributionLabels', {
@@ -156,7 +155,6 @@ it.each([false, true])('saves an unscoped service without removing it (CAL-manag
     mockFeatureToggles({
       [FeatureName.KnowledgeGraph]: true,
       [FeatureName.KnowledgeGraphFrontend]: true,
-      [FeatureName.CALs]: true,
     });
     server.use(
       apiRoute('getTenantCostAttributionLabels', {
@@ -185,7 +183,6 @@ it.each([false, true])(
       mockFeatureToggles({
         [FeatureName.KnowledgeGraph]: true,
         [FeatureName.KnowledgeGraphFrontend]: true,
-        [FeatureName.CALs]: true,
       });
       server.use(
         apiRoute('getTenantCostAttributionLabels', {
@@ -218,7 +215,6 @@ it('does not show a Service connection for a CAL namespace alone', async () => {
   mockFeatureToggles({
     [FeatureName.KnowledgeGraph]: true,
     [FeatureName.KnowledgeGraphFrontend]: true,
-    [FeatureName.CALs]: true,
   });
   server.use(
     apiRoute('getTenantCostAttributionLabels', {
@@ -249,6 +245,9 @@ it('blocks new connection labels at the limit but permits editing an existing co
   server.use(
     apiRoute('getTenantLimits', {
       result: () => ({ json: { maxAllowedMetricLabels: 3, maxAllowedLogLabels: 3 } }),
+    }),
+    apiRoute('getTenantCostAttributionLabels', {
+      result: () => ({ json: { names: [] } }),
     })
   );
   const { user } = await editConnections();

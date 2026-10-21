@@ -17,9 +17,10 @@ export function PrimaryLayoutSection({ children, headerContent }: PrimaryLayoutS
     primaryProps: { className: primaryClassName, ...primaryProps },
   } = useAppContainerContext();
   const className = useStyles2(getClassName);
+  const panelClassName = useStyles2(getPanelClassName);
 
   return (
-    <div className={cx(primaryClassName)} {...primaryProps}>
+    <div className={cx(primaryClassName, panelClassName)} {...primaryProps}>
       <div
         className={cx(
           className,
@@ -37,6 +38,15 @@ export function PrimaryLayoutSection({ children, headerContent }: PrimaryLayoutS
       </div>
     </div>
   );
+}
+
+function getPanelClassName(theme: GrafanaTheme2) {
+  return css`
+    background-color: ${theme.colors.background.primary};
+    border: 1px solid ${theme.colors.border.medium};
+    border-radius: ${theme.shape.radius.lg};
+    overflow: hidden;
+  `;
 }
 
 function getClassName(_theme: GrafanaTheme2) {

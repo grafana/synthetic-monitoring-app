@@ -10,7 +10,12 @@ import { FaroUserAction } from '../faro';
 import { trackFaroUserAction } from '../features/tracking/userAction';
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
 
-export function useHandleSubmitCheckster(initialCheck?: Check) {
+interface SubmitOptions {
+  /** Runs once the check itself is saved, before its alerts, so a failed alerts save cannot skip it. */
+  onCheckSaved?: (saved: Check) => void;
+}
+
+export function useHandleSubmitCheckster(initialCheck?: Check, { onCheckSaved }: SubmitOptions = {}) {
   const navigateToCheckDashboard = useNavigateToCheckDashboard();
 
   const { mutateAsync: updateAlertsForCheck } = useUpdateAlertsForCheck({
@@ -45,11 +50,12 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
       } else {
         result = await createCheck(payload);
       }
+      onCheckSaved?.(result);
       await handleAlerts(result, formValues.alerts);
       await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
 
       return () => navigateToCheckDashboard(result, payload?.id === undefined);
     },
-    [initialCheck, createCheck, handleAlerts, navigateToCheckDashboard, updateCheck]
+    [initialCheck, createCheck, handleAlerts, navigateToCheckDashboard, updateCheck, onCheckSaved]
   );
 }
