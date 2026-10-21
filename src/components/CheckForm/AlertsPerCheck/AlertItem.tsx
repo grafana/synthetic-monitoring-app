@@ -1,6 +1,7 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button, Checkbox, FieldValidationMessage, useStyles2 } from '@grafana/ui';
+import { cx } from '@emotion/css';
 import { trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
@@ -34,6 +35,7 @@ export const AlertItem = ({
   const addRunbookRef = useRef<HTMLButtonElement>(null);
   const focusRunbookControl = useRef(false);
   const runbookId = useId();
+  const summaryId = useId();
   const status = getValues(`alerts.${alert.type}.status`);
   const creationError = getValues(`alerts.${alert.type}.creationError`);
   const selectionError = formState.errors.alerts?.[alert.type]?.isSelected?.message;
@@ -70,7 +72,7 @@ export const AlertItem = ({
         <Checkbox
           label={alert.category}
           className={styles.checkbox}
-          aria-describedby={selectionError ? errorId : undefined}
+          aria-describedby={selectionError ? errorId : !selected ? summaryId : undefined}
           invalid={!!selectionError}
           id={`alert-${alert.type}`}
           data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alert.type].selectedCheckbox}
@@ -86,7 +88,7 @@ export const AlertItem = ({
             <NotOkStatusInfo status={status} error={creationError} />
           </div>
         )}
-        {!showRunbook && (
+        {selected && !showRunbook && (
           <Button
             ref={addRunbookRef}
             type="button"
@@ -96,7 +98,7 @@ export const AlertItem = ({
             icon="plus"
             tooltip="Add a link to instructions for investigating and resolving this alert."
             aria-label={`Add runbook for ${alert.category}`}
-            disabled={!selected || formState.disabled}
+            disabled={formState.disabled}
             onClick={() => {
               focusRunbookControl.current = true;
               setShowRunbook(true);
@@ -107,10 +109,16 @@ export const AlertItem = ({
           </Button>
         )}
       </div>
-      <div className={styles.body}>
+      <div className={cx(styles.body, !selected && styles.compactBody)}>
         {selectionError && <FieldValidationMessage id={errorId}>{selectionError}</FieldValidationMessage>}
-        <AlertCondition alert={alert} selected={selected} />
-        {showRunbook && (
+        {selected ? (
+          <AlertCondition alert={alert} selected={selected} />
+        ) : (
+          <p id={summaryId} className={styles.summary}>
+            {alert.summary}
+          </p>
+        )}
+        {selected && showRunbook && (
           <div id={runbookId} role="region" aria-label={`${alert.category} runbook`} className={styles.runbook}>
             <RunbookUrl
               alertType={alert.type}

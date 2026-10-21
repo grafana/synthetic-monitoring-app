@@ -49,12 +49,23 @@ const checkAlertWithPeriodSchema = checkAlertSchema.refine(
   { message: 'You need to choose a period for this alert', path: ['period'] }
 );
 
+function optionalSelectedAlert(schema: typeof checkAlertSchema) {
+  return z.preprocess((value) => {
+    // Ignore hidden fields for inactive alerts. React Hook Form retains their
+    // draft values so selecting the alert again restores the entered settings.
+    if (value && typeof value === 'object' && 'isSelected' in value && value.isSelected === false) {
+      return { isSelected: false };
+    }
+    return value;
+  }, schema.optional());
+}
+
 export const checkAlertsSchema: ZodType<CheckAlertFormRecord | undefined> = z.object({
-  ProbeFailedExecutionsTooHigh: checkAlertWithPeriodSchema.optional(),
-  TLSTargetCertificateCloseToExpiring: checkAlertSchema.optional(),
-  HTTPRequestDurationTooHighAvg: checkAlertWithPeriodSchema.optional(),
-  PingRequestDurationTooHighAvg: checkAlertWithPeriodSchema.optional(),
-  DNSRequestDurationTooHighAvg: checkAlertWithPeriodSchema.optional(),
+  ProbeFailedExecutionsTooHigh: optionalSelectedAlert(checkAlertWithPeriodSchema),
+  TLSTargetCertificateCloseToExpiring: optionalSelectedAlert(checkAlertSchema),
+  HTTPRequestDurationTooHighAvg: optionalSelectedAlert(checkAlertWithPeriodSchema),
+  PingRequestDurationTooHighAvg: optionalSelectedAlert(checkAlertWithPeriodSchema),
+  DNSRequestDurationTooHighAvg: optionalSelectedAlert(checkAlertWithPeriodSchema),
 });
 
 function isCheckFormValuesTCP(data: CheckFormValuesBase | CheckFormValuesTcp): data is CheckFormValuesTcp {

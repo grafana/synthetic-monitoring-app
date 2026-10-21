@@ -42,7 +42,7 @@ describe('AlertItem', () => {
     expect(thresholdInput).toBeInTheDocument();
   });
 
-  it('enables threshold and period inputs when latency alert is selected', async () => {
+  it('hides latency controls when deselected and restores the entered threshold when reselected', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
 
@@ -55,11 +55,20 @@ describe('AlertItem', () => {
 
     expect(alertCheckbox).toBeChecked();
     expect(thresholdInput).toBeEnabled();
+    await user.clear(thresholdInput);
+    await user.type(thresholdInput, '450');
 
     await user.click(alertCheckbox);
-    expect(thresholdInput).toBeDisabled();
+    expect(thresholdInput).not.toBeInTheDocument();
+    expect(alertCheckbox).toHaveAccessibleDescription(
+      'Alert when average HTTP request duration exceeds your threshold.'
+    );
 
     await user.click(alertCheckbox);
-    expect(thresholdInput).toBeEnabled();
+    expect(
+      screen.getByTestId(
+        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].thresholdInput
+      )
+    ).toHaveValue(450);
   });
 });

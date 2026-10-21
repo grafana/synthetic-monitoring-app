@@ -3,6 +3,7 @@ import { CheckAlertCategory, CheckAlertType, CheckType, ThresholdUnit } from 'ty
 export interface PredefinedAlertInterface {
   type: CheckAlertType;
   name: string;
+  summary: string;
   description: string;
   unit: ThresholdUnit;
   category: CheckAlertCategory;
@@ -28,6 +29,7 @@ export const ALERT_PERIODS = [
 const TLS_TARGET_CERTIFICATE_CLOSE_TO_EXPIRING_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.TLSTargetCertificateCloseToExpiring,
   name: 'HTTP Target Certificate Close To Expiring',
+  summary: "Alert before the target's TLS certificate expires.",
   description: 'Trigger an alert if the target certificate will expire in less than $threshold days.',
   supportsPeriod: false,
   unit: 'd',
@@ -56,6 +58,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
   {
     type: CheckAlertType.ProbeFailedExecutionsTooHigh,
     name: 'Probe Failed Executions Too High',
+    summary: 'Alert when probe executions fail.',
     description: `The available periods are shown based on the selected check frequency. Only periods equal to or greater than the check frequency will be available for selection.`,
     supportsPeriod: true,
     unit: 'no.',
@@ -87,6 +90,7 @@ export const GLOBAL_PREDEFINED_ALERTS: PredefinedAlertInterface[] = [
 export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.HTTPRequestDurationTooHighAvg,
   name: 'HTTP Request Duration Too High Avg',
+  summary: 'Alert when average HTTP request duration exceeds your threshold.',
   description: 'The average HTTP request duration for this check',
   query: `(
     (
@@ -111,6 +115,7 @@ export const HTTP_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
 export const PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.PingRequestDurationTooHighAvg,
   name: 'Ping Request Duration Too High Avg',
+  summary: 'Alert when average ping duration exceeds your threshold.',
   description: 'The average ping request duration for this check',
   query: `(
     (
@@ -135,6 +140,7 @@ export const PING_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface 
 export const DNS_REQUEST_DURATION_TOO_HIGH_AVG_ALERT: PredefinedAlertInterface = {
   type: CheckAlertType.DNSRequestDurationTooHighAvg,
   name: 'DNS Request Duration Too High Avg',
+  summary: 'Alert when average DNS lookup duration exceeds your threshold.',
   description: 'The average DNS request duration for this check',
   query: `(
     (

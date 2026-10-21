@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
-import { Alert, Button, Field, Stack, Text, TextArea, TextLink } from '@grafana/ui';
+import { Alert, Box, Button, Field, Icon, Stack, Text, TextArea, TextLink } from '@grafana/ui';
 
 import { CheckFormValues } from 'types';
 import { canSetUpNotifications } from 'data/initialNotificationSetup';
@@ -43,7 +43,23 @@ export function InitialNotificationSetup() {
 
   if (!hasSelectedAlerts) {
     return (
-      <Text color="secondary">Alerts are off for this check. Custom rules in Grafana Alerting are unaffected.</Text>
+      <Box
+        role="status"
+        display="flex"
+        alignItems="center"
+        gap={1}
+        paddingY={1}
+        paddingX={1.5}
+        backgroundColor="info"
+        borderColor="info"
+        borderStyle="solid"
+        borderRadius="default"
+      >
+        <Text color="info">
+          <Icon name="info-circle" />
+        </Text>
+        <Text color="info">Alerts are off for this check. Custom rules in Grafana Alerting are unaffected.</Text>
+      </Box>
     );
   }
   if (!canWriteAlerts) {

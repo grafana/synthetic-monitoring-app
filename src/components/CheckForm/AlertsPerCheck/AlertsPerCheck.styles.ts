@@ -35,6 +35,14 @@ export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
     gap: theme.spacing(1.5),
     padding: theme.spacing(1.5, 2, 2, 5),
   }),
+  compactBody: css({
+    paddingTop: theme.spacing(0.5),
+    paddingBottom: theme.spacing(1.5),
+  }),
+  summary: css({
+    margin: 0,
+    color: theme.colors.text.secondary,
+  }),
   alertStatus: css({
     display: 'flex',
     alignItems: 'center',

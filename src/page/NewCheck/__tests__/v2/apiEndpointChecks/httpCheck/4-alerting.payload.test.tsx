@@ -37,7 +37,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
-    expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
+    expect(screen.getByText("Alert before the target's TLS certificate expires.")).toBeInTheDocument();
 
     const thresholdsInputSelector =
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;

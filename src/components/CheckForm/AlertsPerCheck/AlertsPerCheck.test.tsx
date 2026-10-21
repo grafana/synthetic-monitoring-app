@@ -108,7 +108,10 @@ describe('alert and notification summary', () => {
     await user.click(checkbox);
     expect(checkbox).not.toBeChecked();
     expect(within(failureAlert).queryByText('Notify')).not.toBeInTheDocument();
-    expect(within(failureAlert).getByRole('spinbutton', { name: 'Failed Checks threshold' })).toBeDisabled();
+    expect(within(failureAlert).queryByRole('spinbutton')).not.toBeInTheDocument();
+    expect(within(failureAlert).queryByRole('combobox')).not.toBeInTheDocument();
+    expect(within(failureAlert).queryByRole('button', { name: /Add runbook/ })).not.toBeInTheDocument();
+    expect(checkbox).toHaveAccessibleDescription('Alert when probe executions fail.');
   });
 
   it('keeps the runbook separate from routing details for the alert', async () => {
@@ -161,8 +164,8 @@ describe('alert and notification summary', () => {
     expect(within(contactPoint).queryByRole('textbox')).not.toBeInTheDocument();
     expect(screen.queryByText('Matching notification policies')).not.toBeInTheDocument();
     expect(within(details).queryByTestId(failureFields.thresholdInput)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add runbook for TLS Certificate' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Add runbook for Latency' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add runbook for TLS Certificate' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add runbook for Latency' })).not.toBeInTheDocument();
     await user.click(within(details).getByRole('button', { name: 'Remove runbook' }));
     expect(screen.queryByRole('region', { name: 'Failed Checks runbook' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add runbook for Failed Checks' })).toHaveFocus();
@@ -213,14 +216,46 @@ describe('alert and notification summary', () => {
     expect(runbook).toHaveValue('https://example.com/runbooks/probe-failures');
     await user.clear(runbook);
     await user.type(runbook, 'https://example.com/updated');
+    await user.clear(screen.getByTestId(failureFields.thresholdInput));
+    await user.type(screen.getByTestId(failureFields.thresholdInput), '2');
     await user.click(screen.getByTestId(failureFields.selectedCheckbox));
     expect(screen.getByTestId(failureFields.selectedCheckbox)).not.toBeChecked();
-    expect(runbook).toBeDisabled();
-    const details = screen.getByRole('region', { name: 'Failed Checks runbook' });
-    expect(within(details).getByRole('button', { name: 'Remove runbook' })).toBeDisabled();
+    expect(screen.queryByTestId(failureFields.runbookUrlInput)).not.toBeInTheDocument();
+    expect(screen.queryByTestId(failureFields.thresholdInput)).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Failed Checks runbook' })).not.toBeInTheDocument();
     await user.click(screen.getByTestId(failureFields.selectedCheckbox));
-    expect(runbook).toBeEnabled();
+    expect(screen.getByTestId(failureFields.runbookUrlInput)).toBeEnabled();
     expect(screen.getByTestId(failureFields.runbookUrlInput)).toHaveValue('https://example.com/updated');
+    expect(screen.getByTestId(failureFields.thresholdInput)).toHaveValue(2);
+  });
+
+  it('restores invalid settings when reselected but allows saving with the alert turned off', async () => {
+    const { record, read, requests } = getServerRequests();
+    server.use(apiRoute('updateAlertsForCheck', {}, record));
+    const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
+    await gotoSection(user, FormSectionName.Alerting);
+    await user.clear(await screen.findByTestId(failureFields.thresholdInput));
+    await user.clear(screen.getByTestId(failureFields.runbookUrlInput));
+    await user.type(screen.getByTestId(failureFields.runbookUrlInput), 'not-a-url');
+    await user.click(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton));
+    expect(await screen.findByText('Runbook URL must be a valid URL')).toBeInTheDocument();
+    expect(screen.getByText('Threshold value must be a valid integer')).toBeInTheDocument();
+    expect(requests).toHaveLength(0);
+
+    await user.click(screen.getByTestId(failureFields.selectedCheckbox));
+    expect(screen.queryByTestId(failureFields.runbookUrlInput)).not.toBeInTheDocument();
+    await user.click(screen.getByTestId(failureFields.selectedCheckbox));
+    expect(screen.getByTestId(failureFields.runbookUrlInput)).toHaveValue('not-a-url');
+    expect(screen.getByTestId(failureFields.thresholdInput)).toHaveValue(null);
+    expect(await screen.findByText('Runbook URL must be a valid URL')).toBeInTheDocument();
+
+    await user.click(screen.getByTestId(failureFields.selectedCheckbox));
+    await user.click(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton));
+    await waitFor(() => expect(requests).toHaveLength(1));
+    expect((await read()).body.alerts).toEqual([
+      expect.objectContaining({ name: CheckAlertType.TLSTargetCertificateCloseToExpiring }),
+      expect.objectContaining({ name: CheckAlertType.HTTPRequestDurationTooHighAvg }),
+    ]);
   });
 
   it('removes a saved runbook without affecting other alerts and submits the removal', async () => {
@@ -353,7 +388,7 @@ describe('alert and notification summary', () => {
     expect(screen.queryByText('Runbook URL must be a valid URL')).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Failed Checks runbook' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Add runbook for Failed Checks' })).toHaveFocus();
-    expect(screen.getByRole('button', { name: 'Add runbook for TLS Certificate' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add runbook for TLS Certificate' })).not.toBeInTheDocument();
     await user.click(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton));
     expect((await read(1)).body).toEqual({
       alerts: [{ name: CheckAlertType.ProbeFailedExecutionsTooHigh, period: '5m', threshold: 1 }],

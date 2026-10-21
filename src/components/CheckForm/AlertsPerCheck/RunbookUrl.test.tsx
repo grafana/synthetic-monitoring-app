@@ -111,7 +111,7 @@ describe('RunbookUrl', () => {
     expect(tlsRunbookInput).toHaveValue('');
   });
 
-  it('shows runbook URL input as disabled when alert is deselected', async () => {
+  it('hides the runbook URL input when the alert is deselected', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
     await openAlertRunbook(user, 'Failed Checks');
@@ -132,6 +132,6 @@ describe('RunbookUrl', () => {
       screen.queryByTestId(
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
       )
-    ).toHaveAttribute('disabled');
+    ).not.toBeInTheDocument();
   });
 });

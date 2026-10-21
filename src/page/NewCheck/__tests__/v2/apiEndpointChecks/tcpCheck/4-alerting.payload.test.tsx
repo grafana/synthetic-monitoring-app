@@ -29,7 +29,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await gotoSection(user, FormSectionName.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
-    expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
+    expect(screen.getByText("Alert before the target's TLS certificate expires.")).toBeInTheDocument();
 
     await user.click(
       screen.getByTestId(
