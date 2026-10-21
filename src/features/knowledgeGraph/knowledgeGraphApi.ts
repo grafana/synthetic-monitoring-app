@@ -68,13 +68,13 @@ export interface KGFrontendApp {
 }
 
 /** A check links by app ID across environments, matching the KG relation rule. */
-export async function fetchFrontendApps(): Promise<KGFrontendApp[]> {
+export async function fetchFrontendApps(signal?: AbortSignal): Promise<KGFrontendApp[]> {
   const now = Date.now();
   const apps = new Map<string, KGFrontendApp>();
-  let pageNum = 0;
-  let lastPage = false;
-
-  while (!lastPage) {
+  // Bound discovery even if the server repeatedly reports more pages.
+  const maxPages = 100;
+  for (let pageNum = 0; pageNum < maxPages; pageNum++) {
+    signal?.throwIfAborted();
     const response = await firstValueFrom(
       getBackendSrv().fetch<EntitySearchResponse>({
         url: ENTITY_SEARCH_URL,
@@ -94,6 +94,7 @@ export async function fetchFrontendApps(): Promise<KGFrontendApp[]> {
       })
     );
 
+    signal?.throwIfAborted();
     const entities = response.data.data?.entities ?? [];
     for (const entity of entities) {
       const id = entity.properties?.feo11y_app_id;
@@ -107,13 +108,16 @@ export async function fetchFrontendApps(): Promise<KGFrontendApp[]> {
       }
       apps.set(id, app);
     }
-    lastPage = response.data.data?.lastPage !== false || entities.length === 0;
-    pageNum++;
+    // GraphDataResponse in asserts-adi exposes lastPage. A missing flag is not proof
+    // of completion: continue until an explicit last page or an empty page.
+    if (response.data.data?.lastPage === true || entities.length === 0) {
+      return [...apps.values()]
+        .map((app) => ({ ...app, environments: app.environments.sort() }))
+        .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+    }
   }
 
-  return [...apps.values()]
-    .map((app) => ({ ...app, environments: app.environments.sort() }))
-    .sort((a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id));
+  throw new Error('Frontend discovery exceeded the pagination limit.');
 }
 
 /**

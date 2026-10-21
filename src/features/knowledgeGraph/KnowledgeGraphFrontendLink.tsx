@@ -1,12 +1,11 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { GrafanaTheme2 } from '@grafana/data';
-import { Button, Combobox, Icon, Stack, Text, useStyles2 } from '@grafana/ui';
-import { css } from '@emotion/css';
+import { Button, Combobox, Stack, Text } from '@grafana/ui';
 
 import { useDOMId } from 'hooks/useDOMId';
 
 import { fetchFrontendApps } from './knowledgeGraphApi';
+import { KnowledgeGraphConnectionMatch } from './KnowledgeGraphConnectionMatch';
 import { KnowledgeGraphConnectionRow } from './KnowledgeGraphConnectionRow';
 import { KGLinkedLabel } from './KnowledgeGraphServiceLink.hooks';
 
@@ -19,7 +18,6 @@ interface Props {
 
 export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRemove }: Props) {
   const labelId = useDOMId();
-  const styles = useStyles2(getStyles);
   const {
     data: apps,
     isLoading,
@@ -27,7 +25,7 @@ export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRe
     refetch,
   } = useQuery({
     queryKey: ['knowledgeGraph', 'frontendApps'],
-    queryFn: fetchFrontendApps,
+    queryFn: ({ signal }) => fetchFrontendApps(signal),
     staleTime: 60_000,
     retry: false,
   });
@@ -52,11 +50,12 @@ export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRe
       <Stack direction="column" gap={1}>
         <Combobox
           aria-labelledby={labelId}
-          placeholder="Select a frontend application"
+          placeholder="Select a frontend application or type an app ID"
+          createCustomValue
           options={options}
           value={selected ?? (frontend.value ? { value: frontend.value, label: `App ID ${frontend.value}` } : null)}
           onChange={(option) => frontend.onChange(option.value)}
-          disabled={disabled || isLoading || isError}
+          disabled={disabled || frontend.isAtLimit || isLoading || isError}
           loading={isLoading}
         />
         {isError ? (
@@ -74,10 +73,9 @@ export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRe
           </Text>
         ) : selected ? (
           <>
-            <div className={styles.matchIndicator}>
-              <Icon name="check-circle" size="sm" />
-              <span>Will link to frontend application {selectedApp?.name} in the Knowledge Graph.</span>
-            </div>
+            <KnowledgeGraphConnectionMatch>
+              Will link to frontend application {selectedApp?.name} in the Knowledge Graph.
+            </KnowledgeGraphConnectionMatch>
             {selectedApp && selectedApp.environments.length > 1 && (
               <Text color="secondary" variant="bodySmall">
                 This connection includes all listed environments for this application.
@@ -97,13 +95,3 @@ export function KnowledgeGraphFrontendLink({ frontend, disabled, autoFocus, onRe
     </KnowledgeGraphConnectionRow>
   );
 }
-
-const getStyles = (theme: GrafanaTheme2) => ({
-  matchIndicator: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    fontSize: theme.typography.bodySmall.fontSize,
-    color: theme.colors.success.text,
-  }),
-});

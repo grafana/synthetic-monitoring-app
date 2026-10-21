@@ -117,6 +117,8 @@ it.each([false, true])('synchronizes and saves the CAL-managed frontend (clear: 
   const calInput = screen.getByRole('textbox', { name: 'Cost attribution label 1 value' });
   expect(calInput).toHaveValue('229');
   await user.clear(calInput);
+  expect(screen.getByRole('combobox', { name: 'Frontend application' })).toBe(input);
+  expect(calInput).toHaveFocus();
   await user.type(calInput, '230');
   expect(await screen.findByRole('combobox', { name: 'Frontend application' })).toHaveValue('ecommerce · production');
   if (clear) {
@@ -177,7 +179,7 @@ it.each([false, true])('saves an unscoped service without removing it (CAL-manag
 });
 
 it.each([false, true])(
-  'removes both service labels while preserving the frontend and unrelated labels (CAL: %s)',
+  'removes the service while preserving CAL namespaces, the frontend and unrelated labels (CAL: %s)',
   async (cal) => {
     if (cal) {
       mockFeatureToggles({
@@ -200,12 +202,60 @@ it.each([false, true])(
     expect(screen.getByRole('combobox', { name: 'Frontend application' })).toHaveValue('banking · production');
     if (cal) {
       expect(screen.getByRole('combobox', { name: 'Cost attribution label 1 value' })).toHaveValue('');
-      expect(screen.getByRole('combobox', { name: 'Cost attribution label 2 value' })).toHaveValue('');
+      expect(screen.getByRole('combobox', { name: 'Cost attribution label 2 value' })).toHaveValue('banking-prod');
       expect(screen.getByRole('textbox', { name: 'Cost attribution label 3 value' })).toHaveValue('payments');
     }
     await submitForm(user);
     expect((await readSavedCheck(read))?.labels).toEqual(
-      cal ? [team, { name: 'app', value: 'banking' }, frontend] : [{ name: 'app', value: 'banking' }, frontend, team]
+      cal
+        ? [{ name: 'namespace', value: 'banking-prod' }, team, { name: 'app', value: 'banking' }, frontend]
+        : [{ name: 'app', value: 'banking' }, frontend, team]
     );
   }
 );
+
+it('does not show a Service connection for a CAL namespace alone', async () => {
+  mockFeatureToggles({
+    [FeatureName.KnowledgeGraph]: true,
+    [FeatureName.KnowledgeGraphFrontend]: true,
+    [FeatureName.CALs]: true,
+  });
+  server.use(
+    apiRoute('getTenantCostAttributionLabels', {
+      result: () => ({ json: { names: ['namespace'] } }),
+    })
+  );
+  await editConnections([{ name: 'namespace', value: 'banking-prod' }]);
+  expect(await screen.findByRole('combobox', { name: 'Cost attribution label 1 value' })).toHaveValue('banking-prod');
+  expect(screen.queryByRole('group', { name: 'Service' })).not.toBeInTheDocument();
+});
+
+it('saves a frontend ID that has not been discovered', async () => {
+  const { user, read } = await editConnections();
+  await addConnection(user, 'Frontend application');
+  const input = screen.getByRole('combobox', { name: 'Frontend application' });
+  await waitFor(() => expect(input).toBeEnabled());
+  await user.type(input, '999');
+  await user.keyboard('{Enter}');
+  expect(await screen.findByText('No matching frontend in Knowledge Graph yet.')).toBeInTheDocument();
+  await submitForm(user);
+  expect((await readSavedCheck(read))?.labels).toEqual([
+    ...SERVICE_AND_CUSTOM_LABELS,
+    { name: 'feo11y_app_id', value: '999' },
+  ]);
+});
+
+it('blocks new connection labels at the limit but permits editing an existing connection', async () => {
+  server.use(
+    apiRoute('getTenantLimits', {
+      result: () => ({ json: { maxAllowedMetricLabels: 3, maxAllowedLogLabels: 3 } }),
+    })
+  );
+  const { user } = await editConnections();
+  await addConnection(user, 'Frontend application');
+  expect(await screen.findByText(/Custom label limit reached/)).toBeInTheDocument();
+  expect(screen.getByRole('combobox', { name: 'Frontend application' })).toBeDisabled();
+  expect(screen.getByRole('combobox', { name: 'Service name' })).toBeEnabled();
+  await user.click(screen.getByRole('button', { name: 'Remove service connection' }));
+  await waitFor(() => expect(screen.getByRole('combobox', { name: 'Frontend application' })).toBeEnabled());
+});

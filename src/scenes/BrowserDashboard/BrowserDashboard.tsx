@@ -2,7 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { ConnectedServices } from 'features/knowledgeGraph/ConnectedServices';
+import { ConnectedEntities } from 'features/knowledgeGraph/ConnectedEntities';
 import { getBrowserDataReceivedQuery } from 'queries/browserDataReceived';
 import { getBrowserDataSentQuery } from 'queries/browserDataSent';
 import { getCountDistinctTargetsQuery } from 'queries/countDistinctTargets';
@@ -44,7 +44,7 @@ export const BrowserDashboard = ({ check }: { check: Check }) => {
         <Frequency />
       </Stack>
       <TimepointExplorer check={check} />
-      <ConnectedServices check={check} />
+      <ConnectedEntities check={check} />
       <WebVitalsAverageRow />
       <WebVitalsOverTimeRow />
       <MetricsByURL />

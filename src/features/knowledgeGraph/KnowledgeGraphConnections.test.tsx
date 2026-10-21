@@ -13,7 +13,7 @@ import { CheckFormValues, FeatureName, Label } from 'types';
 import { toFormValues } from 'components/Checkster/utils/adaptors';
 
 import { addConnection } from './__testHelpers__/connections';
-import { KnowledgeGraphServiceLink } from './KnowledgeGraphServiceLink';
+import { KnowledgeGraphConnections } from './KnowledgeGraphConnections';
 
 const CUSTOM_LABEL: Label = { name: 'app', value: 'banking' };
 
@@ -42,7 +42,7 @@ function renderServiceLink({ labels = [], loadedLabels }: RenderOptions = {}) {
 
   return render(
     <Wrapper>
-      <KnowledgeGraphServiceLink />
+      <KnowledgeGraphConnections />
     </Wrapper>
   );
 }

@@ -128,7 +128,7 @@ describe('useKGReservedLabels', () => {
     mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   });
 
-  it(`reserves service_name and namespace when the Knowledge Graph app is installed`, async () => {
+  it(`reserves service_name, namespace and feo11y_app_id when the Knowledge Graph app is installed`, async () => {
     setKgInstalled(true);
     const { result } = renderReservedLabels();
 

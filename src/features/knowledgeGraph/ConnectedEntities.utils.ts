@@ -17,11 +17,13 @@ export function escapeCypher(value: string): string {
  * Retain monitored services/frontends, then add one-hop service CALLS neighbours.
  * Each UNION branch returns bound entities: KG drops rows with unmatched OPTIONAL MATCH
  * variables. Filter both relationship types at the range end to preserve historical topology.
+ * _created/_expired are KG storage properties (asserts-adi ReservedProperty), in epoch ms;
+ * this raw-Cypher integration depends on that schema, not a versioned public lifetime API.
  */
-export function buildEntityNeighbourhoodQuery(checkEntityName: string, end: number): string {
+export function buildEntityNeighbourhoodQuery(checkEntityName: string, end: number, frontendEnabled = false): string {
   const monitoredEntities = [
     `MATCH (sy:SyntheticCheck {name: "${escapeCypher(checkEntityName)}"})<-[monitored:MONITORED_BY]-(entity)`,
-    `WHERE (entity:Service OR entity:Frontend)`,
+    frontendEnabled ? 'WHERE (entity:Service OR entity:Frontend)' : 'WHERE entity:Service',
     `AND (monitored._created IS NULL OR monitored._created <= ${end})`,
     `AND (monitored._expired IS NULL OR monitored._expired > ${end})`,
   ].join('\n');
@@ -91,13 +93,13 @@ function toQueryString(params: URLSearchParams): string {
  * Open the check, its monitored services and frontends, and its services' neighbours. Environment
  * selection stays inside the exposed mini graph, so this link opens across environments.
  */
-export function getCheckGraphUrl(checkEntityName: string, start: number, end: number): string {
+export function getCheckGraphUrl(checkEntityName: string, start: number, end: number, frontendEnabled = false): string {
   const params = new URLSearchParams();
   appendGraphSearchParams(params, {
     entityType: KG_SYNTHETIC_CHECK_ENTITY_TYPE,
     name: checkEntityName,
     scope: {},
-    connectToEntityTypes: [KG_SERVICE_ENTITY_TYPE, KG_FRONTEND_ENTITY_TYPE],
+    connectToEntityTypes: [KG_SERVICE_ENTITY_TYPE, ...(frontendEnabled ? [KG_FRONTEND_ENTITY_TYPE] : [])],
   });
   // Give each connected type its own criterion so KG expands both branches with OPTIONAL MATCH.
   // Leaving Frontend only in connectToEntityTypes would require a frontend edge to find the check.
@@ -108,11 +110,13 @@ export function getCheckGraphUrl(checkEntityName: string, start: number, end: nu
   params.set('filterCriteria[1][propertyMatchers][0][op]', 'IS NOT NULL');
   params.set('filterCriteria[1][propertyMatchers][0][type]', 'String');
   params.set('filterCriteria[1][propertyMatchers][0][value]', '');
-  params.set('filterCriteria[2][entityType]', KG_FRONTEND_ENTITY_TYPE);
-  params.set('filterCriteria[2][propertyMatchers][0][name]', 'name');
-  params.set('filterCriteria[2][propertyMatchers][0][op]', 'IS NOT NULL');
-  params.set('filterCriteria[2][propertyMatchers][0][type]', 'String');
-  params.set('filterCriteria[2][propertyMatchers][0][value]', '');
+  if (frontendEnabled) {
+    params.set('filterCriteria[2][entityType]', KG_FRONTEND_ENTITY_TYPE);
+    params.set('filterCriteria[2][propertyMatchers][0][name]', 'name');
+    params.set('filterCriteria[2][propertyMatchers][0][op]', 'IS NOT NULL');
+    params.set('filterCriteria[2][propertyMatchers][0][type]', 'String');
+    params.set('filterCriteria[2][propertyMatchers][0][value]', '');
+  }
   params.set('start', String(start));
   params.set('end', String(end));
 

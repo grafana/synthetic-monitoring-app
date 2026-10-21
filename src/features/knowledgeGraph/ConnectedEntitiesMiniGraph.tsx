@@ -4,13 +4,14 @@ import { useTimeRange } from '@grafana/scenes-react';
 
 import { Check } from 'types';
 
-import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
-import { buildEntityNeighbourhoodQuery } from './ConnectedServices.utils';
+import { CONNECTED_ENTITIES_TEST_ID } from './ConnectedEntities.constants';
+import { buildEntityNeighbourhoodQuery } from './ConnectedEntities.utils';
 import {
   getSyntheticCheckEntityName,
   KG_ENTITY_GRAPH_COMPONENT_ID,
   KG_SYNTHETIC_CHECK_ENTITY_TYPE,
 } from './knowledgeGraph';
+import { useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 
 // Minimum height; the component grows itself up to MAX_GRAPH_HEIGHT via autoHeight.
 const GRAPH_HEIGHT = 280;
@@ -58,7 +59,7 @@ export function useExposedMiniGraph() {
   return usePluginComponent<ExposedMiniGraphProps>(KG_ENTITY_GRAPH_COMPONENT_ID);
 }
 
-interface ConnectedServicesMiniGraphProps {
+interface ConnectedEntitiesMiniGraphProps {
   check: Check;
   MiniGraph: ExposedMiniGraphComponent;
 }
@@ -72,13 +73,18 @@ interface ConnectedServicesMiniGraphProps {
  * it would race the pinned card, and the section header already links the check into the
  * Knowledge Graph.
  */
-export function ConnectedServicesMiniGraph({ check, MiniGraph }: ConnectedServicesMiniGraphProps) {
+export function ConnectedEntitiesMiniGraph({ check, MiniGraph }: ConnectedEntitiesMiniGraphProps) {
   const [timeRange] = useTimeRange();
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
 
   return (
-    <div data-testid={CONNECTED_SERVICES_TEST_ID.exposedGraph}>
+    <div data-testid={CONNECTED_ENTITIES_TEST_ID.exposedGraph}>
       <MiniGraph
-        cypherQuery={buildEntityNeighbourhoodQuery(getSyntheticCheckEntityName(check), timeRange.to.valueOf())}
+        cypherQuery={buildEntityNeighbourhoodQuery(
+          getSyntheticCheckEntityName(check),
+          timeRange.to.valueOf(),
+          frontendEnabled
+        )}
         start={timeRange.from.valueOf()}
         end={timeRange.to.valueOf()}
         height={GRAPH_HEIGHT}

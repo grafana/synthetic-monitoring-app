@@ -12,16 +12,16 @@ import { FormSectionName } from 'components/Checkster/types';
 import { Feedback } from 'components/Feedback';
 
 import {
-  CONNECTED_SERVICES_SUBTITLE,
-  CONNECTED_SERVICES_TEST_ID,
-  CONNECTED_SERVICES_TITLE,
-} from './ConnectedServices.constants';
-import { getCheckGraphUrl } from './ConnectedServices.utils';
+  CONNECTED_ENTITIES_SUBTITLE,
+  CONNECTED_ENTITIES_TEST_ID,
+  CONNECTED_ENTITIES_TITLE,
+} from './ConnectedEntities.constants';
+import { getCheckGraphUrl } from './ConnectedEntities.utils';
 import {
-  ConnectedServicesMiniGraph,
+  ConnectedEntitiesMiniGraph,
   ExposedMiniGraphComponent,
   useExposedMiniGraph,
-} from './ConnectedServicesMiniGraph';
+} from './ConnectedEntitiesMiniGraph';
 import {
   findLabelValue,
   getSyntheticCheckEntityName,
@@ -31,7 +31,7 @@ import {
 } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 
-interface ConnectedServicesProps {
+interface ConnectedEntitiesProps {
   check: Check;
 }
 
@@ -48,7 +48,7 @@ interface ConnectedServicesProps {
  * - Enabled but the check has no service or frontend link → a zero state pointing at the edit form.
  * - Enabled and linked → the exposed mini graph.
  */
-export function ConnectedServices({ check }: ConnectedServicesProps) {
+export function ConnectedEntities({ check }: ConnectedEntitiesProps) {
   const kgEnabled = useKnowledgeGraphEnabled();
   const { component: MiniGraph, isLoading } = useExposedMiniGraph();
 
@@ -56,15 +56,15 @@ export function ConnectedServices({ check }: ConnectedServicesProps) {
     return null;
   }
 
-  return <ConnectedServicesSection check={check} MiniGraph={MiniGraph} />;
+  return <ConnectedEntitiesSection check={check} MiniGraph={MiniGraph} />;
 }
 
-interface ConnectedServicesSectionProps {
+interface ConnectedEntitiesSectionProps {
   check: Check;
   MiniGraph: ExposedMiniGraphComponent;
 }
 
-function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSectionProps) {
+function ConnectedEntitiesSection({ check, MiniGraph }: ConnectedEntitiesSectionProps) {
   const styles = useStyles2(getStyles);
   // Expanded on load: the graph is the point of the section, and the KG query only runs for a
   // check that has a service or frontend association label.
@@ -73,23 +73,24 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
 
   const serviceName = findLabelValue(check.labels ?? [], KG_SERVICE_NAME_LABEL);
   const frontendAppId = findLabelValue(check.labels ?? [], KG_FRONTEND_APP_ID_LABEL);
-  const hasConnection = Boolean(serviceName || frontendAppId);
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
+  const hasConnection = Boolean(serviceName || (frontendEnabled && frontendAppId));
 
   return (
-    <section className={styles.container} data-testid={CONNECTED_SERVICES_TEST_ID.section}>
+    <section className={styles.container} data-testid={CONNECTED_ENTITIES_TEST_ID.section}>
       <div className={styles.header}>
         <IconButton
           name={isOpen ? 'angle-down' : 'angle-right'}
-          aria-label={CONNECTED_SERVICES_TITLE}
+          aria-label={CONNECTED_ENTITIES_TITLE}
           aria-expanded={isOpen}
           onClick={() => setIsOpen((open) => !open)}
         />
         <div className={styles.headerText}>
           <Text element="h2" variant="h5">
-            {CONNECTED_SERVICES_TITLE}
+            {CONNECTED_ENTITIES_TITLE}
           </Text>
           <Text variant="bodySmall" color="secondary">
-            {CONNECTED_SERVICES_SUBTITLE}
+            {CONNECTED_ENTITIES_SUBTITLE}
           </Text>
         </div>
         <Feedback feature="knowledge-graph-connected-services" about={{ text: `New feature!` }} />
@@ -101,7 +102,8 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
             href={getCheckGraphUrl(
               getSyntheticCheckEntityName(check),
               timeRange.from.valueOf(),
-              timeRange.to.valueOf()
+              timeRange.to.valueOf(),
+              frontendEnabled
             )}
             target="_blank"
           >
@@ -113,9 +115,9 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
       {isOpen && (
         <div className={styles.body}>
           {hasConnection ? (
-            <ConnectedServicesMiniGraph check={check} MiniGraph={MiniGraph} />
+            <ConnectedEntitiesMiniGraph check={check} MiniGraph={MiniGraph} />
           ) : (
-            <ConnectedServicesZeroState checkId={check.id} />
+            <ConnectedEntitiesZeroState checkId={check.id} />
           )}
         </div>
       )}
@@ -123,12 +125,12 @@ function ConnectedServicesSection({ check, MiniGraph }: ConnectedServicesSection
   );
 }
 
-interface ConnectedServicesZeroStateProps {
+interface ConnectedEntitiesZeroStateProps {
   checkId: Check['id'];
 }
 
 /** Inviting CTA for a check without a Knowledge Graph connection. */
-function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps) {
+function ConnectedEntitiesZeroState({ checkId }: ConnectedEntitiesZeroStateProps) {
   const frontendEnabled = useKnowledgeGraphFrontendEnabled();
   const styles = useStyles2(getStyles);
   // Deep link straight to the Labels section of the edit form, where KG connections live.
@@ -138,7 +140,7 @@ function ConnectedServicesZeroState({ checkId }: ConnectedServicesZeroStateProps
       : undefined;
 
   return (
-    <div className={styles.zeroState} data-testid={CONNECTED_SERVICES_TEST_ID.zeroState}>
+    <div className={styles.zeroState} data-testid={CONNECTED_ENTITIES_TEST_ID.zeroState}>
       <Stack direction="column" alignItems="center" gap={1}>
         <Icon name="sitemap" size="xxl" />
         <Text element="h3" variant="h5">

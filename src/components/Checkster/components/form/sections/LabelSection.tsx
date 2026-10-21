@@ -1,6 +1,6 @@
 import React from 'react';
 import { Stack } from '@grafana/ui';
-import { KnowledgeGraphServiceLink } from 'features/knowledgeGraph/KnowledgeGraphServiceLink';
+import { KnowledgeGraphConnections } from 'features/knowledgeGraph/KnowledgeGraphConnections';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { FormSectionName } from '../../../types';
@@ -24,7 +24,7 @@ export function LabelSection() {
       <SectionContent>
         {error && <LimitsFetchWarning refetch={refetch} isRefetching={isRefetching} error={error} />}
         {showNudge && <CostAttributionSetupHint />}
-        <KnowledgeGraphServiceLink />
+        <KnowledgeGraphConnections labelLimit={customLabelLimit} />
         <Stack direction="column" gap={2} data-testid={CHECKSTER_TEST_ID.form.components.GenericLabelContent.root}>
           <CostAttributionLabelsField />
           <GenericLabelContent description={description} isLoading={isLoading} labelLimit={customLabelLimit} />

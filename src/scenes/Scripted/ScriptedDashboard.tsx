@@ -2,7 +2,7 @@ import React from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Box, Stack, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
-import { ConnectedServices } from 'features/knowledgeGraph/ConnectedServices';
+import { ConnectedEntities } from 'features/knowledgeGraph/ConnectedEntities';
 import { getCountDistinctTargetsQuery } from 'queries/countDistinctTargets';
 import { getScriptedDataReceivedQuery } from 'queries/scriptedDataReceived';
 import { getScriptedDataSentQuery } from 'queries/scriptedDataSent';
@@ -41,7 +41,7 @@ export const ScriptedDashboard = ({ check }: { check: Check }) => {
         <Frequency />
       </Stack>
       <TimepointExplorer check={check} />
-      <ConnectedServices check={check} />
+      <ConnectedEntities check={check} />
 
       <div className={styles.errorRateRow}>
         <ErrorRateMap minStep={minStep} />

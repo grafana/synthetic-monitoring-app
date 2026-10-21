@@ -1,4 +1,4 @@
-import { buildEntityNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedServices.utils';
+import { buildEntityNeighbourhoodQuery, escapeCypher, getCheckGraphUrl } from './ConnectedEntities.utils';
 
 function paramsOf(url: string): URLSearchParams {
   return new URLSearchParams(url.split('?')[1]);
@@ -48,7 +48,7 @@ describe('escapeCypher', () => {
 describe('buildEntityNeighbourhoodQuery', () => {
   it('serializes bound zero-hop and service-only one-hop branches at the selected end time', () => {
     // This checks the query contract, not KG execution; retention also needs live API validation.
-    expect(buildEntityNeighbourhoodQuery('check"\\__https://example.com', 2000)).toBe(
+    expect(buildEntityNeighbourhoodQuery('check"\\__https://example.com', 2000, true)).toBe(
       [
         'MATCH (sy:SyntheticCheck {name: "check\\"\\\\__https://example.com"})<-[monitored:MONITORED_BY]-(entity)',
         'WHERE (entity:Service OR entity:Frontend)',
@@ -71,7 +71,7 @@ describe('buildEntityNeighbourhoodQuery', () => {
 
 describe('getCheckGraphUrl', () => {
   it('anchors the KG entity graph on the check, connected to the services and frontends it monitors', () => {
-    const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/', 1000, 2000);
+    const url = getCheckGraphUrl('grafana.com homepage__https://grafana.com/', 1000, 2000, true);
 
     expect(url.startsWith('/a/grafana-asserts-app/entities?')).toBe(true);
     // A space in the check name encodes as %20, not the form-encoded +.
@@ -96,4 +96,11 @@ describe('getCheckGraphUrl', () => {
       ['Service', 'Frontend']
     );
   });
+});
+
+it('omits Frontend queries and link criteria unless explicitly enabled', () => {
+  expect(buildEntityNeighbourhoodQuery('check', 2000)).not.toContain('Frontend');
+  const params = paramsOf(getCheckGraphUrl('check', 1000, 2000));
+  expectGraphSearch(params, 'SyntheticCheck', [['name', 'check']], ['Service']);
+  expect(params.get('filterCriteria[2][entityType]')).toBeNull();
 });

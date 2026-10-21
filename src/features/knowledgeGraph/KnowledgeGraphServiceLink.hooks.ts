@@ -60,6 +60,7 @@ function upsertLabel(labels: Label[], name: string, value: string): Label[] {
 export interface KGLinkedLabel {
   value: string | undefined;
   isCalManaged: boolean;
+  isAtLimit?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -72,7 +73,7 @@ export interface KGLinkedLabel {
  * Both the KG service-link section and the CAL rows edit through the same form paths,
  * so the two surfaces stay in sync automatically.
  */
-export function useKGLinkedLabel(labelName: string): KGLinkedLabel {
+export function useKGLinkedLabel(labelName: string, labelLimit?: number): KGLinkedLabel {
   const { watch, getValues, setValue } = useFormContext<CheckFormValues>();
   const labels = watch('labels') ?? [];
   const calLabels = watch('calLabels') ?? [];
@@ -95,12 +96,26 @@ export function useKGLinkedLabel(labelName: string): KGLinkedLabel {
         return;
       }
 
-      setValue('labels', upsertLabel(getValues('labels') ?? [], labelName, nextValue), { shouldDirty: true });
+      const currentLabels = getValues('labels') ?? [];
+      if (
+        nextValue &&
+        labelLimit !== undefined &&
+        currentLabels.length >= labelLimit &&
+        !currentLabels.some((label) => label.name === labelName)
+      ) {
+        return;
+      }
+      setValue('labels', upsertLabel(currentLabels, labelName, nextValue), { shouldDirty: true });
     },
-    [getValues, labelName, setValue]
+    [getValues, labelName, labelLimit, setValue]
   );
 
-  return { value, isCalManaged, onChange };
+  const isAtLimit =
+    !isCalManaged &&
+    labelLimit !== undefined &&
+    labels.length >= labelLimit &&
+    !labels.some((label) => label.name === labelName);
+  return { value, isCalManaged, isAtLimit, onChange };
 }
 
 export type KGServiceProperty = 'name' | 'namespace';

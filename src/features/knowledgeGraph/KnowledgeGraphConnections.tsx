@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Dropdown, Icon, Menu, Stack, Text, useStyles2 } from '@grafana/ui';
@@ -10,6 +10,7 @@ import { StyledField } from 'components/Checkster/components/ui/StyledField';
 
 import { KG_FRONTEND_APP_ID_LABEL, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
 import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
+import { KnowledgeGraphConnectionMatch } from './KnowledgeGraphConnectionMatch';
 import { KnowledgeGraphConnectionRow } from './KnowledgeGraphConnectionRow';
 import { KnowledgeGraphFrontendLink } from './KnowledgeGraphFrontendLink';
 import { KGLinkedLabel, useKGLinkedLabel, useKGServiceMatch } from './KnowledgeGraphServiceLink.hooks';
@@ -18,37 +19,52 @@ import { KnowledgeGraphValueCombobox } from './KnowledgeGraphValueCombobox';
 type ConnectionType = 'frontend' | 'service';
 
 // Gate first so the KG-fetching hooks below never run when the integration is disabled.
-export function KnowledgeGraphServiceLink() {
+export function KnowledgeGraphConnections({ labelLimit }: { labelLimit?: number }) {
   const kgEnabled = useKnowledgeGraphEnabled();
 
   if (!kgEnabled) {
     return null;
   }
 
-  return <KnowledgeGraphConnectionFields />;
+  return <KnowledgeGraphConnectionFields labelLimit={labelLimit} />;
 }
 
-function KnowledgeGraphConnectionFields() {
+function KnowledgeGraphConnectionFields({ labelLimit }: { labelLimit?: number }) {
   const addButtonId = useDOMId();
   const {
     formState: { disabled },
   } = useFormContext<CheckFormValues>();
-  const frontend = useKGLinkedLabel(KG_FRONTEND_APP_ID_LABEL);
-  const serviceName = useKGLinkedLabel(KG_SERVICE_NAME_LABEL);
-  const namespace = useKGLinkedLabel(KG_NAMESPACE_LABEL);
+  const frontend = useKGLinkedLabel(KG_FRONTEND_APP_ID_LABEL, labelLimit);
+  const serviceName = useKGLinkedLabel(KG_SERVICE_NAME_LABEL, labelLimit);
+  const namespace = useKGLinkedLabel(KG_NAMESPACE_LABEL, labelLimit);
   // Empty rows are UI-only. Saved values (including asynchronously loaded CALs) stay authoritative.
   const [drafts, setDrafts] = useState({ frontend: false, service: false });
   const frontendEnabled = useKnowledgeGraphFrontendEnabled();
-  const showFrontend = frontendEnabled && Boolean(frontend.value || drafts.frontend);
-  const showService = Boolean(serviceName.value || namespace.value || drafts.service);
+  // Keep rows mounted while CAL inputs are cleared and retyped, without requesting focus.
+  const [visible, setVisible] = useState({ frontend: false, service: false });
+  const hasFrontend = Boolean(frontend.value);
+  const hasService = Boolean(serviceName.value || (namespace.value && !namespace.isCalManaged));
+  useEffect(() => {
+    if (hasFrontend || hasService) {
+      setVisible((current) => ({
+        frontend: current.frontend || hasFrontend,
+        service: current.service || hasService,
+      }));
+    }
+  }, [hasFrontend, hasService]);
+  const showFrontend = frontendEnabled && (hasFrontend || visible.frontend || drafts.frontend);
+  const showService = hasService || visible.service || drafts.service;
 
   const removeConnection = (type: ConnectionType) => {
     if (type === 'frontend') {
       frontend.onChange('');
     } else {
       serviceName.onChange('');
-      namespace.onChange('');
+      if (!namespace.isCalManaged) {
+        namespace.onChange('');
+      }
     }
+    setVisible((current) => ({ ...current, [type]: false }));
     setDrafts((current) => ({ ...current, [type]: false }));
     requestAnimationFrame(() => document.getElementById(addButtonId)?.focus());
   };
@@ -112,6 +128,11 @@ function KnowledgeGraphConnectionFields() {
           </Dropdown>
         </div>
       )}
+      {(frontend.isAtLimit || serviceName.isAtLimit || namespace.isAtLimit) && (
+        <Text color="secondary" variant="bodySmall">
+          Custom label limit reached. Remove a custom label before adding another connection label.
+        </Text>
+      )}
       <Text color="secondary" variant="bodySmall">
         Changes may take a few minutes to appear after saving.
       </Text>
@@ -151,7 +172,7 @@ function ServiceConnection({ serviceName, namespace, disabled, autoFocus, onRemo
               onChange={serviceName.onChange}
               placeholder="Select or type a service name"
               isClearable={false}
-              disabled={disabled}
+              disabled={disabled || serviceName.isAtLimit}
             />
           </StyledField>
           <StyledField label="Namespace" htmlFor={`${id}-namespace`}>
@@ -163,18 +184,15 @@ function ServiceConnection({ serviceName, namespace, disabled, autoFocus, onRemo
               placeholder="Select or type a namespace"
               emptyOptionLabel="Any namespace"
               isClearable={false}
-              disabled={disabled}
+              disabled={disabled || namespace.isAtLimit}
             />
           </StyledField>
         </div>
         {matchState === 'match' && serviceName.value && (
-          <div className={styles.matchIndicator}>
-            <Icon name="check-circle" size="sm" />
-            <span>
-              Will link to service {serviceName.value}
-              {namespace.value && ` (namespace ${namespace.value})`} in the Knowledge Graph.
-            </span>
-          </div>
+          <KnowledgeGraphConnectionMatch>
+            Will link to service {serviceName.value}
+            {namespace.value && ` (namespace ${namespace.value})`} in the Knowledge Graph.
+          </KnowledgeGraphConnectionMatch>
         )}
         {matchState === 'no-match' && serviceName.value && (
           <Text color="secondary" variant="bodySmall">
@@ -188,13 +206,6 @@ function ServiceConnection({ serviceName, namespace, disabled, autoFocus, onRemo
 }
 
 const getStyles = (theme: GrafanaTheme2) => ({
-  matchIndicator: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.5),
-    fontSize: theme.typography.bodySmall.fontSize,
-    color: theme.colors.success.text,
-  }),
   serviceFields: css({
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 240px), 1fr))',
