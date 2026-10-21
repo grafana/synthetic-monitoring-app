@@ -177,13 +177,18 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
   const unknown = !states || states.some(({ status }) => status === 'unknown');
   const missing = states?.some(({ status }) => status === 'missing');
   if (unknown || missing) {
+    const allDestinationsMissing = states?.every(
+      (state) => state.status === 'missing' && state.destinations.every(({ status }) => status === 'missing')
+    );
+    const routingWarning = missing
+      ? 'Some notification destinations are not configured. Notifications may not reach all intended recipients.'
+      : 'Review where notifications are sent.';
     return (
       <Alert
         severity="warning"
         title={missing ? 'Alerting setup is incomplete' : 'Notification routing could not be verified'}
       >
-        Alert rules are enabled.{' '}
-        {missing ? 'Notifications have no usable destination.' : 'Review where notifications are sent.'}{' '}
+        Alert rules are enabled. {allDestinationsMissing ? 'Notifications have no usable destination.' : routingWarning}{' '}
         <TextLink href="/alerting/routes" external>
           Manage notifications
         </TextLink>

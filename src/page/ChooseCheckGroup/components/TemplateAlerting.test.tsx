@@ -1,10 +1,12 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
+import { notificationContactPointFactory } from 'test/factories/notificationContactPoint';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import {
   DEFAULT_NOTIFICATION_CONTACT_POINT,
   DEFAULT_NOTIFICATION_TREE,
   SECOND_NOTIFICATION_CONTACT_POINT,
+  UNCONFIGURED_NOTIFICATION_CONTACT_POINT,
 } from 'test/fixtures/notificationRouting';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
@@ -75,4 +77,27 @@ it('supports another check type with multiple presets and keeps each alert’s r
   expect(
     within(failures).getByRole('link', { name: SECOND_NOTIFICATION_CONTACT_POINT.spec.title })
   ).toBeInTheDocument();
+});
+
+it('guides users to finish an existing notification setup and hides the notice when alerts are off', async () => {
+  const existingContactPoint = notificationContactPointFactory.build({ spec: { title: 'Synthetic Monitoring email' } });
+  server.use(
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({
+        json: { items: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT, existingContactPoint], metadata: {} },
+      }),
+    })
+  );
+  const { user } = render(<HttpTemplate />);
+  const notice = await screen.findByRole('status', { name: 'Notification setup needs attention' });
+  expect(within(notice).getByRole('link', { name: 'Synthetic Monitoring email' })).toBeInTheDocument();
+  expect(within(notice).getByRole('link', { name: 'Review notification policies' })).toHaveAttribute(
+    'href',
+    '/alerting/routes'
+  );
+  expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('checkbox', { name: 'Alert on check failure' }));
+  await user.click(screen.getByRole('checkbox', { name: 'Alert before the TLS certificate expires' }));
+  expect(screen.queryByRole('status', { name: 'Notification setup needs attention' })).not.toBeInTheDocument();
+  expect(screen.getByText(/Alerts are off for this check/)).toBeInTheDocument();
 });

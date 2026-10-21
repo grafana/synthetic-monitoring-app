@@ -2,7 +2,12 @@ import React from 'react';
 import { act, screen, waitFor } from '@testing-library/react';
 import { DB } from 'test/db';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
-import { UNCONFIGURED_NOTIFICATION_CONTACT_POINT } from 'test/fixtures/notificationRouting';
+import {
+  DEFAULT_NOTIFICATION_TREE,
+  MULTI_DESTINATION_NOTIFICATION_TREE,
+  SECOND_NOTIFICATION_CONTACT_POINT,
+  UNCONFIGURED_NOTIFICATION_CONTACT_POINT,
+} from 'test/fixtures/notificationRouting';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
@@ -62,7 +67,81 @@ it('shows incomplete delivery even when the alert rules were created', async () 
   );
   render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
   expect(await screen.findByText('Alerting setup is incomplete')).toBeInTheDocument();
+  expect(screen.getByText(/Notifications have no usable destination/)).toBeInTheDocument();
   expect(screen.getByRole('link', { name: 'Manage notifications' })).toHaveAttribute('href', '/alerting/routes');
+});
+
+it('reports partial notification setup when a continued branch has a configured contact point', async () => {
+  server.use(
+    apiRoute('listAlertsForCheck', {
+      result: () => ({ json: { alerts: [{ ...failedAlert, status: 'OK', error: undefined }] } }),
+    }),
+    apiRoute('listNotificationRoutingTrees', {
+      result: () => ({ json: { items: [MULTI_DESTINATION_NOTIFICATION_TREE], metadata: {} } }),
+    }),
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({
+        json: { items: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT, SECOND_NOTIFICATION_CONTACT_POINT], metadata: {} },
+      }),
+    })
+  );
+  render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
+  expect(await screen.findByText(/Some notification destinations are not configured/)).toBeInTheDocument();
+  expect(screen.queryByText(/Notifications have no usable destination/)).not.toBeInTheDocument();
+});
+
+it.each([
+  { state: 'configured', contactPoints: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT, SECOND_NOTIFICATION_CONTACT_POINT] },
+  { state: 'unverified', contactPoints: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT] },
+])('does not claim all destinations are unusable when another alert’s routing is $state', async ({ contactPoints }) => {
+  server.use(
+    apiRoute('listAlertsForCheck', {
+      result: () => ({
+        json: {
+          alerts: [
+            { ...failedAlert, status: 'OK', error: undefined },
+            {
+              ...failedAlert,
+              name: CheckAlertType.TLSTargetCertificateCloseToExpiring,
+              threshold: 30,
+              period: undefined,
+              status: 'OK',
+              error: undefined,
+            },
+          ],
+        },
+      }),
+    }),
+    apiRoute('listNotificationRoutingTrees', {
+      result: () => ({
+        json: {
+          items: [
+            {
+              ...DEFAULT_NOTIFICATION_TREE,
+              spec: {
+                ...DEFAULT_NOTIFICATION_TREE.spec,
+                routes: [
+                  {
+                    matchers: [
+                      { label: 'alertname', type: '=', value: CheckAlertType.TLSTargetCertificateCloseToExpiring },
+                    ],
+                    receiver: SECOND_NOTIFICATION_CONTACT_POINT.spec.title,
+                  },
+                ],
+              },
+            },
+          ],
+          metadata: {},
+        },
+      }),
+    }),
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({ json: { items: contactPoints, metadata: {} } }),
+    })
+  );
+  render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
+  expect(await screen.findByText(/Some notification destinations are not configured/)).toBeInTheDocument();
+  expect(screen.queryByText(/Notifications have no usable destination/)).not.toBeInTheDocument();
 });
 
 it('refreshes server-side retries without sending an unchanged alert configuration', async () => {

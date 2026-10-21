@@ -32,16 +32,6 @@ export function checkAlertRetryConflict(
   }
 }
 
-export class AlertingConfirmationRequired extends Error {
-  constructor(
-    message: string,
-    public proceed: () => Promise<Function | void>
-  ) {
-    super(message);
-    this.name = 'AlertingConfirmationRequired';
-  }
-}
-
 export class CheckAlertingSaveError extends Error {
   constructor(
     message: string,

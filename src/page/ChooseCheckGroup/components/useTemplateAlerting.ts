@@ -87,9 +87,9 @@ export function useTemplateAlerting(check: Check, alerts: CheckAlertDraft[]) {
     selectedAlerts,
     canWriteAlerts,
     canConfigure,
+    existingContactPoint: eligibility?.status === 'managed' ? eligibility.existingContactPoint : undefined,
     showEmailInput: canConfigure || (!setupUnavailable && Boolean(emails)),
     isLoading: routing.isLoading || labelMode.isLoading || (canReadChecks && checks.isLoading),
-    isFetching: routing.isFetching || labelMode.isFetching || checks.isFetching,
     previews,
     emails,
     emailError,
@@ -106,7 +106,6 @@ export function useTemplateAlerting(check: Check, alerts: CheckAlertDraft[]) {
       setUnselected((current) =>
         current.includes(name) ? current.filter((value) => value !== name) : [...current, name]
       ),
-    retry: () => Promise.all([routing.refetch(), labelMode.refetch(), ...(canReadChecks ? [checks.refetch()] : [])]),
   };
 }
 

@@ -546,7 +546,9 @@ it('saves directly when routing is unavailable and keeps the inline warning', as
   );
   const { user, onClose } = await openDrawer();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
-  expect(await screen.findByText('Couldn’t verify notification destinations.')).toBeInTheDocument();
+  expect(await screen.findByText(/Notification routing could not be verified\./)).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: 'Review in Alerting' })).toHaveAttribute('href', '/alerting/routes');
+  expect(screen.queryByRole('button', { name: 'Retry notification lookup' })).not.toBeInTheDocument();
   expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument();
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));

@@ -137,7 +137,7 @@ it('previews regex routing and saves without a routing warning or changing exist
 it.each([
   { label: 'namespace', type: '=~' as const, value: '(?P<kind>synthetic)_monitoring' },
   { label: 'label_per_check_alerts', type: '=' as const, value: 'true' },
-])('requires explicit continuation for unverified routing: %j', async (matcher) => {
+])('shows unverified routing inline and saves directly: %j', async (matcher) => {
   const routing = mockInitialRouting(
     {
       ...DEFAULT_NOTIFICATION_TREE,
@@ -162,11 +162,9 @@ it.each([
   const checks = jest.fn();
   server.use(apiRoute('addCheck', {}, checks));
   await submitForm(user);
-  const dialog = await screen.findByRole('dialog');
-  expect(within(dialog).getByText(/Notification routing is incomplete or could not be verified/)).toBeInTheDocument();
-  expect(checks).not.toHaveBeenCalled();
-  await user.click(within(dialog).getByRole('button', { name: 'Save check anyway' }));
+  await waitFor(() => expect(checks).toHaveBeenCalledTimes(1));
   expect((await read()).body).toEqual({ alerts: [defaultAlert] });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(routing.creates).not.toHaveBeenCalled();
   expect(routing.updates).not.toHaveBeenCalled();
 });
@@ -202,7 +200,9 @@ it('preserves a recipient draft when a refreshed resource list cannot establish 
   expect(await screen.findByText('Notification setup could not be verified')).toBeInTheDocument();
   expect(screen.getByRole('textbox', { name: /Email addresses/ })).toHaveValue('oncall@example.com');
   await submitForm(user);
-  expect(await screen.findByRole('dialog')).toHaveTextContent('Notification setup is no longer available here.');
+  const dialog = await screen.findByRole('dialog');
+  expect(dialog).toHaveTextContent('Check saved. Alerting setup is incomplete.');
+  expect(dialog).toHaveTextContent('Notification routing has changed or cannot be verified.');
 });
 
 it('enables failed checks by default and creates shared email routing on save without changing the default', async () => {
@@ -240,28 +240,27 @@ it.each([EXISTING_SM_NOTIFICATION_TREE, PROVISIONED_NOTIFICATION_TREE])(
   'does not offer shared setup over an existing SM or provisioned policy',
   async (tree) => {
     const routing = mockInitialRouting(tree);
-    const { user } = await readyForm();
+    const { user, read } = await readyForm();
     expect(await screen.findByText('No notification destination configured')).toBeInTheDocument();
     expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument();
     await submitForm(user);
-    const dialog = await screen.findByRole('dialog');
-    expect(within(dialog).getByText(/Notification routing is incomplete/)).toBeInTheDocument();
+    expect((await read(1)).body).toEqual({ alerts: [defaultAlert] });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(routing.creates).not.toHaveBeenCalled();
     expect(routing.updates).not.toHaveBeenCalled();
   }
 );
 
-it('requires explicit continuation when setup is skipped', async () => {
+it('shows missing notifications inline and saves directly when setup is skipped', async () => {
   const routing = mockInitialRouting();
   const { user, read } = await readyForm();
   const checks = jest.fn();
   server.use(apiRoute('addCheck', {}, checks));
+  expect(await screen.findByText('No notification destination configured')).toBeInTheDocument();
   await submitForm(user);
-  const dialog = await screen.findByRole('dialog');
-  expect(checks).not.toHaveBeenCalled();
-  await user.click(within(dialog).getByRole('button', { name: 'Save check anyway' }));
   await waitFor(() => expect(checks).toHaveBeenCalledTimes(1));
   expect((await read()).body).toEqual({ alerts: [defaultAlert] });
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(routing.creates).not.toHaveBeenCalled();
 });
 
@@ -326,8 +325,10 @@ it('removes an invalid email draft if a policy change makes shared setup unavail
   await waitFor(() => expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument());
   expect(screen.queryByText(/Enter valid email addresses/)).not.toBeInTheDocument();
   await submitForm(user);
-  const dialog = await screen.findByRole('dialog');
-  expect(within(dialog).getByRole('button', { name: 'Save check anyway' })).toBeInTheDocument();
+  await waitFor(() =>
+    expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(`/checks/${BASIC_HTTP_CHECK.id}`)
+  );
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(routing.creates).not.toHaveBeenCalled();
 });
 
@@ -410,6 +411,61 @@ it('preserves a created contact point after a policy conflict and reuses it on a
   expect(routing.creates).toHaveBeenCalledTimes(1);
 });
 
+it('explains unfinished notification setup after reopening without adopting the existing contact point', async () => {
+  const routing = mockInitialRouting();
+  const policyAttempts = jest.fn();
+  server.use(apiRoute('updateNotificationRoutingTree', { result: () => ({ status: 409 }) }, policyAttempts));
+  const first = await readyForm();
+  await first.user.type(await screen.findByRole('textbox', { name: /Email addresses/ }), 'one@example.com');
+  await submitForm(first.user);
+  expect(await screen.findByText('Check saved. Alerting setup is incomplete.')).toBeInTheDocument();
+  expect(routing.creates).toHaveBeenCalledTimes(1);
+  first.unmount();
+  first.queryClient.clear();
+
+  const { user, queryClient } = await readyForm();
+  const notice = await screen.findByRole('status', { name: 'Notification setup needs attention' });
+  expect(notice).toHaveTextContent(
+    'contact point already exists, but notifications for Synthetic Monitoring aren’t configured.'
+  );
+  expect(within(notice).getByRole('link', { name: 'Synthetic Monitoring email' })).toHaveAttribute(
+    'href',
+    '/alerting/notifications/receivers/U3ludGhldGljIE1vbml0b3JpbmcgZW1haWw/edit'
+  );
+  expect(within(notice).getByRole('link', { name: 'Review notification policies' })).toHaveAttribute(
+    'href',
+    '/alerting/routes'
+  );
+  expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument();
+
+  // A policy configured in Alerting resolves the notice on the next lookup.
+  routing.changeTree({
+    ...DEFAULT_NOTIFICATION_TREE,
+    spec: {
+      ...DEFAULT_NOTIFICATION_TREE.spec,
+      routes: [
+        {
+          receiver: 'Synthetic Monitoring email',
+          continue: false,
+          matchers: [{ label: 'namespace', type: '=', value: 'synthetic_monitoring' }],
+        },
+      ],
+    },
+  });
+  await act(() => queryClient.invalidateQueries({ queryKey: notificationRoutingQueryKey() }));
+  await waitFor(() =>
+    expect(screen.queryByRole('status', { name: 'Notification setup needs attention' })).not.toBeInTheDocument()
+  );
+  expect(await screen.findByRole('link', { name: 'Synthetic Monitoring email' })).toBeInTheDocument();
+  await submitForm(user);
+  await waitFor(() =>
+    expect(screen.getByTestId(ROUTER_TEST_ID.pathname)).toHaveTextContent(`/checks/${BASIC_HTTP_CHECK.id}`)
+  );
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(routing.creates).toHaveBeenCalledTimes(1);
+  expect(policyAttempts).toHaveBeenCalledTimes(1);
+});
+
 it('does not install a shared route when another user adds an SM policy during setup', async () => {
   const routing = mockInitialRouting();
   const { user } = await readyForm();
@@ -451,18 +507,16 @@ it('allows an explicit opt-out without configuring notifications', async () => {
   expect(routing.creates).not.toHaveBeenCalled();
 });
 
-it('requires explicit continuation when routing is unreadable', async () => {
+it('shows unreadable routing inline and saves directly', async () => {
   const routing = mockInitialRouting();
   server.use(apiRoute('listNotificationRoutingTrees', { result: () => ({ status: 403 }) }));
   const { user } = await readyForm();
   const checks = jest.fn();
   server.use(apiRoute('addCheck', {}, checks));
+  expect(await screen.findByText(/Notification routing could not be verified/)).toBeInTheDocument();
   await submitForm(user);
-  const dialog = await screen.findByRole('dialog');
-  expect(within(dialog).getByText(/Notification routing could not be inspected/)).toBeInTheDocument();
-  expect(checks).not.toHaveBeenCalled();
-  await user.click(within(dialog).getByRole('button', { name: 'Save check anyway' }));
   await waitFor(() => expect(checks).toHaveBeenCalledTimes(1));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   expect(routing.creates).not.toHaveBeenCalled();
 });
 
@@ -481,9 +535,6 @@ it('allows check creation without alert permissions and exposes the incomplete s
   const alerts = jest.fn();
   server.use(apiRoute('addCheck', {}, checks), apiRoute('updateAlertsForCheck', {}, alerts));
   await submitForm(user);
-  const dialog = await screen.findByRole('dialog');
-  expect(checks).not.toHaveBeenCalled();
-  await user.click(within(dialog).getByRole('button', { name: 'Save check anyway' }));
   expect(await screen.findByText('Check saved. Alerting setup is incomplete.')).toBeInTheDocument();
   expect(checks).toHaveBeenCalledTimes(1);
   expect(alerts).not.toHaveBeenCalled();

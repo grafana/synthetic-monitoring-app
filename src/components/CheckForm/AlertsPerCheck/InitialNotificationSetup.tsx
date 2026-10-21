@@ -7,6 +7,7 @@ import { canSetUpNotifications } from 'data/initialNotificationSetup';
 import { useUserPermissions } from 'data/permissions';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 
+import { ExistingNotificationSetupNotice } from './ExistingNotificationSetupNotice';
 import { getNotificationSetupEligibility } from './notificationSetup';
 
 export function InitialNotificationSetup() {
@@ -69,6 +70,9 @@ export function InitialNotificationSetup() {
         alerting.
       </Alert>
     );
+  }
+  if (eligibility?.status === 'managed' && eligibility.existingContactPoint) {
+    return <ExistingNotificationSetupNotice contactPointName={eligibility.existingContactPoint.spec.title} />;
   }
   if (eligibility?.status === 'managed' || (setupUnknown && notificationEmails === undefined)) {
     return null;

@@ -2,7 +2,6 @@ import React, { useId } from 'react';
 import { GrafanaTheme2 } from '@grafana/data';
 import {
   Box,
-  Button,
   Checkbox,
   Field,
   Icon,
@@ -19,6 +18,7 @@ import { trackLinkClick } from 'features/tracking/linkEvents';
 import { CheckAlertDraft, CheckAlertType } from 'types';
 import { encodeReceiverForUrl } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
 import { ALERT_PERIODS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
+import { ExistingNotificationSetupNotice } from 'components/CheckForm/AlertsPerCheck/ExistingNotificationSetupNotice';
 import { NotificationRouting } from 'components/CheckForm/AlertsPerCheck/notificationRouting';
 
 import { TemplateAlertingState } from './useTemplateAlerting';
@@ -67,8 +67,9 @@ function describeAlert(alert: CheckAlertDraft) {
 function Destinations({ preview }: { preview: NotificationRouting }) {
   if (preview.status === 'unknown') {
     return (
-      <Text color="secondary" variant="bodySmall">
-        Couldn’t verify notification destinations.
+      <Text color="secondary" variant="bodySmall" weight="regular">
+        Notification routing could not be verified.{' '}
+        <NotificationLink href="/alerting/routes">Review in Alerting</NotificationLink>
       </Text>
     );
   }
@@ -113,7 +114,6 @@ export function TemplateAlerting({ state, disabled = false }: { state: TemplateA
   const styles = useStyles2(getStyles);
   const id = useId();
   const hasAlerts = state.selectedAlerts.length > 0;
-  const unknown = Array.from(state.previews.values()).some(({ status }) => status === 'unknown');
 
   if (!state.alerts.length) {
     return null;
@@ -179,12 +179,21 @@ export function TemplateAlerting({ state, disabled = false }: { state: TemplateA
               </Text>
             </Box>
           )}
+          {hasAlerts && state.existingContactPoint && (
+            <ExistingNotificationSetupNotice contactPointName={state.existingContactPoint.spec.title} />
+          )}
           {hasAlerts && state.showEmailInput && (
             <Stack direction="column" gap={1}>
               <Text color={state.canConfigure ? 'secondary' : 'warning'} variant="bodySmall">
                 {state.canConfigure
                   ? 'The default contact point isn’t configured. Add email recipients for current and future Synthetic Monitoring checks.'
                   : 'Notification setup could not be verified. Your email draft is preserved.'}
+                {!state.canConfigure && (
+                  <>
+                    {' '}
+                    <NotificationLink href="/alerting/routes">Review in Alerting</NotificationLink>
+                  </>
+                )}
               </Text>
               <Field
                 htmlFor={`${id}-emails`}
@@ -216,17 +225,6 @@ export function TemplateAlerting({ state, disabled = false }: { state: TemplateA
             Recipients follow your notification policies.{' '}
             <NotificationLink href="/alerting/routes">Manage notifications in Grafana Alerting</NotificationLink>
           </Text>
-          {unknown && !state.canConfigure && (
-            <Button
-              size="sm"
-              variant="secondary"
-              fill="text"
-              disabled={disabled || state.isFetching}
-              onClick={() => void state.retry()}
-            >
-              Retry notification lookup
-            </Button>
-          )}
         </div>
       )}
     </div>

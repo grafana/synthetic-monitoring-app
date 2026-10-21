@@ -51,7 +51,8 @@ export function excludesSyntheticMonitoring(route: RoutingTree['spec']['routes']
 
 export type NotificationSetupEligibility =
   | { status: 'available'; tree: RoutingTree }
-  | { status: 'managed' | 'unknown' };
+  | { status: 'managed'; existingContactPoint?: Receiver }
+  | { status: 'unknown' };
 
 export function getNotificationSetupEligibility(
   trees: RoutingTree[],
@@ -69,12 +70,17 @@ export function getNotificationSetupEligibility(
   if (
     Boolean(tree.metadata.annotations?.['grafana.com/provenance']) ||
     isContactPointConfigured(receiver) ||
-    !tree.spec.routes.every(excludesSyntheticMonitoring) ||
-    contactPoints.some(
-      ({ spec, metadata }) => spec.title === SM_CONTACT_POINT_TITLE && metadata.name !== pendingReceiverName
-    )
+    !tree.spec.routes.every(excludesSyntheticMonitoring)
   ) {
     return { status: 'managed' };
+  }
+  // Setup would otherwise be available. Describe the existing contact point
+  // without claiming it belongs to this attempt or adopting it after a reload.
+  const existingContactPoint = contactPoints.find(
+    ({ spec, metadata }) => spec.title === SM_CONTACT_POINT_TITLE && metadata.name !== pendingReceiverName
+  );
+  if (existingContactPoint) {
+    return { status: 'managed', existingContactPoint };
   }
   return { status: 'available', tree };
 }

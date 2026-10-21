@@ -6,7 +6,7 @@ import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { Check, CheckFormValues } from 'types';
-import { AlertingConfirmationRequired, CheckAlertingSaveError } from 'data/alertSetupRecovery';
+import { CheckAlertingSaveError } from 'data/alertSetupRecovery';
 import { useLabelMode } from 'data/useLabelMode';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 import { OverLimitAlert } from 'components/OverLimitAlert';
@@ -129,13 +129,8 @@ export function FormRoot({
           <OverLimitAlert checkType={checkType} />
         </div>
       )}
-      {saveError instanceof AlertingConfirmationRequired || saveError instanceof CheckAlertingSaveError ? (
-        <AlertingSaveDialog
-          error={saveError}
-          busy={resolvingAlerting}
-          onAction={resolveAlerting}
-          onCancel={() => setSaveError(undefined)}
-        />
+      {saveError instanceof CheckAlertingSaveError ? (
+        <AlertingSaveDialog error={saveError} busy={resolvingAlerting} onAction={resolveAlerting} />
       ) : (
         !!saveError && (
           <Alert

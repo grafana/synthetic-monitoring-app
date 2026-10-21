@@ -4,26 +4,14 @@ import { trackFaroUserAction } from 'features/tracking/userAction';
 
 import { Check, CheckAlertDraft, CheckFormValues } from 'types';
 import { FaroUserAction } from 'faro';
-import {
-  AlertingConfirmationRequired,
-  CheckAlertingSaveError,
-  checkAlertRetryConflict,
-  sameAlertSettings,
-} from 'data/alertSetupRecovery';
-import {
-  canSetUpNotifications,
-  createInitialNotificationSetup,
-  InitialNotificationSetup,
-} from 'data/initialNotificationSetup';
+import { CheckAlertingSaveError, checkAlertRetryConflict, sameAlertSettings } from 'data/alertSetupRecovery';
+import { createInitialNotificationSetup, InitialNotificationSetup } from 'data/initialNotificationSetup';
 import { setPendingAlertSetup } from 'data/pendingAlertSetup';
 import { getUserPermissions } from 'data/permissions';
 import { QUERY_KEYS as ALERT_QUERY_KEYS, useUpdateAlertsForCheck } from 'data/useCheckAlerts';
 import { QUERY_KEYS, useCUDChecks } from 'data/useChecks';
-import { fetchNotificationRouting, notificationRoutingQueryKey } from 'data/useNotificationRouting';
+import { notificationRoutingQueryKey } from 'data/useNotificationRouting';
 import { getFetchErrorMessage } from 'data/utils';
-import { generateAlertLabels } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
-import { inspectNotificationRouting } from 'components/CheckForm/AlertsPerCheck/notificationRouting';
-import { getNotificationSetupEligibility } from 'components/CheckForm/AlertsPerCheck/notificationSetup';
 import { getAlertsPayload } from 'components/Checkster/transformations/toPayload.alerts';
 
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
@@ -47,51 +35,10 @@ export function useHandleSubmitCheckster(initialCheck?: Check, { onCheckSaved }:
       const previous: CheckAlertDraft[] = initialCheck?.alerts ?? [];
       const isUpdate = Boolean(initialCheck?.id);
       const canWriteAlerts = getUserPermissions().canWriteAlerts;
-      let setup: InitialNotificationSetup | undefined;
-      let warning: string | undefined;
-
-      if (desired.length) {
-        if (!canWriteAlerts) {
-          warning =
-            'You do not have permission to create alerts. You can save the check and ask an administrator to complete alerting setup.';
-        } else {
-          try {
-            const [routing, labelMode] = await Promise.all([fetchNotificationRouting(), smDS.getLabelMode()]);
-            const eligibility = getNotificationSetupEligibility(routing.trees, routing.contactPoints);
-            if (formValues.notificationEmails?.trim()) {
-              if (eligibility.status !== 'available' || !canSetUpNotifications(eligibility.tree)) {
-                warning =
-                  'Notification setup is no longer available here. Review routing in Grafana Alerting, or save the check without changing notification policies.';
-              } else {
-                setup = { emails: formValues.notificationEmails };
-              }
-            } else {
-              const states = desired.map((alert) =>
-                inspectNotificationRouting(
-                  routing.trees,
-                  routing.contactPoints,
-                  generateAlertLabels(alert.name, {
-                    checkType: formValues.checkType,
-                    frequency: payload.frequency,
-                    customLabels: payload.labels,
-                    job: payload.job,
-                    instance: payload.target,
-                    labelMode: labelMode.mode,
-                    period: alert.period,
-                  })
-                )
-              );
-              if (states.some(({ status }) => status !== 'configured')) {
-                warning =
-                  'Notification routing is incomplete or could not be verified. Alerts may fire without notifying anyone. You can save the check and finish setup in Grafana Alerting.';
-              }
-            }
-          } catch {
-            warning =
-              'Notification routing could not be inspected. You can save the check and review notification setup in Grafana Alerting.';
-          }
-        }
-      }
+      // Routing warnings are shown inline. If the user requested shared email
+      // setup, its write path still rechecks permissions and current policies.
+      const setup: InitialNotificationSetup | undefined =
+        desired.length && formValues.notificationEmails?.trim() ? { emails: formValues.notificationEmails } : undefined;
 
       const save = async (): Promise<Function> => {
         trackFaroUserAction(
@@ -156,9 +103,6 @@ export function useHandleSubmitCheckster(initialCheck?: Check, { onCheckSaved }:
         return finish();
       };
 
-      if (warning) {
-        throw new AlertingConfirmationRequired(warning, save);
-      }
       return save();
     },
     [
