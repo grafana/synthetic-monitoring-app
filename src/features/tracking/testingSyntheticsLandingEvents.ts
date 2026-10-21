@@ -12,8 +12,7 @@ interface LandingViewed extends TrackingEventProps {
 }
 
 /** Tracks when the Testing & synthetics landing page is viewed. */
-export const trackTestingSyntheticsLandingViewed =
-  testingSyntheticsLandingEvents<LandingViewed>('viewed');
+export const trackTestingSyntheticsLandingViewed = testingSyntheticsLandingEvents<LandingViewed>('viewed');
 
 interface OpenLinkClicked extends TrackingEventProps {
   /** The product panel the Open link belongs to. */
