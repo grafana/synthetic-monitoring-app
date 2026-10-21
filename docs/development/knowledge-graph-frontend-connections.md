@@ -12,15 +12,25 @@ shared Labels scroll area. CAL inputs retain their existing per-field clearing.
 
 ## Required deployment
 
-The app stores labels, not graph edges. Enable `Frontend` and `SyntheticCheck`
-discovery and wait for the managed backend rules in
-[grafana/asserts-adi#7844](https://github.com/grafana/asserts-adi/pull/7844)
-to be merged and deployed before enabling the selector. The app does not install rules.
-The companion YAML is a temporary development reference; remove it once the managed
-rules are available. Do not use it as a separate production deployment step.
+The app stores labels, not graph edges. The managed enrichment and relation rules
+were merged in [grafana/asserts-adi#7844](https://github.com/grafana/asserts-adi/pull/7844).
+Confirm a backend release containing that change is deployed on the target stack
+before enabling the selector. No manual rule upload is required.
+
+The built-in [enrichment](https://github.com/grafana/asserts-adi/blob/ad8754a699a26f2699c1e53936586a23c2fdc809/yoda/src/main/resources/entities_synthetic_monitoring.yml)
+and [relation rule](https://github.com/grafana/asserts-adi/blob/ad8754a699a26f2699c1e53936586a23c2fdc809/yoda/src/main/resources/relationships_synthetic_monitoring_frontend.yml)
+require Synthetic Monitoring and either Frontend Observability vendor (`feo11y` or
+`feo11y-frontend-observability`). Confirm `Frontend` and `SyntheticCheck` discovery
+is active on the stack.
 
 Pre-deploy `synthetic-monitoring.knowledge-graph-frontend` disabled through all GOFF
 waves before enabling it, following [the migration guide](./openfeature-migration.md).
+The definition PRs, in rollout order, are
+[dev #777655](https://github.com/grafana/deployment_tools/pull/777655),
+[staging #777673](https://github.com/grafana/deployment_tools/pull/777673),
+[canary #777674](https://github.com/grafana/deployment_tools/pull/777674), and
+[prod #777675](https://github.com/grafana/deployment_tools/pull/777675).
+Verify each wave before proceeding to the next; enabling the feature is separate.
 With this flag off, frontend labels remain ordinary custom labels, and the panel,
 mini-graph query and Knowledge Graph link use service connections only.
 
