@@ -4,9 +4,9 @@ import { CHECKS_TEST_ID } from 'test/dataTestIds';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockCmabCostAttributionWrite, mockFeatureToggles } from 'test/utils';
+import { mockCmabCostAttributionWrite } from 'test/utils';
 
-import { Check, CheckType, FeatureName } from 'types';
+import { Check, CheckType } from 'types';
 
 import { ChecksterProvider } from './Checkster/contexts/ChecksterContext';
 import { CMAB_URLS } from './CostAttribution/CostAttribution.constants';
@@ -76,7 +76,6 @@ describe('CheckUsage', () => {
 
   describe('cost attribution setup nudge', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
       mockCalNames([]);
       mockTrackCmabLinkClicked.mockClear();
     });

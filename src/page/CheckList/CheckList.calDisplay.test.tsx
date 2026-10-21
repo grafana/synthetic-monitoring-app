@@ -5,9 +5,8 @@ import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
 
-import { Check, FeatureName, HTTPCheck } from 'types';
+import { Check, HTTPCheck } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
 
@@ -71,11 +70,7 @@ async function renderCheckList(checks: Check[] = [CHECK_WITH_CAL_AND_CUSTOM], se
 }
 
 describe('CheckList - CAL Display', () => {
-  describe('when CALs feature flag is enabled', () => {
-    beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: true });
-    });
-
+  describe('with cost attribution labels', () => {
     describe('card view (default)', () => {
       it('displays CAL tags with distinct styling alongside custom labels', async () => {
         await renderCheckList([CHECK_WITH_CAL_AND_CUSTOM]);
@@ -138,28 +133,6 @@ describe('CheckList - CAL Display', () => {
         expect(await screen.findByText(CHECK_WITH_ONLY_CUSTOM.job)).toBeInTheDocument();
         expect(await screen.findByText('1 label')).toBeInTheDocument();
       });
-    });
-  });
-
-  describe('when CALs feature flag is disabled', () => {
-    beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.CALs]: false });
-    });
-
-    it('displays all labels as regular labels without CAL distinction', async () => {
-      await renderCheckList([CHECK_WITH_CAL_AND_CUSTOM]);
-
-      const card = await screen.findByTestId(CHECKS_TEST_ID.card);
-      expect(within(card).getByText('Team: frontend')).toBeInTheDocument();
-      expect(within(card).getByText('Service: monitoring-api')).toBeInTheDocument();
-      expect(within(card).getByText('env: production')).toBeInTheDocument();
-    });
-
-    it('does not show missing CAL warning when feature flag is disabled', async () => {
-      await renderCheckList([CHECK_WITH_MISSING_CALS]);
-
-      const card = await screen.findByTestId(CHECKS_TEST_ID.card);
-      expect(within(card).queryByText(/Missing cost attribution labels/)).not.toBeInTheDocument();
     });
   });
 });

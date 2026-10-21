@@ -20,6 +20,7 @@ import { Checkster } from 'components/Checkster';
 import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
+import { useTrackCostLabelsAdded } from 'page/ChecksPageLayout/tabs/Recommendations/Recommendations.analytics';
 
 export const EditCheckV2 = () => {
   const { id } = useParams<CheckPageParams>();
@@ -30,7 +31,8 @@ export const EditCheckV2 = () => {
   const { getPermissions, isResolving: isResolvingFolders } = useCheckFolderAccess(check ? [check] : []);
   const permissions = getPermissions({ folderUid: check?.folderUid });
 
-  const handleSubmit = useHandleSubmitCheckster(check);
+  const trackCostLabelsAdded = useTrackCostLabelsAdded(check);
+  const handleSubmit = useHandleSubmitCheckster(check, { onCheckSaved: trackCostLabelsAdded });
 
   const styles = useStyles2(getStyles);
 

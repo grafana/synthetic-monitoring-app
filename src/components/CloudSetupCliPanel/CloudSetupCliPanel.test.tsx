@@ -52,6 +52,37 @@ describe('CloudSetupCliPanel', () => {
     expect(await screen.findByText('Requires Node.js 22.6+ · Uses Grafana Assistant tokens')).toBeInTheDocument();
   });
 
+  it('should report a view once when the panel mounts', async () => {
+    const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
+    reportInteraction.mockClear();
+
+    await renderComponent();
+
+    const views = reportInteraction.mock.calls.filter(
+      (call) => call[0] === 'synthetic-monitoring_cloud_setup_cli_panel_shown'
+    );
+    expect(views).toHaveLength(1);
+  });
+
+  it('should report the view and the copy as separate events', async () => {
+    const reportInteraction = jest.spyOn(jest.requireMock('@grafana/runtime'), 'reportInteraction');
+    reportInteraction.mockClear();
+
+    const { user } = await renderComponent();
+    await user.click(await screen.findByRole('button', { name: 'Copy command' }));
+
+    await waitFor(() =>
+      expect(reportInteraction).toHaveBeenCalledWith(
+        'synthetic-monitoring_cloud_setup_cli_command_copied',
+        expect.anything()
+      )
+    );
+    expect(reportInteraction).toHaveBeenCalledWith(
+      'synthetic-monitoring_cloud_setup_cli_panel_shown',
+      expect.anything()
+    );
+  });
+
   it('should copy the command when clicking anywhere on the command row', async () => {
     const { user } = await renderComponent();
 

@@ -2,6 +2,8 @@ import { queryDS } from 'features/queryDatasources/queryDS';
 
 import { LokiDataFrame } from 'features/parseLokiLogs/parseLokiLogs.types';
 
+export const LOKI_LOG_LIMIT = 1000;
+
 export interface QueryLokiArgs {
   datasource: { uid: string; type: string };
   query: string;
@@ -19,7 +21,7 @@ export function queryLoki<T, R>({ datasource, query, start, end, refId }: QueryL
         range: true,
         datasource,
         intervalMs: 2000,
-        maxLines: 1000,
+        maxLines: LOKI_LOG_LIMIT,
       },
     ],
     start,

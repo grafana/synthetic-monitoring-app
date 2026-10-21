@@ -259,6 +259,10 @@ Tracks selection of a template card, before its configuration drawer opens.
 
 ### cloud_setup
 
+#### synthetic-monitoring_cloud_setup_cli_panel_shown
+
+Tracks when the cloud-setup CLI panel is shown, once per mount.
+
 #### synthetic-monitoring_cloud_setup_cli_command_copied
 
 Tracks when the cloud-setup CLI command is copied to the clipboard.
@@ -486,6 +490,101 @@ Tracks when a private probe is deleted.
 
 Tracks when a private probe's token is reset.
 
+### recommendations
+
+#### synthetic-monitoring_recommendations_tab_viewed
+
+Tracks a visit to the Recommendations tab.
+
+##### Properties
+
+| name                    | type                  | description                                                                                    |
+| ----------------------- | --------------------- | ---------------------------------------------------------------------------------------------- |
+| findingCount            | `number`              | Findings for this tenant, dismissed ones included.                                             |
+| dismissedCount          | `number`              | How many of those the user had dismissed.                                                      |
+| dismissedCheckCount     | `number`              | Checks the user had dismissed from findings that still apply.                                  |
+| checkCount              | `number`              | How many checks the tenant has.                                                                |
+| affectedCheckCount      | `number`              | Distinct checks covered by at least one finding, before any dismissal.                         |
+| alertingGapsCount       | `number`              | Checks running without alerting, before any dismissal.                                         |
+| missingCostLabelsCount  | `number`              | Checks missing a cost attribution label, before any dismissal.                                 |
+| pausedChecksCount       | `number`              | Paused checks, before any dismissal.                                                           |
+| duplicateChecksCount    | `number`              | Checks in a duplicate group, before any dismissal.                                             |
+| overlappingTargetsCount | `number`              | Checks sharing a target with a check of another type, before any dismissal.                    |
+| entryPoint              | `"tab" \| "direct"`   | How the user arrived: `tab` from the Checks page tab, `direct` for a URL, bookmark or refresh. |
+| focusFinding            | `undefined \| string` | The `RecommendationId` a `?finding=` link pointed at, if any.                                  |
+| durationMs              | `number`              | Milliseconds from opening the tab until every finding had its inputs.                          |
+| calsUnavailable         | `false \| true`       | Whether cost attribution labels failed to load, so that finding could not be computed.         |
+
+#### synthetic-monitoring_recommendations_finding_shown
+
+Tracks the first time a finding's panel is rendered in a visit.
+
+##### Properties
+
+| name               | type     | description                            |
+| ------------------ | -------- | -------------------------------------- |
+| finding            | `string` | The `RecommendationId` of the finding. |
+| affectedCheckCount | `number` | How many checks the finding covers.    |
+
+#### synthetic-monitoring_recommendations_finding_actioned
+
+Tracks a click through to the check list or a check's editor.
+
+##### Properties
+
+| name    | type                              | description                                                                |
+| ------- | --------------------------------- | -------------------------------------------------------------------------- |
+| finding | `string`                          | The `RecommendationId` of the finding.                                     |
+| scope   | `"finding" \| "group" \| "check"` | What was clicked: the whole finding, a group within it, or a single check. |
+
+#### synthetic-monitoring_recommendations_action_completed
+
+Tracks an action on a finding's checks, made in the tab or, for cost labels, saved in the check editor.
+
+##### Properties
+
+| name       | type                                                  | description                                                               |
+| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
+| finding    | `string`                                              | The `RecommendationId` of the finding.                                    |
+| action     | `"alerts_added" \| "check_resumed" \| "labels_added"` | What was changed.                                                         |
+| checkCount | `number`                                              | How many checks the change reached.                                       |
+| scope      | `"finding" \| "check" \| "selection"`                 | Whether it ran for the whole finding, the ticked rows, or a single check. |
+
+#### synthetic-monitoring_recommendations_action_failed
+
+Tracks an action from the tab failing for some or all of its checks.
+
+##### Properties
+
+| name        | type                                  | description                                                               |
+| ----------- | ------------------------------------- | ------------------------------------------------------------------------- |
+| finding     | `string`                              | The `RecommendationId` of the finding.                                    |
+| action      | `"alerts_added" \| "check_resumed"`   | What was being changed.                                                   |
+| failedCount | `number`                              | How many checks the change failed for. Cancelled work is not counted.     |
+| scope       | `"finding" \| "check" \| "selection"` | Whether it ran for the whole finding, the ticked rows, or a single check. |
+
+#### synthetic-monitoring_recommendations_finding_dismissed
+
+Tracks a finding, or a check within one, being hidden.
+
+##### Properties
+
+| name    | type                   | description                                                  |
+| ------- | ---------------------- | ------------------------------------------------------------ |
+| finding | `string`               | The `RecommendationId` of the finding.                       |
+| scope   | `"finding" \| "check"` | Whether the whole finding was hidden or one check within it. |
+
+#### synthetic-monitoring_recommendations_finding_restored
+
+Tracks hidden findings or checks being brought back.
+
+##### Properties
+
+| name    | type                   | description                                                  |
+| ------- | ---------------------- | ------------------------------------------------------------ |
+| finding | `string`               | The `RecommendationId` of the finding.                       |
+| scope   | `"finding" \| "check"` | Whether the whole finding was hidden or one check within it. |
+
 ### reliability_inbox
 
 #### synthetic-monitoring_reliability_inbox_exposed
@@ -494,10 +593,11 @@ Tracks when the compact Reliability Inbox entry point is shown, whether or not i
 
 ##### Properties
 
-| name             | type                  | description                                                                                             |
-| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| opportunityCount | `number`              | Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. |
-| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.   |
+| name             | type                  | description                                                                                                                                                                                  |
+| ---------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| opportunityCount | `number`              | Number of recommendations ready to create shown by the inbox entry point; 0 when none are ready (either because it offers to generate them or because all shown recommendations need setup). |
+| needsSetupCount  | `number`              | Number of recommendations shown that need configuration or credentials first; not part of opportunityCount.                                                                                  |
+| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.                                                                                        |
 
 #### synthetic-monitoring_reliability_inbox_review_entry_clicked
 
@@ -515,9 +615,10 @@ Tracks when a recommendation becomes selected for review.
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_setup_with_assistant_clicked
 
@@ -525,9 +626,10 @@ Tracks when a user explicitly hands a recommendation to Assistant for guided set
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_create_manually_clicked
 
@@ -535,9 +637,10 @@ Tracks when a user takes a recommendation to the check form to create it themsel
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_namespace_filter_changed
 

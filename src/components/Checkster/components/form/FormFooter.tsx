@@ -14,7 +14,6 @@ export function FormFooter() {
     formNavigation: {
       stepActions: { previous, next },
       setSectionActive,
-      isStepsComplete,
     },
   } = useChecksterContext();
 
@@ -63,7 +62,7 @@ export function FormFooter() {
         {next && (
           <Button
             type="button"
-            variant={isStepsComplete ? 'secondary' : 'primary'}
+            variant="secondary"
             onClick={() => {
               trackFaroUserAction(FaroUserAction.CheckWizardNextClicked);
               setSectionActive(next.name);
@@ -77,7 +76,7 @@ export function FormFooter() {
         <Button
           type="submit"
           data-testid={CHECKSTER_TEST_ID.form.submitButton}
-          variant={isStepsComplete || !next ? 'primary' : 'secondary'}
+          variant="secondary"
           disabled={disableSubmit}
         >
           Save

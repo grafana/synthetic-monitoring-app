@@ -14,7 +14,6 @@ export const REF_ID_UNIQUE_CHECK_CONFIGS = `uniqueCheckConfigs`;
 export const REF_ID_EXECUTION_LIST_LOGS = `executionListLogs`;
 export const REF_ID_EXECUTION_VIEWER_LOGS = `executionViewerLogs`;
 export const REF_ID_MAX_PROBE_DURATION = `maxProbeDuration`;
-export const REF_ID_FARO_SESSION = `faroSession`;
 
 export const FARO_APP_PLUGIN_ID = `grafana-kowalski-app`;
 
@@ -42,6 +41,7 @@ export const ANNOTATION_COLOR_NO_DATA = `orange`;
 export const ANNOTATION_COLOR_CHECK_CREATED = `yellow`;
 export const ANNOTATION_COLOR_CHECK_UPDATED = `blue`;
 export const ANNOTATION_COLOR_ALERTS_FIRING = `red`;
+export const ANNOTATION_COLOR_APP_BUILD = `purple`;
 
 // Selection styling constants
 export const NON_SELECTED_BAR_OPACITY = 0.7;

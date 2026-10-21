@@ -27,6 +27,9 @@ export function queryDS({ queries, start, end }: { queries: Query[]; start: numb
     const build: Record<string, DataFrame[]> = {};
 
     Object.entries(results).forEach(([refId, result]) => {
+      if (result.error) {
+        throw new Error(result.error);
+      }
       const frames = result.frames || [];
       build[refId] = frames.map((frame) => dataFrameFromJSON(frame));
     });

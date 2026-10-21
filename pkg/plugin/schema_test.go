@@ -33,6 +33,10 @@ var querySchemas = map[string]namedQuerySchema{
 		description: "Number of probes reporting for each check in the tenant, grouped by job and instance. Has no app counterpart yet; anticipates one.",
 		goType:      reflect.TypeFor[*TenantWideQuery](),
 	},
+	queryChecksLatency: {
+		description: "Average latency for every check in the tenant, grouped by job and instance. checkType picks the latency metric the app uses for that check type, so read each check's row from the call made with its own type.",
+		goType:      reflect.TypeFor[*CheckTypeQuery](),
+	},
 }
 
 // TestSchemaCoversRegistry fails if querySchemas and the real registry in
