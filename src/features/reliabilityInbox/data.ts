@@ -63,8 +63,7 @@ const aiTermsQueryKey = ['assistant', 'terms'] as const;
 /**
  * Whether suggestions may be generated here. Generating sends a summary of the
  * stack's telemetry to an LLM, so it is an AI feature: it needs Grafana
- * Assistant available and its AI terms accepted by an admin. Agentic Testing
- * uses the same gate, so one acceptance in Assistant covers every AI feature.
+ * Assistant available and its AI terms accepted by an admin.
  *
  * The terms answer is shared and kept for the session because the Synthetics
  * tab bar asks on every page.
