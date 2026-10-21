@@ -4,7 +4,7 @@ import { CHECK_IN_FORBIDDEN_FOLDER, CHECK_IN_PRODUCTION } from 'test/fixtures/fo
 import { apiRoute } from 'test/handlers';
 import { createWrapper } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsRBACReader } from 'test/utils';
+import { mockFeatureFlags, runTestAsRBACReader } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
@@ -23,7 +23,7 @@ const frame = toDataFrame({
 describe('summary table folder visibility', () => {
   beforeEach(() => {
     runTestAsRBACReader();
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
   });
 
   function useVisibleRows() {
@@ -40,7 +40,7 @@ describe('summary table folder visibility', () => {
   });
 
   it('preserves visibility when folders are disabled', async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: false });
+    mockFeatureFlags({ [FeatureName.Folders]: false });
     const { result } = renderHook(useVisibleRows, { wrapper: createWrapper().Wrapper });
     await waitFor(() => expect(result.current.length).toBe(2));
   });

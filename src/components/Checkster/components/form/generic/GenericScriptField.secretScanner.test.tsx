@@ -3,7 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { screen, waitFor, within } from '@testing-library/react';
 import { UI_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -51,7 +51,7 @@ describe('GenericScriptField secret scanner', () => {
   });
 
   it('does not show the scanner panel when the script has no secrets', async () => {
-    mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
+    mockFeatureFlags({ [FeatureName.SecretsManagement]: true });
     renderScriptField(SCRIPT_WITHOUT_SECRET);
 
     await screen.findByTestId(UI_TEST_ID.codeEditor);
@@ -59,7 +59,7 @@ describe('GenericScriptField secret scanner', () => {
   });
 
   it('shows detected secrets and lets the user ignore them', async () => {
-    mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
+    mockFeatureFlags({ [FeatureName.SecretsManagement]: true });
     const { user } = renderScriptField(SCRIPT_WITH_SECRET);
 
     expect(await screen.findByText(/potential secret detected/i)).toBeInTheDocument();
@@ -71,7 +71,7 @@ describe('GenericScriptField secret scanner', () => {
   });
 
   it('opens the create-secret modal prefilled and rewrites the script on save', async () => {
-    mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
+    mockFeatureFlags({ [FeatureName.SecretsManagement]: true });
     const { user } = renderScriptField(SCRIPT_WITH_SECRET);
 
     expect(await screen.findByText(/potential secret detected/i)).toBeInTheDocument();

@@ -4,7 +4,7 @@ import { CHECK_IN_FORBIDDEN_FOLDER, CHECK_IN_PRODUCTION } from 'test/fixtures/fo
 import { apiRoute } from 'test/handlers';
 import { createWrapper } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsRBACReader } from 'test/utils';
+import { mockFeatureFlags, runTestAsRBACReader } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { LabelMode } from 'datasource/responses.types';
@@ -27,7 +27,7 @@ const variable = new AdHocFiltersVariable({ name: 'Filters' });
 describe('homepage label suggestions', () => {
   beforeEach(() => {
     runTestAsRBACReader();
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
   });
 
   it('provides deduplicated values and keys from visible checks without a metrics lookup', async () => {
@@ -70,7 +70,7 @@ describe('homepage label suggestions', () => {
   });
 
   it('preserves suggestions for all checks when folders are disabled', async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: false });
+    mockFeatureFlags({ [FeatureName.Folders]: false });
     const { result } = renderHook(() => useSummaryFilterLabels(checks), { wrapper: createWrapper().Wrapper });
     await waitFor(async () => {
       expect(await result.current.getTagValuesProvider(variable, { key: 'label_product' })).toEqual({

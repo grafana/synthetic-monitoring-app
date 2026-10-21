@@ -12,7 +12,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -41,7 +41,7 @@ const renderCheckList = async (checks: Check[]) => {
 };
 
 describe('CheckList - Per-folder Bulk Actions', () => {
-  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+  beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
   it('shows a select-all checkbox in each folder header', async () => {
     await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_STAGING]);
@@ -114,7 +114,7 @@ describe('CheckList - Per-folder Bulk Actions', () => {
 });
 
 describe('CheckList - Bulk Delete leaves folders intact', () => {
-  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+  beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
   it('shows a checks-only delete confirmation even when all checks in a deletable folder are selected', async () => {
     const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);
@@ -157,7 +157,7 @@ describe('CheckList - Bulk Delete leaves folders intact', () => {
 });
 
 describe('CheckList - Folder Actions menu', () => {
-  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+  beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
   it('offers folder-wide actions in an always-visible Actions menu', async () => {
     const { user } = await renderCheckList([CHECK_IN_DELETABLE_FOLDER, SECOND_CHECK_IN_DELETABLE_FOLDER]);

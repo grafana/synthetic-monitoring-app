@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
+import { mockFeatureFlags, runTestAsHGFreeUserOverLimit, runTestAsViewer } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -57,7 +57,7 @@ it(`doesn't show gRPC option by default`, async () => {
 });
 
 it('shows gRPC option when feature is enabled', async () => {
-  mockFeatureToggles({ [FeatureName.GRPCChecks]: true });
+  mockFeatureFlags({ [FeatureName.GRPCChecks]: true });
 
   await renderChooseCheckGroup();
   expect(screen.getByText('gRPC')).toBeInTheDocument();

@@ -6,7 +6,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -73,7 +73,7 @@ const renderCheckList = async (checks: Check[] = FOLDER_CHECKS, searchParams = '
 
 describe('CheckList - Folder Filter Integration', () => {
   describe('with folders feature enabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     test('folder filter appears in the additional filters modal', async () => {
       const { user } = await renderCheckList();

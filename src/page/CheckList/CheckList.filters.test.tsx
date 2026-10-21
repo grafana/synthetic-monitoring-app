@@ -6,7 +6,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { getCombobox, mockFeatureToggles, probeToMetadataProbe, selectOption, testUsesCombobox } from 'test/utils';
+import { getCombobox, mockFeatureFlags, probeToMetadataProbe, selectOption, testUsesCombobox } from 'test/utils';
 
 import { AlertSensitivity, Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -216,7 +216,7 @@ describe('CheckList - Filtering', () => {
 
   test('gRPC checks appear in the filters when the feature flag is enabled', async () => {
     testUsesCombobox();
-    mockFeatureToggles({
+    mockFeatureFlags({
       [FeatureName.GRPCChecks]: true,
     });
 

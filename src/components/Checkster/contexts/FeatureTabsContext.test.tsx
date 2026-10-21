@@ -1,7 +1,7 @@
 import React, { PropsWithChildren } from 'react';
 import { renderHook } from '@testing-library/react';
 import { createWrapper } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 
@@ -32,7 +32,7 @@ function hasSecretsTab(result: ReturnType<typeof setup>['result']) {
 describe('FeatureTabsContext secrets tab', () => {
   describe('when the SecretsManagement feature flag is enabled', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
+      mockFeatureFlags({ [FeatureName.SecretsManagement]: true });
     });
 
     it.each([CheckType.Http, CheckType.Browser, CheckType.Scripted])(

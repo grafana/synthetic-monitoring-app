@@ -8,7 +8,7 @@ import { PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
 import {
-  mockFeatureToggles,
+  mockFeatureFlags,
   probeToMetadataProbe,
   runTestAsHGFreeUserOverLimit,
   runTestWithNoEditableFolders,
@@ -44,7 +44,7 @@ jest.mock('features/tracking/appEvents', () => ({
 
 describe(`<NewCheckV2 /> journey`, () => {
   it(`should save the check into the default folder when the user can edit it`, async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
     const { user, read } = await renderNewForm(CheckType.Http);
 
     await fillMandatoryFields({ user, checkType: CheckType.Http });
@@ -55,7 +55,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should require picking an editable folder when the user cannot edit the default folder`, async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
     // A user holding View on the default SM folder and folder Edit
     // elsewhere (the support escalation setup). Nothing is preselected (the
     // choice is theirs), and saving without a pick is blocked instead of
@@ -78,7 +78,7 @@ describe(`<NewCheckV2 /> journey`, () => {
   });
 
   it(`should block saving with a folder error when the user cannot edit any folder`, async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
     // With no editable folder anywhere the picker lists nothing (server-side
     // permission filtering) and submission stays blocked on the folder
     // requirement, so a check can never land where its creator cannot

@@ -7,7 +7,7 @@ jest.mock('components/CodeEditor/k6TypesLoader/k6TypesCdnLoader', () => ({
 import { screen, waitFor } from '@testing-library/react';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 import { gotoSection } from 'components/Checkster/__testHelpers__/formHelpers';
@@ -38,7 +38,7 @@ export const MOCK_CHANNELS_RESPONSE = {
 
 // Channel testing helpers for scripted and browser checks in v2 editor
 export const setupChannelTest = () => {
-  mockFeatureToggles({
+  mockFeatureFlags({
     [FeatureName.VersionManagement]: true,
   });
 

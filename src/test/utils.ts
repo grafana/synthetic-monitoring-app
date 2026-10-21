@@ -587,10 +587,10 @@ export const probeToExtendedProbe = (probe: Probe, usedByChecks: number[] = []):
   checks: usedByChecks,
 });
 
-type FeatureToggleOverrides = Partial<Record<FeatureName, boolean>>;
+type FeatureFlagOverrides = Partial<Record<FeatureName, boolean>>;
 
 // Drives the OpenFeatureTestProvider that test/render (and createWrapper) mount
-export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
+export function mockFeatureFlags(overrides: FeatureFlagOverrides) {
   Object.entries(overrides).forEach(([name, value]) => {
     setTestFlag(name, Boolean(value));
   });

@@ -3,7 +3,7 @@ import { useAppPluginInstalled } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { server } from 'test/server';
-import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
+import { mockFeatureFlags, testUsesCombobox } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -63,7 +63,7 @@ describe('CostAttributionLabelsField', () => {
 
     it('renders a KG suggestions combobox for service_name / namespace values when the KG app is installed', async () => {
       testUsesCombobox();
-      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+      mockFeatureFlags({ [FeatureName.KnowledgeGraph]: true });
       (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
       mockKgSuggestions({ names: ['frontend'], namespaces: ['otel-demo'] });
 
@@ -94,7 +94,7 @@ describe('CostAttributionLabelsField', () => {
     });
 
     it('renders plain value inputs when the KG feature flag is disabled, even with the app installed', async () => {
-      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+      mockFeatureFlags({ [FeatureName.KnowledgeGraph]: false });
       (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
 
       renderCostAttributionLabelsField({
@@ -111,7 +111,7 @@ describe('CostAttributionLabelsField', () => {
       // would leave an invisible row that fails the CAL-conflict validation with no way to
       // remove it. The row must stay visible (and removable) after blur.
       testUsesCombobox();
-      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+      mockFeatureFlags({ [FeatureName.KnowledgeGraph]: true });
       (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
       mockKgSuggestions({ names: [], namespaces: [] });
 

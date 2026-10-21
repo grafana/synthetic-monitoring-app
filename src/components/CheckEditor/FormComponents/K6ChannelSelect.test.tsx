@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
+import { mockFeatureFlags, testUsesCombobox } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
@@ -32,7 +32,7 @@ describe('K6ChannelSelect', () => {
   });
 
   it('should not render when feature flag is disabled', () => {
-    mockFeatureToggles({
+    mockFeatureFlags({
       [FeatureName.VersionManagement]: false,
     });
 
@@ -77,7 +77,7 @@ describe('K6ChannelSelect', () => {
 
   it('should allow selecting a deprecated channel', async () => {
     testUsesCombobox();
-    mockFeatureToggles({
+    mockFeatureFlags({
       [FeatureName.VersionManagement]: true,
     });
 
@@ -129,7 +129,7 @@ describe('K6ChannelSelect', () => {
   });
 
   it('should display error message when channels fail to load', async () => {
-    mockFeatureToggles({
+    mockFeatureFlags({
       [FeatureName.VersionManagement]: true,
     });
 

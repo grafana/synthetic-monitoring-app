@@ -17,7 +17,7 @@ import {
 
 import { TimepointExplorer } from 'scenes/components/TimepointExplorer/TimepointExplorer';
 import { SCENES_TEST_ID } from 'test/dataTestIds';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 import { FeatureName, HTTPCheck } from 'types';
 import {
   REF_ID_EXECUTION_LIST_LOGS,
@@ -112,14 +112,14 @@ describe('TimepointExplorer', () => {
   });
 
   it('should render if the feature flag is on', async () => {
-    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+    mockFeatureFlags({ [FeatureName.TimepointExplorer]: true });
     render(renderTimepointExplorer());
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.list));
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.viewer));
   });
 
   it(`should call scrollIntoView when a timepoint with data is clicked`, async () => {
-    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+    mockFeatureFlags({ [FeatureName.TimepointExplorer]: true });
     const { user } = render(renderTimepointExplorer());
 
     expect(mockScrollIntoView).not.toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe('TimepointExplorer', () => {
     const reportInteraction = jest.fn();
     jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
 
-    mockFeatureToggles({ [FeatureName.TimepointExplorer]: true });
+    mockFeatureFlags({ [FeatureName.TimepointExplorer]: true });
     const { user } = render(renderTimepointExplorer());
     await waitFor(() => screen.findByTestId(SCENES_TEST_ID.timepoint.list));
 

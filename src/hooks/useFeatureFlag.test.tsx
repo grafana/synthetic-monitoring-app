@@ -12,7 +12,7 @@ import {
 import { act, render, screen } from '@testing-library/react';
 import { SM_OPEN_FEATURE_DOMAIN } from 'services/featureFlags';
 import { getTestFlagValues } from 'test/openFeatureTestProvider';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -101,8 +101,8 @@ describe('useFeatureFlag', () => {
     expect(await screen.findByText('not enabled')).toBeInTheDocument();
   });
 
-  test('mockFeatureToggles drives the flag value', async () => {
-    mockFeatureToggles({ [FLAG]: true });
+  test('mockFeatureFlags drives the flag value', async () => {
+    mockFeatureFlags({ [FLAG]: true });
     renderFeatureFlag(FLAG);
     expect(await screen.findByText('the feature is enabled')).toBeInTheDocument();
   });

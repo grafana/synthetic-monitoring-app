@@ -7,7 +7,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -39,7 +39,7 @@ const renderCheckList = async (checks: Check[]) => {
 
 describe('CheckList - Bulk Move to Folder', () => {
   describe('with folders feature enabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     it('shows the "Move to folder" button when checks are selected', async () => {
       const { user } = await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_STAGING]);

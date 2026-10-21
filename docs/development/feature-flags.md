@@ -93,7 +93,7 @@ sync, GOFF re-reads its ConfigMap every minute, Grafana core re-fetches the bulk
 
 3. Add the `FeatureName` entry with the key as its value and consume it via `useFeatureFlag`.
    The app can ship before every wave has the definition: the flag is simply `false` where it is
-   undefined. Gate tests with `mockFeatureToggles` (see [Testing](#testing)).
+   undefined. Gate tests with `mockFeatureFlags` (see [Testing](#testing)).
 
 ## Rolling out and changing values
 
@@ -194,7 +194,7 @@ cache".
 
 `test/render` (and `createWrapper`) mount the SDK's `OpenFeatureTestProvider`, driven by a shared
 flag map ([`src/test/openFeatureTestProvider.ts`](../../src/test/openFeatureTestProvider.ts)) that
-is reset between tests. Set flags with `mockFeatureToggles({ [FeatureName.X]: true })` before
+is reset between tests. Set flags with `mockFeatureFlags({ [FeatureName.X]: true })` before
 rendering. Tests that render a flag consumer with a bare React Testing Library `render` must wrap it
 in `OpenFeatureTestProvider` themselves (or use `createWrapper`), otherwise the OpenFeature hooks
 throw for want of a provider.

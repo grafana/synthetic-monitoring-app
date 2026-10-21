@@ -7,7 +7,7 @@ import { ONLINE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsCheckWriterWithoutAlertWrite } from 'test/utils';
+import { mockFeatureFlags, runTestAsCheckWriterWithoutAlertWrite } from 'test/utils';
 
 import { CheckAlertType, FeatureName } from 'types';
 import { ONE_HOUR_IN_MS } from 'utils.constants';
@@ -15,7 +15,7 @@ import { ONE_HOUR_IN_MS } from 'utils.constants';
 import { BrokenLinksDrawer } from './BrokenLinksDrawer';
 
 beforeEach(() => {
-  mockFeatureToggles({ [FeatureName.Folders]: false });
+  mockFeatureFlags({ [FeatureName.Folders]: false });
   server.use(
     apiRoute('listProbes', { result: () => ({ json: [ONLINE_PROBE] }) }),
     apiRoute('addCheck', {

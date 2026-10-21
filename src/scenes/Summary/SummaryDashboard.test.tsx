@@ -1,7 +1,7 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -21,7 +21,7 @@ jest.mock('hooks/useMetricsDS', () => ({
 
 describe('SummaryDashboard', () => {
   it('keeps Reliability Inbox and manual creation available when the unfiltered check inventory is empty', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: true });
     render(<SummaryDashboard checks={[]} />);
 
     expect(await screen.findByTestId('reliability-inbox-banner')).toBeInTheDocument();
@@ -30,7 +30,7 @@ describe('SummaryDashboard', () => {
   });
 
   it('hides the check suggestions banner when the flag is disabled', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: false });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: false });
     render(<SummaryDashboard checks={[]} />);
 
     expect(screen.queryByTestId('reliability-inbox-banner')).not.toBeInTheDocument();
