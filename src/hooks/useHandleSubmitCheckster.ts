@@ -29,7 +29,12 @@ import { getAlertsPayload } from 'components/Checkster/transformations/toPayload
 import { useNavigateToCheckDashboard } from './useNavigateToCheckDashboard';
 import { useSMDS } from './useSMDS';
 
-export function useHandleSubmitCheckster(initialCheck?: Check) {
+interface SubmitOptions {
+  /** Runs once the check itself is saved, before its alerts, so a failed alerts save cannot skip it. */
+  onCheckSaved?: (saved: Check) => void;
+}
+
+export function useHandleSubmitCheckster(initialCheck?: Check, { onCheckSaved }: SubmitOptions = {}) {
   const navigateToCheckDashboard = useNavigateToCheckDashboard();
   const queryClient = useQueryClient();
   const smDS = useSMDS();
@@ -95,6 +100,7 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
         const result = isUpdate
           ? await updateCheck({ ...payload, id: initialCheck!.id, tenantId: initialCheck!.tenantId })
           : await createCheck(payload);
+        onCheckSaved?.(result);
         const checkId = result.id!;
         const continueToCheck = () => navigateToCheckDashboard(result, !isUpdate);
         let alertsSaved = formValues.alerts === undefined || (!canWriteAlerts && sameAlertSettings(desired, previous));
@@ -155,6 +161,15 @@ export function useHandleSubmitCheckster(initialCheck?: Check) {
       }
       return save();
     },
-    [initialCheck, smDS, queryClient, updateCheck, createCheck, updateAlertsForCheck, navigateToCheckDashboard]
+    [
+      initialCheck,
+      smDS,
+      queryClient,
+      updateCheck,
+      createCheck,
+      updateAlertsForCheck,
+      navigateToCheckDashboard,
+      onCheckSaved,
+    ]
   );
 }

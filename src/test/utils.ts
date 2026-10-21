@@ -9,7 +9,15 @@ import {
   VIEWER_DEFAULT_DATASOURCE_ACCESS_CONTROL,
 } from 'test/fixtures/datasources';
 
-import { ExtendedProbe, FeatureName, GrafanaFolder, type Probe, ProbeProvider, ProbeWithMetadata } from 'types';
+import {
+  ExtendedProbe,
+  FeatureName,
+  GrafanaFolder,
+  PluginPermissions,
+  type Probe,
+  ProbeProvider,
+  ProbeWithMetadata,
+} from 'types';
 import { pascalCaseToSentence } from 'utils';
 import { CMAB_COST_ATTRIBUTION_WRITE } from 'components/CostAttribution/CostAttribution.constants';
 
@@ -285,6 +293,19 @@ export function runTestWithoutSMAccess() {
   });
 }
 
+export function runTestWithoutCheckReadAccess() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, `config`, {
+    ...config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        permissions: { ...FULL_READONLY_ACCESS, 'grafana-synthetic-monitoring-app.checks:read': false },
+      },
+    },
+  });
+}
+
 export function runTestAsRBACReader() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {
@@ -361,6 +382,24 @@ export function runTestAsRBACAdmin() {
       ...runtime.config.bootData,
       user: {
         permissions: FULL_ADMIN_ACCESS,
+      },
+    },
+  });
+}
+
+export function runTestWithoutPermissions(...permissions: PluginPermissions[]) {
+  const runtime = require('@grafana/runtime');
+  const { user } = runtime.config.bootData;
+  jest.replaceProperty(runtime, `config`, {
+    ...runtime.config,
+    bootData: {
+      ...runtime.config.bootData,
+      user: {
+        ...user,
+        permissions: {
+          ...user.permissions,
+          ...Object.fromEntries(permissions.map((permission) => [permission, false])),
+        },
       },
     },
   });
@@ -567,6 +606,14 @@ export function mockFeatureToggles(overrides: FeatureToggleOverrides) {
       setTestFlag(openFeatureKey, Boolean(value));
     }
   });
+}
+
+/** Swaps in a fresh `reportInteraction` mock and returns it, to assert which analytics events fired. */
+export function mockReportInteraction() {
+  const reportInteraction = jest.fn();
+  jest.requireMock('@grafana/runtime').reportInteraction = reportInteraction;
+
+  return reportInteraction;
 }
 
 // Chris: seems non-standard across languages

@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useMemo, useRef, useState } from 'react';
 import { GrafanaTheme2, SelectableValue, unEscapeStringFromRegex } from '@grafana/data';
 import { t } from '@grafana/i18n';
-import { Combobox, ComboboxOption, Field, Icon, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
+import { Combobox, ComboboxOption, Field, Icon, IconButton, Input, MultiCombobox, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
 import { CHECKS_TEST_ID } from 'test/dataTestIds';
 
@@ -144,6 +144,28 @@ export function CheckFilters({
       </div>
       <div className={styles.filterButtonWrapper}>
         <CheckFilterGroup onReset={onReset} filters={checkFilters}>
+          {/* Only set by links, such as a duplicate group's, so it has no control until one is followed. */}
+          {checkFilters.target && (
+            <Field
+              label={t('checkFilters.target', 'Target')}
+              description={t('checkFilters.targetDescription', 'Only checks with exactly this target')}
+              htmlFor="check-target-filter"
+              className={styles.fullWidth}
+            >
+              <Input
+                id="check-target-filter"
+                readOnly
+                value={checkFilters.target}
+                suffix={
+                  <IconButton
+                    name="times"
+                    aria-label={t('checkFilters.clearTarget', 'Clear target filter')}
+                    onClick={() => onChange({ ...checkFilters, target: '' }, 'target')}
+                  />
+                }
+              />
+            </Field>
+          )}
           <div className={styles.flexRow}>
             {includeStatus && (
               <Field

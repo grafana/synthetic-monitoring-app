@@ -34,6 +34,11 @@ export const CheckFilterGroup = ({ children, onReset, filters }: PropsWithChildr
           break;
         case 'search':
           break;
+        case 'target':
+          if (filters.target) {
+            active += 1;
+          }
+          break;
         case 'status':
           if (filters.status.value !== CheckEnabledStatus.All) {
             active += 1;

@@ -80,7 +80,7 @@ export async function renderNewForm(
   };
 }
 
-export async function renderEditForm(id: Check['id']) {
+export async function renderEditForm(id: Check['id'], search = '') {
   const { record, read } = getServerRequests();
   server.use(apiRoute(`updateCheck`, {}, record));
 
@@ -90,7 +90,7 @@ export async function renderEditForm(id: Check['id']) {
 
   const res = render(<EditCheckV2 />, {
     route: AppRoutes.EditCheck,
-    path: generateRoutePath(AppRoutes.EditCheck, { id: id! }),
+    path: `${generateRoutePath(AppRoutes.EditCheck, { id: id! })}${search}`,
   });
 
   await waitFor(async () => screen.getByTestId(UI_TEST_ID.page.ready), { timeout: 10000 });

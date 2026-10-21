@@ -1,4 +1,5 @@
 import { Address4, Address6 } from 'ip-address';
+import { upperFirst } from 'lodash';
 
 import { ReliabilitySuggestion } from './types';
 import { CheckType } from 'types';
@@ -25,10 +26,99 @@ export function toReliabilityOpportunity(suggestion: ReliabilitySuggestion) {
     errorRate: formatErrorRate(suggestion.evidence.errorRatio),
     p99: suggestion.evidence.p99Ms === undefined ? undefined : `${formatDecimal(suggestion.evidence.p99Ms)} ms`,
     proposedCheck,
+    setup: getSetupGuide(suggestion),
+    // Only the request case leaves the method to the user: a Kubernetes API
+    // server still takes the draft's GET, with its CA certificate.
+    methodUnknown: suggestion.needsConfiguration && !isKubernetesApiServer(suggestion),
   };
 }
 
 export type ReliabilityOpportunity = ReturnType<typeof toReliabilityOpportunity>;
+
+export interface SetupGuide {
+  /** The part of the check it's about, such as Authentication. */
+  label: string;
+  /** What creating the check will ask the user for, such as credentials. */
+  needs: string;
+  /** Where to provide it, in the check editor's own labels. */
+  steps: string[];
+  /** The evidence that the draft alone would not pass. */
+  why?: string;
+}
+
+const KUBERNETES_CLIENT_FAMILY = 'rest_client_requests_total';
+const TEST_THEN_SAVE = 'Click Test to confirm the check passes, then save it.';
+const AUTHENTICATION_STEP = 'Open Request options → Authentication and add a Bearer Token or Basic Auth credentials.';
+const AUTHENTICATION_WHY = 'Most requests to this endpoint are answered with 401 or 403.';
+
+/**
+ * What the user must provide before the check can pass, or undefined when the
+ * draft is complete. Telemetry cannot supply a request body, a CA certificate or
+ * credentials, so these suggestions say what is needed and where, instead of
+ * being hidden.
+ *
+ * TODO: the kind is inferred from evidence the service already sends (its
+ * client-go family, the auth flag); a configuration kind from the service would
+ * keep the two in step if more cases appear.
+ */
+function getSetupGuide({
+  needsConfiguration,
+  configurationReason,
+  authRequired,
+  evidence,
+}: ReliabilitySuggestion): SetupGuide | undefined {
+  if (isKubernetesApiServer({ needsConfiguration, evidence })) {
+    return {
+      label: 'TLS',
+      needs: "cluster's CA certificate",
+      steps: [
+        'Add a path the API server answers without credentials to Request target, such as /version.',
+        "Open Request options → TLS and paste the cluster's CA certificate in PEM format into CA certificate. Your kubeconfig holds it, base64-encoded, as certificate-authority-data.",
+        TEST_THEN_SAVE,
+      ],
+      why: "It's a Kubernetes API server: its certificate is signed by the cluster's own CA, which probes don't trust.",
+    };
+  }
+
+  if (needsConfiguration) {
+    // The service words its reasons "<what it saw>: <what to configure>"; the
+    // steps below already cover the second half.
+    const observed = configurationReason?.trim() && `${upperFirst(configurationReason.split(': ')[0].trim())}.`;
+
+    // The service flags 401/403 traffic whatever else is missing, so a
+    // POST-only endpoint behind a login needs both.
+    return {
+      label: 'Request',
+      needs: authRequired ? 'method, body and credentials' : 'method and body',
+      steps: [
+        'Choose the Request method this endpoint expects, such as POST, and add its path to Request target.',
+        'Open Request options → Body and add a payload it accepts. Or point Request target at a health endpoint instead.',
+        ...(authRequired ? [AUTHENTICATION_STEP] : []),
+        TEST_THEN_SAVE,
+      ],
+      // A blank reason without auth leaves the steps standing without a why.
+      why: [observed, authRequired && AUTHENTICATION_WHY].filter(Boolean).join(' ') || undefined,
+    };
+  }
+
+  if (authRequired) {
+    return {
+      label: 'Authentication',
+      needs: 'credentials',
+      steps: [AUTHENTICATION_STEP, TEST_THEN_SAVE],
+      why: AUTHENTICATION_WHY,
+    };
+  }
+
+  return undefined;
+}
+
+function isKubernetesApiServer({
+  needsConfiguration,
+  evidence,
+}: Pick<ReliabilitySuggestion, 'needsConfiguration' | 'evidence'>) {
+  return !!needsConfiguration && evidence.families.includes(KUBERNETES_CLIENT_FAMILY);
+}
 
 /**
  * Renders the attribution as "namespace: checkout · service: api" for the
@@ -77,19 +167,20 @@ export function getNamespaceOptions(opportunities: ReliabilityOpportunity[]) {
   ).sort();
 }
 
-/** Orders eligible recommendations by technical relevance. */
+/** Orders the ones ready to create first, then by technical relevance. */
 export function compareReliabilityOpportunities(a: ReliabilityOpportunity, b: ReliabilityOpportunity) {
-  return b.sortScore - a.sortScore || a.id.localeCompare(b.id);
+  return Number(!!a.setup) - Number(!!b.setup) || b.sortScore - a.sortScore || a.id.localeCompare(b.id);
 }
 
+// Suggestions that need credentials or configuration stay: they are real gaps,
+// and both ways to create one end in review. Their setup guide says what to
+// provide and where.
 export function isInitialReviewCandidate(suggestion: ReliabilitySuggestion) {
   if (
     suggestion.checkType !== CheckType.Http ||
     suggestion.dedupStatus !== 'uncovered' ||
     suggestion.confidence.toLowerCase() !== 'high' ||
-    suggestion.reachability !== 'public' ||
-    suggestion.authRequired ||
-    suggestion.needsConfiguration
+    suggestion.reachability !== 'public'
   ) {
     return false;
   }

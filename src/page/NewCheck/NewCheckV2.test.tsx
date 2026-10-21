@@ -108,6 +108,31 @@ describe('<NewCheckV2 />', () => {
     expect(await screen.findByLabelText(/Job name/)).toHaveValue(PREFILLED_JOB);
     expect(await screen.findByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeEnabled();
   });
+
+  it('shows the steps a suggested check still needs above the form', async () => {
+    const setupSteps = ['Open Request options → TLS and paste the CA certificate.', 'Click Test, then save it.'];
+    const prefilledCheck = {
+      job: 'suggested-check',
+      target: 'https://grafana.com/',
+      enabled: true,
+      probes: [PRIVATE_PROBE.id],
+      labels: [],
+      settings: { http: { method: HttpMethod.Get } },
+    } as unknown as Check;
+
+    (Checkster as jest.Mock).mockImplementation(RealCheckster);
+    (useLocation as jest.Mock).mockImplementation(() => ({ state: { prefilledCheck, setupSteps } }));
+
+    render(<NewCheckV2 />, {
+      path: `${generateRoutePath(AppRoutes.NewCheck)}/api-endpoint?checkType=${CheckType.Http}`,
+      route: `${getRoute(AppRoutes.NewCheck)}/:checkTypeGroup`,
+    });
+
+    expect(await screen.findByText('Before you save this suggested check')).toBeInTheDocument();
+    for (const step of setupSteps) {
+      expect(screen.getByText(step)).toBeInTheDocument();
+    }
+  });
 });
 
 describe('mergePrefilledCheck (prefilled draft handling)', () => {
@@ -148,10 +173,7 @@ describe('mergePrefilledCheck (prefilled draft handling)', () => {
   });
 
   it('uses the fallback check type when settings is empty (does not default to HTTP)', () => {
-    const result = mergePrefilledCheck(
-      { ...draftBase, settings: {} } as unknown as Check,
-      CheckType.Scripted
-    );
+    const result = mergePrefilledCheck({ ...draftBase, settings: {} } as unknown as Check, CheckType.Scripted);
     expect(result.settings).toHaveProperty('scripted');
     expect(result.settings).not.toHaveProperty('http');
   });

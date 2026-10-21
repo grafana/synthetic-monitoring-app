@@ -1,5 +1,4 @@
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { dateTimeFormat, GrafanaTheme2 } from '@grafana/data';
 import { useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
@@ -10,14 +9,13 @@ import { HTTPResponseTimingsLog } from 'features/parseCheckLogs/checkLogs.types.
 import { LokiFieldNames, ParsedLokiRecord } from 'features/parseLokiLogs/parseLokiLogs.types';
 import { useTracesDS } from 'hooks/useTracesDS';
 import { LogHTTPResponseTimings } from 'scenes/components/LogsRenderer/LogHTTPResponseTimings';
-import { fetchTraceData } from 'scenes/components/LogsRenderer/LogLine.utils';
 import { TraceIconButton } from 'scenes/components/LogsRenderer/TraceIconButton';
 import { TRACE_ID_LABEL_NAMES } from 'scenes/components/LogsRenderer/TraceLink.constants';
 import { TracePanel } from 'scenes/components/LogsRenderer/TracePanel';
 import { UniqueLogLabels } from 'scenes/components/LogsRenderer/UniqueLogLabels';
+import { useTraceData } from 'scenes/components/LogsRenderer/useTraceData';
 
 import { ScreenshotThumbnail } from './screenshots/ScreenshotThumbnail';
-import { PROPAGATION_POLL_MS, PROPAGATION_WINDOW_MS } from './LogLine.constants';
 
 interface LogLineProps {
   log: ParsedLokiRecord<Record<string, string>, Record<string, string>>;
@@ -29,7 +27,6 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
   const styles = useStyles2(getStyles);
   const tracesDS = useTracesDS();
   const [expanded, setExpanded] = useState(false);
-  const [, forceUpdate] = useState(0);
   const traceIconRef = useRef<HTMLDivElement>(null);
   const outerRef = useRef<HTMLDivElement>(null);
   const [arrowOffset, setArrowOffset] = useState<number | null>(null);
@@ -44,37 +41,9 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
     isLoading,
     isError,
     refetch,
-  } = useQuery({
-    queryKey: ['trace', traceId, tracesDS, logTimestamp],
-    queryFn: () => fetchTraceData(traceId!, tracesDS!),
-    enabled: !!traceId && !!tracesDS,
-    refetchInterval: (query) => {
-      const data = query.state.data;
-      if (data && data.series.length > 0) {
-        return false;
-      }
-      if (Date.now() - logTimestamp < PROPAGATION_WINDOW_MS) {
-        return PROPAGATION_POLL_MS;
-      }
-      return false;
-    },
-  });
-
-  const traceExists = Boolean(traceData && traceData.series.length > 0);
-  const isRecent = Date.now() - logTimestamp < PROPAGATION_WINDOW_MS;
-  const isAwaitingPropagation = !traceExists && !isLoading && isRecent && !!traceId && !!tracesDS;
-
-  useEffect(() => {
-    if (!isAwaitingPropagation) {
-      return;
-    }
-    const remaining = PROPAGATION_WINDOW_MS - (Date.now() - logTimestamp);
-    if (remaining <= 0) {
-      return;
-    }
-    const timer = setTimeout(() => forceUpdate((n) => n + 1), remaining);
-    return () => clearTimeout(timer);
-  }, [isAwaitingPropagation, logTimestamp]);
+    traceExists,
+    isAwaitingPropagation,
+  } = useTraceData({ traceId, tracesDS, timestamp: logTimestamp });
 
   const handleToggle = useCallback(() => {
     trackTraceIconClicked({ action: expanded ? 'collapse' : 'expand' });
@@ -142,7 +111,6 @@ export const LogLine = ({ log, mainKey, hasTraceColumn }: LogLineProps) => {
                 isError={isError}
                 traceExists={traceExists}
                 isAwaitingPropagation={isAwaitingPropagation}
-                expanded={expanded}
                 onToggle={handleToggle}
                 onRetry={refetch}
                 logoUrl={tracesDS?.meta?.info?.logos?.small}
