@@ -24,6 +24,20 @@ through Grafana's OFREP endpoint and defined with Go Feature Flag (GOFF) in `dep
   initialising. Because of the gate above it is effectively always `true` inside the app; it exists
   for consumers that might render outside `SMOpenFeatureProvider`.
 
+### Consuming a flag
+
+```tsx
+// One flag in a component
+const { isEnabled } = useFeatureFlag(FeatureName.Folders);
+
+// As a render-prop wrapper
+<FeatureFlag name={FeatureName.Folders}>{({ isEnabled }) => (isEnabled ? <Folders /> : null)}</FeatureFlag>;
+
+// A dynamic list of flags, where the hook can't be called per item
+const isFeatureEnabled = useIsFeatureEnabled();
+const options = all.filter((option) => !option.featureToggle || isFeatureEnabled(option.featureToggle));
+```
+
 ### Waves
 
 | Wave      | Who is in it                                                | Verify on                        |
