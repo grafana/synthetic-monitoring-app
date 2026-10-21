@@ -52,13 +52,15 @@ it.each([
   await gotoSection(user, FormSectionName.Alerting);
   const failedChecks = await screen.findByRole('group', { name: 'Failed Checks' });
   expect(within(failedChecks).getByRole('checkbox', { name: 'Failed Checks' })).toHaveProperty('checked', selected);
-  expect(within(failedChecks).getByRole('combobox', { name: 'Failed Checks period' })).toHaveValue(period);
-  if (selected) {
+  if (!selected) {
+    expect(within(failedChecks).queryByRole('combobox', { name: 'Failed Checks period' })).not.toBeInTheDocument();
     await user.click(within(failedChecks).getByRole('checkbox', { name: 'Failed Checks' }));
-    await gotoSection(user, FormSectionName.Execution);
-    await gotoSection(user, FormSectionName.Alerting);
-    expect(await screen.findByRole('checkbox', { name: 'Failed Checks' })).not.toBeChecked();
   }
+  expect(within(failedChecks).getByRole('combobox', { name: 'Failed Checks period' })).toHaveValue(period);
+  await user.click(within(failedChecks).getByRole('checkbox', { name: 'Failed Checks' }));
+  await gotoSection(user, FormSectionName.Execution);
+  await gotoSection(user, FormSectionName.Alerting);
+  expect(await screen.findByRole('checkbox', { name: 'Failed Checks' })).not.toBeChecked();
 });
 
 it('adjusts an implicit alert window when the frequency of a prefilled check changes', async () => {
