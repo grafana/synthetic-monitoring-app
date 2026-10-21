@@ -1,13 +1,25 @@
 import React from 'react';
+import { type Receiver } from '@grafana/api-clients/rtkq/notifications.alerting/v1beta1';
 import { getBackendSrv, locationService } from '@grafana/runtime';
 import { act, screen, waitFor } from '@testing-library/react';
 import { decode } from 'js-base64';
 import { COMPLEX_BROWSER_CHECK } from 'test/fixtures/checks';
+import {
+  DEFAULT_NOTIFICATION_CONTACT_POINT,
+  DEFAULT_NOTIFICATION_TREE,
+  EXISTING_SM_NOTIFICATION_TREE,
+  SECOND_NOTIFICATION_CONTACT_POINT,
+  UNCONFIGURED_NOTIFICATION_CONTACT_POINT,
+} from 'test/fixtures/notificationRouting';
 import { ONLINE_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsCheckWriterWithoutAlertWrite } from 'test/utils';
+import {
+  mockFeatureToggles,
+  runTestAsCheckWriterWithoutAlertWrite,
+  runTestAsNotificationSetupWriter,
+} from 'test/utils';
 
 import { CheckAlertType, FeatureName } from 'types';
 import { ONE_HOUR_IN_MS } from 'utils.constants';
@@ -17,6 +29,7 @@ import { BrokenLinksDrawer } from './BrokenLinksDrawer';
 beforeEach(() => {
   mockFeatureToggles({ [FeatureName.Folders]: false });
   server.use(
+    apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts: [] } }) }),
     apiRoute('listProbes', { result: () => ({ json: [ONLINE_PROBE] }) }),
     apiRoute('addCheck', {
       result: async (req) => ({
@@ -184,8 +197,11 @@ it('uses library defaults when optional settings are empty and preselects a prob
   expect(screen.getByRole('spinbutton', { name: /^Link limit/ })).toHaveValue(null);
   expect(screen.queryByRole('spinbutton', { name: /^Timeout/ })).not.toBeInTheDocument();
   expect(screen.getByText('Check a page for broken links on a regular schedule.')).toBeInTheDocument();
-  expect(screen.getByText(/Creates a browser check with alerts on failure, routed through your/)).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'notification policies' })).toHaveAttribute('href', '/alerting/routes');
+  expect(await screen.findByRole('checkbox', { name: 'Alert on check failure' })).toBeChecked();
+  expect(screen.getByRole('link', { name: 'Manage notifications in Grafana Alerting' })).toHaveAttribute(
+    'href',
+    '/alerting/routes'
+  );
   expect(screen.queryByText('Accepted status codes')).not.toBeInTheDocument();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
@@ -320,7 +336,7 @@ it('keeps creation busy through list refreshes and alert setup', async () => {
   const expectBusy = () => {
     expect(screen.getByRole('button', { name: 'Create check' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled();
-    expect(screen.queryByRole('button', { name: 'Retry enabling alerting' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Retry alerting setup' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'View check' })).not.toBeInTheDocument();
     expect(onClose).not.toHaveBeenCalled();
   };
@@ -366,7 +382,7 @@ it('retries alert setup after partial success without creating another check', a
   const { user, onClose, queryClient } = await openDrawer();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
-  expect(await screen.findByText('Check created, but alerting couldn’t be enabled')).toBeInTheDocument();
+  expect(await screen.findByText('Check created, but alerting setup is incomplete')).toBeInTheDocument();
   expect(onClose).not.toHaveBeenCalled();
   expect(checks.requests).toHaveLength(1);
   expect(screen.getByRole('textbox', { name: /^Page URL/ })).toBeDisabled();
@@ -374,10 +390,10 @@ it('retries alert setup after partial success without creating another check', a
   const refreshed = deferred();
   const invalidate = jest.spyOn(queryClient, 'invalidateQueries').mockImplementationOnce(() => refreshed.promise);
   server.use(apiRoute('updateAlertsForCheck', {}, alerts.record));
-  await user.click(screen.getByRole('button', { name: 'Retry enabling alerting' }));
+  await user.click(screen.getByRole('button', { name: 'Retry alerting setup' }));
   await waitFor(() => expect(invalidate).toHaveBeenCalledTimes(1));
   expect(screen.getByRole('button', { name: 'Create check' })).toBeDisabled();
-  expect(screen.queryByRole('button', { name: 'Retry enabling alerting' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: 'Retry alerting setup' })).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'View check' })).not.toBeInTheDocument();
   await user.keyboard('{Escape}');
   expect(onClose).not.toHaveBeenCalled();
@@ -393,7 +409,7 @@ it('allows opening the created check after alert setup fails', async () => {
   const { user, onClose } = await openDrawer();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
-  await screen.findByText('Check created, but alerting couldn’t be enabled');
+  await screen.findByText('Check created, but alerting setup is incomplete');
   await user.click(screen.getByRole('button', { name: 'View check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   expect(locationService.getLocation().pathname).toContain('/checks/123');
@@ -405,10 +421,288 @@ it('explains missing alert permissions and still creates the check without alert
   server.use(apiRoute('updateAlertsForCheck', {}, alerts.record));
   const { user, onClose } = await openDrawer();
   expect(
-    screen.getByText(/Creates a browser check without alerts. You don’t have permission to configure alerts/)
+    screen.getByText(/You don’t have permission to configure alerts. This check will be created without them/)
   ).toBeInTheDocument();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
   expect(alerts.requests).toHaveLength(0);
+});
+
+it('allows opting out of template alerts without writing alert or notification configuration', async () => {
+  const alerts = getServerRequests();
+  const receivers = getServerRequests();
+  const policies = getServerRequests();
+  server.use(
+    apiRoute('updateAlertsForCheck', {}, alerts.record),
+    apiRoute('createNotificationContactPoint', {}, receivers.record),
+    apiRoute('updateNotificationRoutingTree', {}, policies.record)
+  );
+  const { user, onClose } = await openDrawer();
+  await user.click(await screen.findByRole('checkbox', { name: 'Alert on check failure' }));
+  expect(screen.getByRole('status')).toHaveTextContent('Alerts are off for this check.');
+  expect(screen.queryByRole('link', { name: 'Manage notifications in Grafana Alerting' })).not.toBeInTheDocument();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(alerts.requests).toHaveLength(0);
+  expect(receivers.requests).toHaveLength(0);
+  expect(policies.requests).toHaveLength(0);
+});
+
+it('shows destinations from fixed template labels before a URL is entered', async () => {
+  server.use(
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({
+        json: { items: [DEFAULT_NOTIFICATION_CONTACT_POINT, SECOND_NOTIFICATION_CONTACT_POINT], metadata: {} },
+      }),
+    }),
+    apiRoute('listNotificationRoutingTrees', {
+      result: () => ({
+        json: {
+          items: [
+            {
+              ...DEFAULT_NOTIFICATION_TREE,
+              spec: {
+                ...DEFAULT_NOTIFICATION_TREE.spec,
+                routes: [
+                  {
+                    matchers: [{ label: 'namespace', type: '=', value: 'synthetic_monitoring' }],
+                    receiver: 'grafana-default-email',
+                    continue: true,
+                  },
+                  {
+                    matchers: [{ label: 'check_name', type: '=', value: 'browser' }],
+                    receiver: SECOND_NOTIFICATION_CONTACT_POINT.spec.title,
+                    continue: false,
+                  },
+                ],
+              },
+            },
+          ],
+          metadata: {},
+        },
+      }),
+    })
+  );
+  await openDrawer();
+  expect(screen.getByRole('textbox', { name: /^Page URL/ })).toHaveValue('');
+  expect(await screen.findByRole('link', { name: 'grafana-default-email' })).toBeInTheDocument();
+  expect(screen.getByRole('link', { name: SECOND_NOTIFICATION_CONTACT_POINT.spec.title })).toBeInTheDocument();
+  expect(screen.queryByRole('button', { name: /Show routing|See labels/ })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Default policy' })).not.toBeInTheDocument();
+});
+
+it.each([
+  { label: 'job', value: 'Detect broken links on https://grafana.com/' },
+  { label: 'instance', value: 'https://grafana.com/' },
+])('updates the destination when the URL changes a matching $label', async ({ label, value }) => {
+  server.use(
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({
+        json: { items: [DEFAULT_NOTIFICATION_CONTACT_POINT, SECOND_NOTIFICATION_CONTACT_POINT], metadata: {} },
+      }),
+    }),
+    apiRoute('listNotificationRoutingTrees', {
+      result: () => ({
+        json: {
+          items: [
+            {
+              ...DEFAULT_NOTIFICATION_TREE,
+              spec: {
+                ...DEFAULT_NOTIFICATION_TREE.spec,
+                routes: [
+                  {
+                    matchers: [{ label, type: '=', value }],
+                    receiver: SECOND_NOTIFICATION_CONTACT_POINT.spec.title,
+                    continue: false,
+                  },
+                ],
+              },
+            },
+          ],
+          metadata: {},
+        },
+      }),
+    })
+  );
+  const { user } = await openDrawer();
+  expect(await screen.findByRole('link', { name: 'grafana-default-email' })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: SECOND_NOTIFICATION_CONTACT_POINT.spec.title })).not.toBeInTheDocument();
+  const input = screen.getByRole('textbox', { name: /^Page URL/ });
+  await user.type(input, 'https://grafana.com');
+  expect(await screen.findByRole('link', { name: SECOND_NOTIFICATION_CONTACT_POINT.spec.title })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'grafana-default-email' })).not.toBeInTheDocument();
+  await user.clear(input);
+  expect(await screen.findByRole('link', { name: 'grafana-default-email' })).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: SECOND_NOTIFICATION_CONTACT_POINT.spec.title })).not.toBeInTheDocument();
+});
+
+it('saves directly when routing is unavailable and keeps the inline warning', async () => {
+  const checks = getServerRequests();
+  server.use(
+    apiRoute('listNotificationRoutingTrees', { result: () => ({ status: 403 }) }),
+    apiRoute('addCheck', {}, checks.record)
+  );
+  const { user, onClose } = await openDrawer();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  expect(await screen.findByText('Couldn’t verify notification destinations.')).toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(screen.queryByRole('dialog', { name: 'Continue with incomplete alerting setup?' })).not.toBeInTheDocument();
+  expect(checks.requests).toHaveLength(1);
+});
+
+it('keeps existing policy branches intact and saves directly without notification setup', async () => {
+  runTestAsNotificationSetupWriter();
+  const policies = getServerRequests();
+  const checks = getServerRequests();
+  server.use(
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({ json: { items: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT], metadata: {} } }),
+    }),
+    apiRoute('listNotificationRoutingTrees', {
+      result: () => ({ json: { items: [EXISTING_SM_NOTIFICATION_TREE], metadata: {} } }),
+    }),
+    apiRoute('updateNotificationRoutingTree', {}, policies.record),
+    apiRoute('addCheck', {}, checks.record)
+  );
+  const { user, onClose } = await openDrawer();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  expect(await screen.findByText('No notification destination configured.')).toBeInTheDocument();
+  expect(screen.queryByRole('textbox', { name: /Email addresses/ })).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(screen.queryByRole('dialog', { name: 'Continue with incomplete alerting setup?' })).not.toBeInTheDocument();
+  expect(checks.requests).toHaveLength(1);
+  expect(policies.requests).toHaveLength(0);
+});
+
+it('validates recipients and retries a failed shared policy write without recreating the check or contact point', async () => {
+  runTestAsNotificationSetupWriter();
+  let tree = DEFAULT_NOTIFICATION_TREE;
+  const receivers: Receiver[] = [UNCONFIGURED_NOTIFICATION_CONTACT_POINT];
+  const checks = getServerRequests();
+  const alerts = getServerRequests();
+  const contactPoints = getServerRequests();
+  const policies = getServerRequests();
+  server.use(
+    apiRoute('listNotificationRoutingTrees', { result: () => ({ json: { items: [tree], metadata: {} } }) }),
+    apiRoute('listNotificationContactPoints', { result: () => ({ json: { items: receivers, metadata: {} } }) }),
+    apiRoute(
+      'createNotificationContactPoint',
+      {
+        result: async (req) => {
+          const receiver: Receiver = { ...(await req.json()), metadata: { name: 'sm-email', resourceVersion: '1' } };
+          receivers.push(receiver);
+          return { json: receiver };
+        },
+      },
+      contactPoints.record
+    ),
+    apiRoute('updateNotificationRoutingTree', { result: () => ({ status: 500 }) }, policies.record),
+    apiRoute(
+      'addCheck',
+      { result: async (req) => ({ json: { ...COMPLEX_BROWSER_CHECK, ...(await req.json()), id: 123 } }) },
+      checks.record
+    ),
+    apiRoute('updateAlertsForCheck', {}, alerts.record)
+  );
+  const { user, onClose } = await openDrawer();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  const emails = await screen.findByRole('textbox', { name: /Email addresses/ });
+  await user.type(emails, 'unfinished');
+  expect(screen.queryByText(/Enter valid email addresses/)).not.toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  expect(await screen.findByText(/Enter valid email addresses/)).toBeInTheDocument();
+  expect(checks.requests).toHaveLength(0);
+  await user.clear(emails);
+  await user.type(emails, 'oncall@example.com, team@example.com');
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  expect(await screen.findByText('Check created, but alerting setup is incomplete')).toBeInTheDocument();
+  expect(checks.requests).toHaveLength(1);
+  expect(contactPoints.requests).toHaveLength(1);
+  expect(alerts.requests).toHaveLength(1);
+  expect((await contactPoints.read()).body.spec.integrations[0].settings.addresses).toBe(
+    'oncall@example.com;team@example.com'
+  );
+  server.use(
+    apiRoute(
+      'updateNotificationRoutingTree',
+      {
+        result: async (req) => {
+          tree = await req.json();
+          return { json: tree };
+        },
+      },
+      policies.record
+    )
+  );
+  await user.click(screen.getByRole('button', { name: 'Retry alerting setup' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+  expect(checks.requests).toHaveLength(1);
+  expect(contactPoints.requests).toHaveLength(1);
+  expect(alerts.requests).toHaveLength(1);
+  expect(policies.requests).toHaveLength(2);
+  expect(tree.spec.defaults).toEqual(DEFAULT_NOTIFICATION_TREE.spec.defaults);
+  expect(tree.spec.routes).toEqual([expect.objectContaining({ receiver: 'Synthetic Monitoring email' })]);
+});
+
+it('rechecks routing after a name conflict changes the created check', async () => {
+  const checks = getServerRequests();
+  let attempt = 0;
+  server.use(
+    apiRoute('listNotificationContactPoints', {
+      result: () => ({
+        json: { items: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT, SECOND_NOTIFICATION_CONTACT_POINT], metadata: {} },
+      }),
+    }),
+    apiRoute('listNotificationRoutingTrees', {
+      result: () => ({
+        json: {
+          items: [
+            {
+              ...DEFAULT_NOTIFICATION_TREE,
+              spec: {
+                ...DEFAULT_NOTIFICATION_TREE.spec,
+                routes: [
+                  {
+                    matchers: [{ label: 'job', type: '=', value: 'Detect broken links on https://grafana.com/' }],
+                    receiver: SECOND_NOTIFICATION_CONTACT_POINT.spec.title,
+                    continue: false,
+                  },
+                ],
+              },
+            },
+          ],
+          metadata: {},
+        },
+      }),
+    }),
+    apiRoute(
+      'addCheck',
+      {
+        result: async (req) => {
+          attempt++;
+          if (attempt === 1) {
+            return { status: 409, json: { err: 'target/job combination already exists' } };
+          }
+          return { json: { ...COMPLEX_BROWSER_CHECK, ...(await req.json()), id: 123 } };
+        },
+      },
+      checks.record
+    )
+  );
+  const { user, onClose } = await openDrawer();
+  await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
+  expect(await screen.findByRole('link', { name: SECOND_NOTIFICATION_CONTACT_POINT.spec.title })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Create check' }));
+  expect(await screen.findByText('Check created, but alerting setup is incomplete')).toBeInTheDocument();
+  expect(screen.getByText(/Alerts may fire without notifying anyone/)).toBeInTheDocument();
+  expect(onClose).not.toHaveBeenCalled();
+  expect(checks.requests).toHaveLength(2);
+  expect((await checks.read(1)).body.job).toBe('Detect broken links on https://grafana.com/ (2)');
+  await user.click(screen.getByRole('button', { name: 'View check' }));
+  await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
 });

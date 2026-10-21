@@ -27,10 +27,20 @@ const desired = [{ name: CheckAlertType.ProbeFailedExecutionsTooHigh, threshold:
 beforeEach(() => localStorage.clear());
 afterEach(() => localStorage.clear());
 
-it('shows disabled per-check alerts from the server', async () => {
-  server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts: [] } }) }));
-  render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
-  expect(await screen.findByText('Per-check alerts are off.')).toBeInTheDocument();
+it.each([
+  { state: 'off', alerts: [] },
+  { state: 'configured', alerts: [{ ...failedAlert, status: 'OK', error: undefined }] },
+])('shows no status block when alerts are $state', async ({ alerts }) => {
+  server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts } }) }));
+  const { queryClient } = render(
+    <div data-testid="alerting-status">
+      <CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />
+    </div>
+  );
+  expect(await screen.findByTestId('alerting-status')).toBeEmptyDOMElement();
+  await waitFor(() => expect(queryClient.getQueryState(['alertsForCheck', check.id])?.status).toBe('success'));
+  await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+  expect(screen.getByTestId('alerting-status')).toBeEmptyDOMElement();
 });
 
 it('does not report disabled or enabled when alert configuration cannot be read', async () => {
@@ -63,12 +73,15 @@ it('refreshes server-side retries without sending an unchanged alert configurati
     apiRoute('updateAlertsForCheck', {}, record)
   );
   const { user } = render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
-  expect(await screen.findByText(/Quota|quota/)).toBeInTheDocument();
+  expect(await screen.findByText(/Failed Checks: The alerting limit has been reached/)).toBeInTheDocument();
+  expect(screen.queryByText(new RegExp(failedAlert.name))).not.toBeInTheDocument();
+  expect(screen.queryByText(/quota limit reached|PENDING_CREATE/)).not.toBeInTheDocument();
   expect(screen.getByText(/Synthetic Monitoring retries them automatically/)).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Retry alert creation' })).not.toBeInTheDocument();
   alerts = [{ ...failedAlert, status: 'OK', error: undefined }];
   await user.click(screen.getByRole('button', { name: 'Refresh status' }));
-  expect(await screen.findByText('Alerting enabled')).toBeInTheDocument();
+  await waitFor(() => expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument());
+  expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
   expect(requests).toHaveLength(0);
 });
 
@@ -79,11 +92,13 @@ it.each([undefined, CheckAlertError.QuotaLimitReached])(
     server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts } }) }));
     render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
     await screen.findByText('Alerting setup is incomplete');
+    expect(screen.queryByText(/PENDING_CREATE/)).not.toBeInTheDocument();
     alerts = [{ ...failedAlert, status: 'OK', error: undefined }];
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 5500));
     });
-    expect(screen.getByText('Alerting enabled')).toBeInTheDocument();
+    expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
   },
   10000
 );
@@ -154,6 +169,24 @@ it('restores a failed PUT draft after reload and does not overwrite a newer aler
   expect(requests).toHaveLength(0);
 });
 
+it('shows a helpful message when retrying fails without displaying the raw API error', async () => {
+  const queryClient = getQueryClient();
+  setPendingAlertSetup(queryClient, check.id!, { alerts: desired, previousAlerts: [] });
+  const rawError = 'rpc error: code = Internal desc = upstream request failed';
+  server.use(
+    apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts: [] } }) }),
+    apiRoute('updateAlertsForCheck', { result: () => ({ status: 500, json: { err: rawError } }) })
+  );
+  const { user } = render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />, { queryClient });
+  await user.click(await screen.findByRole('button', { name: 'Retry alert creation' }));
+  expect(
+    await screen.findByText('Alerts could not be saved. Try again or review the alert settings.')
+  ).toBeInTheDocument();
+  expect(screen.queryByText(rawError)).not.toBeInTheDocument();
+  expect(screen.getByRole('button', { name: 'Retry alert creation' })).toBeEnabled();
+  expect(screen.getByRole('link', { name: 'Edit alerts' })).toBeInTheDocument();
+});
+
 it.each(['OK', 'PENDING_CREATE'])('clears a saved local draft while the rule status is %s', async (status) => {
   const queryClient = getQueryClient();
   setPendingAlertSetup(queryClient, check.id!, { alerts: desired, previousAlerts: [] });
@@ -165,10 +198,13 @@ it.each(['OK', 'PENDING_CREATE'])('clears a saved local draft while the rule sta
     })
   );
   render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />, { queryClient });
-  expect(
-    await screen.findByText(status === 'OK' ? 'Alerting enabled' : /Synthetic Monitoring retries them automatically/)
-  ).toBeInTheDocument();
   await waitFor(() => expect(localStorage.length).toBe(0));
+  if (status === 'OK') {
+    await waitFor(() => expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument());
+    expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
+  } else {
+    expect(await screen.findByText(/Synthetic Monitoring retries them automatically/)).toBeInTheDocument();
+  }
 });
 
 it('keeps status visible without offering an unauthorized retry', async () => {

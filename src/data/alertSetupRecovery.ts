@@ -13,15 +13,22 @@ export function sameAlertSettings(left: CheckAlertDraft[], right: CheckAlertDraf
   return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
 }
 
+export class AlertSettingsConflictError extends Error {
+  constructor() {
+    super(
+      'Alert settings changed since this save attempt. Open the check editor to review the current settings before retrying.'
+    );
+    this.name = 'AlertSettingsConflictError';
+  }
+}
+
 export function checkAlertRetryConflict(
   current: CheckAlertDraft[],
   previous: CheckAlertDraft[],
   desired: CheckAlertDraft[]
 ) {
   if (!sameAlertSettings(current, previous) && !sameAlertSettings(current, desired)) {
-    throw new Error(
-      'Alert settings changed since this save attempt. Open the check editor to review the current settings before retrying.'
-    );
+    throw new AlertSettingsConflictError();
   }
 }
 

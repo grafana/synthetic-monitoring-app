@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Stack, Text, TextLink } from '@grafana/ui';
 
-import { AlertSensitivity, Check, CheckType } from 'types';
+import { Check, CheckAlertError, CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath } from 'routing/utils';
-import { checkAlertRetryConflict, sameAlertSettings } from 'data/alertSetupRecovery';
+import { AlertSettingsConflictError, checkAlertRetryConflict, sameAlertSettings } from 'data/alertSetupRecovery';
 import { usePendingAlertSetup } from 'data/pendingAlertSetup';
 import { useUserPermissions } from 'data/permissions';
 import { QUERY_KEYS as ALERT_QUERY_KEYS, useListAlertsForCheck, useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -15,7 +15,21 @@ import { useNotificationRouting } from 'data/useNotificationRouting';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useSMDS } from 'hooks/useSMDS';
 import { generateAlertLabels } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
+import { PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { inspectNotificationRouting } from 'components/CheckForm/AlertsPerCheck/notificationRouting';
+
+function describeAlertSetupError(error?: CheckAlertError): string {
+  switch (error) {
+    case CheckAlertError.QuotaLimitReached:
+      return 'The alerting limit has been reached. Ask an administrator to review the stack’s limits.';
+    case CheckAlertError.HostedGrafanaInstanceLoading:
+      return 'Grafana is still starting. Alert setup will resume when it is ready.';
+    case undefined:
+      return 'Waiting for the alert rule change to complete.';
+    default:
+      return 'The alert rule could not be updated yet.';
+  }
+}
 
 export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; checkType: CheckType }) {
   const checkId = check.id!;
@@ -60,7 +74,9 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
       await client.invalidateQueries({ queryKey: QUERY_KEYS.list });
     } catch (error) {
       setRetryError(
-        error instanceof Error ? error.message : 'Alert creation failed. Try again or review the check settings.'
+        error instanceof AlertSettingsConflictError
+          ? error.message
+          : 'Alerts could not be saved. Try again or review the alert settings.'
       );
     } finally {
       setRetrying(false);
@@ -73,7 +89,7 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
     </TextLink>
   );
   if (alertsQuery.isLoading) {
-    return <Text color="secondary">Checking alerting status...</Text>;
+    return null;
   }
   if (alertsQuery.isError || !alerts) {
     return (
@@ -101,7 +117,8 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
             .filter(({ status }) => status !== 'OK')
             .map((alert) => (
               <Text key={alert.name} variant="bodySmall">
-                {alert.name}: {alert.error || alert.status}
+                {PREDEFINED_ALERTS[checkType].find(({ type }) => type === alert.name)?.category ?? 'Alert'}:{' '}
+                {describeAlertSetupError(alert.error)}
               </Text>
             ))}
           {retryError && <Text color="error">{retryError}</Text>}
@@ -136,20 +153,8 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
       </Alert>
     );
   }
-  if (!alerts.length) {
-    return (
-      <Stack gap={2} alignItems="center">
-        <Text color="secondary">
-          {check.alertSensitivity && check.alertSensitivity !== AlertSensitivity.None
-            ? 'Legacy alerts enabled. Per-check alerts are off.'
-            : 'Per-check alerts are off.'}
-        </Text>
-        {editLink}
-      </Stack>
-    );
-  }
-  if (routing.isLoading || labelMode.isLoading) {
-    return <Text color="secondary">Alerting enabled. Checking notification routing...</Text>;
+  if (!alerts.length || routing.isLoading || labelMode.isLoading) {
+    return null;
   }
   const states =
     routing.isError || labelMode.isError || !routing.data || !labelMode.data
@@ -185,10 +190,5 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
       </Alert>
     );
   }
-  return (
-    <Stack gap={2} alignItems="center">
-      <Text>Alerting enabled</Text>
-      {editLink}
-    </Stack>
-  );
+  return null;
 }
