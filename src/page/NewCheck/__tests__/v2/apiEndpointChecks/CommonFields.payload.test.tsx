@@ -14,7 +14,11 @@ import {
   FALLBACK_CHECK_TRACEROUTE,
 } from 'components/constants';
 
-import { gotoSection, selectOnlyProbe, submitForm } from '../../../../../components/Checkster/__testHelpers__/formHelpers';
+import {
+  gotoSection,
+  selectOnlyProbe,
+  submitForm,
+} from '../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { renderNewForm, TARGET_MAP } from '../../../../__testHelpers__/checkForm';
 import { fillMandatoryFields } from '../../../../__testHelpers__/v2.utils';
 
@@ -116,11 +120,7 @@ describe('Api endpoint checks - common fields payload', () => {
 
           expect(screen.getByText('Failed Checks')).toBeInTheDocument();
 
-          await user.click(
-            screen.getByTestId(
-              CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
-            )
-          );
+          expect(screen.getByRole('checkbox', { name: 'Failed Checks' })).toBeChecked();
           await user.clear(
             screen.getByTestId(
               CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
@@ -142,7 +142,6 @@ describe('Api endpoint checks - common fields payload', () => {
             alerts: [{ name: 'ProbeFailedExecutionsTooHigh', period: '5m', threshold: 1 }],
           });
         });
-
       });
 
       describe(`Section Execution`, () => {

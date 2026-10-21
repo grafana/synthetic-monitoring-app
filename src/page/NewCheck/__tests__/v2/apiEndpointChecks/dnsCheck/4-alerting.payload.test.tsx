@@ -53,6 +53,7 @@ describe(`DNSCheck - Section 4 (Alerting) payload`, () => {
 
     expect(alertsBody).toEqual({
       alerts: [
+        { name: 'ProbeFailedExecutionsTooHigh', period: '5m', threshold: 1 },
         {
           name: 'DNSRequestDurationTooHighAvg',
           threshold: 150,

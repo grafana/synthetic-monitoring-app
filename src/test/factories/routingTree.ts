@@ -89,7 +89,7 @@ export const routeMatchFactory = Factory.define<RouteMatch, RouteMatchTransientP
 export const routingTreeFactory = Factory.define<RoutingTree>(({ sequence }) => ({
   apiVersion: 'notifications.alerting.grafana.app/v1beta1',
   kind: 'RoutingTree',
-  metadata: { name: `routing-tree-${sequence}` },
+  metadata: { name: `routing-tree-${sequence}`, resourceVersion: '1' },
   spec: {
     defaults: { receiver: 'grafana-default-email' },
     routes: [],

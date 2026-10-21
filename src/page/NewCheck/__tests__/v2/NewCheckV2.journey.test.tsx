@@ -333,7 +333,7 @@ describe(`<NewCheckV2 /> journey`, () => {
     await selectOnlyProbe(user, new RegExp(probeToMetadataProbe(PUBLIC_PROBE).displayName));
 
     await gotoSection(user, FormSectionName.Alerting);
-    await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
+    expect(screen.getByRole('checkbox', { name: 'Failed Checks' })).toBeChecked();
     const thresholdsInput =
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput;
     await user.clear(screen.getByTestId(thresholdsInput));
@@ -366,7 +366,7 @@ describe(`<NewCheckV2 /> journey`, () => {
 
     await gotoSection(user, FormSectionName.Alerting);
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).toBeDisabled();
-    await user.click(screen.getByLabelText('Enable Probe Failed Executions Too High alert'));
+    await user.click(screen.getByRole('checkbox', { name: 'Failed Checks' }));
     expect(screen.getByTestId(CHECKSTER_TEST_ID.form.submitButton)).not.toBeDisabled();
   });
 

@@ -345,6 +345,20 @@ export function runTestAsCheckWriterWithoutAlertWrite() {
   });
 }
 
+export function runTestAsNotificationSetupWriter() {
+  const runtime = require('@grafana/runtime');
+  jest.replaceProperty(runtime, 'config', {
+    ...config,
+    bootData: {
+      ...config.bootData,
+      user: {
+        ...config.bootData.user,
+        permissions: { ...FULL_WRITER_ACCESS, 'alert.notifications:write': true },
+      },
+    },
+  });
+}
+
 export function runTestAsCheckWriterWithoutRead() {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, 'config', {

@@ -1,18 +1,22 @@
 import React, { useCallback, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
-import { Alert, Field, Input } from '@grafana/ui';
+import { Alert, Field, IconButton, Input, useStyles2 } from '@grafana/ui';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 
+import { getAlertItemStyles } from './AlertsPerCheck.styles';
+
 interface RunbookUrlProps {
   alertType: CheckAlertType;
   selected: boolean;
   disabled?: boolean;
+  onRemove: () => void;
 }
 
-export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrlProps) => {
+export const RunbookUrl = ({ alertType, selected, disabled = false, onRemove }: RunbookUrlProps) => {
+  const styles = useStyles2(getAlertItemStyles);
   const { control, formState } = useFormContext<CheckFormValues>();
   const urlSearchParams = useURLSearchParams();
 
@@ -46,14 +50,34 @@ export const RunbookUrl = ({ alertType, selected, disabled = false }: RunbookUrl
         invalid={!!runbookUrlError}
         error={runbookUrlError}
         disabled={!selected || disabled}
+        noMargin
       >
-        <Input
-          {...field}
-          value={field.value ?? ''}
-          id={`alert-runbook-url-${alertType}`}
-          data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
-          placeholder="https://example.com/runbook"
-        />
+        <>
+          <div className={styles.runbookRow}>
+            <Input
+              {...field}
+              value={field.value ?? ''}
+              id={`alert-runbook-url-${alertType}`}
+              data-testid={CHECKSTER_TEST_ID.feature.perCheckAlerts[alertType].runbookUrlInput}
+              placeholder="https://example.com/runbook"
+              className={styles.runbookInput}
+            />
+            <IconButton
+              name="trash-alt"
+              type="button"
+              tooltip="Remove runbook"
+              disabled={!selected || disabled}
+              onClick={() => {
+                field.onChange('');
+                field.onBlur();
+                if (showMissingRunbookMessage) {
+                  handleDismissMissingRunbookMessage();
+                }
+                onRemove();
+              }}
+            />
+          </div>
+        </>
       </Field>
     </>
   );

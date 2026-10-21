@@ -7,7 +7,11 @@ import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckAlertType, CheckType } from 'types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
-import { gotoSection, selectOnlyProbe, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
+import {
+  gotoSection,
+  selectOnlyProbe,
+  submitForm,
+} from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
 const checkType = CheckType.Tcp;
@@ -43,6 +47,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     const { body: alertsBody } = await read(1);
     expect(alertsBody).toEqual({
       alerts: [
+        { name: 'ProbeFailedExecutionsTooHigh', period: '5m', threshold: 1 },
         {
           name: 'TLSTargetCertificateCloseToExpiring',
           threshold: 1,

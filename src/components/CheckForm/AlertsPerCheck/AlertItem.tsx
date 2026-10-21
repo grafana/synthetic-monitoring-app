@@ -1,10 +1,10 @@
-import React, { useEffect, useId, useState } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Button, Checkbox, FieldValidationMessage, useStyles2 } from '@grafana/ui';
 import { trackSelectAlert, trackUnSelectAlert } from 'features/tracking/perCheckAlertsEvents';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
-import { CheckAlertType, CheckFormValuesWithAlert } from 'types';
+import { CheckAlertType, CheckFormValues } from 'types';
 import { useURLSearchParams } from 'hooks/useURLSearchParams';
 import { NotOkStatusInfo } from 'components/AlertStatus/NotOkStatusInfo';
 
@@ -24,25 +24,45 @@ export const AlertItem = ({
   onSelectionChange: (type: CheckAlertType) => void;
 }) => {
   const styles = useStyles2(getAlertItemStyles);
-  const { getValues, formState } = useFormContext<CheckFormValuesWithAlert<typeof alert.type>>();
+  const { getValues, clearErrors, setFocus, watch, formState } = useFormContext<CheckFormValues>();
   const searchParams = useURLSearchParams();
-  const [showRunbook, setShowRunbook] = useState(searchParams.get('runbookMissing') === alert.type);
+  const runbookField = `alerts.${alert.type}.runbookUrl` as const;
+  const runbookUrl = watch(runbookField);
+  const [showRunbook, setShowRunbook] = useState(
+    Boolean(runbookUrl) || searchParams.get('runbookMissing') === alert.type
+  );
+  const addRunbookRef = useRef<HTMLButtonElement>(null);
+  const focusRunbookControl = useRef(false);
   const runbookId = useId();
   const status = getValues(`alerts.${alert.type}.status`);
   const creationError = getValues(`alerts.${alert.type}.creationError`);
   const selectionError = formState.errors.alerts?.[alert.type]?.isSelected?.message;
   const runbookError = formState.errors.alerts?.[alert.type]?.runbookUrl?.message;
-  const runbookUrl = getValues('alerts')?.[alert.type]?.runbookUrl;
-  const hasRunbook = Boolean(runbookUrl?.trim());
-  const runbookAction = showRunbook ? 'Hide runbook' : hasRunbook ? 'Edit runbook' : 'Add runbook';
   const errorId = `alert-selection-error-${alert.type}`;
 
-  // Open only the alert whose hidden field needs attention.
+  // Include saved URLs loaded after the card mounts and fields needing attention.
   useEffect(() => {
-    if (runbookError) {
+    if (runbookUrl || runbookError) {
       setShowRunbook(true);
     }
-  }, [runbookError, formState.submitCount]);
+  }, [runbookUrl, runbookError]);
+
+  useEffect(() => {
+    if (focusRunbookControl.current) {
+      if (showRunbook) {
+        setFocus(runbookField);
+      } else {
+        addRunbookRef.current?.focus();
+      }
+      focusRunbookControl.current = false;
+    }
+  }, [showRunbook, runbookField, setFocus]);
+
+  const removeRunbook = () => {
+    clearErrors(runbookField);
+    focusRunbookControl.current = true;
+    setShowRunbook(false);
+  };
 
   return (
     <div role="group" aria-label={alert.category} className={styles.alert}>
@@ -66,27 +86,38 @@ export const AlertItem = ({
             <NotOkStatusInfo status={status} error={creationError} />
           </div>
         )}
-        <Button
-          type="button"
-          variant="secondary"
-          size="sm"
-          fill="outline"
-          icon={showRunbook ? 'angle-up' : hasRunbook ? undefined : 'plus'}
-          aria-label={`${runbookAction} for ${alert.category}`}
-          aria-expanded={showRunbook}
-          aria-controls={runbookId}
-          onClick={() => setShowRunbook(!showRunbook)}
-          className={styles.runbookToggle}
-        >
-          {runbookAction}
-        </Button>
+        {!showRunbook && (
+          <Button
+            ref={addRunbookRef}
+            type="button"
+            variant="secondary"
+            size="sm"
+            fill="outline"
+            icon="plus"
+            tooltip="Add a link to instructions for investigating and resolving this alert."
+            aria-label={`Add runbook for ${alert.category}`}
+            disabled={!selected || formState.disabled}
+            onClick={() => {
+              focusRunbookControl.current = true;
+              setShowRunbook(true);
+            }}
+            className={styles.addRunbook}
+          >
+            Add runbook
+          </Button>
+        )}
       </div>
       <div className={styles.body}>
         {selectionError && <FieldValidationMessage id={errorId}>{selectionError}</FieldValidationMessage>}
         <AlertCondition alert={alert} selected={selected} />
         {showRunbook && (
           <div id={runbookId} role="region" aria-label={`${alert.category} runbook`} className={styles.runbook}>
-            <RunbookUrl alertType={alert.type} selected={selected} disabled={formState.disabled} />
+            <RunbookUrl
+              alertType={alert.type}
+              selected={selected}
+              disabled={formState.disabled}
+              onRemove={removeRunbook}
+            />
           </div>
         )}
       </div>

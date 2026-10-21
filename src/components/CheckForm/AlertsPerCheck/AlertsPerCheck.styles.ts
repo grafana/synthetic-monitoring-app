@@ -13,6 +13,8 @@ export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
     alignItems: 'center',
     gap: theme.spacing(1),
     padding: theme.spacing(1.5, 2, 0),
+    // Preserve the button's height when the runbook field replaces it.
+    minHeight: theme.spacing(theme.components.height.sm + 1.5),
   }),
   checkbox: css({
     '& > span': {
@@ -21,7 +23,7 @@ export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
       fontWeight: theme.typography.fontWeightMedium,
     },
   }),
-  runbookToggle: css({
+  addRunbook: css({
     marginLeft: 'auto',
     color: theme.colors.text.secondary,
     borderColor: theme.colors.border.medium,
@@ -66,6 +68,14 @@ export const getAlertItemStyles = (theme: GrafanaTheme2) => ({
   }),
   runbook: css({
     maxWidth: '480px',
-    '& > div:last-child': { marginBottom: 0 },
+  }),
+  runbookRow: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+  }),
+  runbookInput: css({
+    flex: 1,
+    minWidth: 0,
   }),
 });
