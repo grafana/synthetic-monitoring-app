@@ -1,7 +1,8 @@
+import { generateAlertLabels } from 'features/alerting/alertRoutingUtils';
+
 import { Check, CheckAlertDraft, CheckAlertType } from 'types';
 import { getCheckType } from 'utils';
 import { LabelMode } from 'datasource/responses.types';
-import { generateAlertLabels } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
 
 export function templateAlertLabels(check: Check, alert: CheckAlertDraft, labelMode: LabelMode) {
   return generateAlertLabels(alert.name, {

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Alert, Button, Stack, Text, TextLink } from '@grafana/ui';
+import { generateAlertLabels } from 'features/alerting/alertRoutingUtils';
+import { inspectNotificationRouting } from 'features/alerting/notificationRouting';
 
 import { Check, CheckAlertError, CheckType } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -14,9 +16,7 @@ import { useLabelMode } from 'data/useLabelMode';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useSMDS } from 'hooks/useSMDS';
-import { generateAlertLabels } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
 import { PREDEFINED_ALERTS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
-import { inspectNotificationRouting } from 'components/CheckForm/AlertsPerCheck/notificationRouting';
 
 function describeAlertSetupError(error?: CheckAlertError): string {
   switch (error) {

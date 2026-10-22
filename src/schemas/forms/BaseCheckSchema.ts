@@ -1,3 +1,4 @@
+import { validNotificationEmails } from 'features/alerting/notificationSetup';
 import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckAlerts';
 import { checkProbesSchema } from 'schemas/general/CheckProbes';
 import { createFrequencySchema } from 'schemas/general/Frequency';
@@ -8,7 +9,6 @@ import { z, ZodType } from 'zod';
 
 import { AlertSensitivity, CheckAlertFormValues, CheckFormValuesBase, K6Channel, Label } from 'types';
 import { formatDuration } from 'utils';
-import { validNotificationEmails } from 'components/CheckForm/AlertsPerCheck/notificationSetup';
 
 export const baseCheckSchema = z.object({
   job: jobSchema,

@@ -3,6 +3,13 @@ import { useFormContext } from 'react-hook-form';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Button, Icon, Spinner, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { encodeReceiverForUrl, generateAlertLabels } from 'features/alerting/alertRoutingUtils';
+import { inspectNotificationRouting } from 'features/alerting/notificationRouting';
+import {
+  getNotificationSetupEligibility,
+  parseNotificationEmails,
+  validNotificationEmails,
+} from 'features/alerting/notificationSetup';
 import { trackRoutingPreviewToggled } from 'features/tracking/perCheckAlertsEvents';
 
 import { CheckFormValues } from 'types';
@@ -12,10 +19,7 @@ import { useLabelMode } from 'data/useLabelMode';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 
 import { AlertRoutingPreview } from './AlertRoutingPreview';
-import { encodeReceiverForUrl, generateAlertLabels } from './alertRoutingUtils';
 import { PredefinedAlertInterface } from './AlertsPerCheck.constants';
-import { inspectNotificationRouting } from './notificationRouting';
-import { getNotificationSetupEligibility, parseNotificationEmails, validNotificationEmails } from './notificationSetup';
 
 export function NotificationRoutingSummary({ alert }: { alert: PredefinedAlertInterface }) {
   const styles = useStyles2(getStyles);

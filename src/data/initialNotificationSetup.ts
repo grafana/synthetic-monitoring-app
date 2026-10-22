@@ -4,15 +4,14 @@ import {
   type RoutingTreeRoute,
 } from '@grafana/api-clients/rtkq/notifications.alerting/v1beta1';
 import { config, isFetchError } from '@grafana/runtime';
-
-import { getDefaultRoutingTree } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
+import { getDefaultRoutingTree } from 'features/alerting/alertRoutingUtils';
 import {
   getNotificationSetupEligibility,
   parseNotificationEmails,
   SM_CONTACT_POINT_TITLE,
   SM_NAMESPACE,
   validNotificationEmails,
-} from 'components/CheckForm/AlertsPerCheck/notificationSetup';
+} from 'features/alerting/notificationSetup';
 
 import { fetchNotificationRouting, notificationRequest } from './useNotificationRouting';
 

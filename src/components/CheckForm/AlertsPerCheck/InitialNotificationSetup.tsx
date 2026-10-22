@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from 'react-hook-form';
 import { Alert, Box, Button, Field, Icon, Stack, Text, TextArea, TextLink } from '@grafana/ui';
+import { getNotificationSetupEligibility } from 'features/alerting/notificationSetup';
 
 import { CheckFormValues } from 'types';
 import { canSetUpNotifications } from 'data/initialNotificationSetup';
@@ -8,7 +9,6 @@ import { useUserPermissions } from 'data/permissions';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 
 import { ExistingNotificationSetupNotice } from './ExistingNotificationSetupNotice';
-import { getNotificationSetupEligibility } from './notificationSetup';
 
 export function InitialNotificationSetup() {
   const {

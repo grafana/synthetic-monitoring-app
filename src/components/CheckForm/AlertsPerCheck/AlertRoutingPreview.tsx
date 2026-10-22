@@ -5,14 +5,14 @@ import { USER_DEFINED_TREE_NAME } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
 import { Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { generateAlertLabels, getPolicyIdentifier } from 'features/alerting/alertRoutingUtils';
+import { getMatchingNotificationRoutes } from 'features/alerting/notificationRouting';
 
 import { CheckAlertType, CheckFormValues } from 'types';
 import { useLabelMode } from 'data/useLabelMode';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 
 import { AlertLabelsDisplay } from './AlertLabelsDisplay';
-import { generateAlertLabels, getPolicyIdentifier } from './alertRoutingUtils';
-import { getMatchingNotificationRoutes } from './notificationRouting';
 import { RouteTreeDisplay } from './RouteTreeDisplay';
 
 interface AlertRoutingPreviewProps {

@@ -3,9 +3,8 @@ import { type InstanceMatchResult, type LabelMatcher, type Route, USER_DEFINED_T
 import { GrafanaTheme2 } from '@grafana/data';
 import { Icon, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { encodeReceiverForUrl, getPolicyIdentifier } from 'features/alerting/alertRoutingUtils';
 import { trackLinkClick } from 'features/tracking/linkEvents';
-
-import { encodeReceiverForUrl, getPolicyIdentifier } from './alertRoutingUtils';
 
 interface RouteTreeDisplayProps {
   routeMatch: Pick<InstanceMatchResult, 'matchedRoutes'>;

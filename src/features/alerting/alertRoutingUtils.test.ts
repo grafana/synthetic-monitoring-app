@@ -1,9 +1,9 @@
 import { USER_DEFINED_TREE_NAME } from '@grafana/alerting';
+import { routingTreeFactory } from 'test/factories/routingTree';
 
 import { CheckAlertType, CheckType } from 'types';
 import { LabelMode } from 'datasource/responses.types';
 
-import { routingTreeFactory } from '../../../test/factories/routingTree';
 import { generateAlertLabels, getDefaultRoutingTree } from './alertRoutingUtils';
 
 describe('getDefaultRoutingTree', () => {

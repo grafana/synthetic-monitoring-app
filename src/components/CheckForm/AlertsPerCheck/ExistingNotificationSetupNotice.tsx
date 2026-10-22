@@ -1,7 +1,6 @@
 import React from 'react';
 import { Text, TextLink } from '@grafana/ui';
-
-import { encodeReceiverForUrl } from './alertRoutingUtils';
+import { encodeReceiverForUrl } from 'features/alerting/alertRoutingUtils';
 
 export function ExistingNotificationSetupNotice({ contactPointName }: { contactPointName: string }) {
   return (

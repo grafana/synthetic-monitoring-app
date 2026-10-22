@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { inspectNotificationRouting, NotificationRouting } from 'features/alerting/notificationRouting';
+import { getNotificationSetupEligibility, validNotificationEmails } from 'features/alerting/notificationSetup';
 
 import { Check, CheckAlertDraft, CheckAlertType } from 'types';
 import { canSetUpNotifications } from 'data/initialNotificationSetup';
@@ -9,14 +11,6 @@ import { useLabelMode } from 'data/useLabelMode';
 import { useNotificationRouting } from 'data/useNotificationRouting';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useSMDS } from 'hooks/useSMDS';
-import {
-  inspectNotificationRouting,
-  NotificationRouting,
-} from 'components/CheckForm/AlertsPerCheck/notificationRouting';
-import {
-  getNotificationSetupEligibility,
-  validNotificationEmails,
-} from 'components/CheckForm/AlertsPerCheck/notificationSetup';
 
 import { getAvailableCheckName } from './checkNames';
 import { templateAlertLabels } from './templateAlerts';

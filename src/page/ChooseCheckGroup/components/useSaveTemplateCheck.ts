@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { inspectNotificationRouting } from 'features/alerting/notificationRouting';
 
 import { Check, CheckAlertDraft } from 'types';
 import { AddCheckResult } from 'datasource/responses.types';
@@ -13,7 +14,6 @@ import { fetchNotificationRouting, notificationRoutingQueryKey } from 'data/useN
 import { getFetchErrorMessage } from 'data/utils';
 import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useSMDS } from 'hooks/useSMDS';
-import { inspectNotificationRouting } from 'components/CheckForm/AlertsPerCheck/notificationRouting';
 
 import { getAvailableCheckName } from './checkNames';
 import { templateAlertLabels } from './templateAlerts';

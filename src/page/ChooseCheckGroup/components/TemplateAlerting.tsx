@@ -13,13 +13,13 @@ import {
   useStyles2,
 } from '@grafana/ui';
 import { css } from '@emotion/css';
+import { encodeReceiverForUrl } from 'features/alerting/alertRoutingUtils';
+import { NotificationRouting } from 'features/alerting/notificationRouting';
 import { trackLinkClick } from 'features/tracking/linkEvents';
 
 import { CheckAlertDraft, CheckAlertType } from 'types';
-import { encodeReceiverForUrl } from 'components/CheckForm/AlertsPerCheck/alertRoutingUtils';
 import { ALERT_PERIODS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { ExistingNotificationSetupNotice } from 'components/CheckForm/AlertsPerCheck/ExistingNotificationSetupNotice';
-import { NotificationRouting } from 'components/CheckForm/AlertsPerCheck/notificationRouting';
 
 import { TemplateAlertingState } from './useTemplateAlerting';
 
