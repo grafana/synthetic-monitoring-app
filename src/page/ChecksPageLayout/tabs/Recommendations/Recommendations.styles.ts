@@ -113,11 +113,17 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     fontWeight: theme.typography.fontWeightMedium,
     textTransform: 'uppercase',
   }),
+  filterGroupHeader: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  }),
   filterGroupToggle: css({
     display: 'flex',
     alignItems: 'center',
     gap: theme.spacing(0.5),
-    width: '100%',
+    flex: 1,
+    minWidth: 0,
     padding: theme.spacing(0.5, 1),
     border: 'none',
     borderRadius: theme.shape.radius.default,
@@ -141,6 +147,29 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     // Not stretched: Checkbox is a two-column grid that would split the spare width between box and label.
     alignSelf: 'flex-start',
     fontFamily: theme.typography.fontFamilyMonospace,
+  }),
+  selectedValues: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    margin: 0,
+    padding: 0,
+    listStyle: 'none',
+  }),
+  selectedValue: css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.25, 0.25, 0.25, 1),
+    borderRadius: theme.shape.radius.default,
+    backgroundColor: theme.colors.background.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  selectedValueText: css({
+    flex: 1,
+    minWidth: 0,
+    paddingTop: theme.spacing(0.25),
+    overflowWrap: 'anywhere',
   }),
   railCount: css({
     marginLeft: 'auto',

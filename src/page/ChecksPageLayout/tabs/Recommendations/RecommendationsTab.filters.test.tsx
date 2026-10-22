@@ -1,13 +1,28 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import { RECOMMENDATIONS_TEST_ID, ROUTER_TEST_ID } from 'test/dataTestIds';
+import {
+  DEFAULT_FOLDER,
+  FOLDER_EXTERNAL,
+  FOLDER_PRODUCTION,
+  FOLDER_ROOT,
+  FOLDER_STAGING,
+  MOCK_FOLDERS,
+} from 'test/fixtures/folders';
 import { apiRoute } from 'test/handlers';
 import { server } from 'test/server';
-import { mockReportInteraction } from 'test/utils';
+import { mockFeatureToggles, mockReportInteraction } from 'test/utils';
 
 import { RecommendationCategoryId } from './Recommendations.types';
-import { AlertSensitivity, CheckType } from 'types';
+import { AlertSensitivity, CheckType, FeatureName } from 'types';
 
-import { buildCheck, findSection, rail, renderCategory, renderTab } from './__testHelpers__/recommendationsTab';
+import {
+  buildCheck,
+  findSection,
+  pickFilter,
+  rail,
+  renderCategory,
+  renderTab,
+} from './__testHelpers__/recommendationsTab';
 import { DISMISSED_CHECKS_STORAGE_KEY, DISMISSED_FINDINGS_STORAGE_KEY } from './Recommendations.constants';
 
 const UNALERTED_HTTP = () => buildCheck({ id: 1, job: 'unalerted-http', target: 'https://a.com' });
@@ -246,20 +261,39 @@ describe('Recommendations tab filters', () => {
 
       expect(await findViewInList()).toHaveAttribute('href', expect.stringMatching(/\?target=example\.com$/));
     });
+
+    it('carries the label and folder filters over', async () => {
+      mockFeatureToggles({ [FeatureName.Folders]: true });
+      const checks = OVERLAPPING().map((check) => ({
+        ...check,
+        labels: [{ name: 'team', value: 'core' }],
+        folderUid: FOLDER_PRODUCTION.uid,
+      }));
+      await renderTab(checks, {
+        path: `checks/recommendations?category=redundancy&label=team%3A+core&folder=${FOLDER_PRODUCTION.uid}`,
+      });
+
+      await waitFor(async () =>
+        expect(await findViewInList()).toHaveAttribute(
+          'href',
+          expect.stringMatching(/\?target=example\.com&labels=team%3A\+core&folders=folder-production$/)
+        )
+      );
+    });
   });
 
   it('counts the filters set and clears them all at once', async () => {
     const { user } = await renderTab([UNALERTED_HTTP(), PAUSED_DNS()], {
-      path: 'checks/recommendations?type=http&type=dns',
+      path: 'checks/recommendations?type=http&type=dns&label=team%3A+core',
     });
 
-    expect(await screen.findByText('2 filters')).toBeInTheDocument();
+    expect(await screen.findByText('3 filters')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    await user.click(screen.getByRole('button', { name: 'Clear all' }));
 
     expect(screen.getByRole('checkbox', { name: 'http' })).not.toBeChecked();
-    expect(screen.queryByText('2 filters')).not.toBeInTheDocument();
-    expect(screen.getByTestId(ROUTER_TEST_ID.search)).not.toHaveTextContent('type');
+    expect(screen.queryByText('3 filters')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId(ROUTER_TEST_ID.search).textContent).toBe(''));
   });
 
   it('keeps the filters in the URL as the rail moves between categories', async () => {
@@ -301,5 +335,265 @@ describe('Recommendations tab filters', () => {
 
     const section = await findSection(/1 of 1 checks have no alerts/);
     expect(within(section).queryByText('No checks in this finding match your filters.')).not.toBeInTheDocument();
+  });
+
+  describe('labels and folders', () => {
+    const TEAM_CORE = { name: 'team', value: 'core' };
+    const LABELLED = () => [
+      buildCheck({ id: 21, job: 'core-http', target: 'https://a.com', labels: [TEAM_CORE] }),
+      buildCheck({ id: 22, job: 'core-dns', target: 'a.com', labels: [TEAM_CORE] }, CheckType.Dns),
+      buildCheck({ id: 23, job: 'unlabelled-http', target: 'https://c.com' }),
+    ];
+
+    it('narrows to checks with a selected label, then to those also of a selected type', async () => {
+      const { user } = await renderTab(LABELLED());
+
+      await pickFilter(user, 'Labels', 'team: core');
+
+      expect(
+        await screen.findByText('2 of 3 checks match your filters. Alerting is the gap to close first.')
+      ).toBeInTheDocument();
+      await waitFor(() => expect(screen.getByTestId(ROUTER_TEST_ID.search).textContent).toBe('?label=team%3A+core'));
+
+      await user.click(screen.getByRole('checkbox', { name: 'http' }));
+
+      expect(
+        screen.getByText('1 of 3 checks match your filters. Alerting is the gap to close first.')
+      ).toBeInTheDocument();
+      expect(screen.getByText('2 filters')).toBeInTheDocument();
+    });
+
+    it('reads a label filter back from the URL', async () => {
+      await renderTab(LABELLED(), { path: 'checks/recommendations?label=team%3A+core' });
+
+      expect(
+        await screen.findByText('2 of 3 checks match your filters. Alerting is the gap to close first.')
+      ).toBeInTheDocument();
+      expect(screen.getByText('1 filter')).toBeInTheDocument();
+    });
+
+    it('lists a picked label below an emptied search, which offers only the labels not picked yet', async () => {
+      const { user } = await renderTab([
+        ...LABELLED(),
+        buildCheck({ id: 24, job: 'prod-http', target: 'https://d.com', labels: [{ name: 'env', value: 'prod' }] }),
+      ]);
+
+      await pickFilter(user, 'Labels', 'team: core');
+
+      expect(await screen.findByRole('button', { name: 'Remove team: core' })).toBeInTheDocument();
+      const search = screen.getByRole('combobox', { name: 'Labels' });
+      expect(search).toHaveValue('');
+      expect(search).toHaveFocus();
+
+      await user.click(search);
+
+      expect(screen.queryByRole('option', { name: 'team: core' })).not.toBeInTheDocument();
+      await user.click(screen.getByRole('option', { name: 'env: prod' }));
+
+      expect(await screen.findByRole('button', { name: 'Remove env: prod' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Remove team: core' })).toBeInTheDocument();
+      await waitFor(() =>
+        expect(screen.getByTestId(ROUTER_TEST_ID.search).textContent).toBe('?label=team%3A+core&label=env%3A+prod')
+      );
+    });
+
+    it('removes a selected label from the list, handing focus to the search', async () => {
+      const { user } = await renderTab(LABELLED(), { path: 'checks/recommendations?label=team%3A+core' });
+
+      const remove = await screen.findByRole('button', { name: 'Remove team: core' });
+      expect(screen.getByRole('combobox', { name: 'Labels' })).not.toHaveFocus();
+
+      await user.click(remove);
+
+      await waitFor(() => expect(screen.getByTestId(ROUTER_TEST_ID.search).textContent).toBe(''));
+      expect(screen.queryByRole('button', { name: 'Remove team: core' })).not.toBeInTheDocument();
+      expect(screen.getByRole('combobox', { name: 'Labels' })).toHaveFocus();
+    });
+
+    it('offers no Labels group when no check has a label', async () => {
+      await renderTab([UNALERTED_HTTP()]);
+
+      expect(await screen.findByRole('button', { name: 'Type' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Labels' })).not.toBeInTheDocument();
+    });
+
+    it('offers no Folders group, and ignores a folder in the URL, while folders are unavailable', async () => {
+      const inFolder = buildCheck({
+        id: 1,
+        job: 'unalerted-http',
+        target: 'https://a.com',
+        folderUid: FOLDER_PRODUCTION.uid,
+      });
+      await renderTab([inFolder], { path: `checks/recommendations?folder=${FOLDER_PRODUCTION.uid}` });
+
+      expect(await screen.findByRole('button', { name: 'Type' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Folders' })).not.toBeInTheDocument();
+      expect(screen.queryByText('1 filter')).not.toBeInTheDocument();
+      expect(railItems()).toEqual(['Needs attention', 'Alerting1']);
+    });
+
+    describe('with folders', () => {
+      beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+
+      it('clears each filter group on its own', async () => {
+        const search = () => screen.getByTestId(ROUTER_TEST_ID.search).textContent;
+        const { user } = await renderTab(
+          [
+            buildCheck({
+              id: 31,
+              job: 'prod-check',
+              target: 'https://a.com',
+              folderUid: FOLDER_PRODUCTION.uid,
+              labels: [TEAM_CORE],
+            }),
+          ],
+          { path: `checks/recommendations?type=http&label=team%3A+core&folder=${FOLDER_PRODUCTION.uid}` }
+        );
+
+        await user.click(await screen.findByRole('button', { name: 'Clear Labels filters' }));
+        await waitFor(() => expect(search()).toBe(`?type=http&folder=${FOLDER_PRODUCTION.uid}`));
+        expect(screen.queryByRole('button', { name: 'Clear Labels filters' })).not.toBeInTheDocument();
+
+        await user.click(await screen.findByRole('button', { name: 'Clear Folders filters' }));
+        await waitFor(() => expect(search()).toBe('?type=http'));
+
+        await user.click(screen.getByRole('button', { name: 'Clear Type filters' }));
+        await waitFor(() => expect(search()).toBe(''));
+      });
+
+      it('counts a check without a folder as being in the default folder', async () => {
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 31, job: 'prod-check', target: 'https://a.com', folderUid: FOLDER_PRODUCTION.uid }),
+            buildCheck({ id: 32, job: 'default-check', target: 'https://b.com', folderUid: undefined }),
+            buildCheck({ id: 35, job: 'empty-folder-check', target: 'https://g.com', folderUid: '' }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await pickFilter(user, 'Folders', `${DEFAULT_FOLDER.title} (default)`);
+
+        const section = await findSection(/2 of 3 checks match your filters/);
+        expect(within(section).getByText('default-check')).toBeInTheDocument();
+        expect(within(section).getByText('empty-folder-check')).toBeInTheDocument();
+        expect(within(section).queryByText('prod-check')).not.toBeInTheDocument();
+      });
+
+      it('narrows to checks in a selected folder and records it in the URL', async () => {
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 31, job: 'prod-check', target: 'https://a.com', folderUid: FOLDER_PRODUCTION.uid }),
+            buildCheck({ id: 32, job: 'default-check', target: 'https://b.com', folderUid: undefined }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await pickFilter(user, 'Folders', FOLDER_PRODUCTION.title);
+
+        expect(screen.getByRole('button', { name: `Remove ${FOLDER_PRODUCTION.title}` })).toBeInTheDocument();
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('prod-check')).toBeInTheDocument();
+        expect(within(section).queryByText('default-check')).not.toBeInTheDocument();
+        await waitFor(() =>
+          expect(screen.getByTestId(ROUTER_TEST_ID.search)).toHaveTextContent(`folder=${FOLDER_PRODUCTION.uid}`)
+        );
+      });
+
+      it('tells folders sharing a title apart by their paths', async () => {
+        const stagingProduction = {
+          ...FOLDER_PRODUCTION,
+          uid: 'folder-staging-production',
+          parentUid: FOLDER_STAGING.uid,
+        };
+        server.use(
+          apiRoute('getFolder', {
+            result: (req) => {
+              const uid = new URL(req.url).pathname.split('/').pop();
+              const folder = [...MOCK_FOLDERS, stagingProduction].find((known) => known.uid === uid);
+
+              return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
+            },
+          })
+        );
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 31, job: 'prod-check', target: 'https://a.com', folderUid: FOLDER_PRODUCTION.uid }),
+            buildCheck({
+              id: 33,
+              job: 'staging-prod-check',
+              target: 'https://c.com',
+              folderUid: stagingProduction.uid,
+            }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await pickFilter(
+          user,
+          'Folders',
+          `${DEFAULT_FOLDER.title} > ${FOLDER_STAGING.title} > ${FOLDER_PRODUCTION.title}`
+        );
+
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('staging-prod-check')).toBeInTheDocument();
+        expect(within(section).queryByText('prod-check')).not.toBeInTheDocument();
+      });
+
+      it('tells the default folder apart from a stray copy with its title', async () => {
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 32, job: 'default-check', target: 'https://b.com', folderUid: undefined }),
+            buildCheck({ id: 34, job: 'stray-check', target: 'https://d.com', folderUid: FOLDER_EXTERNAL.uid }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await pickFilter(user, 'Folders', FOLDER_EXTERNAL.title);
+
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('stray-check')).toBeInTheDocument();
+        expect(within(section).queryByText('default-check')).not.toBeInTheDocument();
+      });
+
+      it("tells same-named folders outside the default folder's tree apart by their paths", async () => {
+        const teamBeta = { ...FOLDER_ROOT, uid: 'team-beta', title: 'Team Beta' };
+        // Outside the tree, a folder's parents come only from its detail response.
+        const alphaProduction = {
+          ...FOLDER_PRODUCTION,
+          uid: 'alpha-production',
+          parentUid: FOLDER_ROOT.uid,
+          parents: [FOLDER_ROOT],
+        };
+        const betaProduction = {
+          ...FOLDER_PRODUCTION,
+          uid: 'beta-production',
+          parentUid: teamBeta.uid,
+          parents: [teamBeta],
+        };
+        server.use(
+          apiRoute('getFolder', {
+            result: (req) => {
+              const uid = new URL(req.url).pathname.split('/').pop();
+              const folder = [...MOCK_FOLDERS, alphaProduction, betaProduction].find((known) => known.uid === uid);
+
+              return folder ? { json: folder } : { status: 404, json: { message: 'Folder not found' } };
+            },
+          })
+        );
+        const { user } = await renderTab(
+          [
+            buildCheck({ id: 36, job: 'alpha-check', target: 'https://e.com', folderUid: alphaProduction.uid }),
+            buildCheck({ id: 37, job: 'beta-check', target: 'https://f.com', folderUid: betaProduction.uid }),
+          ],
+          { path: 'checks/recommendations?category=alerting' }
+        );
+
+        await pickFilter(user, 'Folders', `${teamBeta.title} > ${FOLDER_PRODUCTION.title}`);
+
+        const section = await findSection(/1 of 2 checks match your filters/);
+        expect(within(section).getByText('beta-check')).toBeInTheDocument();
+        expect(within(section).queryByText('alpha-check')).not.toBeInTheDocument();
+      });
+    });
   });
 });

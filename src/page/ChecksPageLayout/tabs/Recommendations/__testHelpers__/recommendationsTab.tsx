@@ -1,10 +1,12 @@
 import React from 'react';
 import { screen, within } from '@testing-library/react';
+import { UserEvent } from '@testing-library/user-event';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 import { DB } from 'test/db';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
+import { testUsesCombobox } from 'test/utils';
 
 import { RecommendationCategoryId } from '../Recommendations.types';
 import { AlertSensitivity, Check, CheckType } from 'types';
@@ -48,6 +50,13 @@ export async function findSection(name: RegExp) {
 }
 
 export const rail = () => screen.getByRole('navigation', { name: 'Recommendation categories' });
+
+/** Picks from the Labels or Folders search. Its menu is labelled by the group too, so it is found by role. */
+export async function pickFilter(user: UserEvent, group: 'Labels' | 'Folders', option: string) {
+  testUsesCombobox();
+  await user.click(await screen.findByRole('combobox', { name: group }));
+  await user.click(await screen.findByRole('option', { name: option }));
+}
 
 /** Which rail item is current, by its visible text (the check count is part of the button). */
 export function activeRailItem() {
