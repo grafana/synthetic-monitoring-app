@@ -123,7 +123,7 @@ const getStyles2 = (theme: GrafanaTheme2) => {
   return {
     card: css({
       containerName,
-      backgroundColor: theme.colors.background.primary,
+      backgroundColor: theme.colors.background.secondary,
       borderRadius: theme.shape.radius.lg,
     }),
     titleRow: css({
