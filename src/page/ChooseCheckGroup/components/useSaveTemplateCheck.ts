@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Check, CheckAlertDraft } from 'types';
 import { AddCheckResult } from 'datasource/responses.types';
 import { CheckAlertingSaveError, checkAlertRetryConflict, sameAlertSettings } from 'data/alertSetupRecovery';
-import { createInitialNotificationSetup, InitialNotificationSetup } from 'data/initialNotificationSetup';
+import { createInitialNotificationSetup, NotificationSetupAttempt } from 'data/initialNotificationSetup';
 import { setPendingAlertSetup } from 'data/pendingAlertSetup';
 import { getUserPermissions } from 'data/permissions';
 import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
@@ -33,7 +33,7 @@ export function useSaveTemplateCheck(onComplete: (check: AddCheckResult) => void
   const [createdCheck, setCreatedCheck] = useState<AddCheckResult>();
   const [error, setError] = useState<unknown>();
 
-  async function run(action: () => Promise<Function | void>) {
+  async function run(action: () => Promise<void>) {
     if (inProgress.current) {
       return;
     }
@@ -41,14 +41,23 @@ export function useSaveTemplateCheck(onComplete: (check: AddCheckResult) => void
     setBusy(true);
     setError(undefined);
     try {
-      const complete = await action();
-      complete?.();
+      await action();
     } catch (error) {
       setError(error);
     } finally {
       inProgress.current = false;
       setBusy(false);
     }
+  }
+
+  async function retryAlerting() {
+    if (!(error instanceof CheckAlertingSaveError)) {
+      return;
+    }
+    await run(async () => {
+      await error.retry();
+      error.continueToCheck();
+    });
   }
 
   async function inspect(check: Check, alerts: CheckAlertDraft[]) {
@@ -70,7 +79,7 @@ export function useSaveTemplateCheck(onComplete: (check: AddCheckResult) => void
       return;
     }
     await run(async () => {
-      const setup: InitialNotificationSetup | undefined = alerts.length && emails.trim() ? { emails } : undefined;
+      const setup: NotificationSetupAttempt | undefined = alerts.length && emails.trim() ? { emails } : undefined;
       let verifyAfterSave = Boolean(setup);
       if (alerts.length && !setup) {
         try {
@@ -83,71 +92,68 @@ export function useSaveTemplateCheck(onComplete: (check: AddCheckResult) => void
         }
       }
 
-      const create = async (): Promise<Function> => {
-        const result = await createMutation.mutateAsync(check);
-        setCreatedCheck(result);
-        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-        const checkId = result.id!;
-        const complete = () => onComplete(result);
-        let alertsSaved = alerts.length === 0;
-        let firstAttempt = true;
-        const finish = async (): Promise<Function> => {
-          const errors: string[] = [];
-          if (!alertsSaved) {
-            setPendingAlertSetup(queryClient, checkId, { alerts, previousAlerts: [] });
-            try {
-              if (!access.canWriteAlerts || !getUserPermissions().canWriteAlerts) {
-                throw new Error('You do not have permission to create alerts. Ask an administrator to complete setup.');
-              }
-              if (!firstAttempt) {
-                const current = await smDS.listAlertsForCheck(checkId);
-                checkAlertRetryConflict(current.alerts, [], alerts);
-                alertsSaved = sameAlertSettings(current.alerts, alerts);
-              }
-              if (!alertsSaved) {
-                await alertMutation.mutateAsync({ checkId, alerts });
-              }
-              alertsSaved = true;
-              setPendingAlertSetup(queryClient, checkId, null);
-            } catch (error) {
-              errors.push(getFetchErrorMessage(error, 'Alert creation failed.'));
+      const result = await createMutation.mutateAsync(check);
+      setCreatedCheck(result);
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
+      const checkId = result.id!;
+      const complete = () => onComplete(result);
+      let alertsSaved = alerts.length === 0;
+      let firstAttempt = true;
+      const finish = async (): Promise<void> => {
+        const errors: string[] = [];
+        if (!alertsSaved) {
+          setPendingAlertSetup(queryClient, checkId, { alerts, previousAlerts: [] });
+          try {
+            if (!access.canWriteAlerts || !getUserPermissions().canWriteAlerts) {
+              throw new Error('You do not have permission to create alerts. Ask an administrator to complete setup.');
             }
-          }
-          firstAttempt = false;
-          if (setup) {
-            try {
-              await createInitialNotificationSetup(setup);
-              await queryClient.invalidateQueries({ queryKey: notificationRoutingQueryKey() });
-            } catch (error) {
-              errors.push(getFetchErrorMessage(error, 'Notification setup failed. Review it in Grafana Alerting.'));
+            if (!firstAttempt) {
+              const current = await smDS.listAlertsForCheck(checkId);
+              checkAlertRetryConflict(current.alerts, [], alerts);
+              alertsSaved = sameAlertSettings(current.alerts, alerts);
             }
+            if (!alertsSaved) {
+              await alertMutation.mutateAsync({ checkId, alerts });
+            }
+            alertsSaved = true;
+            setPendingAlertSetup(queryClient, checkId, null);
+          } catch (error) {
+            errors.push(getFetchErrorMessage(error, 'Alert creation failed.'));
           }
-          if (verifyAfterSave && !errors.length) {
-            // The API may have selected a different name after a conflict.
-            // Check destinations using the saved check, not the earlier preview.
-            try {
-              const { states } = await inspect(result, alerts);
-              if (states.some(({ status }) => status !== 'configured')) {
-                errors.push(ROUTING_WARNING);
-              }
-            } catch {
+        }
+        firstAttempt = false;
+        if (setup) {
+          try {
+            await createInitialNotificationSetup(setup);
+            await queryClient.invalidateQueries({ queryKey: notificationRoutingQueryKey() });
+          } catch (error) {
+            errors.push(getFetchErrorMessage(error, 'Notification setup failed. Review it in Grafana Alerting.'));
+          }
+        }
+        if (verifyAfterSave && !errors.length) {
+          // The API may have selected a different name after a conflict.
+          // Check destinations using the saved check, not the earlier preview.
+          try {
+            const { states } = await inspect(result, alerts);
+            if (states.some(({ status }) => status !== 'configured')) {
               errors.push(ROUTING_WARNING);
             }
+          } catch {
+            errors.push(ROUTING_WARNING);
           }
-          await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-          if (errors.length) {
-            throw new CheckAlertingSaveError(errors.join(' '), finish, complete);
-          }
-          return complete;
-        };
-        return finish();
+        }
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
+        if (errors.length) {
+          throw new CheckAlertingSaveError(errors.join(' '), finish, complete);
+        }
       };
 
-      return create();
+      await finish();
+      complete();
     });
   }
 
-  return { save, run, busy, error, createdCheck };
+  return { save, retryAlerting, busy, error, createdCheck };
 }
 
 export type TemplateCheckSaveState = ReturnType<typeof useSaveTemplateCheck>;

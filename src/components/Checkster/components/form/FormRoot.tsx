@@ -25,7 +25,7 @@ import { FormFooter } from './FormFooter';
 export function FormRoot({
   onSave,
 }: {
-  onSave(payload: Check, formValues: CheckFormValues): Promise<Function | void>;
+  onSave(payload: Check, formValues: CheckFormValues): Promise<(() => void) | void>;
 }) {
   const styles = useStyles2(getStyles);
   // Start routing inspection on the first step so Alerting usually opens ready.
@@ -52,7 +52,7 @@ export function FormRoot({
     }
   }, [completeAllSteps, submitCount]);
 
-  const [onSaveCallback, setOnSaveCallback] = useState<Function | undefined>();
+  const [onSaveCallback, setOnSaveCallback] = useState<(() => void) | undefined>();
 
   // Handle after save callback
   // Wait for formState to be reset before calling onSave callback
@@ -65,15 +65,23 @@ export function FormRoot({
   const [saveError, setSaveError] = useState<unknown | undefined>(undefined);
   const [resolvingAlerting, setResolvingAlerting] = useState(false);
   const submittedValues = useRef<CheckFormValues | undefined>(undefined);
-  const resolveAlerting = async (action: () => Promise<Function | void>) => {
+  const continueToCheck = () => {
+    if (!(saveError instanceof CheckAlertingSaveError)) {
+      return;
+    }
+    reset(submittedValues.current);
+    setSaveError(undefined);
+    setOnSaveCallback(() => saveError.continueToCheck);
+  };
+
+  const retryAlerting = async () => {
+    if (!(saveError instanceof CheckAlertingSaveError)) {
+      return;
+    }
     setResolvingAlerting(true);
     try {
-      const callback = await action();
-      reset(submittedValues.current);
-      setSaveError(undefined);
-      if (callback) {
-        setOnSaveCallback(() => callback);
-      }
+      await saveError.retry();
+      continueToCheck();
     } catch (error) {
       setSaveError(error);
     } finally {
@@ -130,7 +138,12 @@ export function FormRoot({
         </div>
       )}
       {saveError instanceof CheckAlertingSaveError ? (
-        <AlertingSaveDialog error={saveError} busy={resolvingAlerting} onAction={resolveAlerting} />
+        <AlertingSaveDialog
+          message={saveError.message}
+          busy={resolvingAlerting}
+          onRetry={retryAlerting}
+          onContinue={continueToCheck}
+        />
       ) : (
         !!saveError && (
           <Alert

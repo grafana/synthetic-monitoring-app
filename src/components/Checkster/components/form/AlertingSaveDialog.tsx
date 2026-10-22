@@ -1,35 +1,30 @@
 import React from 'react';
 import { Button, Modal, Stack, Text } from '@grafana/ui';
 
-import { CheckAlertingSaveError } from 'data/alertSetupRecovery';
-
 export function AlertingSaveDialog({
-  error,
+  message,
   busy,
-  onAction,
+  onRetry,
+  onContinue,
 }: {
-  error: CheckAlertingSaveError;
+  message: string;
   busy: boolean;
-  onAction: (action: () => Promise<Function | void>) => void;
+  onRetry: () => void;
+  onContinue: () => void;
 }) {
   return (
     <Modal title="Check saved. Alerting setup is incomplete." isOpen closeOnEscape={false} closeOnBackdropClick={false}>
       <Stack direction="column" gap={2}>
-        <Text>{error.message}</Text>
+        <Text>{message}</Text>
         <Text color="secondary">
           Retry setup for this check, or continue to the check page to review its alerting status.
         </Text>
       </Stack>
       <Modal.ButtonRow>
-        <Button
-          type="button"
-          variant="secondary"
-          disabled={busy}
-          onClick={() => onAction(async () => error.continueToCheck)}
-        >
+        <Button type="button" variant="secondary" disabled={busy} onClick={onContinue}>
           Continue to check
         </Button>
-        <Button type="button" disabled={busy} icon={busy ? 'spinner' : undefined} onClick={() => onAction(error.retry)}>
+        <Button type="button" disabled={busy} icon={busy ? 'spinner' : undefined} onClick={onRetry}>
           Retry alerting setup
         </Button>
       </Modal.ButtonRow>

@@ -35,7 +35,7 @@ export function checkAlertRetryConflict(
 export class CheckAlertingSaveError extends Error {
   constructor(
     message: string,
-    public retry: () => Promise<Function | void>,
+    public retry: () => Promise<void>,
     public continueToCheck: () => void
   ) {
     super(message);

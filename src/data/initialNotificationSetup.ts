@@ -29,7 +29,7 @@ export function canSetUpNotifications(tree?: RoutingTree): boolean {
 
 // Kept by a single save attempt, including explicit retries. Never infer route
 // ownership from a label match or adopt and rewrite an existing contact point.
-export interface InitialNotificationSetup {
+export interface NotificationSetupAttempt {
   emails: string;
   receiver?: Receiver;
   receiverAttempted?: boolean;
@@ -61,7 +61,7 @@ function isSetupRoute(route: RoutingTreeRoute): boolean {
   );
 }
 
-export async function createInitialNotificationSetup(attempt: InitialNotificationSetup): Promise<void> {
+export async function createInitialNotificationSetup(attempt: NotificationSetupAttempt): Promise<void> {
   if (!validNotificationEmails(attempt.emails)) {
     throw new Error('Enter a valid list of email addresses.');
   }

@@ -29,7 +29,7 @@ export function TemplateSaveControls({
       <Stack gap={1}>
         {createdCheck && error instanceof CheckAlertingSaveError ? (
           <>
-            <Button type="button" disabled={busy} onClick={() => void state.run(error.retry)}>
+            <Button type="button" disabled={busy} onClick={state.retryAlerting}>
               Retry alerting setup
             </Button>
             <Button type="button" variant="secondary" disabled={busy} onClick={error.continueToCheck}>
