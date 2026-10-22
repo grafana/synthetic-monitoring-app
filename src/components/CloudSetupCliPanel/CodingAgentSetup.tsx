@@ -5,8 +5,9 @@ import { config } from '@grafana/runtime';
 import { ClipboardButton, CollapsableSection, Text, useStyles2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackCloudSetupAgentPromptCopied, trackCloudSetupAgentPromptShown } from 'features/tracking/cloudSetupEvents';
+import { trackFaroUserAction } from 'features/tracking/userAction';
 
-import { FaroEvent, reportError } from 'faro';
+import { FaroEvent, FaroUserAction, reportError } from 'faro';
 
 import { getCodingAgentPrompt } from './codingAgentPrompt';
 
@@ -48,6 +49,7 @@ export function CodingAgentSetup() {
               variant="secondary"
               onClipboardCopy={() => {
                 setCopyFailed(false);
+                trackFaroUserAction(FaroUserAction.CloudSetupAgentPromptCopied);
                 trackCloudSetupAgentPromptCopied();
               }}
               onClipboardError={(_, error) => {
@@ -85,6 +87,8 @@ function getStyles(theme: GrafanaTheme2) {
       textAlign: 'left',
     }),
     header: css({
+      width: 'fit-content',
+      marginInline: 'auto',
       justifyContent: 'center',
       padding: theme.spacing(0.5),
       '& > button': { display: 'inline-flex', alignItems: 'center' },

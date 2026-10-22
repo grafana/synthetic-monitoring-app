@@ -51,6 +51,7 @@
   },
   "checksEmptyState": {
     "createCheck": "",
+    "createCheckManually": "",
     "getStarted": "",
     "noChecks": "",
     "wizardDescription": ""

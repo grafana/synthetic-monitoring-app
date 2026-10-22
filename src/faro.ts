@@ -55,6 +55,7 @@ export enum FaroUserAction {
   ResetAccessTokenConfirmationClicked = 'reset-access-token-confirmation-clicked',
   ResetAccessTokenCancellationClicked = 'reset-access-token-cancelation-clicked',
   CloudSetupCliCommandCopied = 'cloud-setup-cli-command-copied',
+  CloudSetupAgentPromptCopied = 'cloud-setup-agent-prompt-copied',
 }
 
 export enum FaroEnv {

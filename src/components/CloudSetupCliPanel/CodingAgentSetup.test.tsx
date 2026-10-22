@@ -1,4 +1,5 @@
 import React from 'react';
+import { faro } from '@grafana/faro-web-sdk';
 import { config } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
@@ -12,6 +13,11 @@ async function renderComponent() {
 }
 
 describe('CodingAgentSetup', () => {
+  beforeEach(() => {
+    jest.spyOn(faro.api, 'startUserAction');
+    jest.spyOn(faro.api, 'pushError');
+  });
+
   beforeAll(() => {
     // JSDOM does not expose the secure-context signal used by ClipboardButton.
     Object.defineProperty(window, 'isSecureContext', { configurable: true, value: true });
@@ -32,12 +38,15 @@ describe('CodingAgentSetup', () => {
     expect(prompt).toHaveTextContent('ask me to approve the plan');
     expect(prompt.textContent).toContain('\n\n1. ');
     expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    expect(faro.api.startUserAction).not.toHaveBeenCalled();
 
     screen.getByRole('button', { name: 'Copy prompt' }).focus();
     await user.keyboard('{Enter}');
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Copied');
     expect(writeTextSpy).toHaveBeenCalledWith(prompt.textContent);
+    expect(faro.api.startUserAction).toHaveBeenCalledWith('cloud-setup-agent-prompt-copied', undefined);
+    expect(faro.api.startUserAction).toHaveBeenCalledTimes(1);
     expect(prompt).toBeVisible();
     expect(screen.getByRole('button', { name: 'Or use a coding agent' })).toHaveAttribute('aria-expanded', 'true');
     expect(reportInteraction).toHaveBeenCalledWith(
@@ -64,10 +73,16 @@ describe('CodingAgentSetup', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Could not copy. Select and copy the prompt below.');
     expect(screen.getByRole('region', { name: 'Coding agent prompt' })).toBeVisible();
     expect(screen.queryByText('Copied')).not.toBeInTheDocument();
+    expect(faro.api.startUserAction).not.toHaveBeenCalled();
+    expect(faro.api.pushError).toHaveBeenCalledWith(expect.any(Error), {
+      type: 'cloud_setup_agent_prompt_copy_failed',
+    });
 
     writeTextSpy.mockResolvedValueOnce();
     await user.click(screen.getByRole('button', { name: 'Copy prompt' }));
     await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent('Copied'));
     expect(screen.queryByText('Could not copy. Select and copy the prompt below.')).not.toBeInTheDocument();
+    expect(faro.api.startUserAction).toHaveBeenCalledWith('cloud-setup-agent-prompt-copied', undefined);
+    expect(faro.api.startUserAction).toHaveBeenCalledTimes(1);
   });
 });

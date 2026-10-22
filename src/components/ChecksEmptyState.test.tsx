@@ -59,10 +59,9 @@ describe('ChecksEmptyState', () => {
 
     await renderComponent();
 
-    expect(await screen.findByText('Create check manually')).toBeInTheDocument();
+    expect(await screen.findByRole('link', { name: 'Create check' })).toHaveAttribute('aria-disabled', 'true');
     expect(screen.getByText('Get started monitoring your services with Grafana Cloud')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Copy command' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Or use a coding agent' })).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Create check manually' })).toHaveAttribute('aria-disabled', 'true');
   });
 });

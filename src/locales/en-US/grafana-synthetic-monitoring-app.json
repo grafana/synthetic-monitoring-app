@@ -50,7 +50,8 @@
     }
   },
   "checksEmptyState": {
-    "createCheck": "Create check manually",
+    "createCheck": "Create check",
+    "createCheckManually": "Create check manually",
     "getStarted": "Get started monitoring your services with Grafana Cloud",
     "noChecks": "You haven't created any checks yet",
     "wizardDescription": "Run the setup wizard in your terminal to create your first checks."

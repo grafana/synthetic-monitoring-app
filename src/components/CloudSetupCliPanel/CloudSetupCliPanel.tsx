@@ -97,6 +97,6 @@ function getStyles(theme: GrafanaTheme2) {
     }),
     executable: css({ color: theme.colors.success.text }),
     argument: css({ color: theme.colors.info.text }),
-    flag: css({ color: theme.colors.warning.text }),
+    flag: css({ color: theme.colors.tertiary.text }),
   };
 }
