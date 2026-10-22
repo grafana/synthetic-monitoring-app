@@ -198,10 +198,7 @@ it('uses library defaults when optional settings are empty and preselects a prob
   expect(screen.queryByRole('spinbutton', { name: /^Timeout/ })).not.toBeInTheDocument();
   expect(screen.getByText('Check a page for broken links on a regular schedule.')).toBeInTheDocument();
   expect(await screen.findByRole('checkbox', { name: 'Alert on check failure' })).toBeChecked();
-  expect(screen.getByRole('link', { name: 'Manage notifications in Grafana Alerting' })).toHaveAttribute(
-    'href',
-    '/alerting/routes'
-  );
+  expect(screen.getByRole('link', { name: 'Manage in Grafana Alerting' })).toHaveAttribute('href', '/alerting/routes');
   expect(screen.queryByText('Accepted status codes')).not.toBeInTheDocument();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
@@ -441,7 +438,7 @@ it('allows opting out of template alerts without writing alert or notification c
   const { user, onClose } = await openDrawer();
   await user.click(await screen.findByRole('checkbox', { name: 'Alert on check failure' }));
   expect(screen.getByRole('status')).toHaveTextContent('Alerts are off for this check.');
-  expect(screen.queryByRole('link', { name: 'Manage notifications in Grafana Alerting' })).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Manage in Grafana Alerting' })).not.toBeInTheDocument();
   await user.type(screen.getByRole('textbox', { name: /^Page URL/ }), 'https://grafana.com');
   await user.click(screen.getByRole('button', { name: 'Create check' }));
   await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
