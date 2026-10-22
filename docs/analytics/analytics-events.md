@@ -543,12 +543,12 @@ Tracks an action on a finding's checks, made in the tab or, for cost labels, sav
 
 ##### Properties
 
-| name       | type                                                  | description                                                               |
-| ---------- | ----------------------------------------------------- | ------------------------------------------------------------------------- |
-| finding    | `string`                                              | The `RecommendationId` of the finding.                                    |
-| action     | `"alerts_added" \| "check_resumed" \| "labels_added"` | What was changed.                                                         |
-| checkCount | `number`                                              | How many checks the change reached.                                       |
-| scope      | `"finding" \| "check" \| "selection"`                 | Whether it ran for the whole finding, the ticked rows, or a single check. |
+| name       | type                                                  | description                                                                                                     |
+| ---------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| finding    | `string`                                              | The `RecommendationId` of the finding.                                                                          |
+| action     | `"alerts_added" \| "check_resumed" \| "labels_added"` | What was changed.                                                                                               |
+| checkCount | `number`                                              | How many checks the change reached.                                                                             |
+| scope      | `"finding" \| "check" \| "filtered" \| "selection"`   | Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. |
 
 #### synthetic-monitoring_recommendations_action_failed
 
@@ -556,12 +556,12 @@ Tracks an action from the tab failing for some or all of its checks.
 
 ##### Properties
 
-| name        | type                                  | description                                                               |
-| ----------- | ------------------------------------- | ------------------------------------------------------------------------- |
-| finding     | `string`                              | The `RecommendationId` of the finding.                                    |
-| action      | `"alerts_added" \| "check_resumed"`   | What was being changed.                                                   |
-| failedCount | `number`                              | How many checks the change failed for. Cancelled work is not counted.     |
-| scope       | `"finding" \| "check" \| "selection"` | Whether it ran for the whole finding, the ticked rows, or a single check. |
+| name        | type                                                | description                                                                                                     |
+| ----------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| finding     | `string`                                            | The `RecommendationId` of the finding.                                                                          |
+| action      | `"alerts_added" \| "check_resumed"`                 | What was being changed.                                                                                         |
+| failedCount | `number`                                            | How many checks the change failed for. Cancelled work is not counted.                                           |
+| scope       | `"finding" \| "check" \| "filtered" \| "selection"` | Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. |
 
 #### synthetic-monitoring_recommendations_finding_dismissed
 

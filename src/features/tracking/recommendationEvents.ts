@@ -69,8 +69,8 @@ interface ActionCompleted extends TrackingEventProps {
   action: RecommendationAction;
   /** How many checks the change reached. */
   checkCount: number;
-  /** Whether it ran for the whole finding, the ticked rows, or a single check. */
-  scope: 'finding' | 'selection' | 'check';
+  /** Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. */
+  scope: 'finding' | 'filtered' | 'selection' | 'check';
 }
 
 /** Tracks an action on a finding's checks, made in the tab or, for cost labels, saved in the check editor. */
@@ -83,8 +83,8 @@ interface ActionFailed extends TrackingEventProps {
   action: TabAction;
   /** How many checks the change failed for. Cancelled work is not counted. */
   failedCount: number;
-  /** Whether it ran for the whole finding, the ticked rows, or a single check. */
-  scope: 'finding' | 'selection' | 'check';
+  /** Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. */
+  scope: 'finding' | 'filtered' | 'selection' | 'check';
 }
 
 /** Tracks an action from the tab failing for some or all of its checks. */

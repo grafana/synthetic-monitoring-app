@@ -29,11 +29,12 @@ export function MissingCostLabelsFinding({
   calNames,
   isSolo,
   isFocused,
+  filter,
   onDismiss,
 }: MissingCostLabelsFindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel(
-    { recommendation, totalCheckCount, isSolo },
+    { recommendation, totalCheckCount, isSolo, filter },
     calNames
   );
 

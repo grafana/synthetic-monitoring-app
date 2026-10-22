@@ -7,7 +7,7 @@ import {
   RecommendationId,
   RecommendationInputs,
 } from './Recommendations.types';
-import { Check, CheckType, Probe } from 'types';
+import { Check, Probe } from 'types';
 import { checkHasAlerting, getCheckType } from 'utils';
 import { getMissingCalNames } from 'page/CheckList/CheckList.utils';
 
@@ -57,15 +57,11 @@ function findDuplicateChecks({ checks }: RecommendationInputs): Recommendation |
 
 function findOverlappingTargets({ checks }: RecommendationInputs): Recommendation | undefined {
   const groups = groupBy(checks, (check) => check.target)
-    .map<{ group: Check[]; types: CheckType[] }>((group) => ({
-      group,
-      types: uniq(group.map((check) => getCheckType(check.settings))),
-    }))
-    .filter(({ types }) => types.length > 1)
-    .map<RecommendationGroup>(({ group, types }) => ({
+    .filter((group) => uniq(group.map((check) => getCheckType(check.settings))).length > 1)
+    .map<RecommendationGroup>((group) => ({
       key: group[0].target,
       label: group[0].target,
-      detail: types.join(', '),
+      detail: describeCheckTypes(group),
       checks: group,
     }));
 
@@ -163,6 +159,11 @@ function groupBy<T>(items: T[], getKey: (item: T) => string): T[][] {
   }
 
   return [...groups.values()];
+}
+
+/** An overlapping group's detail line: its checks' types, in order of first appearance. */
+export function describeCheckTypes(checks: Check[]): string {
+  return uniq(checks.map((check) => getCheckType(check.settings))).join(', ');
 }
 
 function uniq<T>(items: T[]): T[] {

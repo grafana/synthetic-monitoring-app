@@ -17,18 +17,27 @@ import {
   RecommendationSection,
 } from '../Recommendations.components';
 import { UNESCAPED } from '../Recommendations.constants';
+import { filterGroups } from '../Recommendations.filters';
 import { getChecksByTargetUrl } from '../Recommendations.links';
 import { describeProbes } from '../Recommendations.utils';
 import { useFindingPanel } from './Finding.hooks';
 
 // Whether a group is waste or deliberate is a human call, so rows show frequency and probes and
 // link to the editor. Deleting stays with the check list, which each group links to.
-export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
+export function RedundancyFinding({
+  recommendation,
+  totalCheckCount,
+  isSolo,
+  isFocused,
+  filter,
+  onDismiss,
+}: FindingProps) {
   const { id, groups = [] } = recommendation;
-  const { severity, header, rows, dismissedCount, dismissChecks, restoreChecks } = useFindingPanel({
+  const { severity, header, unfilteredRows, dismissedCount, dismissChecks, restoreChecks } = useFindingPanel({
     recommendation,
     totalCheckCount,
     isSolo,
+    filter,
   });
 
   // A duplicate group needs two checks to still be a duplicate; an overlapping group needs two
@@ -36,18 +45,25 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
   const isRedundant = (group: RecommendationGroup) =>
     group.type ? group.checks.length > 1 : new Set(group.checks.map((check) => getCheckType(check.settings))).size > 1;
 
-  const visibleGroups = useMemo(() => {
-    const kept = new Set(rows.map((check) => check.id));
+  const redundantGroups = useMemo(() => {
+    const kept = new Set(unfilteredRows.map((check) => check.id));
 
     return groups
       .map((group) => ({ ...group, checks: group.checks.filter((check) => kept.has(check.id)) }))
       .filter(isRedundant);
-  }, [groups, rows]);
+  }, [groups, unfilteredRows]);
+
+  // Filtered after the redundancy rule: a copy the filters hide is still a copy, so its group stays.
+  const visibleGroups = useMemo(
+    () => (filter.isActive ? filterGroups(redundantGroups, filter.matches) : redundantGroups),
+    [filter, redundantGroups]
+  );
 
   // Dismissing one of a pair settles the pair: what is left is no longer redundant, so it goes
-  // with it rather than lingering as a row the finding can no longer explain.
+  // with it rather than lingering as a row the finding can no longer explain. Looked up unfiltered,
+  // so a partner the filters hide still goes with it.
   const dismissFromGroup = (check: Check) => {
-    const group = visibleGroups.find(({ checks }) => checks.some(({ id: checkId }) => checkId === check.id));
+    const group = redundantGroups.find(({ checks }) => checks.some(({ id: checkId }) => checkId === check.id));
     const remaining = group?.checks.filter(({ id: checkId }) => checkId !== check.id) ?? [];
     const staysRedundant = group ? isRedundant({ ...group, checks: remaining }) : false;
 
@@ -107,17 +123,9 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
           <GroupRow
             key={group.key}
             label={group.label}
-            detail={
-              group.detail
-                ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
-                    detail: group.detail,
-                    checkCount: group.checks.length,
-                    ...UNESCAPED,
-                  })
-                : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: group.checks.length })
-            }
+            detail={getGroupDetail(group)}
             checks={group.checks}
-            href={getChecksByTargetUrl(group.label, group.type)}
+            href={getChecksByTargetUrl(group.label, getGroupType(group))}
             onLinkClick={() => trackRecommendationActioned({ finding: id, scope: 'group' })}
             renderCheck={renderCheck}
           />
@@ -125,4 +133,28 @@ export function RedundancyFinding({ recommendation, totalCheckCount, isSolo, isF
       />
     </RecommendationSection>
   );
+}
+
+// The check list filters by one type at most, so only a group whose checks share a type, such as an
+// overlapping group the type filter narrowed to one, can link to just those checks.
+function getGroupType({ type, checks }: RecommendationGroup) {
+  const types = new Set(checks.map((check) => getCheckType(check.settings)));
+
+  return type ?? (types.size === 1 ? [...types][0] : undefined);
+}
+
+function getGroupDetail({ detail, checks }: RecommendationGroup) {
+  if (checks.length === 1) {
+    return detail
+      ? t('recommendations.group.detailSingle', '{{detail}} · 1 check', { detail, ...UNESCAPED })
+      : t('recommendations.group.countSingle', '1 check');
+  }
+
+  return detail
+    ? t('recommendations.group.detail', '{{detail}} · {{checkCount}} checks', {
+        detail,
+        checkCount: checks.length,
+        ...UNESCAPED,
+      })
+    : t('recommendations.group.count', '{{checkCount}} checks', { checkCount: checks.length });
 }
