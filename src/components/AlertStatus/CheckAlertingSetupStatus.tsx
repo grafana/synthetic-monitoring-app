@@ -23,9 +23,7 @@ function describeAlertSetupError(error?: CheckAlertError): string {
     case CheckAlertError.QuotaLimitReached:
       return 'The alerting limit has been reached. Ask an administrator to review the stack’s limits.';
     case CheckAlertError.HostedGrafanaInstanceLoading:
-      return 'Grafana is still starting. Alert setup will resume when it is ready.';
-    case undefined:
-      return 'Waiting for the alert rule change to complete.';
+      return 'Grafana is still starting. Alert setup could not be completed yet.';
     default:
       return 'The alert rule could not be updated yet.';
   }
@@ -96,6 +94,7 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
       <Alert
         severity="warning"
         title="Alerting status could not be verified"
+        bottomSpacing={0}
         buttonContent="Retry"
         onRemove={() => alertsQuery.refetch()}
       >
@@ -103,24 +102,18 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
       </Alert>
     );
   }
-  const hasPendingAlerts = alerts.some(({ status }) => status !== 'OK');
-  if (pending || hasPendingAlerts) {
+  const alertsWithErrors = alerts.filter(({ status, error }) => status !== 'OK' && error);
+  if (pending || alertsWithErrors.length) {
     return (
-      <Alert severity="warning" title="Alerting setup is incomplete">
+      <Alert severity="warning" title="Alerting setup is incomplete" bottomSpacing={0}>
         <Stack direction="column" gap={1}>
-          <Text>
-            {pending
-              ? 'The last attempt to save alerts did not complete.'
-              : 'Alert rule changes are pending. Synthetic Monitoring retries them automatically.'}
-          </Text>
-          {alerts
-            .filter(({ status }) => status !== 'OK')
-            .map((alert) => (
-              <Text key={alert.name} variant="bodySmall">
-                {PREDEFINED_ALERTS[checkType].find(({ type }) => type === alert.name)?.category ?? 'Alert'}:{' '}
-                {describeAlertSetupError(alert.error)}
-              </Text>
-            ))}
+          {pending && <Text>The last attempt to save alerts did not complete.</Text>}
+          {alertsWithErrors.map((alert) => (
+            <Text key={alert.name} variant="bodySmall">
+              {PREDEFINED_ALERTS[checkType].find(({ type }) => type === alert.name)?.category ?? 'Alert'}:{' '}
+              {describeAlertSetupError(alert.error)}
+            </Text>
+          ))}
           {retryError && <Text color="error">{retryError}</Text>}
           <Stack gap={2} alignItems="center">
             {pending && canRetry && (
@@ -180,20 +173,62 @@ export function CheckAlertingSetupStatus({ check, checkType }: { check: Check; c
     const allDestinationsMissing = states?.every(
       (state) => state.status === 'missing' && state.destinations.every(({ status }) => status === 'missing')
     );
-    const routingWarning = missing
-      ? 'Some notification destinations are not configured. Notifications may not reach all intended recipients.'
-      : 'Review where notifications are sent.';
+    const routingWarning = allDestinationsMissing
+      ? 'No notification destination is configured for this check.'
+      : missing
+        ? 'Some notification destinations for this check are not configured.'
+        : 'The notification destinations for this check could not be verified.';
     return (
-      <Alert
-        severity="warning"
-        title={missing ? 'Alerting setup is incomplete' : 'Notification routing could not be verified'}
-      >
-        Alert rules are enabled. {allDestinationsMissing ? 'Notifications have no usable destination.' : routingWarning}{' '}
-        <TextLink href="/alerting/routes" external>
-          Manage notifications
-        </TextLink>
-      </Alert>
+      <NotificationRoutingWarning
+        key={`${checkId}:${routingWarning}`}
+        message={routingWarning}
+        missing={Boolean(missing)}
+      />
     );
   }
   return null;
+}
+
+function NotificationRoutingWarning({ message, missing }: { message: string; missing: boolean }) {
+  const [dismissed, setDismissed] = useState(false);
+
+  if (dismissed) {
+    return null;
+  }
+
+  return (
+    <Alert
+      severity="warning"
+      title={missing ? 'Alerting setup is incomplete' : 'Alerting setup could not be verified'}
+      bottomSpacing={0}
+      onRemove={() => setDismissed(true)}
+    >
+      {message}{' '}
+      {missing ? (
+        <>
+          Configure a{' '}
+          <TextLink href="/alerting/notifications" external>
+            contact point
+          </TextLink>{' '}
+          and select it in a{' '}
+          <TextLink href="/alerting/routes" external>
+            notification policy
+          </TextLink>{' '}
+          that matches this check’s alert labels.
+        </>
+      ) : (
+        <>
+          Review the{' '}
+          <TextLink href="/alerting/routes" external>
+            notification policies
+          </TextLink>{' '}
+          that match this check’s alert labels and check the{' '}
+          <TextLink href="/alerting/notifications" external>
+            contact points
+          </TextLink>{' '}
+          they use.
+        </>
+      )}
+    </Alert>
+  );
 }

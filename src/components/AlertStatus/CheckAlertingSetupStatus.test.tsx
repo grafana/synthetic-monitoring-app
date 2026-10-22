@@ -13,7 +13,7 @@ import { render } from 'test/render';
 import { server } from 'test/server';
 import { runTestAsCheckWriterWithoutAlertWrite } from 'test/utils';
 
-import { AlertSensitivity, CheckAlertError, CheckAlertType, CheckType } from 'types';
+import { AlertSensitivity, CheckAlertError, CheckAlertPublished, CheckAlertType, CheckType } from 'types';
 import { setPendingAlertSetup } from 'data/pendingAlertSetup';
 import { getQueryClient } from 'data/queryClient';
 
@@ -35,6 +35,9 @@ afterEach(() => localStorage.clear());
 it.each([
   { state: 'off', alerts: [] },
   { state: 'configured', alerts: [{ ...failedAlert, status: 'OK', error: undefined }] },
+  { state: 'being created', alerts: [{ ...failedAlert, status: 'PENDING_CREATE', error: undefined }] },
+  { state: 'being updated', alerts: [{ ...failedAlert, status: 'PENDING_UPDATE', error: undefined }] },
+  { state: 'being deleted', alerts: [{ ...failedAlert, status: 'PENDING_DELETE', error: undefined }] },
 ])('shows no status block when alerts are $state', async ({ alerts }) => {
   server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts } }) }));
   const { queryClient } = render(
@@ -56,20 +59,29 @@ it('does not report disabled or enabled when alert configuration cannot be read'
   expect(screen.queryByText('Alerting enabled')).not.toBeInTheDocument();
 });
 
-it('shows incomplete delivery even when the alert rules were created', async () => {
-  server.use(
-    apiRoute('listAlertsForCheck', {
-      result: () => ({ json: { alerts: [{ ...failedAlert, status: 'OK', error: undefined }] } }),
-    }),
-    apiRoute('listNotificationContactPoints', {
-      result: () => ({ json: { items: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT], metadata: {} } }),
-    })
-  );
-  render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
-  expect(await screen.findByText('Alerting setup is incomplete')).toBeInTheDocument();
-  expect(screen.getByText(/Notifications have no usable destination/)).toBeInTheDocument();
-  expect(screen.getByRole('link', { name: 'Manage notifications' })).toHaveAttribute('href', '/alerting/routes');
-});
+it.each(['OK', 'PENDING_CREATE'])(
+  'shows missing notification destinations when the rule status is %s',
+  async (status) => {
+    server.use(
+      apiRoute('listAlertsForCheck', {
+        result: () => ({ json: { alerts: [{ ...failedAlert, status, error: undefined }] } }),
+      }),
+      apiRoute('listNotificationContactPoints', {
+        result: () => ({ json: { items: [UNCONFIGURED_NOTIFICATION_CONTACT_POINT], metadata: {} } }),
+      })
+    );
+    const { user } = render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
+    expect(await screen.findByRole('alert', { name: 'Alerting setup is incomplete' })).toHaveTextContent(
+      'No notification destination is configured for this check.'
+    );
+    expect(screen.queryByText(/Alert rules are enabled/)).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'contact point' })).toHaveAttribute('href', '/alerting/notifications');
+    expect(screen.getByRole('link', { name: 'notification policy' })).toHaveAttribute('href', '/alerting/routes');
+    await user.click(screen.getByRole('button', { name: 'Close alert' }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'contact point' })).not.toBeInTheDocument();
+  }
+);
 
 it('reports partial notification setup when a continued branch has a configured contact point', async () => {
   server.use(
@@ -86,8 +98,10 @@ it('reports partial notification setup when a continued branch has a configured 
     })
   );
   render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
-  expect(await screen.findByText(/Some notification destinations are not configured/)).toBeInTheDocument();
-  expect(screen.queryByText(/Notifications have no usable destination/)).not.toBeInTheDocument();
+  expect(await screen.findByRole('alert', { name: 'Alerting setup is incomplete' })).toHaveTextContent(
+    'Some notification destinations for this check are not configured.'
+  );
+  expect(screen.queryByText(/No notification destination is configured/)).not.toBeInTheDocument();
 });
 
 it.each([
@@ -140,8 +154,10 @@ it.each([
     })
   );
   render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
-  expect(await screen.findByText(/Some notification destinations are not configured/)).toBeInTheDocument();
-  expect(screen.queryByText(/Notifications have no usable destination/)).not.toBeInTheDocument();
+  expect(await screen.findByRole('alert', { name: 'Alerting setup is incomplete' })).toHaveTextContent(
+    'Some notification destinations for this check are not configured.'
+  );
+  expect(screen.queryByText(/No notification destination is configured/)).not.toBeInTheDocument();
 });
 
 it('refreshes server-side retries without sending an unchanged alert configuration', async () => {
@@ -155,7 +171,7 @@ it('refreshes server-side retries without sending an unchanged alert configurati
   expect(await screen.findByText(/Failed Checks: The alerting limit has been reached/)).toBeInTheDocument();
   expect(screen.queryByText(new RegExp(failedAlert.name))).not.toBeInTheDocument();
   expect(screen.queryByText(/quota limit reached|PENDING_CREATE/)).not.toBeInTheDocument();
-  expect(screen.getByText(/Synthetic Monitoring retries them automatically/)).toBeInTheDocument();
+  expect(screen.queryByText(/retries them automatically/)).not.toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Retry alert creation' })).not.toBeInTheDocument();
   alerts = [{ ...failedAlert, status: 'OK', error: undefined }];
   await user.click(screen.getByRole('button', { name: 'Refresh status' }));
@@ -164,25 +180,35 @@ it('refreshes server-side retries without sending an unchanged alert configurati
   expect(requests).toHaveLength(0);
 });
 
-it.each([undefined, CheckAlertError.QuotaLimitReached])(
-  'automatically refreshes pending rule creation after backend recovery, previous error: %s',
-  async (error) => {
-    let alerts = [{ ...failedAlert, error }];
-    server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts } }) }));
-    render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
-    await screen.findByText('Alerting setup is incomplete');
-    expect(screen.queryByText(/PENDING_CREATE/)).not.toBeInTheDocument();
-    alerts = [{ ...failedAlert, status: 'OK', error: undefined }];
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 5500));
-    });
-    expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
-  },
-  10000
-);
+it('automatically clears the warning after backend recovery', async () => {
+  let alerts = [failedAlert];
+  server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts } }) }));
+  render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
+  await screen.findByText('Alerting setup is incomplete');
+  expect(screen.queryByText(/PENDING_CREATE/)).not.toBeInTheDocument();
+  alerts = [{ ...failedAlert, status: 'OK', error: undefined }];
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 5500));
+  });
+  expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
+}, 10000);
 
-it('retries a failed save draft and displays server-side creation progress', async () => {
+it('keeps pending creation quiet but shows an error reported by a later poll', async () => {
+  let alerts: CheckAlertPublished[] = [{ ...failedAlert, error: undefined }];
+  server.use(apiRoute('listAlertsForCheck', { result: () => ({ json: { alerts } }) }));
+  const { queryClient } = render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />);
+  await waitFor(() => expect(queryClient.getQueryState(['alertsForCheck', check.id])?.status).toBe('success'));
+  await waitFor(() => expect(queryClient.isFetching()).toBe(0));
+  expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument();
+  alerts = [failedAlert];
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 5500));
+  });
+  expect(await screen.findByText(/Failed Checks: The alerting limit has been reached/)).toBeInTheDocument();
+}, 10000);
+
+it('retries a failed save draft and displays reported rule creation errors', async () => {
   const queryClient = getQueryClient();
   setPendingAlertSetup(queryClient, check.id!, { alerts: desired, previousAlerts: [] });
   let saved = false;
@@ -204,7 +230,7 @@ it('retries a failed save draft and displays server-side creation progress', asy
   );
   const { user } = render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />, { queryClient });
   await user.click(await screen.findByRole('button', { name: 'Retry alert creation' }));
-  expect(await screen.findByText(/Synthetic Monitoring retries them automatically/)).toBeInTheDocument();
+  expect(await screen.findByText(/Failed Checks: The alerting limit has been reached/)).toBeInTheDocument();
   expect((await read()).body).toEqual({ alerts: desired });
   expect(requests).toHaveLength(1);
   expect(screen.getByRole('button', { name: 'Refresh status' })).toBeInTheDocument();
@@ -226,7 +252,7 @@ it('does not resend a draft when a fresh retry read confirms the lost save respo
   const retry = await screen.findByRole('button', { name: 'Retry alert creation' });
   saved = true;
   await user.click(retry);
-  expect(await screen.findByText(/Synthetic Monitoring retries them automatically/)).toBeInTheDocument();
+  expect(await screen.findByText(/Failed Checks: The alerting limit has been reached/)).toBeInTheDocument();
   expect(requests).toHaveLength(0);
   await waitFor(() => expect(localStorage.length).toBe(0));
 });
@@ -278,12 +304,8 @@ it.each(['OK', 'PENDING_CREATE'])('clears a saved local draft while the rule sta
   );
   render(<CheckAlertingSetupStatus check={check} checkType={CheckType.Http} />, { queryClient });
   await waitFor(() => expect(localStorage.length).toBe(0));
-  if (status === 'OK') {
-    await waitFor(() => expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument());
-    expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
-  } else {
-    expect(await screen.findByText(/Synthetic Monitoring retries them automatically/)).toBeInTheDocument();
-  }
+  await waitFor(() => expect(screen.queryByText('Alerting setup is incomplete')).not.toBeInTheDocument());
+  expect(screen.queryByRole('link', { name: 'Edit alerts' })).not.toBeInTheDocument();
 });
 
 it('keeps status visible without offering an unauthorized retry', async () => {
