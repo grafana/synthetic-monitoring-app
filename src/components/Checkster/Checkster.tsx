@@ -18,7 +18,7 @@ type ChecksterProps = ChecksterProviderProps & {
   // Resolve with a function if a callback should be made after the fact
   // that the check is saved (and the form knows everything when OK)
   // Example: when we want to navigate from the form after a successful save
-  onSave(check: Check, formValues: CheckFormValues): Promise<Function | void>;
+  onSave(check: Check, formValues: CheckFormValues): Promise<(() => void) | void>;
 };
 
 export function Checkster({ onSave, ...props }: ChecksterProps) {

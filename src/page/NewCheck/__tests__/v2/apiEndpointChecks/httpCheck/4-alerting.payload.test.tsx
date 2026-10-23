@@ -4,7 +4,12 @@ import { PRIVATE_PROBE } from 'test/fixtures/probes';
 import { probeToMetadataProbe, testUsesCombobox } from 'test/utils';
 
 import { CheckAlertType, CheckType } from 'types';
-import { gotoSection, selectOnlyProbe, submitForm } from 'components/Checkster/__testHelpers__/formHelpers';
+import {
+  gotoSection,
+  openAlertRunbook,
+  selectOnlyProbe,
+  submitForm,
+} from 'components/Checkster/__testHelpers__/formHelpers';
 import { FormSectionName } from 'components/Checkster/types';
 import { renderNewForm, selectBasicFrequency } from 'page/__testHelpers__/checkForm';
 import { fillMandatoryFields } from 'page/__testHelpers__/v2.utils';
@@ -32,7 +37,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
-    expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
+    expect(screen.getByText("Alert before the target's TLS certificate expires.")).toBeInTheDocument();
 
     const thresholdsInputSelector =
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].thresholdInput;
@@ -51,6 +56,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(alertsBody).toEqual({
       alerts: [
+        { name: 'ProbeFailedExecutionsTooHigh', threshold: 1, period: '5m' },
         {
           name: 'TLSTargetCertificateCloseToExpiring',
           threshold: 1,
@@ -89,6 +95,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
 
     expect(alertsBody).toEqual({
       alerts: [
+        { name: 'ProbeFailedExecutionsTooHigh', threshold: 1, period: '5m' },
         {
           name: 'HTTPRequestDurationTooHighAvg',
           threshold: 500,
@@ -110,11 +117,6 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
     expect(screen.getByText(`Failed Checks`)).toBeInTheDocument();
 
-    await user.click(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
-      )
-    );
     await user.clear(
       screen.getByTestId(
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
@@ -166,17 +168,13 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     );
 
     // Fill in runbook URL
+    await openAlertRunbook(user, 'TLS Certificate');
     const runbookUrlInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
     await user.type(runbookUrlInput, 'https://example.com/runbooks/tls-cert-expiry');
 
     // Enable Failed Executions alert and set threshold and period
-    await user.click(
-      screen.getByTestId(
-        CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].selectedCheckbox
-      )
-    );
     await user.clear(
       screen.getByTestId(
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].thresholdInput
@@ -190,6 +188,7 @@ describe(`HttpCheck - Section 4 (Alerting) payload`, () => {
     );
 
     // Fill in runbook URL for Failed Executions alert
+    await openAlertRunbook(user, 'Failed Checks');
     const failedExecRunbookUrlInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
     );

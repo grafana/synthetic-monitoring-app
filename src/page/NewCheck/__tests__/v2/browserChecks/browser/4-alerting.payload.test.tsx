@@ -15,9 +15,9 @@ describe(`BrowserCheck - Section 5 (Alerting)`, () => {
     await fillMandatoryFields({ user, checkType });
 
     await gotoSection(user, FormSectionName.Alerting);
-    
+
     await user.click(screen.getByText('Legacy alerts'));
-    
+
     await selectOption(user, { label: `Select alert sensitivity`, option: `Medium` });
 
     await submitForm(user);

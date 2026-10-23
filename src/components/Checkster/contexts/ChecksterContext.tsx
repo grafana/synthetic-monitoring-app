@@ -11,6 +11,7 @@ import React, {
   useState,
 } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
+import { durationToMilliseconds, parseDuration } from '@grafana/data';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 import { isEqual } from 'lodash';
@@ -28,13 +29,14 @@ import { useDefaultProbeId } from 'hooks/useDefaultProbeId';
 import { useDOMId } from 'hooks/useDOMId';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
 import { CenteredSpinner } from 'components/CenteredSpinner';
+import { ALERT_PERIODS } from 'components/CheckForm/AlertsPerCheck/AlertsPerCheck.constants';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 
 import { ASSISTED_FORM_MERGE_FIELDS, DEFAULT_CHECK_TYPE, K6_CHECK_TYPES } from '../constants';
 import { useFormNavigationState } from '../hooks/useFormNavigationState';
 import { useHydrateCalLabels } from '../hooks/useHydrateCalLabels';
 import { useProbeCompatibilityKey } from '../hooks/useProbeCompattibilityKey';
-import { getDefaultFormValues, toFormValues } from '../utils/adaptors';
+import { getDefaultFormValues, toFormValues, withDefaultFailedChecksAlert } from '../utils/adaptors';
 import { isCheck } from '../utils/check';
 import { flattenObjectKeys } from '../utils/form';
 
@@ -84,6 +86,7 @@ function useFormValuesMeta(
   checkType: CheckType,
   check: Check | undefined,
   probesWithMetadata: ProbeWithMetadata[],
+  useDefaultAlerts: boolean,
   defaultFolderUid?: string,
   requiresFolder = false
 ) {
@@ -93,7 +96,8 @@ function useFormValuesMeta(
   return useMemo(() => {
     const schema = createCheckSchema(checkType, probesWithMetadata);
     const refinedSchema = addRefinements<CheckFormValues>(schema, { requiresFolder });
-    const formValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    const initialValues = check ? toFormValues(check) : getDefaultFormValues(checkType);
+    const formValues = useDefaultAlerts ? withDefaultFailedChecksAlert(initialValues) : initialValues;
 
     if (defaultFolderUid && !formValues.folderUid) {
       formValues.folderUid = defaultFolderUid;
@@ -111,7 +115,7 @@ function useFormValuesMeta(
     // Use probeCompatibilityKey instead of probesWithMetadata array reference
     // This ensures schema only recreates when probe compatibility actually changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder, defaultProbeId]);
+  }, [checkType, check, probeCompatibilityKey, defaultFolderUid, requiresFolder, defaultProbeId, useDefaultAlerts]);
 }
 
 export function ChecksterProvider({
@@ -151,6 +155,9 @@ export function ChecksterProvider({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<Error | undefined>();
   const isNew = !check || !check.id;
+  // Examples and Assistant drafts are new checks too. Explicit selections,
+  // including an empty list, and duplicated checks keep their original alerts.
+  const useDefaultAlerts = isNew && !isDuplicate && check?.alerts === undefined;
 
   useTrackingScope({
     check_type: checkType,
@@ -163,6 +170,7 @@ export function ChecksterProvider({
     checkType,
     check,
     probesWithMetadata,
+    useDefaultAlerts,
     seedFolderUid,
     requiresFolder
   );
@@ -197,6 +205,27 @@ export function ChecksterProvider({
     disabled: disabled || isLoading, // || isSubmitting,
     shouldFocusError: true,
   });
+
+  const frequency = formMethods.watch('frequency');
+  const failedChecksPeriod = formMethods.watch('alerts')?.ProbeFailedExecutionsTooHigh?.period;
+  useEffect(() => {
+    const field = 'alerts.ProbeFailedExecutionsTooHigh.period' as const;
+    if (!useDefaultAlerts || formMethods.getFieldState(field).isDirty) {
+      return;
+    }
+    const period = ALERT_PERIODS.find(({ value }) => durationToMilliseconds(parseDuration(value)) >= frequency)?.value;
+    if (period && formMethods.getValues(field) !== period) {
+      const alerts = formMethods.getValues('alerts');
+      formMethods.setValue(
+        'alerts',
+        {
+          ...alerts,
+          ProbeFailedExecutionsTooHigh: { ...alerts?.ProbeFailedExecutionsTooHigh, period },
+        },
+        { shouldValidate: true }
+      );
+    }
+  }, [useDefaultAlerts, frequency, failedChecksPeriod, formMethods]);
 
   useEffect(() => {
     if (!isNew && check) {

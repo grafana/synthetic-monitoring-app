@@ -7,7 +7,11 @@ import { FormSectionName } from '../../../../../../components/Checkster/types';
 import { CheckAlertType, CheckType } from 'types';
 import { renderNewForm } from 'page/__testHelpers__/checkForm';
 
-import { gotoSection, selectOnlyProbe, submitForm } from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
+import {
+  gotoSection,
+  selectOnlyProbe,
+  submitForm,
+} from '../../../../../../components/Checkster/__testHelpers__/formHelpers';
 import { fillMandatoryFields } from '../../../../../__testHelpers__/v2.utils';
 
 const checkType = CheckType.Tcp;
@@ -25,7 +29,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     await gotoSection(user, FormSectionName.Alerting);
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
-    expect(screen.getByText(`Alert if the target's certificate expires in less than`)).toBeInTheDocument();
+    expect(screen.getByText("Alert before the target's TLS certificate expires.")).toBeInTheDocument();
 
     await user.click(
       screen.getByTestId(
@@ -43,6 +47,7 @@ describe(`TCPCheck - Section 4 (Alerting) payload`, () => {
     const { body: alertsBody } = await read(1);
     expect(alertsBody).toEqual({
       alerts: [
+        { name: 'ProbeFailedExecutionsTooHigh', period: '5m', threshold: 1 },
         {
           name: 'TLSTargetCertificateCloseToExpiring',
           threshold: 1,

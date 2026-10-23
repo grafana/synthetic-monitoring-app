@@ -1,17 +1,13 @@
-import React, { useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { Alert, Button, Drawer, Field, Input, Stack } from '@grafana/ui';
+import React, { useState } from 'react';
+import { Alert, Drawer, Field, Input, Stack } from '@grafana/ui';
 import { useTrackingScope } from 'features/tracking/useTrackingScope';
 
 import { CheckAlertDraft, CheckType, FeatureName } from 'types';
 import { getHttpUrlProtocolSuggestions, validateHttpTarget } from 'validation';
 import { AddCheckResult } from 'datasource/responses.types';
 import { getUserPermissions } from 'data/permissions';
-import { useUpdateAlertsForCheck } from 'data/useCheckAlerts';
-import { QUERY_KEYS } from 'data/useChecks';
 import { useDefaultFolder } from 'data/useDefaultFolder';
 import { useProbes, useProbesWithMetadata } from 'data/useProbes';
-import { useAlertAccessControl } from 'hooks/useAlertAccessControl';
 import { useDefaultProbeId } from 'hooks/useDefaultProbeId';
 import { useIsOverlimit } from 'hooks/useIsOverlimit';
 import { useNavigateToCheckDashboard } from 'hooks/useNavigateToCheckDashboard';
@@ -20,10 +16,12 @@ import { FolderSelector } from 'components/FolderSelector/FolderSelector';
 import { useFolderSelection } from 'components/FolderSelector/FolderSelector.hooks';
 import { ProtocolSuggestionHint } from 'components/ProtocolSuggestionHint';
 
-import { createBrokenLinksCheck } from './brokenLinks';
+import { BROKEN_LINKS_CHECK_DEFAULTS, createBrokenLinksCheck } from './brokenLinks';
 import { TemplateAlerting } from './TemplateAlerting';
 import { BROKEN_LINKS_ALERTS } from './templateAlerts';
-import { useCreateTemplateCheck } from './useCreateTemplateCheck';
+import { TemplateSaveControls } from './TemplateSaveControls';
+import { useSaveTemplateCheck } from './useSaveTemplateCheck';
+import { useTemplateAlerting } from './useTemplateAlerting';
 
 const URL_FORMAT_ERROR = 'Enter a valid URL starting with https:// or http://.';
 
@@ -55,8 +53,6 @@ function BrokenLinksForm({
   const [folderUid, setFolderUid] = useState<string>();
   const [folderChanged, setFolderChanged] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const submitting = useRef(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { data: probes = [], isLoading: probesLoading } = useProbesWithMetadata();
   const { isError: probesError } = useProbes();
   const probeId = useDefaultProbeId(probes, CheckType.Browser);
@@ -65,15 +61,8 @@ function BrokenLinksForm({
   const selectedFolder = folderChanged ? folderUid : preselectUid;
   const { canWriteChecks } = getUserPermissions();
   const isOverlimit = useIsOverlimit(false, CheckType.Browser);
-  const mutation = useCreateTemplateCheck();
-  const alertMutation = useUpdateAlertsForCheck();
-  const { canWriteAlerts } = useAlertAccessControl();
-  const [createdCheck, setCreatedCheck] = useState<AddCheckResult>();
-  const busy = isSubmitting || mutation.isPending || alertMutation.isPending;
-  const queryClient = useQueryClient();
   const navigateToCheck = useNavigateToCheckDashboard();
   useTrackingScope({ check_template_id: 'broken_links' });
-  const disabled = !canWriteChecks || isOverlimit !== false || busy || probeId === undefined || !isPreselectReady;
 
   function parseUrl() {
     try {
@@ -96,33 +85,16 @@ function BrokenLinksForm({
     onClose();
   }
 
-  async function enableAlerts(check: AddCheckResult) {
-    try {
-      await alertMutation.mutateAsync({ checkId: check.id!, alerts });
-    } catch {
-      return; // Preserve the created check so retry only updates its alerts.
-    }
-    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-    viewCheck(check);
-  }
-
-  async function retryAlerts(check: AddCheckResult) {
-    if (submitting.current || !canWriteAlerts) {
-      return;
-    }
-    submitting.current = true;
-    setIsSubmitting(true);
-    try {
-      await enableAlerts(check);
-    } finally {
-      submitting.current = false;
-      setIsSubmitting(false);
-    }
-  }
+  const parsedUrl = parseUrl();
+  const draftCheck = parsedUrl ? createBrokenLinksCheck(parsedUrl, {}) : BROKEN_LINKS_CHECK_DEFAULTS;
+  const alerting = useTemplateAlerting(draftCheck, alerts);
+  const saveState = useSaveTemplateCheck(viewCheck);
+  const { busy, createdCheck } = saveState;
+  const disabled = !canWriteChecks || isOverlimit !== false || busy || probeId === undefined || !isPreselectReady;
 
   async function createCheck(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (disabled || submitting.current || createdCheck || probeId === undefined) {
+    if (disabled || createdCheck || probeId === undefined) {
       return;
     }
     const parsed = parseUrl();
@@ -140,32 +112,21 @@ function BrokenLinksForm({
       nextErrors.folder = 'Choose a folder.';
     }
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length || !parsed) {
+    const validEmails = alerting.validateEmails();
+    if (Object.keys(nextErrors).length || !parsed || !validEmails) {
       return;
     }
 
     const check = createBrokenLinksCheck(parsed, options);
-    submitting.current = true;
-    setIsSubmitting(true);
-    try {
-      const result = await mutation.mutateAsync({
+    await saveState.save(
+      {
         ...check,
         probes: [probeId],
         ...(foldersEnabled && selectedFolder ? { folderUid: selectedFolder } : {}),
-      });
-      setCreatedCheck(result);
-      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.list });
-      if (canWriteAlerts) {
-        await enableAlerts(result);
-      } else {
-        viewCheck(result);
-      }
-    } catch {
-      // The mutation exposes the API error below and preserves the user's inputs for retry.
-    } finally {
-      submitting.current = false;
-      setIsSubmitting(false);
-    }
+      },
+      alerting.selectedAlerts,
+      alerting.emails
+    );
   }
 
   return (
@@ -244,38 +205,8 @@ function BrokenLinksForm({
               Try again once probes are available.
             </Alert>
           )}
-          {mutation.isError && (
-            <Alert title="Unable to create check" severity="error">
-              {mutation.error?.message || 'Please try again.'}
-            </Alert>
-          )}
-          {createdCheck && alertMutation.isError ? (
-            <Alert title="Check created, but alerting couldn’t be enabled" severity="warning">
-              {alertMutation.error?.message || 'Try enabling alerting again, or open the check to configure it later.'}
-            </Alert>
-          ) : null}
-          {!createdCheck && <TemplateAlerting />}
-          <Stack gap={1}>
-            {createdCheck && alertMutation.isError ? (
-              <>
-                <Button type="button" disabled={busy || !canWriteAlerts} onClick={() => retryAlerts(createdCheck)}>
-                  Retry enabling alerting
-                </Button>
-                <Button type="button" variant="secondary" disabled={busy} onClick={() => viewCheck(createdCheck)}>
-                  View check
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button type="submit" disabled={disabled} icon={busy ? 'fa fa-spinner' : undefined}>
-                  Create check
-                </Button>
-                <Button type="button" variant="secondary" disabled={busy} onClick={onClose}>
-                  Cancel
-                </Button>
-              </>
-            )}
-          </Stack>
+          {!createdCheck && <TemplateAlerting state={alerting} disabled={busy} />}
+          <TemplateSaveControls state={saveState} disabled={disabled} onCancel={onClose} />
         </Stack>
       </form>
     </Drawer>

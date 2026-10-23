@@ -10,8 +10,14 @@ export interface BrokenLinksOptions {
 }
 
 const PAGE_LOAD_TIMEOUT = 30 * ONE_SECOND_IN_MS;
+export const BROKEN_LINKS_CHECK_DEFAULTS: BrowserCheck = {
+  ...(DEFAULT_CHECK_CONFIG_MAP[CheckType.Browser] as BrowserCheck),
+  frequency: ONE_HOUR_IN_MS,
+  timeout: MAX_TIMEOUT_BROWSER,
+};
+
 export function createBrokenLinksCheck(url: URL, options: BrokenLinksOptions): BrowserCheck {
-  const defaults = DEFAULT_CHECK_CONFIG_MAP[CheckType.Browser] as BrowserCheck;
+  const defaults = BROKEN_LINKS_CHECK_DEFAULTS;
   return {
     ...defaults,
     // Check names allow at most 128 characters and cannot contain quotes or commas.
@@ -19,8 +25,6 @@ export function createBrokenLinksCheck(url: URL, options: BrokenLinksOptions): B
       .replace(/[\x27",]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`)
       .slice(0, 128),
     target: url.href,
-    frequency: ONE_HOUR_IN_MS,
-    timeout: MAX_TIMEOUT_BROWSER,
     settings: { browser: { ...defaults.settings.browser, script: encode(createBrokenLinksScript(url.href, options)) } },
   };
 }

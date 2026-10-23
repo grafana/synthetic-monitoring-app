@@ -6,12 +6,15 @@ import { FormSectionName } from '../../Checkster/types';
 import { CheckAlertType } from 'types';
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
 
-import { gotoSection } from '../../Checkster/__testHelpers__/formHelpers';
+import { gotoSection, openAlertRunbook } from '../../Checkster/__testHelpers__/formHelpers';
 
 describe('RunbookUrl', () => {
   it('renders the runbook URL inputs for pre-selected alerts', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
 
     expect(screen.getByText('Per-check alerts')).toBeInTheDocument();
 
@@ -31,13 +34,16 @@ describe('RunbookUrl', () => {
       )
     ).toBeInTheDocument();
 
-    expect(screen.getAllByText('Runbook URL (optional):')).toHaveLength(3);
+    expect(screen.getAllByText('Runbook URL (optional)')).toHaveLength(3);
     expect(screen.getAllByPlaceholderText('https://example.com/runbook')).toHaveLength(3);
   });
 
   it('displays existing runbook URL values from test data', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
     expect(screen.getByDisplayValue('https://example.com/runbooks/tls-certificate')).toBeInTheDocument();
     expect(screen.getByDisplayValue('https://example.com/runbooks/probe-failures')).toBeInTheDocument();
   });
@@ -45,6 +51,9 @@ describe('RunbookUrl', () => {
   it('allows user to modify an existing runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
     const tlsRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
@@ -58,6 +67,9 @@ describe('RunbookUrl', () => {
   it('allows user to modify the failed executions runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
     const failedExecRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.ProbeFailedExecutionsTooHigh].runbookUrlInput
     );
@@ -71,6 +83,9 @@ describe('RunbookUrl', () => {
   it('allows user to modify the HTTP request duration runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
     const httpDurationRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.HTTPRequestDurationTooHighAvg].runbookUrlInput
     );
@@ -84,6 +99,9 @@ describe('RunbookUrl', () => {
   it('allows user to clear a runbook URL', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
     const tlsRunbookInput = screen.getByTestId(
       CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
     );
@@ -93,9 +111,12 @@ describe('RunbookUrl', () => {
     expect(tlsRunbookInput).toHaveValue('');
   });
 
-  it('shows runbook URL input as disabled when alert is deselected', async () => {
+  it('hides the runbook URL input when the alert is deselected', async () => {
     const { user } = await renderEditForm(BASIC_HTTP_CHECK.id);
     await gotoSection(user, FormSectionName.Alerting);
+    await openAlertRunbook(user, 'Failed Checks');
+    await openAlertRunbook(user, 'TLS Certificate');
+    await openAlertRunbook(user, 'Latency');
 
     expect(
       screen.getByTestId(
@@ -111,6 +132,6 @@ describe('RunbookUrl', () => {
       screen.queryByTestId(
         CHECKSTER_TEST_ID.feature.perCheckAlerts[CheckAlertType.TLSTargetCertificateCloseToExpiring].runbookUrlInput
       )
-    ).toHaveAttribute('disabled');
+    ).not.toBeInTheDocument();
   });
 });

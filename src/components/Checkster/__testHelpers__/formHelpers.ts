@@ -26,6 +26,14 @@ export async function submitForm(user: UserEvent) {
   await user.click(submitButton);
 }
 
+export async function openAlertRunbook(user: UserEvent, category: string) {
+  const alert = await screen.findByRole('group', { name: category });
+  if (!within(alert).queryByRole('region', { name: `${category} runbook` })) {
+    await user.click(within(alert).getByRole('button', { name: `Add runbook for ${category}` }));
+  }
+  await within(alert).findByRole('region', { name: `${category} runbook` });
+}
+
 // Checks don't start with an empty probe list anymore, so this asserts the end state
 // (only `name` checked) instead of assuming every checkbox starts unchecked.
 export async function selectOnlyProbe(user: UserEvent, name: string | RegExp) {

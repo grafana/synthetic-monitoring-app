@@ -6,6 +6,9 @@ import { css } from '@emotion/css';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 
 import { Check, CheckFormValues } from 'types';
+import { CheckAlertingSaveError } from 'data/alertSetupRecovery';
+import { useLabelMode } from 'data/useLabelMode';
+import { useNotificationRouting } from 'data/useNotificationRouting';
 import { OverLimitAlert } from 'components/OverLimitAlert';
 
 import { useChecksterContext } from '../../contexts/ChecksterContext';
@@ -16,14 +19,18 @@ import { CheckSection } from './sections/CheckSection';
 import { ExecutionSection } from './sections/ExecutionSection';
 import { LabelSection } from './sections/LabelSection';
 import { UptimeSection } from './sections/UptimeSection';
+import { AlertingSaveDialog } from './AlertingSaveDialog';
 import { FormFooter } from './FormFooter';
 
 export function FormRoot({
   onSave,
 }: {
-  onSave(payload: Check, formValues: CheckFormValues): Promise<Function | void>;
+  onSave(payload: Check, formValues: CheckFormValues): Promise<(() => void) | void>;
 }) {
   const styles = useStyles2(getStyles);
+  // Start routing inspection on the first step so Alerting usually opens ready.
+  useNotificationRouting();
+  useLabelMode();
   const formRef = useRef<HTMLFormElement>(null);
 
   const {
@@ -45,7 +52,7 @@ export function FormRoot({
     }
   }, [completeAllSteps, submitCount]);
 
-  const [onSaveCallback, setOnSaveCallback] = useState<Function | undefined>();
+  const [onSaveCallback, setOnSaveCallback] = useState<(() => void) | undefined>();
 
   // Handle after save callback
   // Wait for formState to be reset before calling onSave callback
@@ -56,9 +63,35 @@ export function FormRoot({
   }, [onSaveCallback, isDirty]);
 
   const [saveError, setSaveError] = useState<unknown | undefined>(undefined);
+  const [resolvingAlerting, setResolvingAlerting] = useState(false);
+  const submittedValues = useRef<CheckFormValues | undefined>(undefined);
+  const continueToCheck = () => {
+    if (!(saveError instanceof CheckAlertingSaveError)) {
+      return;
+    }
+    reset(submittedValues.current);
+    setSaveError(undefined);
+    setOnSaveCallback(() => saveError.continueToCheck);
+  };
+
+  const retryAlerting = async () => {
+    if (!(saveError instanceof CheckAlertingSaveError)) {
+      return;
+    }
+    setResolvingAlerting(true);
+    try {
+      await saveError.retry();
+      continueToCheck();
+    } catch (error) {
+      setSaveError(error);
+    } finally {
+      setResolvingAlerting(false);
+    }
+  };
 
   const onValid = useCallback(
     async (data: CheckFormValues) => {
+      submittedValues.current = data;
       const check = toPayload(data);
       try {
         const callback = await onSave(check, data);
@@ -104,20 +137,32 @@ export function FormRoot({
           <OverLimitAlert checkType={checkType} />
         </div>
       )}
-      {!!saveError && (
-        <Alert
-          className={styles.alertContainer}
-          title="Save failed"
-          severity="error"
-          buttonContent="Retry"
-          onRemove={() => {
-            formRef.current?.requestSubmit();
-          }}
-        >
-          {saveError && typeof saveError === 'object' && 'message' in saveError && typeof saveError.message === 'string'
-            ? saveError.message
-            : 'It was not possible to save check.'}
-        </Alert>
+      {saveError instanceof CheckAlertingSaveError ? (
+        <AlertingSaveDialog
+          message={saveError.message}
+          busy={resolvingAlerting}
+          onRetry={retryAlerting}
+          onContinue={continueToCheck}
+        />
+      ) : (
+        !!saveError && (
+          <Alert
+            className={styles.alertContainer}
+            title="Save failed"
+            severity="error"
+            buttonContent="Retry"
+            onRemove={() => {
+              formRef.current?.requestSubmit();
+            }}
+          >
+            {saveError &&
+            typeof saveError === 'object' &&
+            'message' in saveError &&
+            typeof saveError.message === 'string'
+              ? saveError.message
+              : 'It was not possible to save check.'}
+          </Alert>
+        )
       )}
 
       <CheckSection />

@@ -1,3 +1,4 @@
+import { validNotificationEmails } from 'features/alerting/notificationSetup';
 import { checkAlertsRefinement, checkAlertsSchema } from 'schemas/general/CheckAlerts';
 import { checkProbesSchema } from 'schemas/general/CheckProbes';
 import { createFrequencySchema } from 'schemas/general/Frequency';
@@ -6,7 +7,7 @@ import { calLabelsSchema, labelsSchema } from 'schemas/general/Label';
 import { createTimeoutSchema } from 'schemas/general/Timeout';
 import { z, ZodType } from 'zod';
 
-import { AlertSensitivity, CheckFormValuesBase, K6Channel, Label } from 'types';
+import { AlertSensitivity, CheckAlertFormValues, CheckFormValuesBase, K6Channel, Label } from 'types';
 import { formatDuration } from 'utils';
 
 export const baseCheckSchema = z.object({
@@ -22,9 +23,12 @@ export const baseCheckSchema = z.object({
   calLabels: calLabelsSchema,
   publishAdvancedMetrics: z.boolean(),
   alerts: checkAlertsSchema.optional(),
-  channels: z.object({
-    k6: z.custom<K6Channel>().optional(),
-  }).optional(),
+  notificationEmails: z.string().optional(),
+  channels: z
+    .object({
+      k6: z.custom<K6Channel>().optional(),
+    })
+    .optional(),
   folderUid: z.string().optional(),
 });
 
@@ -62,6 +66,19 @@ export function addRefinements<T extends CheckFormValuesBase>(
       }
     })
     .superRefine(checkAlertsRefinement)
+    .superRefine((data, ctx) => {
+      if (
+        data.notificationEmails?.trim() &&
+        Object.values<CheckAlertFormValues>(data.alerts ?? {}).some((alert) => alert?.isSelected) &&
+        !validNotificationEmails(data.notificationEmails)
+      ) {
+        ctx.addIssue({
+          path: ['notificationEmails'],
+          code: 'custom',
+          message: 'Enter valid email addresses, such as name@example.com.',
+        });
+      }
+    })
     .superRefine((data, ctx) => {
       const calNames = new Set(data.calLabels.map((l: Label) => l.name));
       const conflicts = data.labels.filter((l: Label) => calNames.has(l.name));

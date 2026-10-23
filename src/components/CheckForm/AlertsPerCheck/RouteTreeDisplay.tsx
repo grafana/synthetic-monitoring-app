@@ -1,218 +1,209 @@
 import React from 'react';
-import { type InstanceMatchResult, type Route } from '@grafana/alerting';
+import { type InstanceMatchResult, type LabelMatcher, type Route, USER_DEFINED_TREE_NAME } from '@grafana/alerting';
 import { GrafanaTheme2 } from '@grafana/data';
-import { Icon, Text, TextLink, Tooltip, useStyles2 } from '@grafana/ui';
+import { Icon, Text, TextLink, useStyles2 } from '@grafana/ui';
 import { css, cx } from '@emotion/css';
+import { encodeReceiverForUrl, getPolicyIdentifier } from 'features/alerting/alertRoutingUtils';
 import { trackLinkClick } from 'features/tracking/linkEvents';
 
-import { encodeReceiverForUrl, getPolicyIdentifier } from './alertRoutingUtils';
-
 interface RouteTreeDisplayProps {
-  routeMatch: InstanceMatchResult;
+  routeMatch: Pick<InstanceMatchResult, 'matchedRoutes'>;
 }
 
-export const RouteTreeDisplay: React.FC<RouteTreeDisplayProps> = ({ routeMatch }) => {
+interface MatchedPolicyNode {
+  route: Route & { id: string };
+  treeName: string;
+  receiver?: string;
+  children: Map<string, MatchedPolicyNode>;
+}
+
+export const RouteTreeDisplay = ({ routeMatch }: RouteTreeDisplayProps) => {
   const styles = useStyles2(getStyles);
+  const roots = new Map<string, MatchedPolicyNode>();
 
-  if (!routeMatch.matchedRoutes || routeMatch.matchedRoutes.length === 0) {
-    return <Text variant="body">No routing information available.</Text>;
+  // Merge shared ancestors, retaining every matched branch even when several
+  // branches use the same receiver. Only terminal matches handle the alert.
+  for (const { route: matchedRoute, matchDetails, routeTree } of routeMatch.matchedRoutes) {
+    const treeName = routeTree.metadata.name ?? USER_DEFINED_TREE_NAME;
+    let siblings = roots;
+    for (const { route } of matchDetails.matchingJourney) {
+      const key = `${treeName}::${route.id}`;
+      let node = siblings.get(key);
+      if (!node) {
+        node = { route, treeName, children: new Map() };
+        siblings.set(key, node);
+      }
+      if (route.id === matchedRoute.id && 'receiver' in matchedRoute && typeof matchedRoute.receiver === 'string') {
+        // The routing matcher has already resolved contact point inheritance.
+        node.receiver = matchedRoute.receiver;
+      }
+      siblings = node.children;
+    }
   }
-  const processAllMatchedRoutes = () => {
-    const routesToRender: Array<{
-      route: Route;
-      level: number;
-      isEffective: boolean;
-      treeName?: string;
-    }> = [];
 
-    // Dedupe is scoped per tree: routes within a tree share root/intermediate
-    // nodes across overlapping journeys, but route ids can repeat across trees,
-    // so a global set would drop nodes (and entire trees) that reuse an id.
-    const processedRouteIds = new Set<string>();
-
-    routeMatch.matchedRoutes.forEach((matchedRoute) => {
-      const matchingJourney = matchedRoute.matchDetails?.matchingJourney || [];
-      const treeName = matchedRoute.routeTree?.metadata?.name;
-      // @ts-ignore
-      // Find the effective index (the last route with a receiver, where it will get delivered)
-      const effectiveIndex = matchingJourney.findLastIndex((item) => (item.route as Route).receiver);
-
-      matchingJourney.forEach((journeyItem, index) => {
-        const route = journeyItem.route;
-        const routeKey = `${treeName ?? ''}::${route.id}`;
-
-        if (!processedRouteIds.has(routeKey)) {
-          processedRouteIds.add(routeKey);
-
-          const isEffective = index === effectiveIndex;
-
-          routesToRender.push({
-            route,
-            level: index, // Use journey index as hierarchy level
-            isEffective,
-            treeName,
-          });
-        }
-      });
-    });
-
-    return routesToRender;
-  };
-
-  const routesToRender = processAllMatchedRoutes();
+  if (roots.size === 0) {
+    return <Text variant="bodySmall">No routing information available.</Text>;
+  }
 
   return (
-    <div className={styles.routeTree}>
-      {routesToRender.map((routeInfo, index) => {
-        const { route, level, isEffective, treeName } = routeInfo;
-        return (
-          <div key={index} style={{ marginLeft: level * 16 }}>
-            <RouteNode
-              route={route}
-              level={level}
-              routingStops={level > 0 && !route.continue}
-              isEffective={isEffective}
-              treeName={treeName}
-            />
-          </div>
-        );
-      })}
-    </div>
+    <ul className={styles.routeTree} aria-label="Matched notification policies">
+      {Array.from(roots, ([key, node]) => (
+        <RouteNode key={key} node={node} isRoot />
+      ))}
+    </ul>
   );
 };
 
-const RouteNode: React.FC<{
-  route: Route;
-  level: number;
-  routingStops?: boolean;
-  isEffective?: boolean;
-  treeName?: string;
-}> = ({ route, level, routingStops, isEffective = false, treeName }) => {
+const RouteNode = ({ node, isRoot = false }: { node: MatchedPolicyNode; isRoot?: boolean }) => {
   const styles = useStyles2(getStyles);
-  const hasMatchers = route.matchers && route.matchers.length > 0;
-  const isRootPolicy = level === 0 && !hasMatchers;
-  const policyInfo = getPolicyIdentifier(route, isRootPolicy, treeName);
+  const { route, receiver, treeName, children } = node;
+  const policyInfo = getPolicyIdentifier(route, isRoot, treeName);
+  const matchers: LabelMatcher[] = route.matchers ?? [];
+  const receiverPath = receiver ? `/alerting/notifications/receivers/${encodeReceiverForUrl(receiver)}/edit` : '';
 
   return (
-    <div className={styles.routeNode} style={{ marginLeft: level * 16 }}>
-      <div className={styles.routeHeader}>
-        <div className={styles.routeInfo}>
-          <div
-            className={cx(styles.badge, {
-              [styles.matchers]: policyInfo.type === 'matchers',
-              [styles.matchesAll]: policyInfo.type === 'matchesAll',
-            })}
+    <li className={styles.treeItem}>
+      <div className={cx(styles.routeRow, receiver ? styles.destinationNode : styles.branchHeading)}>
+        <div className={styles.policyLink}>
+          <TextLink
+            href={`/alerting/routes/policy/${encodeURIComponent(treeName)}/edit?alertmanager=grafana`}
+            external
+            inline={false}
+            color="primary"
+            variant="bodySmall"
+            weight={isRoot ? 'medium' : 'regular'}
+            aria-label={policyInfo.text}
           >
-            <Text variant="bodySmall">
-              <strong>{policyInfo.text}</strong>
+            {matchers.length > 0 && !isRoot
+              ? matchers.map(({ label, type, value }) => (
+                  <span
+                    key={`${label}:${type}:${value}`}
+                    className={cx(styles.matcher, { [styles.branchMatcher]: !receiver })}
+                  >
+                    {`${label} ${type} ${value}`}
+                  </span>
+                ))
+              : policyInfo.text}
+          </TextLink>
+        </div>
+        {receiver && (
+          <span className={styles.destination}>
+            <Icon name="at" size="sm" />
+            <Text variant="bodySmall" color="secondary" weight="regular">
+              Routes to
             </Text>
-          </div>
-          {routingStops && (
-            <Tooltip content="This policy is configured to stop after this match">
-              <span>
-                <Text variant="bodySmall" color="secondary">
-                  ⏹️
-                </Text>
-              </span>
-            </Tooltip>
-          )}
-        </div>
-        <div className={styles.routeDetails}>
-          {route.receiver && isEffective && (
-            <div className={styles.contactPointDisplay}>
-              <Icon name="arrow-right" size="sm" />
-              <Text variant="bodySmall">
-                <strong>Sent to</strong>
-              </Text>
-              <TextLink
-                href={`/alerting/notifications/receivers/${encodeReceiverForUrl(route.receiver)}/edit`}
-                external={true}
-                variant="bodySmall"
-                className={styles.contactPointLink}
-                onClick={() => {
-                  const path = `/alerting/notifications/receivers/${encodeReceiverForUrl(route.receiver!)}/edit`;
-                  const url = new URL(path, window.location.origin);
-                  trackLinkClick({
-                    href: url.href,
-                    hostname: url.hostname,
-                    path: url.pathname,
-                    search: url.search,
-                    source: 'alert-routing-preview-route-receiver',
-                  });
-                }}
-              >
-                {route.receiver}
-              </TextLink>
-            </div>
-          )}
-        </div>
+            <TextLink
+              href={receiverPath}
+              external
+              inline={false}
+              variant="bodySmall"
+              weight="medium"
+              onClick={() => {
+                const url = new URL(receiverPath, window.location.origin);
+                trackLinkClick({
+                  href: url.href,
+                  hostname: url.hostname,
+                  path: url.pathname,
+                  search: url.search,
+                  source: 'alert-routing-preview-route-receiver',
+                });
+              }}
+            >
+              {receiver}
+            </TextLink>
+          </span>
+        )}
       </div>
-    </div>
+      {children.size > 0 && (
+        <ul className={styles.branches}>
+          {Array.from(children, ([key, child]) => (
+            <RouteNode key={key} node={child} />
+          ))}
+        </ul>
+      )}
+    </li>
   );
 };
 
 const getStyles = (theme: GrafanaTheme2) => ({
   routeTree: css({
-    marginTop: theme.spacing(1),
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+    minWidth: 0,
   }),
-
-  routeNode: css({
-    border: `1px solid ${theme.colors.border.weak}`,
-    borderRadius: theme.shape.radius.default,
+  branches: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    listStyle: 'none',
+    position: 'relative',
+    margin: theme.spacing(1, 0, 0, 3),
+    padding: 0,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: 0,
+      bottom: theme.spacing(0.5),
+      left: theme.spacing(-2),
+      borderLeft: `2px solid ${theme.colors.border.medium}`,
+      pointerEvents: 'none',
+    },
+  }),
+  treeItem: css({
+    position: 'relative',
+    minWidth: 0,
+  }),
+  routeRow: css({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: theme.spacing(0.75),
+    minWidth: 0,
+    overflowWrap: 'anywhere',
+  }),
+  branchHeading: css({
+    padding: theme.spacing(0.5, 0),
+  }),
+  destinationNode: css({
+    padding: theme.spacing(1, 1.5),
+    backgroundColor: theme.flags.visualDesignRefresh
+      ? theme.colors.background.primary
+      : theme.colors.background.secondary,
+    border: `1px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.lg,
+  }),
+  policyLink: css({
+    minWidth: 0,
+    maxWidth: '100%',
+  }),
+  matcher: css({
+    display: 'inline-block',
+    maxWidth: '100%',
+    verticalAlign: 'middle',
+    color: theme.colors.text.primary,
+    backgroundColor: theme.colors.background.secondary,
+    padding: theme.spacing(0.33, 0.66),
+    marginRight: theme.spacing(0.5),
+    fontSize: theme.typography.bodySmall.fontSize,
+    border: `1px solid ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.pill,
+    whiteSpace: 'pre',
+    textOverflow: 'ellipsis',
+    overflow: 'hidden',
+  }),
+  branchMatcher: css({
     backgroundColor: theme.colors.background.primary,
   }),
-
-  routeHeader: css({
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: theme.spacing(1.5),
-  }),
-
-  routeInfo: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    flex: 1,
-  }),
-
-  badge: css({
-    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
-    borderRadius: theme.shape.radius.default,
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontFamily: theme.typography.fontFamilyMonospace,
-  }),
-
-  matchers: css({
-    backgroundColor: theme.colors.primary.main,
-    color: theme.colors.primary.contrastText,
-  }),
-
-  matchesAll: css({
-    backgroundColor: theme.colors.background.canvas,
-    color: theme.colors.text.secondary,
-    border: `1px solid ${theme.colors.border.medium}`,
-    fontStyle: 'italic',
-  }),
-
-  routeDetails: css({
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-  }),
-
-  contactPointDisplay: css({
+  destination: css({
     display: 'inline-flex',
     alignItems: 'center',
+    flexWrap: 'wrap',
     gap: theme.spacing(0.5),
-    padding: `${theme.spacing(0.25)} ${theme.spacing(0.75)}`,
-    border: `1px solid ${theme.colors.border.strong}`,
-    borderRadius: theme.shape.radius.default,
-    backgroundColor: theme.colors.emphasize(theme.colors.background.primary, 0.03),
-  }),
-
-  contactPointLink: css({
-    fontSize: theme.typography.bodySmall.fontSize,
-    fontWeight: theme.typography.fontWeightBold,
+    minWidth: 0,
+    color: theme.colors.text.secondary,
   }),
 });
