@@ -213,6 +213,29 @@ export function getCategoryRowCopy(
   };
 }
 
+// Stands in for a finding's or category's own summary while filters narrow it.
+export function getFilteredSummary(matchedCount: number, totalCount: number) {
+  return totalCount === 1
+    ? t('recommendations.filters.summarySingle', '{{matchedCount}} of 1 check matches your filters', { matchedCount })
+    : t('recommendations.filters.summary', '{{matchedCount}} of {{totalCount}} checks match your filters', {
+        matchedCount,
+        totalCount,
+      });
+}
+
+// The usual action would act on checks the filters hide, so a filtered row only opens the category.
+export function getFilteredCategoryRowCopy({ findings, checkCount }: CategorySummary, matchedCount: number) {
+  return {
+    summary: getFilteredSummary(matchedCount, checkCount),
+    action:
+      findings.length === 1
+        ? t('recommendations.categories.review', 'Review')
+        : t('recommendations.categories.reviewMany', 'Review {{findingCount}} findings', {
+            findingCount: findings.length,
+          }),
+  };
+}
+
 export function getLegendLabel(severity: RecommendationSeverity, checkCount: number) {
   switch (severity) {
     case 'error':

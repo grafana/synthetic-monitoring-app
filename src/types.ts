@@ -435,6 +435,8 @@ export interface GrafanaFolder {
   title: string;
   url: string;
   parentUid?: string;
+  /** The folder's ancestors from the top level down. Only the detail endpoint returns them. */
+  parents?: GrafanaFolder[];
   canEdit?: boolean;
   canDelete?: boolean;
   canAdmin?: boolean;

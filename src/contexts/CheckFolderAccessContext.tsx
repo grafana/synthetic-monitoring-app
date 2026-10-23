@@ -65,6 +65,11 @@ export function useCheckFolderStatus(check: Pick<Check, 'folderUid'>): CheckFold
   return useCheckFolderAccessContext().getFolderStatus(check);
 }
 
+/** For resolving many checks' folders, where a hook per check is not possible. */
+export function useGetCheckFolderStatus() {
+  return useCheckFolderAccessContext().getFolderStatus;
+}
+
 /** For filtering a list of checks by permission, where a hook per check is not possible. */
 export function useGetCheckPermissions() {
   return useCheckFolderAccessContext().getPermissions;

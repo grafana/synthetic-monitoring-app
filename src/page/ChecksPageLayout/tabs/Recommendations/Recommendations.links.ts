@@ -6,6 +6,8 @@ import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { FormSectionName } from 'components/Checkster/types';
 import { UNATTRIBUTED_SENTINEL } from 'page/CheckList/CheckList.constants';
 
+import { FilterSelection } from './Recommendations.filters';
+
 /** How the user got onto the tab. */
 export const SOURCE_PARAM = 'source';
 
@@ -69,7 +71,25 @@ export function getPausedChecksUrl() {
 
 // An exact target filter, not a search: the generic search splits on `=` and substring-matches
 // across target, job and labels, so it would pull in checks outside the group being cleaned up.
-// Duplicates narrow to one type; overlapping targets span several by definition.
-export function getChecksByTargetUrl(target: string, type?: CheckType) {
-  return getCheckListUrl(type ? { target, type } : { target });
+// The tab's label and folder filters carry over, so the list shows the checks the group did.
+export function getChecksByTargetUrl(
+  target: string,
+  type: CheckType | undefined,
+  { labels, folders }: Pick<FilterSelection, 'labels' | 'folders'>
+) {
+  const filters: Record<string, string> = { target };
+
+  if (type) {
+    filters.type = type;
+  }
+
+  if (labels.length > 0) {
+    filters.labels = labels.join(',');
+  }
+
+  if (folders.length > 0) {
+    filters.folders = folders.join(',');
+  }
+
+  return getCheckListUrl(filters);
 }

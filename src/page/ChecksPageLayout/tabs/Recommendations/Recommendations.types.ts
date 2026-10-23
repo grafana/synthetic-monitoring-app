@@ -49,7 +49,7 @@ export interface RecommendationGroup {
 
 export interface Recommendation {
   id: RecommendationId;
-  /** Flattened across groups. Never empty. */
+  /** Flattened across groups. Never empty, except once narrowed by the rail's filters. */
   checks: Check[];
   groups?: RecommendationGroup[];
 }

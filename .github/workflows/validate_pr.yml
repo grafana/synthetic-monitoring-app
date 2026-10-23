@@ -23,7 +23,7 @@ jobs:
       # Other CI inputs, see https://github.com/grafana/plugin-ci-workflows/blob/main/.github/workflows/ci.yml
 
       # Node.js version to use
-      node-version: 22
+      node-version: 24
 
       # Disabled - no Playwright tests configured
       run-playwright: false

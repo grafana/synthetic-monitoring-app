@@ -31,12 +31,20 @@ import { getChecksWithoutAlertsUrl } from '../Recommendations.links';
 import { getStyles } from '../Recommendations.styles';
 import { useFindingPanel } from './Finding.hooks';
 
-export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, isFocused, onDismiss }: FindingProps) {
+export function AlertingGapsFinding({
+  recommendation,
+  totalCheckCount,
+  isSolo,
+  isFocused,
+  filter,
+  onDismiss,
+}: FindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel({
     recommendation,
     totalCheckCount,
     isSolo,
+    filter,
   });
   const queryClient = useQueryClient();
   const { mutateAsync: updateAlerts } = useUpdateAlertsForCheck();
@@ -53,7 +61,7 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   const totalAlertCount = plans.reduce((sum, plan) => sum + plan.alerts.length, 0);
 
   // Returns the checks it succeeded on. Failures toast via the mutation's meta.
-  const applyTo = async (targets: AlertPlan[], scope: 'finding' | 'selection'): Promise<Check[]> => {
+  const applyTo = async (targets: AlertPlan[], scope: 'finding' | 'filtered' | 'selection'): Promise<Check[]> => {
     setIsApplying(true);
 
     const results = await runInBatches(
@@ -94,7 +102,7 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
   };
 
   const handleApplyAll = async () => {
-    await applyTo(plans, 'finding');
+    await applyTo(plans, filter.isActive ? 'filtered' : 'finding');
     setIsConfirmingAll(false);
   };
 
@@ -117,11 +125,13 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
         ? t('recommendations.alertingGaps.setUpSelected', 'Set up alerts for {{checkCount}} checks', {
             checkCount: selectedCount,
           })
-        : plans.length > 1
-          ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}}', {
-              checkCount: plans.length,
-            })
-          : undefined;
+        : filter.isActive
+          ? getSetUpMatchingLabel(plans.length)
+          : plans.length > 1
+            ? t('recommendations.alertingGaps.setUpAll', 'Set up alerts for all {{checkCount}}', {
+                checkCount: plans.length,
+              })
+            : undefined;
 
   return (
     <RecommendationSection
@@ -182,7 +192,11 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
       />
       <ConfirmModal
         isOpen={isConfirmingAll}
-        title={t('recommendations.alertingGaps.confirm.title', 'Set up alerts for all checks')}
+        title={
+          filter.isActive
+            ? t('recommendations.alertingGaps.confirm.titleMatching', 'Set up alerts for matching checks')
+            : t('recommendations.alertingGaps.confirm.title', 'Set up alerts for all checks')
+        }
         body={t(
           'recommendations.alertingGaps.confirm.body',
           'This adds {{alertCount}} alerts across {{checkCount}} checks, using the default thresholds for each check type. You can tune or remove any of them from the check editor afterwards.',
@@ -199,6 +213,19 @@ export function AlertingGapsFinding({ recommendation, totalCheckCount, isSolo, i
       />
     </RecommendationSection>
   );
+}
+
+// Says "matching" so the button cannot pass for acting on the whole finding. Nothing to set up, no button.
+function getSetUpMatchingLabel(planCount: number) {
+  if (planCount === 0) {
+    return undefined;
+  }
+
+  return planCount === 1
+    ? t('recommendations.alertingGaps.setUpMatchingSingle', 'Set up alerts for 1 matching check')
+    : t('recommendations.alertingGaps.setUpMatching', 'Set up alerts for {{checkCount}} matching checks', {
+        checkCount: planCount,
+      });
 }
 
 interface AlertSetupRowProps {
