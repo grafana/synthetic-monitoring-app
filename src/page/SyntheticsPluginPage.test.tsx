@@ -2,7 +2,7 @@ import React from 'react';
 import { checkTerms, TERMS_AND_CONDITIONS_REFRESH_EVENT, useAssistant } from '@grafana/assistant';
 import { act, render as rtlRender, screen, waitFor } from '@testing-library/react';
 import { render } from 'test/render';
-import { mockFeatureToggles, runTestWithoutPermissions } from 'test/utils';
+import { mockFeatureFlags, runTestWithoutPermissions } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -174,7 +174,7 @@ describe('SyntheticsPluginPage', () => {
   });
 
   it('shows the Recommendations tab when its flag is enabled, selected on its own page', async () => {
-    mockFeatureToggles({ [FeatureName.Recommendations]: true });
+    mockFeatureFlags({ [FeatureName.Recommendations]: true });
     renderPage(SyntheticsTab.Recommendations);
 
     expect(await screen.findByRole('tab', { name: RECOMMENDATIONS_TAB, selected: true })).toHaveAttribute(
@@ -191,7 +191,7 @@ describe('SyntheticsPluginPage', () => {
   });
 
   it('links the Check Suggestions tab to its page when the flag is enabled', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: true });
     renderPage();
 
     expect(await screen.findByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).toHaveAttribute(
@@ -201,7 +201,7 @@ describe('SyntheticsPluginPage', () => {
   });
 
   it('hides the Check Suggestions tab when Grafana Assistant is unavailable', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: true });
     jest.mocked(useAssistant).mockReturnValue({ ...AVAILABLE_ASSISTANT, isAvailable: false });
     renderPage();
 
@@ -211,7 +211,7 @@ describe('SyntheticsPluginPage', () => {
   });
 
   it('shows the Check Suggestions tab once the Assistant terms are accepted', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: true });
     jest.mocked(checkTerms).mockResolvedValue(false);
     renderPage();
 
@@ -228,7 +228,7 @@ describe('SyntheticsPluginPage', () => {
   });
 
   it('keeps the Check Suggestions tab across pages without re-checking the Assistant terms', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: true });
     const { rerender } = renderPage();
 
     expect(await screen.findByRole('tab', { name: CHECK_SUGGESTIONS_TAB })).toBeInTheDocument();
@@ -246,7 +246,7 @@ describe('SyntheticsPluginPage', () => {
   });
 
   it('hides the Checks, Recommendations and Check Suggestions tabs from users who cannot read checks', async () => {
-    mockFeatureToggles({ [FeatureName.Recommendations]: true, [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.Recommendations]: true, [FeatureName.CheckSuggestions]: true });
     runTestWithoutPermissions('grafana-synthetic-monitoring-app.checks:read');
     renderPage();
 

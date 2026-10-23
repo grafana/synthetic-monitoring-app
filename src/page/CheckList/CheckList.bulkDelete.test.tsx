@@ -7,7 +7,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { Check, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -127,7 +127,7 @@ describe('CheckList - scope of the select-all checkbox', () => {
   });
 
   it('still selects every check in folder view, which is not paginated', async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
 
     const { user } = await renderCheckList(CHECKS_ACROSS_TWO_PAGES);
 

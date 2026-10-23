@@ -1,10 +1,9 @@
 import React, { PropsWithChildren } from 'react';
 import { renderHook } from '@testing-library/react';
 import { createWrapper } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
-import { FeatureFlagProvider } from 'components/FeatureFlagProvider';
 
 import { useChecksterContext } from './ChecksterContext';
 import { FeatureTabsContextProvider, useFeatureTabsContext } from './FeatureTabsContext';
@@ -16,11 +15,7 @@ jest.mock('./ChecksterContext', () => ({
 const mockUseChecksterContext = useChecksterContext as jest.Mock;
 
 function ProvidersWrapper({ children }: PropsWithChildren) {
-  return (
-    <FeatureFlagProvider>
-      <FeatureTabsContextProvider>{children}</FeatureTabsContextProvider>
-    </FeatureFlagProvider>
-  );
+  return <FeatureTabsContextProvider>{children}</FeatureTabsContextProvider>;
 }
 
 function setup(checkType: CheckType) {
@@ -37,7 +32,7 @@ function hasSecretsTab(result: ReturnType<typeof setup>['result']) {
 describe('FeatureTabsContext secrets tab', () => {
   describe('when the SecretsManagement feature flag is enabled', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
+      mockFeatureFlags({ [FeatureName.SecretsManagement]: true });
     });
 
     it.each([CheckType.Http, CheckType.Browser, CheckType.Scripted])(

@@ -1,7 +1,7 @@
 import { screen } from '@testing-library/react';
 import { CHECKSTER_TEST_ID } from 'test/dataTestIds';
 import { DEFAULT_FOLDER } from 'test/fixtures/folders';
-import { mockFeatureToggles, runTestWithReadOnlyDefaultFolder, runTestWithSlowFolderLookups } from 'test/utils';
+import { mockFeatureFlags, runTestWithReadOnlyDefaultFolder, runTestWithSlowFolderLookups } from 'test/utils';
 
 import { CheckType, FeatureName } from 'types';
 
@@ -10,7 +10,7 @@ import { renderNewForm } from '../../../../__testHelpers__/checkForm';
 describe('Api endpoint checks - common fields UI', () => {
   describe('Folder field', () => {
     it('displays the folder selector when feature flag is enabled', async () => {
-      mockFeatureToggles({ [FeatureName.Folders]: true });
+      mockFeatureFlags({ [FeatureName.Folders]: true });
       await renderNewForm(CheckType.Http);
 
       expect(await screen.findByText('Folder')).toBeInTheDocument();
@@ -24,7 +24,7 @@ describe('Api endpoint checks - common fields UI', () => {
     });
 
     it('preselects the default folder when the user can edit it, without dirtying the form', async () => {
-      mockFeatureToggles({ [FeatureName.Folders]: true });
+      mockFeatureFlags({ [FeatureName.Folders]: true });
       await renderNewForm(CheckType.Http);
 
       const picker = await screen.findByLabelText('Folder picker');
@@ -35,7 +35,7 @@ describe('Api endpoint checks - common fields UI', () => {
     });
 
     it('seeds the folder before the form mounts even when folder lookups are slow', async () => {
-      mockFeatureToggles({ [FeatureName.Folders]: true });
+      mockFeatureFlags({ [FeatureName.Folders]: true });
       runTestWithSlowFolderLookups({ delayMs: 100 });
       await renderNewForm(CheckType.Http);
 
@@ -46,7 +46,7 @@ describe('Api endpoint checks - common fields UI', () => {
     });
 
     it('does not preselect a default folder the user cannot edit', async () => {
-      mockFeatureToggles({ [FeatureName.Folders]: true });
+      mockFeatureFlags({ [FeatureName.Folders]: true });
       runTestWithReadOnlyDefaultFolder();
       await renderNewForm(CheckType.Http);
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { screen } from '@testing-library/react';
 import { render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { FeatureName } from 'types';
 
@@ -15,7 +15,7 @@ function Wrapper({ children }: { children: React.ReactNode }) {
 
 describe('FormFolderField', () => {
   it('renders the folder field when feature flag is enabled', async () => {
-    mockFeatureToggles({ [FeatureName.Folders]: true });
+    mockFeatureFlags({ [FeatureName.Folders]: true });
 
     render(
       <Wrapper>

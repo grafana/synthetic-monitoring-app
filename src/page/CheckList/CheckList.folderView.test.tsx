@@ -22,7 +22,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -198,7 +198,7 @@ describe('buildChecksByFolder', () => {
 
 describe('CheckList - Folder View Integration', () => {
   describe('with folders feature enabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     test('folder view option appears in the view switcher', async () => {
       await renderCheckList();
@@ -309,7 +309,7 @@ describe('CheckList - Folder View Integration', () => {
 
 describe('CheckList - Folder Badge', () => {
   describe('with folders feature enabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     test('does not display folder badge on check cards', async () => {
       await renderCheckList([CHECK_IN_PRODUCTION], 'view=card');

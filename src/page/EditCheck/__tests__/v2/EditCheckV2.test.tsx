@@ -7,7 +7,7 @@ import { FOLDER_FORBIDDEN_UID, FOLDER_READONLY } from 'test/fixtures/folders';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
+import { mockFeatureFlags, runTestAsRBACReader, runTestAsViewer } from 'test/utils';
 
 import { Check, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -130,7 +130,7 @@ describe(`<EditCheckV2 />`, () => {
     };
 
     describe('with folders feature enabled', () => {
-      beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+      beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
       it('redirects when the check is in a forbidden folder', async () => {
         await renderEditPage(CHECK_IN_FORBIDDEN_FOLDER);

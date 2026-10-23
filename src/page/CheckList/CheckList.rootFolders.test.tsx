@@ -11,7 +11,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute, getServerRequests } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
+import { mockFeatureFlags, testUsesCombobox } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -91,7 +91,7 @@ describe('buildChecksByFolder - outside folders', () => {
 });
 
 describe('CheckList - Outside folders', () => {
-  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+  beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
   test('shows a root-level folder containing checks as a top-level group without a badge', async () => {
     await renderCheckList([CHECK_IN_PRODUCTION, CHECK_IN_ROOT_FOLDER]);
@@ -149,7 +149,7 @@ describe('CheckList - Outside folders', () => {
 });
 
 describe('CheckList - Move folder', () => {
-  beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+  beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
   // The move action lives in the folder's always-visible Actions menu.
   const openMoveFolderModal = async (user: ReturnType<typeof render>['user'], folderName: string | RegExp) => {

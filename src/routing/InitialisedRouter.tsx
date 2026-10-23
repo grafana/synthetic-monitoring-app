@@ -36,7 +36,6 @@ import { SyntheticsTab } from 'page/SyntheticsPageNav';
 import { SyntheticsPluginPage } from 'page/SyntheticsPluginPage';
 import { UnauthorizedPage } from 'page/UnauthorizedPage';
 
-// Alpha (requires `synthetic-monitoring-check-editor=true`)
 import { EditCheckV2 } from '../page/EditCheck/EditCheckV2';
 import { NewCheckV2 } from '../page/NewCheck/NewCheckV2';
 

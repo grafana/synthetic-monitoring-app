@@ -3,7 +3,7 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { useAppPluginInstalled } from '@grafana/runtime';
 import { renderHook, screen, waitFor } from '@testing-library/react';
 import { createWrapper, render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { CheckFormValues, FeatureName, Label } from 'types';
 
@@ -125,7 +125,7 @@ describe('useKGReservedLabels', () => {
   }
 
   beforeEach(() => {
-    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+    mockFeatureFlags({ [FeatureName.KnowledgeGraph]: true });
   });
 
   it(`reserves service_name and namespace when the Knowledge Graph app is installed`, async () => {
@@ -148,7 +148,7 @@ describe('useKGReservedLabels', () => {
   });
 
   it(`reserves nothing when the feature flag is disabled, even with the app installed`, async () => {
-    mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+    mockFeatureFlags({ [FeatureName.KnowledgeGraph]: false });
     setKgInstalled(true);
     const { result } = renderReservedLabels();
 

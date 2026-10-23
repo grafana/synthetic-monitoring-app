@@ -14,7 +14,7 @@ import { PRIVATE_PROBE, PUBLIC_PROBE } from 'test/fixtures/probes';
 import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, runTestAsRBACReader } from 'test/utils';
+import { mockFeatureFlags, runTestAsRBACReader } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
@@ -77,7 +77,7 @@ const renderCheckListForReader = async (checks: Check[]) => {
 
 describe('CheckList - Folder Permissions', () => {
   describe('with folders feature enabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     describe('visibility', () => {
       it('shows checks in accessible folders', async () => {
@@ -164,7 +164,7 @@ describe('CheckList - Folder Permissions', () => {
   });
 
   describe('graceful degradation — folders enabled but user lacks folders:read', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     const renderWithFolders403 = async (checks: Check[] = ALL_CHECKS) => {
       server.use(
@@ -254,7 +254,7 @@ describe('CheckList - Folder Permissions', () => {
   });
 
   describe('graceful degradation — folders enabled but server returns 500', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     const renderWithFolders500 = async (checks: Check[] = ALL_CHECKS) => {
       server.use(
@@ -308,7 +308,7 @@ describe('CheckList - Folder Permissions', () => {
   });
 
   describe('graceful degradation — folder creation denied (403 on create)', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     // jest.replaceProperty is reset in afterEach in jest-setup.js
     const grantFoldersCreate = () => {
@@ -374,7 +374,7 @@ describe('CheckList - Folder Permissions', () => {
   });
 
   describe('child-folder fetch failure', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Folders]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Folders]: true }));
 
     it('does not mislabel in-subtree folders as external when the subtree fetch errors', async () => {
       server.use(

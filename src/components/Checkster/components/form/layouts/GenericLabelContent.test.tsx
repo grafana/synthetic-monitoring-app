@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAppPluginInstalled } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { LabelMode } from 'datasource/responses.types';
@@ -120,7 +120,7 @@ describe('GenericLabelContent', () => {
 
   describe('Knowledge Graph reserved labels (service_name / namespace)', () => {
     beforeEach(() => {
-      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+      mockFeatureFlags({ [FeatureName.KnowledgeGraph]: true });
     });
 
     it('hides service_name / namespace rows from the custom labels when the KG app is installed', async () => {
@@ -179,7 +179,7 @@ describe('GenericLabelContent', () => {
     });
 
     it('renders service_name / namespace as ordinary custom labels when the feature flag is disabled, even with the app installed', async () => {
-      mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+      mockFeatureFlags({ [FeatureName.KnowledgeGraph]: false });
       (useAppPluginInstalled as jest.Mock).mockReturnValue({ loading: false, error: undefined, value: true });
 
       renderGenericLabelContent(

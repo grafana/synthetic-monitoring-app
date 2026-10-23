@@ -66,7 +66,7 @@ Example provisioning files can be found in [`dev/provisioning/datasources`](./de
 
 > **Note**: The Prometheus and Loki instances must be part of the same Grafana Cloud stack**. You can also add a provisioning block per [org](https://grafana.com/docs/grafana/latest/manage-users/server-admin/server-admin-manage-orgs/) to provision the plugin for multiple orgs. You can provide different values for each org block and connect to a different cloud stack per org.
 
-Grafana configuration can be adjusted using the `custom.ini` file located in `/dev`. It defaults to development app mode, and has some feature toggles. Grafana will need to be restarted to pick up changes.
+Grafana configuration can be adjusted using the `custom.ini` file located in `/dev`. It defaults to development app mode. Feature flags are toggled there too, under `[feature_toggles]`; see [docs/development/feature-flags.md](docs/development/feature-flags.md) for the keys and the Grafana version this needs. Grafana will need to be restarted to pick up changes.
 
 ### Run
 

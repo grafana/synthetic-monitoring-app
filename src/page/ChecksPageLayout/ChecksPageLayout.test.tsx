@@ -2,7 +2,7 @@ import React from 'react';
 import { screen, waitForElementToBeRemoved, within } from '@testing-library/react';
 import { UI_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
-import { mockFeatureToggles, runTestWithoutCheckReadAccess } from 'test/utils';
+import { mockFeatureFlags, runTestWithoutCheckReadAccess } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { InitialisedRouter } from 'routing/InitialisedRouter';
@@ -21,7 +21,7 @@ function renderAt(route: AppRoutes) {
 
 describe('Checks page tabs', () => {
   describe('with recommendations enabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: true }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Recommendations]: true }));
 
     it('offers a Recommendations tab flagged as new in the Synthetics tabs', async () => {
       renderAt(AppRoutes.Checks);
@@ -59,7 +59,7 @@ describe('Checks page tabs', () => {
   });
 
   describe('with recommendations disabled', () => {
-    beforeEach(() => mockFeatureToggles({ [FeatureName.Recommendations]: false }));
+    beforeEach(() => mockFeatureFlags({ [FeatureName.Recommendations]: false }));
 
     it('leaves Recommendations out of the Synthetics tabs', async () => {
       renderAt(AppRoutes.Checks);

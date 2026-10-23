@@ -3,7 +3,7 @@ import { useAppPluginInstalled, usePluginComponent } from '@grafana/runtime';
 import { screen } from '@testing-library/react';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { render } from 'test/render';
-import { mockFeatureToggles } from 'test/utils';
+import { mockFeatureFlags } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 
@@ -49,7 +49,7 @@ function setExposedMiniGraph(Stub: React.ComponentType<ExposedMiniGraphProps>) {
 }
 
 beforeEach(() => {
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  mockFeatureFlags({ [FeatureName.KnowledgeGraph]: true });
   setKgInstalled(true);
   setExposedMiniGraph(() => <div>exposed mini graph</div>);
 });
@@ -81,7 +81,7 @@ it('renders nothing when the Knowledge Graph app is not installed', async () => 
 });
 
 it('renders nothing when the feature flag is disabled, even with the app installed', async () => {
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+  mockFeatureFlags({ [FeatureName.KnowledgeGraph]: false });
   render(<ConnectedServices check={LINKED_CHECK} />);
 
   expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();

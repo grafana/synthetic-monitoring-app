@@ -5,7 +5,7 @@ import { screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import { render } from 'test/render';
 import { server } from 'test/server';
-import { mockFeatureToggles, testUsesCombobox } from 'test/utils';
+import { mockFeatureFlags, testUsesCombobox } from 'test/utils';
 
 import { CheckFormValues, FeatureName, Label } from 'types';
 
@@ -75,7 +75,7 @@ function renderServiceLink({ labels = [], calLabels = [] }: RenderOptions = {}) 
 
 beforeEach(() => {
   testUsesCombobox();
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  mockFeatureFlags({ [FeatureName.KnowledgeGraph]: true });
 });
 
 it(`renders nothing when the Knowledge Graph app is not installed`, async () => {
@@ -86,7 +86,7 @@ it(`renders nothing when the Knowledge Graph app is not installed`, async () => 
 });
 
 it(`renders nothing when the feature flag is disabled, even with the app installed`, async () => {
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
+  mockFeatureFlags({ [FeatureName.KnowledgeGraph]: false });
   setKgInstalled(true);
   renderServiceLink();
 

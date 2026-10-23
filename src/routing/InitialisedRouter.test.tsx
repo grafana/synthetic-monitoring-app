@@ -4,7 +4,7 @@ import { CONFIG_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
 import { BASIC_HTTP_CHECK } from 'test/fixtures/checks';
 import { SM_DATASOURCE } from 'test/fixtures/datasources';
 import { type CustomRenderOptions, render } from 'test/render';
-import { mockFeatureToggles, runTestWithoutPermissions } from 'test/utils';
+import { mockFeatureFlags, runTestWithoutPermissions } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { PLUGIN_URL_PATH } from 'routing/constants';
@@ -132,7 +132,7 @@ describe('Routes to pages correctly', () => {
   });
 
   test('Check suggestions route renders when the flag is enabled', async () => {
-    mockFeatureToggles({ [FeatureName.CheckSuggestions]: true });
+    mockFeatureFlags({ [FeatureName.CheckSuggestions]: true });
     renderInitialisedRouting({ path: getRoute(AppRoutes.ReliabilityInbox) });
     const pageText = await screen.findByText('Check suggestions page', { selector: 'h1' });
     expect(pageText).toBeInTheDocument();
