@@ -82,9 +82,9 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
 
   return {
     // Grafana appends the active child as a breadcrumb except for the first tab.
-    // Keep the parent at Synthetics; naming it after the active tab duplicates that crumb.
+    // Match the manifest's app-root URL so Grafana deduplicates its Synthetics section crumb.
     text: isOverview ? 'Overview' : 'Synthetics',
-    url: isOverview ? OVERVIEW_BREADCRUMB_URL : getRoute(AppRoutes.Home),
+    url: isOverview ? OVERVIEW_BREADCRUMB_URL : PLUGIN_URL_PATH.replace(/\/$/, ''),
     children: tabs,
   };
 }

@@ -8,6 +8,7 @@ import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
+import pluginManifest from '../plugin.json';
 import {
   getSyntheticsPageNav,
   OVERVIEW_BREADCRUMB_URL,
@@ -101,7 +102,8 @@ describe('getSyntheticsPageNav', () => {
     const nav = getSyntheticsPageNav(tab, ALL_TABS_VISIBLE);
 
     expect(nav.text).toBe('Synthetics');
-    expect(nav.url).toBe(getRoute(AppRoutes.Home));
+    // Grafana deduplicates by URL, not label: /home would repeat Synthetics.
+    expect(nav.url).toBe(pluginManifest.includes.find((entry) => 'defaultNav' in entry && entry.defaultNav)?.path);
     expect(nav.hideFromBreadcrumbs).toBeFalsy();
     const activeIndex = nav.children?.findIndex((child) => child.active) ?? -1;
     // Grafana adds the active child only when its index is greater than zero.
