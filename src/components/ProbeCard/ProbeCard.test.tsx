@@ -182,7 +182,7 @@ it('handles private probe click', async () => {
 });
 
 it.each<[ExtendedProbe, string]>([
-  [probeToExtendedProbe(PUBLIC_PROBE, [11]), 'View 1 check'],
+  [{ ...probeToExtendedProbe(PUBLIC_PROBE, [11]), name: 'NewYork', displayName: 'New York' }, 'View 1 check'],
   [probeToExtendedProbe(PRIVATE_PROBE, [11, 22, 33, 44, 55, 66]), 'View 6 checks'],
 ])(
   'Displays the correct information for a probe that is in use',
@@ -197,7 +197,7 @@ it.each<[ExtendedProbe, string]>([
     expect(usageLink).toHaveTextContent(expectedText);
     expect(usageLink).toHaveAttribute(
       'href',
-      `${generateRoutePath(AppRoutes.Checks)}?probes=${encodeURIComponent(probe.name)}`
+      `${generateRoutePath(AppRoutes.Checks)}?${new URLSearchParams({ probes: probe.displayName })}`
     );
   }
 );

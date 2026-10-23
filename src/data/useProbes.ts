@@ -54,7 +54,7 @@ export function useProbesWithMetadata() {
       return [];
     }
 
-    return probes
+    return [...probes]
       .sort((a, b) => a.name.localeCompare(b.name))
       .map((probe) => {
         const metadata =
