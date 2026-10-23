@@ -51,11 +51,18 @@ describe('metric placeholders', () => {
     expect(screen.queryByTestId('Spinner')).not.toBeInTheDocument();
   });
 
-  it.each([null, NaN, Infinity, -Infinity])('shows a neutral placeholder for %s', async (value) => {
+  it.each([null, NaN])('shows a neutral placeholder for %s', async (value) => {
     render(<Gauge type="latency" unit="ms" value={value} height={75} width={148} />);
 
     expect(await screen.findByText('N/A')).toHaveStyle({ color: config.theme2.colors.text.secondary });
     expect(screen.queryByTestId('Spinner')).not.toBeInTheDocument();
+  });
+
+  it.each([Infinity, -Infinity])('keeps %s visible instead of replacing it with N/A', async (value) => {
+    render(<Gauge type="latency" unit="ms" value={value} height={75} width={148} />);
+
+    expect(await screen.findByText(`${value}ms`)).toBeInTheDocument();
+    expect(screen.queryByText('N/A')).not.toBeInTheDocument();
   });
 
   it.each([

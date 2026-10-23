@@ -14,9 +14,5 @@ export function getMetricValueMappings(state?: LoadingState): ValueMapping[] {
       type: MappingType.SpecialValue,
       options: { match: SpecialValueMatch.NullAndNaN, result },
     },
-    {
-      type: MappingType.ValueToText,
-      options: { Infinity: result, '-Infinity': result },
-    },
   ];
 }

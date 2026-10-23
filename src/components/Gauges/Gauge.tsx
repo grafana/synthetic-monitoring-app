@@ -78,7 +78,7 @@ const COMPARISON_MAP = {
 };
 
 function parseValue(value: number | null, unit: `%` | `ms`) {
-  if (value === null || !Number.isFinite(value)) {
+  if (value === null || Number.isNaN(value)) {
     return null;
   }
 

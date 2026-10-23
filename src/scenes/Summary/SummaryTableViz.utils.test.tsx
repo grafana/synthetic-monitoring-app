@@ -46,11 +46,17 @@ describe('summary metric placeholders', () => {
   );
 
   it.each([LoadingState.Done, LoadingState.Error])('does not imply loading after %s', (state) => {
-    for (const value of [null, undefined, NaN, Infinity, -Infinity]) {
+    for (const value of [null, undefined, NaN]) {
       expect(display(state)(value)).toMatchObject({
         text: 'N/A',
         color: theme.visualization.getColorByName('gray'),
       });
+    }
+  });
+
+  it.each([Infinity, -Infinity])('keeps %s visible, including during refresh', (value) => {
+    for (const state of [LoadingState.Loading, LoadingState.Done]) {
+      expect(display(state)(value)).toMatchObject({ numeric: value, text: expect.stringMatching(/∞|Infinity/) });
     }
   });
 
