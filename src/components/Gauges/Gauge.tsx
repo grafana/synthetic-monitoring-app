@@ -24,12 +24,11 @@ export const Gauge = ({ fetching, loading, height, width, onClick, type, value, 
   const { data: threshold } = useThreshold(type);
   const parsedValue = parseValue(value, unit);
   const comparer = COMPARISON_MAP[type];
-  const color =
-    loading || parsedValue === null
-      ? config.theme2.colors.text.secondary
-      : threshold
-        ? comparer(threshold, parsedValue)
-        : undefined;
+  const isPlaceholder = loading || parsedValue === null;
+  let color: string | undefined;
+  if (!loading && parsedValue !== null && threshold) {
+    color = comparer(threshold, parsedValue);
+  }
   const infoText = description || INFO_MAP[type];
   const title = TITLE_MAP[type];
   const text = formatValue(parsedValue, unit, loading);
@@ -47,7 +46,7 @@ export const Gauge = ({ fetching, loading, height, width, onClick, type, value, 
     <Container>
       <BigValue
         theme={config.theme2}
-        colorMode={BigValueColorMode.Value}
+        colorMode={isPlaceholder ? BigValueColorMode.None : BigValueColorMode.Value}
         height={height}
         width={width}
         graphMode={BigValueGraphMode.Area}
