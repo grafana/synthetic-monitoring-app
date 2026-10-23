@@ -1,7 +1,7 @@
 import React from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 import { SecretReferenceModal, SecretScannerPanel } from '@grafana/plugin-ui/secret-scanner';
-import { Box, FieldValidationMessage, useTheme2 } from '@grafana/ui';
+import { Alert, Box, FieldValidationMessage, useTheme2 } from '@grafana/ui';
 import { css } from '@emotion/css';
 
 import { CheckFormFieldPath } from '../../../types';
@@ -35,7 +35,7 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
   const { field: fieldProps } = useController({ control, name: field });
   const script = typeof fieldProps.value === 'string' ? fieldProps.value : '';
 
-  const { scanner, secretsEnabled, existingSecretNames, activeFinding, secretInitialValues, onEditorMount } =
+  const { scanner, secretsEnabled, secretsError, existingSecretNames, activeFinding, secretInitialValues, onEditorMount } =
     useScriptSecretScanner({
       field,
       script,
@@ -47,9 +47,14 @@ export function GenericScriptField({ field }: GenericScriptFieldProps) {
 
   return (
     <Column grow>
+      {secretsEnabled && secretsError && (
+        <Alert severity="warning" title="Unable to load secrets">
+          You can still edit this script, but moving detected values to secrets is unavailable. Reload the page to retry.
+        </Alert>
+      )}
       {showScannerPanel && (
         <Box padding={2} paddingBottom={0}>
-          <SecretScannerPanel scanner={scanner} readOnly={disabled} />
+          <SecretScannerPanel scanner={scanner} readOnly={disabled || secretsError} />
         </Box>
       )}
       {activeFinding && (

@@ -5,13 +5,14 @@ import { render } from 'test/render';
 import { mockFeatureToggles, runTestWithoutPermissions } from 'test/utils';
 
 import { FeatureName } from 'types';
+import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
 import pluginManifest from '../plugin.json';
 import {
-  getSyntheticsDetailPageNav,
   getSyntheticsPageNav,
+  getSyntheticsSectionNav,
   OVERVIEW_BREADCRUMB_URL,
   SyntheticsTab,
   type SyntheticsTabVisibility,
@@ -276,7 +277,7 @@ describe('detail page breadcrumbs', () => {
     ['Checks', AppRoutes.Checks],
     ['Probes', AppRoutes.Probes],
   ] as const)('links a detail page back to %s without duplicating Synthetics', (section, route) => {
-    const nav = getSyntheticsDetailPageNav(section, { text: 'Resource name' });
+    const nav = createNavModel(getSyntheticsSectionNav(section), [{ text: 'Resource name' }]);
 
     expect(nav.text).toBe('Resource name');
     expect(nav.parentItem).toMatchObject({ text: section, url: getRoute(route) });

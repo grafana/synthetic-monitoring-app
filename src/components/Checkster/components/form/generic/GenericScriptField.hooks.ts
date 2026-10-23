@@ -24,7 +24,9 @@ export function useScriptSecretScanner({ field, script, onChange, disabled }: Us
 
   const { isEnabled: secretsEnabled } = useFeatureFlag(FeatureName.SecretsManagement);
   const { canCreateSecrets, canReadSecrets } = getUserPermissions();
-  const { data: secrets = [] } = useSecrets(secretsEnabled && canReadSecrets);
+  const { data: secrets = [], isError: secretsError } = useSecrets(secretsEnabled && canReadSecrets, {
+    throwOnError: false,
+  });
   const existingSecretNames = useMemo(() => secrets.map((secret) => secret.name), [secrets]);
 
   const scanner = useMonacoSecretScanner({
@@ -33,7 +35,7 @@ export function useScriptSecretScanner({ field, script, onChange, disabled }: Us
     text: script,
     onChange,
     enabled: secretsEnabled,
-    canMigrate: secretsEnabled && canCreateSecrets && !disabled,
+    canMigrate: secretsEnabled && canCreateSecrets && !disabled && !secretsError,
     ignoreStorageKey: `sm.secretScanner.ignored.${field}`,
   });
 
@@ -62,6 +64,7 @@ export function useScriptSecretScanner({ field, script, onChange, disabled }: Us
   return {
     scanner,
     secretsEnabled,
+    secretsError,
     existingSecretNames,
     activeFinding,
     secretInitialValues,

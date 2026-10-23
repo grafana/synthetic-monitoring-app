@@ -1,4 +1,5 @@
 import React from 'react';
+import { type PluginPageProps } from '@grafana/runtime';
 import { screen, waitFor } from '@testing-library/react';
 import { trackCheckUpdated } from 'features/tracking/checkFormEvents';
 import { CHECKSTER_TEST_ID, ROUTER_TEST_ID, UI_TEST_ID } from 'test/dataTestIds';
@@ -11,7 +12,7 @@ import { mockFeatureToggles, runTestAsRBACReader, runTestAsViewer } from 'test/u
 
 import { Check, CheckType, FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
-import { generateRoutePath } from 'routing/utils';
+import { generateRoutePath, getRoute } from 'routing/utils';
 import { renderEditForm } from 'page/__testHelpers__/checkForm';
 import { EditCheckV2 } from 'page/EditCheck/EditCheckV2';
 
@@ -26,6 +27,29 @@ jest.mock('features/tracking/checkFormEvents', () => ({
 }));
 
 describe(`<EditCheckV2 />`, () => {
+  it('keeps the Checks and check dashboard links in the edit breadcrumb trail', async () => {
+    const runtime = jest.requireMock<{ PluginPage: React.FC<PluginPageProps> }>('@grafana/runtime');
+    const pluginPage = jest.spyOn(runtime, 'PluginPage');
+    try {
+      await renderEditForm(BASIC_HTTP_CHECK.id);
+      await screen.findByLabelText(/Job name/);
+
+      const pageNav = pluginPage.mock.calls.at(-1)?.[0].pageNav;
+      expect(pageNav?.text).toBe('Edit');
+      expect(pageNav?.parentItem).toMatchObject({
+        text: BASIC_HTTP_CHECK.job,
+        url: generateRoutePath(AppRoutes.CheckDashboard, { id: BASIC_HTTP_CHECK.id! }),
+      });
+      expect(pageNav?.parentItem?.parentItem).toMatchObject({
+        text: 'Checks',
+        url: getRoute(AppRoutes.Checks),
+      });
+      expect(pageNav?.parentItem?.parentItem?.parentItem?.text).toBe('Synthetics');
+    } finally {
+      pluginPage.mockRestore();
+    }
+  });
+
   it(`renders the can't find check modal when given a bad check id`, async () => {
     await renderEditForm(-1);
     expect(screen.getByText(/We were unable to find your check/)).toBeInTheDocument();
