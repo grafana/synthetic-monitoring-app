@@ -47,14 +47,14 @@ describe('metric placeholders', () => {
 
     resolveResponse();
 
-    expect(await screen.findByText('N/A')).toHaveStyle({ color: config.theme2.colors.text.primary });
+    expect(await screen.findByText('N/A')).toHaveStyle({ color: 'rgb(128, 128, 128)' });
     expect(screen.queryByTestId('Spinner')).not.toBeInTheDocument();
   });
 
   it.each([null, NaN])('shows a neutral placeholder for %s', async (value) => {
     render(<Gauge type="latency" unit="ms" value={value} height={75} width={148} />);
 
-    expect(await screen.findByText('N/A')).toHaveStyle({ color: config.theme2.colors.text.primary });
+    expect(await screen.findByText('N/A')).toHaveStyle({ color: 'rgb(128, 128, 128)' });
     expect(screen.queryByTestId('Spinner')).not.toBeInTheDocument();
   });
 
