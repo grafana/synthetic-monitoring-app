@@ -92,20 +92,17 @@ describe('getSyntheticsPageNav', () => {
   });
 
   it.each([
-    SyntheticsTab.Checks,
-    SyntheticsTab.Probes,
-    SyntheticsTab.Recommendations,
-    SyntheticsTab.CheckSuggestions,
-    SyntheticsTab.Configuration,
-  ])('keeps pageNav out of breadcrumbs on the %s tab so crumbs are not repeated', (tab) => {
-    expect(getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).hideFromBreadcrumbs).toBe(true);
-  });
+    [SyntheticsTab.Checks, 'Checks', AppRoutes.Checks],
+    [SyntheticsTab.Probes, 'Probes', AppRoutes.Probes],
+    [SyntheticsTab.Recommendations, 'Recommendations', AppRoutes.CheckRecommendations],
+    [SyntheticsTab.CheckSuggestions, 'Check Suggestions', AppRoutes.ReliabilityInbox],
+    [SyntheticsTab.Configuration, 'Configuration', AppRoutes.Config],
+  ])('shows a breadcrumb for the %s tab', (tab, label, route) => {
+    const nav = getSyntheticsPageNav(tab, ALL_TABS_VISIBLE);
 
-  it('keeps the Config breadcrumb on the Configuration tab', () => {
-    // Grafana drops the section crumb when its URL matches the pageNav's, hidden or not.
-    expect(getSyntheticsPageNav(SyntheticsTab.Configuration, ALL_TABS_VISIBLE).url).not.toBe(
-      getRoute(AppRoutes.Config)
-    );
+    expect(nav.text).toBe(label);
+    expect(nav.hideFromBreadcrumbs).toBeFalsy();
+    expect(nav.url?.split('?')[0]).toBe(getRoute(route));
   });
 
   it.each(['Recommendations', 'Check Suggestions'])('shows the NEW badge on the %s tab', (text) => {
