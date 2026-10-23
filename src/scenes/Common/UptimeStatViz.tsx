@@ -7,6 +7,7 @@ import { getUptimeQuery } from 'queries/uptime';
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { UPTIME_DESCRIPTION } from 'components/constants';
+import { getMetricValueMappings } from 'scenes/Common/metricValueMappings';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const UptimeStat = ({ check }: { check: Check }) => {
@@ -49,6 +50,7 @@ export const UptimeStat = ({ check }: { check: Check }) => {
     transformations: [transformation],
     data: dataProvider,
   });
+  const transformedData = dataTransformer.useState();
 
   const viz = VizConfigBuilders.stat()
     .setOption('graphMode', BigValueGraphMode.None)
@@ -77,6 +79,7 @@ export const UptimeStat = ({ check }: { check: Check }) => {
       ],
     })
     .setNoValue('N/A')
+    .setMappings(getMetricValueMappings(transformedData.data?.state))
     .build();
 
   const data = dataProvider.useState();

@@ -1,4 +1,4 @@
-import { toDataFrame } from '@grafana/data';
+import { createTheme, FieldType, getDisplayProcessor, LoadingState, ThresholdsMode, toDataFrame } from '@grafana/data';
 import { renderHook, waitFor } from '@testing-library/react';
 import { CHECK_IN_FORBIDDEN_FOLDER, CHECK_IN_PRODUCTION } from 'test/fixtures/folderChecks';
 import { apiRoute } from 'test/handlers';
@@ -8,8 +8,59 @@ import { mockFeatureToggles, runTestAsRBACReader } from 'test/utils';
 
 import { FeatureName } from 'types';
 import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
+import { getMetricValueMappings } from 'scenes/Common/metricValueMappings';
 
 import { filterChecksById } from './SummaryTableViz.utils';
+
+describe('summary metric placeholders', () => {
+  const theme = createTheme();
+  const display = (state?: LoadingState) =>
+    getDisplayProcessor({
+      theme,
+      field: {
+        name: 'reachability',
+        type: FieldType.number,
+        values: [],
+        config: {
+          unit: 'percentunit',
+          mappings: getMetricValueMappings(state),
+          thresholds: {
+            mode: ThresholdsMode.Absolute,
+            steps: [
+              { value: -Infinity, color: 'red' },
+              { value: 0.99, color: 'green' },
+            ],
+          },
+        },
+      },
+    });
+
+  it.each([undefined, LoadingState.NotStarted, LoadingState.Loading, LoadingState.Streaming])(
+    'shows a neutral loading placeholder while query state is %s',
+    (state) => {
+      expect(display(state)(NaN)).toMatchObject({
+        text: 'Loading...',
+        color: theme.visualization.getColorByName('gray'),
+      });
+    }
+  );
+
+  it.each([LoadingState.Done, LoadingState.Error])('does not imply loading after %s', (state) => {
+    for (const value of [null, undefined, NaN, Infinity, -Infinity]) {
+      expect(display(state)(value)).toMatchObject({
+        text: 'N/A',
+        color: theme.visualization.getColorByName('gray'),
+      });
+    }
+  });
+
+  it('preserves real zero and healthy values, including during refresh', () => {
+    for (const state of [LoadingState.Loading, LoadingState.Done]) {
+      expect(display(state)(0)).toMatchObject({ numeric: 0, color: theme.visualization.getColorByName('red') });
+      expect(display(state)(1)).toMatchObject({ numeric: 1, color: theme.visualization.getColorByName('green') });
+    }
+  });
+});
 
 const checks = [CHECK_IN_PRODUCTION, CHECK_IN_FORBIDDEN_FOLDER];
 const frame = toDataFrame({

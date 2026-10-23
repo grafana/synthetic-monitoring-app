@@ -7,6 +7,7 @@ import { getReachabilityQuery } from 'queries/reachability';
 import { Check } from 'types';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { REACHABILITY_DESCRIPTION } from 'components/constants';
+import { getMetricValueMappings } from 'scenes/Common/metricValueMappings';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const ReachabilityStat = ({ check }: { check: Check }) => {
@@ -46,6 +47,7 @@ export const ReachabilityStat = ({ check }: { check: Check }) => {
     ],
     data: dataProvider,
   });
+  const transformedData = dataTransformer.useState();
 
   const viz = VizConfigBuilders.stat()
     .setOption('graphMode', BigValueGraphMode.None)
@@ -54,6 +56,7 @@ export const ReachabilityStat = ({ check }: { check: Check }) => {
     .setMin(0)
     .setMax(1)
     .setNoValue('N/A')
+    .setMappings(getMetricValueMappings(transformedData.data?.state))
     .setThresholds({
       mode: ThresholdsMode.Absolute,
       steps: [
