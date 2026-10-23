@@ -19,6 +19,7 @@ export interface StatefulTimepoint {
   status: TimepointStatus;
   probeResults: ProbeResults;
   maxProbeDuration: number;
+  failureRatio: number;
   index: number;
   config: CheckConfig;
 }

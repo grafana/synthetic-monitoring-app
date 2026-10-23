@@ -1,6 +1,7 @@
-import { succeededLogFactory } from 'test/factories/executionLogs';
+import { failedLogFactory, succeededLogFactory } from 'test/factories/executionLogs';
 
 import { LokiFieldNames } from 'features/parseLokiLogs/parseLokiLogs.types';
+import { MIN_PARTIAL_FAILURE_HEIGHT_PX } from 'scenes/components/TimepointExplorer/TimepointExplorer.constants';
 import {
   CheckConfig,
   CheckConfigRaw,
@@ -15,9 +16,11 @@ import {
   buildTimepoints,
   buildTimepointsForConfig,
   findNearestPageIndex,
+  getFailureRatio,
   getMiniMapPages,
   getMiniMapSections,
   getNonRoundedYAxisMax,
+  getPartialFailureDisplayHeight,
   getPendingProbes,
   getRoundedYAxisMax,
   removeProbableDuplicates,
@@ -274,12 +277,76 @@ describe(`buildlistLogsMap`, () => {
       status: 'success',
       timepointDuration: frequency,
       maxProbeDuration: Number(log.labels.duration_seconds) * 1000,
+      failureRatio: 0,
       index: 0,
     };
 
     expect(listLogsMap).toEqual({
       [firstEntry.adjustedTime]: expectedEntry,
     });
+  });
+});
+
+describe(`getFailureRatio`, () => {
+  it(`should return 0 when there are no probe results`, () => {
+    expect(getFailureRatio({})).toBe(0);
+  });
+
+  it(`should return 0 when all executions succeeded`, () => {
+    const probeResults = {
+      london: [succeededLogFactory.build()],
+      ohio: [succeededLogFactory.build()],
+    };
+
+    expect(getFailureRatio(probeResults)).toBe(0);
+  });
+
+  it(`should return the proportion of failed executions`, () => {
+    const probeResults = {
+      london: [succeededLogFactory.build()],
+      ohio: [succeededLogFactory.build()],
+      singapore: [failedLogFactory.build()],
+    };
+
+    expect(getFailureRatio(probeResults)).toBeCloseTo(1 / 3);
+  });
+
+  it(`should count multiple executions from the same probe individually`, () => {
+    const probeResults = {
+      london: [succeededLogFactory.build(), failedLogFactory.build()],
+      ohio: [succeededLogFactory.build(), succeededLogFactory.build()],
+    };
+
+    expect(getFailureRatio(probeResults)).toBeCloseTo(1 / 4);
+  });
+
+  it(`should return 1 when all executions failed`, () => {
+    const probeResults = {
+      london: [failedLogFactory.build()],
+      ohio: [failedLogFactory.build()],
+    };
+
+    expect(getFailureRatio(probeResults)).toBe(1);
+  });
+});
+
+describe(`getPartialFailureDisplayHeight`, () => {
+  it(`should return 0 when there is no failure or no bar height`, () => {
+    expect(getPartialFailureDisplayHeight(40, 0)).toBe(0);
+    expect(getPartialFailureDisplayHeight(0, 0.2)).toBe(0);
+  });
+
+  it(`should keep the proportional height when it is already visible`, () => {
+    expect(getPartialFailureDisplayHeight(40, 0.25)).toBe(10);
+  });
+
+  it(`should floor very small ratios to a visible height`, () => {
+    expect(getPartialFailureDisplayHeight(40, 0.02)).toBe(MIN_PARTIAL_FAILURE_HEIGHT_PX);
+  });
+
+  it(`should never exceed the bar height`, () => {
+    expect(getPartialFailureDisplayHeight(3, 0.02)).toBe(3);
+    expect(getPartialFailureDisplayHeight(40, 1)).toBe(40);
   });
 });
 

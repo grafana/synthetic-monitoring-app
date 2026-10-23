@@ -21,6 +21,7 @@ export function useStatefulTimepoints(timepoints: StatelessTimepoint[]): Statefu
           probeResults: {},
           index: timepoint.index,
           maxProbeDuration: yAxisMax / 3,
+          failureRatio: 0,
           timepointDuration: timepoint.timepointDuration,
           status: couldBePending ? 'pending' : 'missing',
         };
