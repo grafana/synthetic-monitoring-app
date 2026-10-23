@@ -12,10 +12,10 @@ import {
 } from 'test/handlers/checks';
 import { getDashboard } from 'test/handlers/dashboards';
 import { getLogsDS, getMetricsDS, getSMDS } from 'test/handlers/datasources';
-import { getHttpDashboard } from 'test/handlers/httpDashboard';
 import { createDatasource, installPlugin } from 'test/handlers/install';
 import { getInstantMetrics, getRangeMetrics } from 'test/handlers/metrics';
 import { addProbe, deleteProbe, listProbes, updateProbe } from 'test/handlers/probes';
+import { queryDatasource } from 'test/handlers/queryDatasource';
 import {
   getLabelMode,
   getTenant,
@@ -31,6 +31,7 @@ import { ApiEntry } from 'test/handlers/types';
 
 import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
+import { listFaroSourceMaps } from './frontendContext';
 import { listK6Channels } from './k6Channels';
 import { evaluateFeatureFlags } from './openfeature';
 import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
@@ -56,7 +57,6 @@ const API_ROUTES = {
   getDashboard,
   getFolder,
   getGrafanaAlertRules,
-  getHttpDashboard,
   getInstantMetrics,
   getLabelMode,
   getLogsDS,
@@ -73,9 +73,11 @@ const API_ROUTES = {
   listAlertsForCheck,
   listChecks,
   listFolders,
+  listFaroSourceMaps,
   listProbes,
   listSecrets,
   moveFolder,
+  queryDatasource,
   renameCheckLabels,
   setLabelMode,
   testCheck,

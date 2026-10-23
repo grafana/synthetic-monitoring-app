@@ -18,7 +18,7 @@ import {
 import { cx } from '@emotion/css';
 import { RECOMMENDATIONS_TEST_ID } from 'test/dataTestIds';
 
-import { CategorySummary, DismissedChecks, RecommendationSeverity } from './Recommendations.types';
+import { CategorySummary, DismissedChecks, RecommendationId, RecommendationSeverity } from './Recommendations.types';
 import { Check } from 'types';
 import { getCheckType } from 'utils';
 import { useCheckPermissions, useGetCheckPermissions } from 'contexts/CheckFolderAccessContext';
@@ -26,7 +26,12 @@ import { FormSectionName } from 'components/Checkster/types';
 
 import { getLegend } from './Recommendations.categories';
 import { ROWS_PER_PAGE, UNESCAPED } from './Recommendations.constants';
-import { getCategoryCopy, getCategoryRowCopy, getLegendLabel } from './Recommendations.copy';
+import {
+  getCategoryCopy,
+  getCategoryRowCopy,
+  getFilteredCategoryRowCopy,
+  getLegendLabel,
+} from './Recommendations.copy';
 import { ATTENTION_VIEW, RecommendationsView } from './Recommendations.hooks';
 import { getEditCheckUrl } from './Recommendations.links';
 import { getSeverityColor, getStyles } from './Recommendations.styles';
@@ -62,13 +67,21 @@ export function CategoryRail({ categories, view, onSelect }: RailProps) {
       {categories.map(({ category, checkCount }) => (
         <button
           key={category.id}
-          className={cx(styles.railItem, view === category.id && styles.railItemActive)}
+          className={cx(
+            styles.railItem,
+            view === category.id && styles.railItemActive,
+            checkCount === 0 && styles.railItemEmpty
+          )}
           aria-current={view === category.id ? 'page' : undefined}
           onClick={() => onSelect(category.id)}
         >
           <span
-            className={styles.railDot}
-            style={{ backgroundColor: getSeverityColor(theme, category.severity) }}
+            className={cx(styles.railDot, checkCount === 0 && styles.railDotEmpty)}
+            style={
+              checkCount === 0
+                ? { borderColor: getSeverityColor(theme, category.severity) }
+                : { backgroundColor: getSeverityColor(theme, category.severity) }
+            }
             role="presentation"
           />
           {getCategoryCopy(category.id).label}
@@ -83,15 +96,26 @@ interface AttentionRowProps {
   summary: CategorySummary;
   totalCheckCount: number;
   dismissedChecks: DismissedChecks;
+  /** Set while filters are active: how many of the category's checks match them. */
+  matchedCheckCount?: number;
   onSelect: () => void;
 }
 
-export function AttentionRow({ summary, totalCheckCount, dismissedChecks, onSelect }: AttentionRowProps) {
+export function AttentionRow({
+  summary,
+  totalCheckCount,
+  dismissedChecks,
+  matchedCheckCount,
+  onSelect,
+}: AttentionRowProps) {
   const styles = useStyles2(getStyles);
   const theme = useTheme2();
   const { label } = getCategoryCopy(summary.category.id);
   const getPermissions = useGetCheckPermissions();
-  const row = getCategoryRowCopy(summary, totalCheckCount, dismissedChecks, (check) => getPermissions(check).canWrite);
+  const row =
+    matchedCheckCount === undefined
+      ? getCategoryRowCopy(summary, totalCheckCount, dismissedChecks, (check) => getPermissions(check).canWrite)
+      : getFilteredCategoryRowCopy(summary, matchedCheckCount);
 
   return (
     <button
@@ -104,7 +128,8 @@ export function AttentionRow({ summary, totalCheckCount, dismissedChecks, onSele
       <Text variant="bodySmall" color="secondary">
         {row.summary}
       </Text>
-      <span className={styles.attentionAction}>
+      {/* Hidden rather than removed, so the row keeps its height. */}
+      <span className={cx(styles.attentionAction, matchedCheckCount === 0 && styles.invisible)}>
         {row.action}
         <Icon name="angle-right" size="sm" />
       </span>
@@ -151,6 +176,8 @@ interface SectionProps {
   footer?: ReactNode;
   /** Deep-linked to from the URL: highlighted and scrolled into view. */
   isFocused?: boolean;
+  /** Shown in place of the rows, e.g. when the rail's filters leave none. */
+  emptyMessage?: string;
   onDismiss: () => void;
   children: ReactNode;
 }
@@ -163,6 +190,7 @@ export function RecommendationSection({
   actions,
   footer,
   isFocused = false,
+  emptyMessage,
   onDismiss,
   children,
 }: SectionProps) {
@@ -186,7 +214,7 @@ export function RecommendationSection({
       <div className={styles.panelHeader} data-testid={RECOMMENDATIONS_TEST_ID.sectionHeader}>
         <button className={styles.collapseToggle} onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
           <Icon name={isOpen ? 'angle-down' : 'angle-right'} className={styles.caret} />
-          <Stack direction="column" gap={0.25}>
+          <Stack direction="column" gap={0.25} minWidth={0}>
             <h3 className={styles.sectionTitle}>
               <span className={styles.sectionTitleText}>{title}</span>
               {tooltip && (
@@ -218,7 +246,9 @@ export function RecommendationSection({
       </div>
       {isOpen && (
         <>
-          <div className={styles.rows}>{children}</div>
+          <div className={styles.rows}>
+            {emptyMessage ? <div className={styles.emptyRows}>{emptyMessage}</div> : children}
+          </div>
           {footer}
         </>
       )}
@@ -328,6 +358,8 @@ interface CheckRowProps {
   showEditButton?: boolean;
   /** The editor section the edit button opens on. */
   editSection?: FormSectionName;
+  /** The finding to credit when an edit made through the edit button fixes it. */
+  editFinding?: RecommendationId;
   onEditClick?: () => void;
   /** The dismiss button only renders when given. */
   onDismiss?: (check: Check) => void;
@@ -343,6 +375,7 @@ export function CheckRow({
   expansion,
   showEditButton = true,
   editSection,
+  editFinding,
   onEditClick,
   onDismiss,
 }: CheckRowProps) {
@@ -373,6 +406,7 @@ export function CheckRow({
                 <EditCheckButton
                   check={check}
                   section={editSection}
+                  finding={editFinding}
                   variant="secondary"
                   fill="outline"
                   icon="pen"
@@ -406,6 +440,8 @@ interface EditCheckButtonProps {
   check: Check;
   /** The editor section to open on. */
   section?: FormSectionName;
+  /** The finding to credit when a save in the editor fixes it. */
+  finding?: RecommendationId;
   variant?: ButtonProps['variant'];
   fill?: ButtonProps['fill'];
   icon?: ButtonProps['icon'];
@@ -418,7 +454,7 @@ interface EditCheckButtonProps {
  * A link into the check's editor. Without write access the editor would only bounce the user back,
  * so the same button is disabled instead, saying why.
  */
-export function EditCheckButton({ check, section, onClick, children, ...buttonProps }: EditCheckButtonProps) {
+export function EditCheckButton({ check, section, finding, onClick, children, ...buttonProps }: EditCheckButtonProps) {
   const { canWrite } = useCheckPermissions(check);
 
   if (!canWrite) {
@@ -435,7 +471,7 @@ export function EditCheckButton({ check, section, onClick, children, ...buttonPr
   }
 
   return (
-    <LinkButton size="sm" {...buttonProps} href={getEditCheckUrl(check.id!, section)} onClick={onClick}>
+    <LinkButton size="sm" {...buttonProps} href={getEditCheckUrl(check.id!, section, finding)} onClick={onClick}>
       {children}
     </LinkButton>
   );

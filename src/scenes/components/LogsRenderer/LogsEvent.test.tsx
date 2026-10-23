@@ -1,6 +1,6 @@
 import React from 'react';
 import { dateTimeFormat, LoadingState } from '@grafana/data';
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import { executionLogsFactory } from 'test/factories/executionLogs';
 import { TRACES_DATASOURCE } from 'test/fixtures/datasources';
 import { render } from 'test/render';
@@ -288,22 +288,25 @@ describe('LogsEvent', () => {
       expect(screen.queryByLabelText('Retry trace lookup')).not.toBeInTheDocument();
     });
 
-    it('stops showing the propagation spinner after the window expires', async () => {
+    it('stops showing the propagation spinner when its timer fires just before the wall-clock deadline', async () => {
+      const now = Date.now();
+      jest.useFakeTimers({ now, doNotFake: ['nextTick', 'queueMicrotask'] });
       const logs = buildLogsWithTraceLabels({ trace_id: TRACE_ID });
       logs.forEach((log) => {
-        log[LokiFieldNames.TimeStamp] = Date.now() - PROPAGATION_WINDOW_MS + 1000;
+        log[LokiFieldNames.TimeStamp] = now - PROPAGATION_WINDOW_MS + 1000;
       });
 
       render(<LogsEvent logs={logs} mainKey={MAIN_KEY} from={from} to={to} />);
 
       await screen.findAllByTestId('trace-propagation-waiting');
 
-      await waitFor(
-        () => {
-          expect(screen.queryByTestId('trace-propagation-waiting')).not.toBeInTheDocument();
-        },
-        { timeout: 3000 }
-      );
+      // Timer scheduling and Date.now can disagree slightly at the deadline.
+      jest.spyOn(Date, 'now').mockReturnValue(now + 999);
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(1000);
+      });
+
+      expect(screen.queryAllByTestId('trace-propagation-waiting')).toHaveLength(0);
     });
   });
 

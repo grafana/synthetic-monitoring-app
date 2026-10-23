@@ -33,15 +33,20 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     marginTop: 'auto',
   }),
 
-  rail: css({
+  // Holds the rail's width and scrolling, so the filters can sit below the nav rather than in it.
+  railColumn: css({
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(0.25),
     width: 220,
     flexShrink: 0,
     padding: theme.spacing(0, 2, 2, 0),
     borderRight: `1px solid ${theme.colors.border.weak}`,
     overflowY: 'auto',
+  }),
+  rail: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.25),
   }),
   railDivider: css({
     height: 1,
@@ -79,6 +84,93 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     borderRadius: '50%',
     flexShrink: 0,
   }),
+  // Nothing matches the filters. A hollow dot rather than a faded one: fading drops the error
+  // colour below 3:1 against the background.
+  railItemEmpty: css({
+    color: theme.colors.text.disabled,
+  }),
+  railDotEmpty: css({
+    backgroundColor: 'transparent',
+    border: '1.5px solid',
+  }),
+
+  filters: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+  }),
+  filtersHeader: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    minHeight: theme.spacing(3),
+    paddingLeft: theme.spacing(1.5),
+  }),
+  filtersTitle: css({
+    marginRight: 'auto',
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    textTransform: 'uppercase',
+  }),
+  filterGroupHeader: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  }),
+  filterGroupToggle: css({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    flex: 1,
+    minWidth: 0,
+    padding: theme.spacing(0.5, 1),
+    border: 'none',
+    borderRadius: theme.shape.radius.default,
+    background: 'none',
+    color: theme.colors.text.primary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    fontWeight: theme.typography.fontWeightMedium,
+    textAlign: 'left',
+    cursor: 'pointer',
+    '&:hover': {
+      backgroundColor: theme.colors.action.hover,
+    },
+  }),
+  filterGroupBody: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.5, 1, 0.5, 3),
+  }),
+  filterOption: css({
+    // Not stretched: Checkbox is a two-column grid that would split the spare width between box and label.
+    alignSelf: 'flex-start',
+    fontFamily: theme.typography.fontFamilyMonospace,
+  }),
+  selectedValues: css({
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    margin: 0,
+    padding: 0,
+    listStyle: 'none',
+  }),
+  selectedValue: css({
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(0.25, 0.25, 0.25, 1),
+    borderRadius: theme.shape.radius.default,
+    backgroundColor: theme.colors.background.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+  }),
+  selectedValueText: css({
+    flex: 1,
+    minWidth: 0,
+    paddingTop: theme.spacing(0.25),
+    overflowWrap: 'anywhere',
+  }),
   railCount: css({
     marginLeft: 'auto',
     fontFamily: theme.typography.fontFamilyMonospace,
@@ -106,6 +198,9 @@ export const getStyles = (theme: GrafanaTheme2) => ({
   attentionLabel: css({
     fontWeight: theme.typography.fontWeightMedium,
     fontSize: theme.typography.body.fontSize,
+  }),
+  invisible: css({
+    visibility: 'hidden',
   }),
   attentionAction: css({
     display: 'inline-flex',
@@ -215,6 +310,14 @@ export const getStyles = (theme: GrafanaTheme2) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(0.25),
+  }),
+  emptyRows: css({
+    padding: theme.spacing(2),
+    border: `1px dashed ${theme.colors.border.medium}`,
+    borderRadius: theme.shape.radius.default,
+    color: theme.colors.text.secondary,
+    fontSize: theme.typography.bodySmall.fontSize,
+    textAlign: 'center',
   }),
   row: css({
     display: 'flex',

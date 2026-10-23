@@ -29,11 +29,12 @@ export function MissingCostLabelsFinding({
   calNames,
   isSolo,
   isFocused,
+  filter,
   onDismiss,
 }: MissingCostLabelsFindingProps) {
   const { id } = recommendation;
   const { severity, header, rows, dismissedCount, dismissCheck, restoreChecks } = useFindingPanel(
-    { recommendation, totalCheckCount, isSolo },
+    { recommendation, totalCheckCount, isSolo, filter },
     calNames
   );
 
@@ -73,11 +74,13 @@ export function MissingCostLabelsFinding({
             })}
             onDismiss={dismissCheck}
             editSection={FormSectionName.Labels}
+            editFinding={id}
             onEditClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
             action={
               <EditCheckButton
                 check={check}
                 section={FormSectionName.Labels}
+                finding={id}
                 variant="primary"
                 onClick={() => trackRecommendationActioned({ finding: id, scope: 'check' })}
                 aria-label={t('recommendations.missingCostLabels.row.addLabelsLabel', 'Add labels to {{job}}', {

@@ -20,7 +20,7 @@ const MAX_QUERY_LOOKBACK_ERROR_MESSAGE = `this data is no longer available, it i
 
 function mockCanaryQuery(result: Result<unknown>) {
   server.use(
-    apiRoute(`getHttpDashboard`, {
+    apiRoute(`queryDatasource`, {
       result: () => result,
     })
   );

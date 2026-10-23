@@ -96,5 +96,5 @@ jobs:
         {"dev": 0, "ops": 0, "prod-canary": 0, "prod": 0}
 
       # https://enghub.grafana-ops.net/docs/default/component/grafana-plugins-platform/plugins-ci-github-actions/010-plugins-ci-github-actions/#customizing-the-workflows-with-inputs
-      node-version: 22
+      node-version: 24
       run-playwright: false  # Disabled - no Playwright tests configured

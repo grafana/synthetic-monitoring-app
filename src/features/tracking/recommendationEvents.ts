@@ -59,18 +59,21 @@ export const trackRecommendationActioned = recommendationEvents<FindingActioned>
 /** A change the tab makes itself. */
 type TabAction = 'alerts_added' | 'check_resumed';
 
+/** The change a finding asks for: in the tab, or cost labels added in the check editor. */
+type RecommendationAction = TabAction | 'labels_added';
+
 interface ActionCompleted extends TrackingEventProps {
   /** The `RecommendationId` of the finding. */
   finding: string;
   /** What was changed. */
-  action: TabAction;
+  action: RecommendationAction;
   /** How many checks the change reached. */
   checkCount: number;
-  /** Whether it ran for the whole finding, the ticked rows, or a single check. */
-  scope: 'finding' | 'selection' | 'check';
+  /** Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. */
+  scope: 'finding' | 'filtered' | 'selection' | 'check';
 }
 
-/** Tracks an action carried out from the tab itself. */
+/** Tracks an action on a finding's checks, made in the tab or, for cost labels, saved in the check editor. */
 export const trackRecommendationActionCompleted = recommendationEvents<ActionCompleted>('action_completed');
 
 interface ActionFailed extends TrackingEventProps {
@@ -80,8 +83,8 @@ interface ActionFailed extends TrackingEventProps {
   action: TabAction;
   /** How many checks the change failed for. Cancelled work is not counted. */
   failedCount: number;
-  /** Whether it ran for the whole finding, the ticked rows, or a single check. */
-  scope: 'finding' | 'selection' | 'check';
+  /** Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. */
+  scope: 'finding' | 'filtered' | 'selection' | 'check';
 }
 
 /** Tracks an action from the tab failing for some or all of its checks. */

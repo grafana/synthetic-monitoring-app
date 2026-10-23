@@ -80,7 +80,8 @@
         "applying": "",
         "body": "",
         "confirm": "",
-        "title": ""
+        "title": "",
+        "titleMatching": ""
       },
       "description": "",
       "row": {
@@ -102,6 +103,8 @@
         "thresholdWithPeriod": ""
       },
       "setUpAll": "",
+      "setUpMatching": "",
+      "setUpMatchingSingle": "",
       "setUpSelected": "",
       "setUpSelectedSingle": "",
       "title": "",
@@ -151,9 +154,34 @@
       "body": "",
       "message": ""
     },
+    "filters": {
+      "clear": "",
+      "clearAll": "",
+      "clearGroup": "",
+      "count": "",
+      "countSingle": "",
+      "defaultFolder": "",
+      "emptyFinding": "",
+      "folders": "",
+      "headline": "",
+      "headlineNone": "",
+      "headlineSingle": "",
+      "labels": "",
+      "remove": "",
+      "searchFolders": "",
+      "searchFoldersSingle": "",
+      "searchLabels": "",
+      "searchLabelsSingle": "",
+      "summary": "",
+      "summarySingle": "",
+      "title": "",
+      "type": ""
+    },
     "group": {
       "count": "",
+      "countSingle": "",
       "detail": "",
+      "detailSingle": "",
       "viewInList": ""
     },
     "intro": "",

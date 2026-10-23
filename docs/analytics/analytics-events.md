@@ -547,16 +547,16 @@ Tracks a click through to the check list or a check's editor.
 
 #### synthetic-monitoring_recommendations_action_completed
 
-Tracks an action carried out from the tab itself.
+Tracks an action on a finding's checks, made in the tab or, for cost labels, saved in the check editor.
 
 ##### Properties
 
-| name       | type                                  | description                                                               |
-| ---------- | ------------------------------------- | ------------------------------------------------------------------------- |
-| finding    | `string`                              | The `RecommendationId` of the finding.                                    |
-| action     | `"alerts_added" \| "check_resumed"`   | What was changed.                                                         |
-| checkCount | `number`                              | How many checks the change reached.                                       |
-| scope      | `"finding" \| "check" \| "selection"` | Whether it ran for the whole finding, the ticked rows, or a single check. |
+| name       | type                                                  | description                                                                                                     |
+| ---------- | ----------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| finding    | `string`                                              | The `RecommendationId` of the finding.                                                                          |
+| action     | `"alerts_added" \| "check_resumed" \| "labels_added"` | What was changed.                                                                                               |
+| checkCount | `number`                                              | How many checks the change reached.                                                                             |
+| scope      | `"finding" \| "check" \| "filtered" \| "selection"`   | Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. |
 
 #### synthetic-monitoring_recommendations_action_failed
 
@@ -564,12 +564,12 @@ Tracks an action from the tab failing for some or all of its checks.
 
 ##### Properties
 
-| name        | type                                  | description                                                               |
-| ----------- | ------------------------------------- | ------------------------------------------------------------------------- |
-| finding     | `string`                              | The `RecommendationId` of the finding.                                    |
-| action      | `"alerts_added" \| "check_resumed"`   | What was being changed.                                                   |
-| failedCount | `number`                              | How many checks the change failed for. Cancelled work is not counted.     |
-| scope       | `"finding" \| "check" \| "selection"` | Whether it ran for the whole finding, the ticked rows, or a single check. |
+| name        | type                                                | description                                                                                                     |
+| ----------- | --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| finding     | `string`                                            | The `RecommendationId` of the finding.                                                                          |
+| action      | `"alerts_added" \| "check_resumed"`                 | What was being changed.                                                                                         |
+| failedCount | `number`                                            | How many checks the change failed for. Cancelled work is not counted.                                           |
+| scope       | `"finding" \| "check" \| "filtered" \| "selection"` | Whether it ran for the whole finding, the rows matching the rail's filters, the ticked rows, or a single check. |
 
 #### synthetic-monitoring_recommendations_finding_dismissed
 
@@ -601,10 +601,11 @@ Tracks when the compact Reliability Inbox entry point is shown, whether or not i
 
 ##### Properties
 
-| name             | type                  | description                                                                                             |
-| ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| opportunityCount | `number`              | Number of reviewable recommendations shown by the inbox entry point; 0 when it offers to generate them. |
-| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.   |
+| name             | type                  | description                                                                                                                                                                                  |
+| ---------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| opportunityCount | `number`              | Number of recommendations ready to create shown by the inbox entry point; 0 when none are ready (either because it offers to generate them or because all shown recommendations need setup). |
+| needsSetupCount  | `number`              | Number of recommendations shown that need configuration or credentials first; not part of opportunityCount.                                                                                  |
+| topOpportunityId | `undefined \| string` | Identifier for the highest-priority recommendation shown on exposure; absent when there are none yet.                                                                                        |
 
 #### synthetic-monitoring_reliability_inbox_review_entry_clicked
 
@@ -622,9 +623,10 @@ Tracks when a recommendation becomes selected for review.
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_setup_with_assistant_clicked
 
@@ -632,9 +634,10 @@ Tracks when a user explicitly hands a recommendation to Assistant for guided set
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_create_manually_clicked
 
@@ -642,9 +645,10 @@ Tracks when a user takes a recommendation to the check form to create it themsel
 
 ##### Properties
 
-| name          | type     | description                                                    |
-| ------------- | -------- | -------------------------------------------------------------- |
-| opportunityId | `string` | Identifier for the recommendation involved in the interaction. |
+| name          | type            | description                                                                                |
+| ------------- | --------------- | ------------------------------------------------------------------------------------------ |
+| opportunityId | `string`        | Identifier for the recommendation involved in the interaction.                             |
+| needsSetup    | `false \| true` | True when the recommendation needs configuration or credentials before its check can pass. |
 
 #### synthetic-monitoring_reliability_inbox_namespace_filter_changed
 
