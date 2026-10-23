@@ -74,7 +74,7 @@
       "name": "Config",
       "path": "/a/grafana-synthetic-monitoring-app/config",
       "action": "grafana-synthetic-monitoring-app:read",
-      "addToNav": true
+      "addToNav": false
     },
     {
       "type": "datasource",

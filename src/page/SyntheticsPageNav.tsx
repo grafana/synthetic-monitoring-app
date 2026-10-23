@@ -81,11 +81,25 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
   });
 
   return {
-    // Only Overview adds its own crumb. Grafana dedupes the section crumb against this URL even when it is
-    // hidden, so it must not be a section page's URL (Config's) or that section crumb disappears.
+    // Grafana appends the active child as a breadcrumb except for the first tab.
+    // Match the manifest's app-root URL so Grafana deduplicates its Synthetics section crumb.
     text: isOverview ? 'Overview' : 'Synthetics',
-    url: isOverview ? OVERVIEW_BREADCRUMB_URL : getRoute(AppRoutes.Home),
-    hideFromBreadcrumbs: !isOverview,
+    url: isOverview ? OVERVIEW_BREADCRUMB_URL : PLUGIN_URL_PATH.replace(/\/$/, ''),
     children: tabs,
+  };
+}
+
+export function getSyntheticsDetailPageNav(section: 'Checks' | 'Probes', page: NavModelItem): NavModelItem {
+  return {
+    ...page,
+    parentItem: {
+      text: section,
+      url: getRoute(section === 'Checks' ? AppRoutes.Checks : AppRoutes.Probes),
+      parentItem: {
+        text: 'Synthetics',
+        // Match Grafana's section URL so it does not append another Synthetics crumb.
+        url: PLUGIN_URL_PATH.replace(/\/$/, ''),
+      },
+    },
   };
 }

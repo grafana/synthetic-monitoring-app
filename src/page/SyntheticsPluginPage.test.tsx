@@ -8,7 +8,9 @@ import { FeatureName } from 'types';
 import { AppRoutes } from 'routing/types';
 import { getRoute } from 'routing/utils';
 
+import pluginManifest from '../plugin.json';
 import {
+  getSyntheticsDetailPageNav,
   getSyntheticsPageNav,
   OVERVIEW_BREADCRUMB_URL,
   SyntheticsTab,
@@ -92,20 +94,24 @@ describe('getSyntheticsPageNav', () => {
   });
 
   it.each([
-    SyntheticsTab.Checks,
-    SyntheticsTab.Probes,
-    SyntheticsTab.Recommendations,
-    SyntheticsTab.CheckSuggestions,
-    SyntheticsTab.Configuration,
-  ])('keeps pageNav out of breadcrumbs on the %s tab so crumbs are not repeated', (tab) => {
-    expect(getSyntheticsPageNav(tab, ALL_TABS_VISIBLE).hideFromBreadcrumbs).toBe(true);
-  });
+    [SyntheticsTab.Checks, 'Checks', AppRoutes.Checks],
+    [SyntheticsTab.Probes, 'Probes', AppRoutes.Probes],
+    [SyntheticsTab.Recommendations, 'Recommendations', AppRoutes.CheckRecommendations],
+    [SyntheticsTab.CheckSuggestions, 'Check Suggestions', AppRoutes.ReliabilityInbox],
+    [SyntheticsTab.Configuration, 'Configuration', AppRoutes.Config],
+  ])('lets Grafana append the %s tab once after the Synthetics breadcrumb', (tab, label, route) => {
+    const nav = getSyntheticsPageNav(tab, ALL_TABS_VISIBLE);
 
-  it('keeps the Config breadcrumb on the Configuration tab', () => {
-    // Grafana drops the section crumb when its URL matches the pageNav's, hidden or not.
-    expect(getSyntheticsPageNav(SyntheticsTab.Configuration, ALL_TABS_VISIBLE).url).not.toBe(
-      getRoute(AppRoutes.Config)
-    );
+    expect(nav.text).toBe('Synthetics');
+    // Grafana deduplicates by URL, not label: /home would repeat Synthetics.
+    expect(nav.url).toBe(pluginManifest.includes.find((entry) => 'defaultNav' in entry && entry.defaultNav)?.path);
+    expect(nav.hideFromBreadcrumbs).toBeFalsy();
+    const activeIndex = nav.children?.findIndex((child) => child.active) ?? -1;
+    // Grafana adds the active child only when its index is greater than zero.
+    expect(activeIndex).toBeGreaterThan(0);
+    const activeChild = nav.children?.[activeIndex];
+    expect(activeChild?.text).toBe(label);
+    expect(activeChild?.url?.split('?')[0]).toBe(getRoute(route));
   });
 
   it.each(['Recommendations', 'Check Suggestions'])('shows the NEW badge on the %s tab', (text) => {
@@ -262,5 +268,22 @@ describe('SyntheticsPluginPage', () => {
 
     expect(await screen.findByRole('tab', { name: 'Checks' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Probes' })).not.toBeInTheDocument();
+  });
+});
+
+describe('detail page breadcrumbs', () => {
+  it.each([
+    ['Checks', AppRoutes.Checks],
+    ['Probes', AppRoutes.Probes],
+  ] as const)('links a detail page back to %s without duplicating Synthetics', (section, route) => {
+    const nav = getSyntheticsDetailPageNav(section, { text: 'Resource name' });
+
+    expect(nav.text).toBe('Resource name');
+    expect(nav.parentItem).toMatchObject({ text: section, url: getRoute(route) });
+    expect(nav.parentItem?.parentItem).toEqual({
+      text: 'Synthetics',
+      url: pluginManifest.includes.find((entry) => 'defaultNav' in entry && entry.defaultNav)?.path,
+    });
+    expect(nav.children).toBeUndefined();
   });
 });
