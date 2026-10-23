@@ -14,6 +14,7 @@ import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeSetupModal } from 'components/ProbeSetupModal';
 import { ProbeStatus } from 'components/ProbeStatus';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
+import { getSyntheticsDetailPageNav } from 'page/SyntheticsPageNav';
 
 import { FaroUserAction } from '../../faro';
 import { trackFaroUserAction } from '../../features/tracking/userAction';
@@ -43,7 +44,7 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
 
   return (
     <PluginPage
-      pageNav={{ text: getTitle(probe, canWriteProbes && !forceViewMode) }}
+      pageNav={getSyntheticsDetailPageNav('Probes', { text: getTitle(probe, canWriteProbes && !forceViewMode) })}
       actions={
         canWriteProbes &&
         probe &&

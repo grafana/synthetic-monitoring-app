@@ -10,6 +10,7 @@ import { getRoute } from 'routing/utils';
 
 import pluginManifest from '../plugin.json';
 import {
+  getSyntheticsDetailPageNav,
   getSyntheticsPageNav,
   OVERVIEW_BREADCRUMB_URL,
   SyntheticsTab,
@@ -267,5 +268,22 @@ describe('SyntheticsPluginPage', () => {
 
     expect(await screen.findByRole('tab', { name: 'Checks' })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: 'Probes' })).not.toBeInTheDocument();
+  });
+});
+
+describe('detail page breadcrumbs', () => {
+  it.each([
+    ['Checks', AppRoutes.Checks],
+    ['Probes', AppRoutes.Probes],
+  ] as const)('links a detail page back to %s without duplicating Synthetics', (section, route) => {
+    const nav = getSyntheticsDetailPageNav(section, { text: 'Resource name' });
+
+    expect(nav.text).toBe('Resource name');
+    expect(nav.parentItem).toMatchObject({ text: section, url: getRoute(route) });
+    expect(nav.parentItem?.parentItem).toEqual({
+      text: 'Synthetics',
+      url: pluginManifest.includes.find((entry) => 'defaultNav' in entry && entry.defaultNav)?.path,
+    });
+    expect(nav.children).toBeUndefined();
   });
 });

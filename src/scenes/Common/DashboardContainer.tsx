@@ -12,6 +12,7 @@ import { checkHasAlerting } from 'utils';
 import { useCheckUptimeSuccessRate } from 'data/useSuccessRates';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { DEFAULT_QUERY_FROM_TIME } from 'components/constants';
+import { getSyntheticsDetailPageNav } from 'page/SyntheticsPageNav';
 import { useDashboardContainerAnnotations } from 'scenes/Common/DashboardContainer.hooks';
 import { DashboardContainerAnnotations } from 'scenes/Common/DashboardContainerAnnotations';
 import { DashboardHeader } from 'scenes/Common/DashboardHeader';
@@ -83,7 +84,10 @@ export const DashboardContainer = ({ check, checkType, children }: DashboardCont
             label={check.target}
             hide={VariableHide.hideVariable}
           >
-            <PluginPage pageNav={{ text: check.job }} renderTitle={() => <h1>{check.job}</h1>}>
+            <PluginPage
+              pageNav={getSyntheticsDetailPageNav('Checks', { text: check.job })}
+              renderTitle={() => <h1>{check.job}</h1>}
+            >
               <Stack direction="column" gap={2}>
                 <DashboardContainerAnnotations annotations={annotations}>
                   <DashboardHeader annotations={annotations} check={check} />
