@@ -31,7 +31,7 @@ function isCreateSecretFormValues(values: SecretFormValues): values is CreateSec
  * @param {boolean} enabled - Whether the query should be enabled
  * @throws {Error} If the query fails - Use ErrorBoundary to catch errors
  */
-export function useSecrets(enabled: boolean) {
+export function useSecrets(enabled: boolean, { throwOnError = true }: { throwOnError?: boolean } = {}) {
   const ctx = useSecretsManagerClient();
   const stackId = ctx?.stackId ?? INACTIVE_STACK_ID;
 
@@ -39,7 +39,7 @@ export function useSecrets(enabled: boolean) {
     // eslint-disable-next-line @tanstack/query/exhaustive-deps -- `ctx` is derived from stackId, which IS in the key
     queryKey: QUERY_KEYS.list(stackId),
     queryFn: () => ctx!.client.fetchAll(),
-    throwOnError: true,
+    throwOnError,
     enabled: enabled && Boolean(ctx),
     select: (secrets) => secrets.map((secret) => ({ ...secret, labels: secret.labels ?? [] })),
   });

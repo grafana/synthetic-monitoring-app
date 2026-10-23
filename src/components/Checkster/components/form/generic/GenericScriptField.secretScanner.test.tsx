@@ -2,7 +2,9 @@ import React from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { screen, waitFor, within } from '@testing-library/react';
 import { UI_TEST_ID } from 'test/dataTestIds';
+import { apiRoute } from 'test/handlers';
 import { render } from 'test/render';
+import { server } from 'test/server';
 import { mockFeatureToggles } from 'test/utils';
 
 import { FeatureName } from 'types';
@@ -39,6 +41,18 @@ function renderScriptField(script: string) {
 }
 
 describe('GenericScriptField secret scanner', () => {
+  it.each([403, 500] as const)('keeps the script editable when loading secrets fails with %s', async (status) => {
+    mockFeatureToggles({ [FeatureName.SecretsManagement]: true });
+    server.use(apiRoute('listSecrets', { result: () => ({ status }) }));
+    const { user } = renderScriptField(SCRIPT_WITH_SECRET);
+
+    expect(await screen.findByText('Unable to load secrets')).toBeInTheDocument();
+    const editor = screen.getByTestId(UI_TEST_ID.codeEditor);
+    await user.type(editor, ' // still editable');
+    expect(editor).toHaveValue(`${SCRIPT_WITH_SECRET} // still editable`);
+    expect(screen.queryByRole('button', { name: 'Move to secret' })).not.toBeInTheDocument();
+  });
+
   afterEach(() => {
     localStorage.clear();
   });
