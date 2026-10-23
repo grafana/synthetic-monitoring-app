@@ -1,8 +1,19 @@
-import { createTheme, FieldType, getDisplayProcessor, LoadingState, ThresholdsMode, toDataFrame } from '@grafana/data';
-import { renderHook, waitFor } from '@testing-library/react';
+import React from 'react';
+import {
+  createTheme,
+  FieldType,
+  getDisplayProcessor,
+  LoadingState,
+  ThemeContext,
+  ThresholdsMode,
+  toDataFrame,
+} from '@grafana/data';
+import { TableCellBackgroundDisplayMode, TableCellDisplayMode } from '@grafana/schema';
+import { TableNG } from '@grafana/ui/unstable';
+import { renderHook, screen, waitFor } from '@testing-library/react';
 import { CHECK_IN_FORBIDDEN_FOLDER, CHECK_IN_PRODUCTION } from 'test/fixtures/folderChecks';
 import { apiRoute } from 'test/handlers';
-import { createWrapper } from 'test/render';
+import { createWrapper, render } from 'test/render';
 import { server } from 'test/server';
 import { mockFeatureToggles, runTestAsRBACReader } from 'test/utils';
 
@@ -64,6 +75,54 @@ describe('summary metric placeholders', () => {
     for (const state of [LoadingState.Loading, LoadingState.Done]) {
       expect(display(state)(0)).toMatchObject({ numeric: 0, color: theme.visualization.getColorByName('red') });
       expect(display(state)(1)).toMatchObject({ numeric: 1, color: theme.visualization.getColorByName('green') });
+    }
+  });
+});
+
+describe('table placeholder backgrounds', () => {
+  it.each(['dark', 'light'] as const)('renders readable placeholders without a fill in the %s theme', async (mode) => {
+    const theme = createTheme({ colors: { mode } });
+    const frame = toDataFrame({
+      fields: [TableCellBackgroundDisplayMode.Basic, TableCellBackgroundDisplayMode.Gradient].map((backgroundMode) => ({
+        name: backgroundMode,
+        type: FieldType.number,
+        values: [null, NaN, 0, 1],
+        config: {
+          mappings: getMetricValueMappings(LoadingState.Done, 'transparent'),
+          thresholds: {
+            mode: ThresholdsMode.Absolute,
+            steps: [
+              { value: -Infinity, color: 'red' },
+              { value: 1, color: 'green' },
+            ],
+          },
+          custom: { cellOptions: { type: TableCellDisplayMode.ColorBackground, mode: backgroundMode } },
+        },
+      })),
+    });
+    for (const field of frame.fields) {
+      field.display = getDisplayProcessor({ field, theme });
+    }
+
+    render(
+      <ThemeContext.Provider value={theme}>
+        <TableNG data={frame} width={600} height={300} enableVirtualization={false} />
+      </ThemeContext.Provider>
+    );
+
+    const placeholders = await screen.findAllByRole('gridcell', { name: 'N/A' });
+    expect(placeholders).toHaveLength(4);
+    for (const cell of placeholders) {
+      expect(cell).toHaveStyle({ color: mode === 'dark' ? 'rgb(247, 248, 250)' : 'rgb(32, 34, 38)' });
+      expect(cell.style.background).toMatch(/transparent|rgba\(\d+, \d+, \d+, 0\)/);
+    }
+
+    // Missing data must not remove the red/green backgrounds from real readings in the same column.
+    for (const value of ['0', '1']) {
+      for (const cell of screen.getAllByRole('gridcell', { name: value })) {
+        expect(cell.style.background).not.toMatch(/transparent|rgba\(\d+, \d+, \d+, 0\)/);
+        expect(cell.style.background).not.toBe('');
+      }
     }
   });
 });

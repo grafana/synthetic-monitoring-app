@@ -306,7 +306,8 @@ export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
 
   const data = dataProvider.useState();
   const transformedData = dataTransformer.useState();
-  const metricValueMappings = getMetricValueMappings(transformedData.data?.state);
+  // In background-colored cells, transparent keeps placeholders on the normal table background.
+  const metricValueMappings = getMetricValueMappings(transformedData.data?.state, 'transparent');
 
   const viz = VizConfigBuilders.table()
     .setCustomFieldConfig('cellOptions', { type: TableCellDisplayMode.Auto })
