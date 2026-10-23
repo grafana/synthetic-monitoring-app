@@ -4,6 +4,7 @@ import { locationService, PluginPage } from '@grafana/runtime';
 import { LinkButton, TextLink } from '@grafana/ui';
 
 import { ExtendedProbe, type Probe, type ProbePageParams } from 'types';
+import { createNavModel } from 'utils';
 import { AppRoutes } from 'routing/types';
 import { generateRoutePath, getRoute } from 'routing/utils';
 import { useExtendedProbe, useUpdateProbe } from 'data/useProbes';
@@ -14,7 +15,7 @@ import { ProbeEditor } from 'components/ProbeEditor';
 import { ProbeSetupModal } from 'components/ProbeSetupModal';
 import { ProbeStatus } from 'components/ProbeStatus';
 import { QueryErrorBoundary } from 'components/QueryErrorBoundary';
-import { getSyntheticsDetailPageNav } from 'page/SyntheticsPageNav';
+import { getSyntheticsSectionNav } from 'page/SyntheticsPageNav';
 
 import { FaroUserAction } from '../../faro';
 import { trackFaroUserAction } from '../../features/tracking/userAction';
@@ -44,7 +45,9 @@ export const EditProbe = ({ forceViewMode }: { forceViewMode?: boolean }) => {
 
   return (
     <PluginPage
-      pageNav={getSyntheticsDetailPageNav('Probes', { text: getTitle(probe, canWriteProbes && !forceViewMode) })}
+      pageNav={createNavModel(getSyntheticsSectionNav('Probes'), [
+        { text: getTitle(probe, canWriteProbes && !forceViewMode) },
+      ])}
       actions={
         canWriteProbes &&
         probe &&

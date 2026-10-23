@@ -89,17 +89,14 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
   };
 }
 
-export function getSyntheticsDetailPageNav(section: 'Checks' | 'Probes', page: NavModelItem): NavModelItem {
+export function getSyntheticsSectionNav(section: 'Checks' | 'Probes'): NavModelItem {
   return {
-    ...page,
+    text: section,
+    url: getRoute(section === 'Checks' ? AppRoutes.Checks : AppRoutes.Probes),
     parentItem: {
-      text: section,
-      url: getRoute(section === 'Checks' ? AppRoutes.Checks : AppRoutes.Probes),
-      parentItem: {
-        text: 'Synthetics',
-        // Match Grafana's section URL so it does not append another Synthetics crumb.
-        url: PLUGIN_URL_PATH.replace(/\/$/, ''),
-      },
+      text: 'Synthetics',
+      // Match Grafana's section URL so it does not append another Synthetics crumb.
+      url: PLUGIN_URL_PATH.replace(/\/$/, ''),
     },
   };
 }

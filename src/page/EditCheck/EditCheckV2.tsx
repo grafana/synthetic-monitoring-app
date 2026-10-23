@@ -21,6 +21,7 @@ import { FORM_SECTION_QUERY_PARAM } from 'components/Checkster/constants';
 import { ChecksterProvider } from 'components/Checkster/contexts/ChecksterContext';
 import { FormSectionName } from 'components/Checkster/types';
 import { useTrackCostLabelsAdded } from 'page/ChecksPageLayout/tabs/Recommendations/Recommendations.analytics';
+import { getSyntheticsSectionNav } from 'page/SyntheticsPageNav';
 
 export const EditCheckV2 = () => {
   const { id } = useParams<CheckPageParams>();
@@ -45,11 +46,14 @@ export const EditCheckV2 = () => {
 
   const navModel = useMemo(() => {
     return createNavModel(
-      {
-        text: check?.job ?? 'unknown',
-        url: check?.id ? generateRoutePath(AppRoutes.CheckDashboard, { id: check.id }) : '',
-      },
-      [{ text: `Edit` }]
+      getSyntheticsSectionNav('Checks'),
+      [
+        {
+          text: check?.job ?? 'unknown',
+          url: check?.id ? generateRoutePath(AppRoutes.CheckDashboard, { id: check.id }) : '',
+        },
+        { text: 'Edit' },
+      ]
     );
   }, [check]);
 
