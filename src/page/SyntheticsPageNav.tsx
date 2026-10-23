@@ -80,12 +80,11 @@ export function getSyntheticsPageNav(activeTab: SyntheticsTab, visibility: Synth
     active: isConfiguration,
   });
 
-  const selectedTab = tabs.find((tab) => tab.active);
-
   return {
-    text: selectedTab?.text ?? 'Synthetics',
-    // Overview needs a distinct URL so Grafana preserves the parent Synthetics crumb.
-    url: isOverview ? OVERVIEW_BREADCRUMB_URL : selectedTab?.url,
+    // Grafana appends the active child as a breadcrumb except for the first tab.
+    // Keep the parent at Synthetics; naming it after the active tab duplicates that crumb.
+    text: isOverview ? 'Overview' : 'Synthetics',
+    url: isOverview ? OVERVIEW_BREADCRUMB_URL : getRoute(AppRoutes.Home),
     children: tabs,
   };
 }

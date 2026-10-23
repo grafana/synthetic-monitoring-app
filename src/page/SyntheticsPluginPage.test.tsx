@@ -97,12 +97,18 @@ describe('getSyntheticsPageNav', () => {
     [SyntheticsTab.Recommendations, 'Recommendations', AppRoutes.CheckRecommendations],
     [SyntheticsTab.CheckSuggestions, 'Check Suggestions', AppRoutes.ReliabilityInbox],
     [SyntheticsTab.Configuration, 'Configuration', AppRoutes.Config],
-  ])('shows a breadcrumb for the %s tab', (tab, label, route) => {
+  ])('lets Grafana append the %s tab once after the Synthetics breadcrumb', (tab, label, route) => {
     const nav = getSyntheticsPageNav(tab, ALL_TABS_VISIBLE);
 
-    expect(nav.text).toBe(label);
+    expect(nav.text).toBe('Synthetics');
+    expect(nav.url).toBe(getRoute(AppRoutes.Home));
     expect(nav.hideFromBreadcrumbs).toBeFalsy();
-    expect(nav.url?.split('?')[0]).toBe(getRoute(route));
+    const activeIndex = nav.children?.findIndex((child) => child.active) ?? -1;
+    // Grafana adds the active child only when its index is greater than zero.
+    expect(activeIndex).toBeGreaterThan(0);
+    const activeChild = nav.children?.[activeIndex];
+    expect(activeChild?.text).toBe(label);
+    expect(activeChild?.url?.split('?')[0]).toBe(getRoute(route));
   });
 
   it.each(['Recommendations', 'Check Suggestions'])('shows the NEW badge on the %s tab', (text) => {
