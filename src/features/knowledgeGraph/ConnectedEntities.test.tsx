@@ -7,9 +7,9 @@ import { mockFeatureToggles } from 'test/utils';
 
 import { Check, FeatureName } from 'types';
 
-import { ConnectedServices } from './ConnectedServices';
-import { CONNECTED_SERVICES_TEST_ID } from './ConnectedServices.constants';
-import { ExposedMiniGraphProps } from './ConnectedServicesMiniGraph';
+import { ConnectedEntities } from './ConnectedEntities';
+import { CONNECTED_ENTITIES_TEST_ID } from './ConnectedEntities.constants';
+import { ExposedMiniGraphProps } from './ConnectedEntitiesMiniGraph';
 import { KG_ENTITY_GRAPH_COMPONENT_ID } from './knowledgeGraph';
 
 const mockUseAppPluginInstalled = useAppPluginInstalled as jest.Mock;
@@ -49,7 +49,7 @@ function setExposedMiniGraph(Stub: React.ComponentType<ExposedMiniGraphProps>) {
 }
 
 beforeEach(() => {
-  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true });
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: true });
   setKgInstalled(true);
   setExposedMiniGraph(() => <div>exposed mini graph</div>);
 });
@@ -68,40 +68,40 @@ const LINKED_CHECK = checkWithLabels([
 ]);
 
 async function renderSection(check: Check) {
-  const result = render(<ConnectedServices check={check} />);
-  await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.section);
+  const result = render(<ConnectedEntities check={check} />);
+  await screen.findByTestId(CONNECTED_ENTITIES_TEST_ID.section);
   return result;
 }
 
 it('renders nothing when the Knowledge Graph app is not installed', async () => {
   setKgInstalled(false);
-  render(<ConnectedServices check={LINKED_CHECK} />);
+  render(<ConnectedEntities check={LINKED_CHECK} />);
 
-  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_ENTITIES_TEST_ID.section)).not.toBeInTheDocument();
 });
 
 it('renders nothing when the feature flag is disabled, even with the app installed', async () => {
   mockFeatureToggles({ [FeatureName.KnowledgeGraph]: false });
-  render(<ConnectedServices check={LINKED_CHECK} />);
+  render(<ConnectedEntities check={LINKED_CHECK} />);
 
-  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_ENTITIES_TEST_ID.section)).not.toBeInTheDocument();
 });
 
 it('renders nothing when the KG does not expose the mini graph (asserts app predating it)', async () => {
   // The exposed component is the section's only renderer — no SM-owned fallback.
   jest.mocked(usePluginComponent).mockImplementation(() => ({ component: null, isLoading: false }));
-  render(<ConnectedServices check={LINKED_CHECK} />);
+  render(<ConnectedEntities check={LINKED_CHECK} />);
 
-  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.section)).not.toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_ENTITIES_TEST_ID.section)).not.toBeInTheDocument();
 });
 
 it('is expanded on load and shows the zero state for an unlinked check', async () => {
   await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
-  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
-  expect(screen.getByText('Connect this check to a service')).toBeInTheDocument();
-  // The CTA deep links to the Labels section of the edit form, where the KG service link lives.
-  expect(screen.getByRole('link', { name: /Add service link/ })).toHaveAttribute(
+  expect(screen.getByTestId(CONNECTED_ENTITIES_TEST_ID.zeroState)).toBeInTheDocument();
+  expect(screen.getByText('Connect this check to a service or frontend application')).toBeInTheDocument();
+  // The CTA deep links to the Labels section of the edit form, where KG connections live.
+  expect(screen.getByRole('link', { name: /Add connection/ })).toHaveAttribute(
     'href',
     expect.stringContaining('/edit?section=labels')
   );
@@ -118,16 +118,16 @@ it('renders the feature feedback widget in the section header', async () => {
 it('can be collapsed and expanded again', async () => {
   const { user } = await renderSection(checkWithLabels([{ name: 'Team', value: 'platform' }]));
 
-  const toggle = screen.getByRole('button', { name: 'Connected services' });
+  const toggle = screen.getByRole('button', { name: 'Connected entities' });
   expect(toggle).toHaveAttribute('aria-expanded', 'true');
 
   await user.click(toggle);
   expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  expect(screen.queryByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).not.toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_ENTITIES_TEST_ID.zeroState)).not.toBeInTheDocument();
 
   await user.click(toggle);
   expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  expect(screen.getByTestId(CONNECTED_SERVICES_TEST_ID.zeroState)).toBeInTheDocument();
+  expect(screen.getByTestId(CONNECTED_ENTITIES_TEST_ID.zeroState)).toBeInTheDocument();
 });
 
 it('renders the exposed mini graph for a linked check, check-anchored and top-to-bottom', async () => {
@@ -139,13 +139,11 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
 
   await renderSection(LINKED_CHECK);
 
-  expect(await screen.findByTestId(CONNECTED_SERVICES_TEST_ID.exposedGraph)).toBeInTheDocument();
+  expect(await screen.findByTestId(CONNECTED_ENTITIES_TEST_ID.exposedGraph)).toBeInTheDocument();
   expect(screen.getByText('exposed mini graph')).toBeInTheDocument();
 
   const props = received.at(-1)!;
   expect(props.cypherQuery).toContain(`${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`);
-  // Preserve services without CALLS neighbours while expanding at most one hop.
-  expect(props.cypherQuery).toContain('MATCH (s1)-[:CALLS*0..1]-(neighbour:Service)');
   expect(props.start).toBe(Date.parse(MOCK_TIME_RANGE_FROM));
   expect(props.end).toBe(Date.parse(MOCK_TIME_RANGE_TO));
   // The check anchors the ranked layout (first rank + halo); TB puts the shallow neighbourhood's
@@ -163,7 +161,27 @@ it('renders the exposed mini graph for a linked check, check-anchored and top-to
   expect(props.onNodeClick).toBeUndefined();
 });
 
-it('links the section header to this check and its services in the KG entity graph', async () => {
+it.each([
+  ['a service', LINKED_CHECK],
+  ['a frontend application', checkWithLabels([{ name: 'feo11y_app_id', value: '229' }])],
+  ['both', checkWithLabels([...LINKED_CHECK.labels!, { name: 'feo11y_app_id', value: '229' }])],
+])('shows the graph and link for a check associated with %s', async (_, check) => {
+  await renderSection(check);
+
+  expect(screen.getByRole('heading', { name: 'Connected entities' })).toBeInTheDocument();
+  expect(screen.getByTestId(CONNECTED_ENTITIES_TEST_ID.exposedGraph)).toBeInTheDocument();
+  expect(screen.queryByTestId(CONNECTED_ENTITIES_TEST_ID.zeroState)).not.toBeInTheDocument();
+  expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ })).toBeInTheDocument();
+});
+
+it('keeps the zero state when the frontend association is empty', async () => {
+  await renderSection(checkWithLabels([{ name: 'feo11y_app_id', value: '' }]));
+
+  expect(screen.getByTestId(CONNECTED_ENTITIES_TEST_ID.zeroState)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /Open in Knowledge Graph/ })).not.toBeInTheDocument();
+});
+
+it('links the section header to this check, its services, and its frontends in the KG entity graph', async () => {
   await renderSection(LINKED_CHECK);
 
   const headerLink = screen.getByRole('link', { name: /Open in Knowledge Graph/ });
@@ -174,9 +192,33 @@ it('links the section header to this check and its services in the KG entity gra
     `${BASIC_HTTP_CHECK.job}__${BASIC_HTTP_CHECK.target}`
   );
   expect(params.get('filterCriteria[0][connectToEntityTypes][0]')).toBe('Service');
+  expect(params.get('filterCriteria[0][connectToEntityTypes][1]')).toBe('Frontend');
   expect(params.get('view')).toBe('graph');
-  expect(params.get('filterCriteria[1][entityType]')).toBe('Service');
-  expect(params.get('filterCriteria[1][connectToEntityTypes][0]')).toBe('Service');
   expect(params.get('start')).toBe(String(Date.parse(MOCK_TIME_RANGE_FROM)));
   expect(params.get('end')).toBe(String(Date.parse(MOCK_TIME_RANGE_TO)));
+});
+
+it('uses service-only setup copy when the Frontend flag is off', async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+  await renderSection(checkWithLabels([]));
+  expect(screen.getByText('Connect this check to a service')).toBeInTheDocument();
+});
+
+it('treats a frontend-only label as an ordinary custom label when its flag is off', async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+  await renderSection(checkWithLabels([{ name: 'feo11y_app_id', value: '229' }]));
+  expect(screen.getByTestId(CONNECTED_ENTITIES_TEST_ID.zeroState)).toBeInTheDocument();
+  expect(screen.queryByRole('link', { name: /Open in Knowledge Graph/ })).not.toBeInTheDocument();
+});
+
+it('keeps service graph queries and links free of Frontend criteria when its flag is off', async () => {
+  mockFeatureToggles({ [FeatureName.KnowledgeGraph]: true, [FeatureName.KnowledgeGraphFrontend]: false });
+  const received: ExposedMiniGraphProps[] = [];
+  setExposedMiniGraph((props) => {
+    received.push(props);
+    return <div>exposed mini graph</div>;
+  });
+  await renderSection(LINKED_CHECK);
+  expect(received.at(-1)!.cypherQuery).not.toContain('Frontend');
+  expect(screen.getByRole('link', { name: /Open in Knowledge Graph/ }).getAttribute('href')).not.toContain('Frontend');
 });

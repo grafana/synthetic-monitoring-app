@@ -4,8 +4,8 @@ import { ComboboxOption } from '@grafana/ui';
 
 import { CheckFormValues, Label } from 'types';
 
-import { findLabelValue, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
-import { useKnowledgeGraphEnabled } from './knowledgeGraph.hooks';
+import { findLabelValue, KG_FRONTEND_APP_ID_LABEL, KG_NAMESPACE_LABEL, KG_SERVICE_NAME_LABEL } from './knowledgeGraph';
+import { useKnowledgeGraphEnabled, useKnowledgeGraphFrontendEnabled } from './knowledgeGraph.hooks';
 import { fetchServiceMatchExists, fetchServiceNames, fetchServiceNamespaces } from './knowledgeGraphApi';
 
 export interface KGReservedLabels {
@@ -14,7 +14,7 @@ export interface KGReservedLabels {
 }
 
 /**
- * The label names managed by the KG service-link section (`service_name` / `namespace`),
+ * The label names managed by the KG connections section (service, namespace, and frontend app ID),
  * for hiding them from the custom-label rows and redirecting users who type them there.
  * Returns `undefined` when the Knowledge Graph integration is not enabled (app not installed
  * or feature flag off) — the names are then ordinary custom labels and no restriction applies.
@@ -26,6 +26,7 @@ export interface KGReservedLabels {
  */
 export function useKGReservedLabels(): KGReservedLabels | undefined {
   const kgEnabled = useKnowledgeGraphEnabled();
+  const frontendEnabled = useKnowledgeGraphFrontendEnabled();
   const { watch } = useFormContext<CheckFormValues>();
   const calLabels = watch('calLabels') ?? [];
 
@@ -33,14 +34,18 @@ export function useKGReservedLabels(): KGReservedLabels | undefined {
     return undefined;
   }
 
-  const names = [KG_SERVICE_NAME_LABEL, KG_NAMESPACE_LABEL].filter(
-    (name) => !calLabels.some((label) => label.name === name)
-  );
+  const names = [
+    KG_SERVICE_NAME_LABEL,
+    KG_NAMESPACE_LABEL,
+    ...(frontendEnabled ? [KG_FRONTEND_APP_ID_LABEL] : []),
+  ].filter((name) => !calLabels.some((label) => label.name === name));
 
   return {
     names,
     message: (name: string) =>
-      `${name} is used for service connections. Select a service above to connect this check, or use a different name for your custom label.`,
+      name === KG_FRONTEND_APP_ID_LABEL
+        ? `${name} is used for frontend connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.`
+        : `${name} is used for service connections. Manage this label in Knowledge Graph connections above, or use a different name for your custom label.`,
   };
 }
 
@@ -55,11 +60,12 @@ function upsertLabel(labels: Label[], name: string, value: string): Label[] {
 export interface KGLinkedLabel {
   value: string | undefined;
   isCalManaged: boolean;
+  isAtLimit?: boolean;
   onChange: (value: string) => void;
 }
 
 /**
- * CAL-aware accessor for a KG-linked label (`service_name` / `namespace`).
+ * CAL-aware accessor for a KG connection label.
  *
  * When the tenant declares the label as a cost attribution label its value lives in
  * `calLabels` (the row is kept and its value emptied on clear, since CAL rows are fixed);
@@ -67,7 +73,7 @@ export interface KGLinkedLabel {
  * Both the KG service-link section and the CAL rows edit through the same form paths,
  * so the two surfaces stay in sync automatically.
  */
-export function useKGLinkedLabel(labelName: string): KGLinkedLabel {
+export function useKGLinkedLabel(labelName: string, labelLimit?: number): KGLinkedLabel {
   const { watch, getValues, setValue } = useFormContext<CheckFormValues>();
   const labels = watch('labels') ?? [];
   const calLabels = watch('calLabels') ?? [];
@@ -90,12 +96,26 @@ export function useKGLinkedLabel(labelName: string): KGLinkedLabel {
         return;
       }
 
-      setValue('labels', upsertLabel(getValues('labels') ?? [], labelName, nextValue), { shouldDirty: true });
+      const currentLabels = getValues('labels') ?? [];
+      if (
+        nextValue &&
+        labelLimit !== undefined &&
+        currentLabels.length >= labelLimit &&
+        !currentLabels.some((label) => label.name === labelName)
+      ) {
+        return;
+      }
+      setValue('labels', upsertLabel(currentLabels, labelName, nextValue), { shouldDirty: true });
     },
-    [getValues, labelName, setValue]
+    [getValues, labelName, labelLimit, setValue]
   );
 
-  return { value, isCalManaged, onChange };
+  const isAtLimit =
+    !isCalManaged &&
+    labelLimit !== undefined &&
+    labels.length >= labelLimit &&
+    !labels.some((label) => label.name === labelName);
+  return { value, isCalManaged, isAtLimit, onChange };
 }
 
 export type KGServiceProperty = 'name' | 'namespace';

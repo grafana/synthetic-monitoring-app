@@ -20,8 +20,8 @@ export function GenericLabelContent({ description, isLoading, labelLimit }: Gene
   const {
     formState: { errors },
   } = useFormContext<CheckFormValues>();
-  // service_name / namespace belong to the KG service-link section when the KG app is
-  // installed: their rows are hidden here and typing them shows a redirect message.
+  // Enabled KG connections own service_name / namespace and, when enabled, feo11y_app_id.
+  // Their rows are hidden here and typing them shows a redirect message.
   const kgReservedLabels = useKGReservedLabels();
   const { data: labelModeState } = useLabelMode();
   // Unknown (still loading) defaults to showing the hint, matching pre-migration behavior.

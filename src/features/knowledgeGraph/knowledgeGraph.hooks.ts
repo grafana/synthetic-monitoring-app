@@ -23,3 +23,10 @@ export function useKnowledgeGraphEnabled(): boolean {
 
   return isEnabled && Boolean(kgInstalled);
 }
+
+/** Frontend support rolls out separately, after its backend relationship rule is available. */
+export function useKnowledgeGraphFrontendEnabled(): boolean {
+  const kgEnabled = useKnowledgeGraphEnabled();
+  const { isEnabled } = useFeatureFlag(FeatureName.KnowledgeGraphFrontend);
+  return kgEnabled && isEnabled;
+}

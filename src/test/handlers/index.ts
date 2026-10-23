@@ -33,6 +33,7 @@ import { listAlertsForCheck, updateAlertsForCheck } from './alerts';
 import { createFolder, deleteFolder, getFolder, listFolders, moveFolder } from './folders';
 import { listFaroSourceMaps } from './frontendContext';
 import { listK6Channels } from './k6Channels';
+import { getKnowledgeGraphPropertyValues, searchKnowledgeGraphEntities } from './knowledgeGraph';
 import { evaluateFeatureFlags } from './openfeature';
 import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
@@ -87,6 +88,8 @@ const API_ROUTES = {
   updateSecret,
   updateTenantSettings,
   listK6Channels,
+  getKnowledgeGraphPropertyValues,
+  searchKnowledgeGraphEntities,
   reliabilityInboxHealth,
   reliabilityInboxSuggestions,
 };
