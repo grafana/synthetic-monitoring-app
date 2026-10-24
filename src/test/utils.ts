@@ -405,6 +405,18 @@ export function runTestWithoutPermissions(...permissions: PluginPermissions[]) {
   });
 }
 
+export function runTestWithoutGlobalPermissions(...actions: string[]) {
+  const { contextSrv } = require('grafana/app/core/core');
+  const mockImplementation = (action: unknown) => !actions.includes(action as string);
+
+  if (jest.isMockFunction(contextSrv.hasPermission)) {
+    contextSrv.hasPermission.mockImplementation(mockImplementation);
+    return;
+  }
+
+  jest.spyOn(contextSrv, 'hasPermission').mockImplementation(mockImplementation);
+}
+
 function runTestAsSecretsWithPermissions(permissions: Record<string, boolean>) {
   const runtime = require('@grafana/runtime');
   jest.replaceProperty(runtime, `config`, {

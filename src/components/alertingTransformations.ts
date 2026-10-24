@@ -28,8 +28,8 @@ const isAlertSensitivity = (value: string): AlertSensitivity | undefined => {
     : undefined;
 };
 
-export const alertDescriptionFromRule = (rule: AlertRule): AlertDescription | undefined => {
-  const result = ALERT_RULE_EXPR_REGEX.exec(rule.expr);
+export const alertDescriptionFromExpr = (expr: string): AlertDescription | undefined => {
+  const result = ALERT_RULE_EXPR_REGEX.exec(expr);
   if (!result) {
     return undefined;
   }
@@ -47,3 +47,6 @@ export const alertDescriptionFromRule = (rule: AlertRule): AlertDescription | un
   };
   return desc;
 };
+
+export const alertDescriptionFromRule = (rule: AlertRule): AlertDescription | undefined =>
+  alertDescriptionFromExpr(rule.expr);

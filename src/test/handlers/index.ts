@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { getAlertRules, getGrafanaAlertRules, getPromAlertRules } from 'test/handlers/alerting';
+import { getAlertRules, getGrafanaAlertRules, getPromAlertRules, updateAlertRules } from 'test/handlers/alerting';
 import {
   addCheck,
   bulkUpdateChecks,
@@ -82,6 +82,7 @@ const API_ROUTES = {
   renameCheckLabels,
   setLabelMode,
   testCheck,
+  updateAlertRules,
   updateAlertsForCheck,
   updateCheck,
   updateProbe,

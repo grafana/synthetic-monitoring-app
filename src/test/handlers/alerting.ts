@@ -71,6 +71,17 @@ export const getPromAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
   },
 };
 
+export const updateAlertRules: ApiEntry<{ message: string }> = {
+  route: `/api/ruler/${METRICS_DATASOURCE.uid}/api/v1/rules/synthetic_monitoring`,
+  method: `post`,
+  result: () => {
+    return {
+      status: 202,
+      json: { message: 'rule group updated successfully' },
+    };
+  },
+};
+
 export const getGrafanaAlertRules: ApiEntry<ListPrometheusAlertsResponse> = {
   route: `/api/prometheus/grafana/api/v1/rules`,
   method: `get`,

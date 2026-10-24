@@ -9,6 +9,7 @@ import { css } from '@emotion/css';
 import { ALERT_TEST_ID } from 'test/dataTestIds';
 
 import { AlertRule, AlertSensitivity, Label as LabelType, TimeUnits } from 'types';
+import { getFetchErrorMessage } from 'data/utils';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 
 import { AlertAnnotations } from './AlertAnnotations';
@@ -181,8 +182,7 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
       setIsOpen(false);
       return Promise.resolve();
     } catch (e) {
-      const err = e as Error;
-      return Promise.reject(err.message ?? 'Something went wrong');
+      throw new Error(getFetchErrorMessage(e, 'Something went wrong'));
     }
   });
 
@@ -223,7 +223,8 @@ export const AlertRuleForm = ({ canEdit, rule, onSubmit }: Props) => {
         </button>
       ) : (
         <FormProvider {...formMethods}>
-          <form className={styles.container} onSubmit={handleSubmit(execute)}>
+          {/* The failure is shown from `error` below. */}
+          <form className={styles.container} onSubmit={handleSubmit((values) => execute(values).catch(() => {}))}>
             <Field label="Alert name">
               <Input {...register('name', { required: true })} id="alert-name" disabled={!canEdit} />
             </Field>
