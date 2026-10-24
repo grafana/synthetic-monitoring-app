@@ -48,6 +48,8 @@ export interface FolderInfo {
  * These are options configured for each DataSource instance
  */
 export interface SMOptions extends DataSourceJsonData {
+  /** Proposed #710 link; optional until the provisioning contract is agreed. */
+  screenshots?: { uid: string };
   apiHost: string;
   metrics: LinkedDatasourceInfo;
   initialized?: boolean;

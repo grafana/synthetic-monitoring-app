@@ -7,21 +7,21 @@ import { trackScreenshotDismissed, trackScreenshotExpanded } from 'features/trac
 import { sanitizeScreenshotSrc } from './screenshots.utils';
 
 interface ScreenshotThumbnailProps {
-  base64?: string;
   url?: string;
   caption?: string;
+  onError?: () => void;
 }
 
-export const ScreenshotThumbnail = ({ base64, url, caption }: ScreenshotThumbnailProps) => {
+export const ScreenshotThumbnail = ({ url, caption, onError }: ScreenshotThumbnailProps) => {
   const styles = useStyles2(getStyles);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const src = sanitizeScreenshotSrc(url, base64);
+  const src = sanitizeScreenshotSrc(url);
   const alt = caption || 'Screenshot';
 
   const handleExpand = useCallback(() => {
-    trackScreenshotExpanded({ hasCaption: !!caption, source: url ? 'url' : 'base64' });
+    trackScreenshotExpanded({ hasCaption: !!caption, source: 'url' });
     setIsModalOpen(true);
-  }, [caption, url]);
+  }, [caption]);
 
   const handleDismiss = useCallback(() => {
     trackScreenshotDismissed();
@@ -42,7 +42,7 @@ export const ScreenshotThumbnail = ({ base64, url, caption }: ScreenshotThumbnai
           onClick={handleExpand}
           aria-label={`View full size: ${alt}`}
         >
-          <img src={src} alt={alt} className={styles.thumbnail} />
+          <img onError={onError} src={src} alt={alt} className={styles.thumbnail} />
         </button>
       </div>
       {isModalOpen && (
@@ -54,7 +54,7 @@ export const ScreenshotThumbnail = ({ base64, url, caption }: ScreenshotThumbnai
           contentClassName={styles.modalContent}
         >
           <div className={styles.modalImageContainer}>
-            <img src={src} alt={alt} className={styles.modalImage} />
+            <img onError={onError} src={src} alt={alt} className={styles.modalImage} />
           </div>
         </Modal>
       )}

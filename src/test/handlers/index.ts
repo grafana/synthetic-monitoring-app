@@ -36,6 +36,7 @@ import { listK6Channels } from './k6Channels';
 import { getKnowledgeGraphPropertyValues, searchKnowledgeGraphEntities } from './knowledgeGraph';
 import { evaluateFeatureFlags } from './openfeature';
 import { reliabilityInboxHealth, reliabilityInboxSuggestions } from './reliabilityInbox';
+import { getSagaScreenshot } from './saga';
 import { createSecret, deleteSecret, getSecret, listSecrets, updateSecret } from './secrets';
 
 const API_ROUTES = {
@@ -92,6 +93,7 @@ const API_ROUTES = {
   searchKnowledgeGraphEntities,
   reliabilityInboxHealth,
   reliabilityInboxSuggestions,
+  getSagaScreenshot,
 };
 
 export type ApiRoutes = typeof API_ROUTES;

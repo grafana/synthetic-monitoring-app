@@ -1,58 +1,86 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { ScreenshotData } from './screenshots.types';
 import { useSMDS } from 'hooks/useSMDS';
 
-import { SCREENSHOT_LOG_SOURCE } from './screenshots.constants';
-import { assembleChunkedScreenshots, extractFrameLines } from './screenshots.utils';
+import { getScreenshotDatasource, lookupSagaScreenshot, ScreenshotLookupError } from './saga';
 
-/**
- * Fetches screenshot data for the given UUIDs. The screenshot log lines can
- * contain either inline base64 data (optionally chunked) or a URL reference
- * to external storage (e.g. S3/GCS). Both formats are handled transparently.
- * Tracks which UUIDs have already been fetched to avoid duplicate requests.
- * Pass an empty array to skip fetching entirely (e.g. when the feature flag is off).
- */
-export function useScreenshots(uuids: string[], from: number | string, to: number | string): Map<string, ScreenshotData> {
+/** Resolve UUID markers from execution logs directly through Saga via Infinity. */
+export function useScreenshots(
+  uuids: string[],
+  from: number | string,
+  to: number | string
+): Map<string, ScreenshotData> {
   const dataSource = useSMDS();
-  const [screenshotsByUUID, setScreenshotsByUUID] = useState<Map<string, ScreenshotData>>(new Map());
-  const fetchedUUIDsRef = useRef<Set<string>>(new Set());
+  const datasourceUID = getScreenshotDatasource(dataSource.instanceSettings?.jsonData.screenshots?.uid)?.uid;
+  // Equivalent marker arrays must not cancel/restart requests on each render.
+  const uuidKey = JSON.stringify([...new Set(uuids)]);
+  const scope = JSON.stringify([uuidKey, from, to, datasourceUID]);
+  const [state, setState] = useState<{ scope: string; images: Map<string, ScreenshotData> }>({
+    scope,
+    images: new Map(),
+  });
 
   useEffect(() => {
-    const newUUIDs = uuids.filter((uuid) => !fetchedUUIDsRef.current.has(uuid));
-
-    if (newUUIDs.length === 0) {
-      return;
-    }
-
+    const ids: string[] = JSON.parse(uuidKey);
     let cancelled = false;
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
+    const inFlight = new Set<string>();
+    const update = (id: string, image: ScreenshotData) => {
+      if (!cancelled) {
+        setState((prev) => ({ scope, images: new Map(prev.images).set(id, image) }));
+      }
+    };
+    setState({ scope, images: new Map(ids.map((id) => [id, { id, status: 'loading' }])) });
 
-    const fetchScreenshots = async () => {
+    const fetchSaga = async (id: string) => {
+      if (cancelled || inFlight.has(id)) {
+        return;
+      }
+      clearTimeout(timers.get(id));
+      if (!datasourceUID) {
+        update(id, { id, status: 'missing-datasource' });
+        return;
+      }
+      inFlight.add(id);
+      // Keep the mounted thumbnail/modal while refreshing a previously resolved URL.
+      setState((prev) => ({
+        scope,
+        images: new Map(prev.images).set(
+          id,
+          prev.images.get(id)?.url ? prev.images.get(id)! : { id, status: 'loading' }
+        ),
+      }));
       try {
-        const uuidPattern = newUUIDs.join('|');
-        const expr = `{source="${SCREENSHOT_LOG_SOURCE}"} |~ "${uuidPattern}" | json`;
-        const result = await dataSource.queryLogsV2(expr, from, to);
-
+        const image = await lookupSagaScreenshot(id, datasourceUID);
         if (cancelled) {
           return;
         }
-
-        const lines = extractFrameLines(result);
-        const dataMap = assembleChunkedScreenshots(lines);
-
-        setScreenshotsByUUID((prev) => new Map([...prev, ...dataMap]));
-        newUUIDs.forEach((uuid) => fetchedUUIDsRef.current.add(uuid));
-      } catch {
-        // Screenshots are supplementary -- silently degrade
+        update(id, { ...image, retry: () => void fetchSaga(id) });
+        // Refresh just before expiry. Reject already-expired metadata in the adapter
+        // so a bad response cannot create an immediate, unbounded refresh loop.
+        const remaining = image.expiresAt! - Date.now();
+        timers.set(
+          id,
+          setTimeout(() => void fetchSaga(id), Math.min(Math.max(remaining - 1000, remaining / 2), 2147483647))
+        );
+      } catch (error) {
+        update(id, {
+          id,
+          status: error instanceof ScreenshotLookupError ? error.kind : 'error',
+          retry: () => void fetchSaga(id),
+        });
+      } finally {
+        inFlight.delete(id);
       }
     };
 
-    fetchScreenshots();
-
+    ids.forEach((id) => void fetchSaga(id));
     return () => {
       cancelled = true;
+      timers.forEach(clearTimeout);
     };
-  }, [uuids, dataSource, from, to]);
+  }, [uuidKey, scope, datasourceUID]);
 
-  return screenshotsByUUID;
+  return state.scope === scope ? state.images : new Map();
 }

@@ -6,9 +6,9 @@ import { css, cx } from '@emotion/css';
 import { LogEntry } from './types.adhoc-check';
 import { FeatureName } from 'types';
 import { useFeatureFlag } from 'hooks/useFeatureFlag';
+import { ResolvedScreenshot } from 'scenes/components/LogsRenderer/screenshots/ResolvedScreenshot';
 import { SCREENSHOT_PATTERN } from 'scenes/components/LogsRenderer/screenshots/screenshots.constants';
 import { useScreenshots } from 'scenes/components/LogsRenderer/screenshots/screenshots.hooks';
-import { ScreenshotThumbnail } from 'scenes/components/LogsRenderer/screenshots/ScreenshotThumbnail';
 
 import { REDUNDANT_FIRST_LINES } from './constants';
 import { LogDetails } from './LogDetails';
@@ -56,11 +56,7 @@ export function LogItem({ log, from, to }: { log: LogEntry; from: number | strin
   if (screenshotData) {
     return (
       <div className={styles.container}>
-        <ScreenshotThumbnail
-          base64={screenshotData.screenshot_base64}
-          url={screenshotData.screenshot_url}
-          caption={screenshotData.caption}
-        />
+        <ResolvedScreenshot screenshot={screenshotData} />
       </div>
     );
   }

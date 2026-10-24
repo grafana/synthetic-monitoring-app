@@ -8,7 +8,7 @@ import { ScriptedCheckContent } from './ScriptedCheckContent';
 
 export const BROWSER_CHECK_FIELDS = ['job', 'target', 'folderUid', 'channels.k6', 'settings.browser.script'];
 
-const SCREENSHOT_EXAMPLE_VALUES = ['screenshotsLoki.js', 'screenshotsGCS.js'];
+const SCREENSHOT_EXAMPLE_VALUES = ['screenshots.js'];
 
 export function BrowserCheckContent() {
   const { isEnabled: screenshotsEnabled } = useFeatureFlag(FeatureName.Screenshots);
@@ -21,10 +21,5 @@ export function BrowserCheckContent() {
     [screenshotsEnabled]
   );
 
-  return (
-    <ScriptedCheckContent
-      scriptField="settings.browser.script"
-      examples={examples}
-    />
-  );
+  return <ScriptedCheckContent scriptField="settings.browser.script" examples={examples} />;
 }
