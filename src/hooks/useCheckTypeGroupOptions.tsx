@@ -13,6 +13,8 @@ import { useIsFeatureEnabled } from './useFeatureFlag';
 
 export type ProtocolOption = {
   label: string;
+  /** The check type this protocol creates, when it maps to exactly one. */
+  checkType?: CheckType;
   tooltip?: ReactNode;
   href?: string;
   featureToggle?: FeatureName | undefined;
@@ -40,6 +42,7 @@ export const CHECK_TYPE_GROUP_OPTIONS: CheckTypeGroupOption[] = [
     icon: `heart-rate`,
     protocols: CHECK_TYPE_OPTIONS.filter((option) => option.group === CheckTypeGroup.ApiTest).map((option) => ({
       label: option.label,
+      checkType: option.value,
       href: `${getRoute(AppRoutes.NewCheck)}/${CheckTypeGroup.ApiTest}?checkType=${option.value}`,
       featureToggle: option.featureToggle,
       onClick: () => trackAndStartUserAction(CheckTypeGroup.ApiTest, option.value),
