@@ -69,7 +69,7 @@ function getStyles(theme: GrafanaTheme2) {
       label: 'testing-synthetics-product-panel',
       padding: theme.spacing(3),
       borderRadius: theme.shape.radius.default,
-      background: theme.colors.background.secondary,
+      background: theme.colors.background.primary,
     }),
     logo: css({
       label: 'testing-synthetics-product-panel-logo',
