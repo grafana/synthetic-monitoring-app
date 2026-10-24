@@ -1,13 +1,14 @@
 import { ComponentType } from 'react';
 import { IconName } from '@grafana/ui';
 
-import { CheckAlertDraft, CheckType } from 'types';
+import { CheckAlertDraft, CheckTemplateId, CheckType } from 'types';
 
+import { AgenticJourneyDrawer } from './AgenticJourneyDrawer';
 import { BrokenLinksDrawer } from './BrokenLinksDrawer';
-import { BROKEN_LINKS_ALERTS } from './templateAlerts';
+import { AGENTIC_JOURNEY_ALERTS, BROKEN_LINKS_ALERTS } from './templateAlerts';
 
 export interface CheckTemplateDefinition {
-  id: 'broken_links';
+  id: CheckTemplateId;
   title: string;
   icon: IconName;
   description: string;
@@ -25,5 +26,14 @@ export const CHECK_TEMPLATES: CheckTemplateDefinition[] = [
     checkType: CheckType.Browser,
     Drawer: BrokenLinksDrawer,
     alerts: BROKEN_LINKS_ALERTS,
+  },
+  {
+    id: 'agentic_journey',
+    title: 'Agentic journey',
+    icon: 'sitemap',
+    description: 'Describe the steps of a flow in plain language and have AI run them.',
+    checkType: CheckType.Browser,
+    Drawer: AgenticJourneyDrawer,
+    alerts: AGENTIC_JOURNEY_ALERTS,
   },
 ];
