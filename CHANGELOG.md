@@ -1,5 +1,35 @@
 # Changelog
 
+## [1.66.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.65.0...v1.66.0) (2026-10-24)
+
+
+### Features
+
+* add Recommendations tab to the Checks page (M1) ([#1854](https://github.com/grafana/synthetic-monitoring-app/issues/1854)) ([f415b98](https://github.com/grafana/synthetic-monitoring-app/commit/f415b98e464a61add5958cae71de12f2ba83fb3e))
+* add Synthetics page tabs and vertical configuration nav ([#1871](https://github.com/grafana/synthetic-monitoring-app/issues/1871)) ([255d75c](https://github.com/grafana/synthetic-monitoring-app/commit/255d75c709f7d0ecce989362628664c126352fde))
+* **knowledge-graph:** connect checks to frontend applications ([#1919](https://github.com/grafana/synthetic-monitoring-app/issues/1919)) ([a82e5c7](https://github.com/grafana/synthetic-monitoring-app/commit/a82e5c72d6d2cfd619bfc76b7b6edcb21e8358f8))
+* **probes:** guide users off deprecated probes ([#1917](https://github.com/grafana/synthetic-monitoring-app/issues/1917)) ([351103e](https://github.com/grafana/synthetic-monitoring-app/commit/351103e4eda817886adaeeac5f0a461ae45d468e))
+* real-user build, failure and journey context for browser checks ([#1870](https://github.com/grafana/synthetic-monitoring-app/issues/1870)) ([037f537](https://github.com/grafana/synthetic-monitoring-app/commit/037f537c8a859ff18ba2278fb6a7936be527277f))
+* **recommendations:** credit cost labels added in the check editor ([#1934](https://github.com/grafana/synthetic-monitoring-app/issues/1934)) ([454d927](https://github.com/grafana/synthetic-monitoring-app/commit/454d9278c97426e109e775f429549c48272fc8a0))
+* **recommendations:** filter the tab by check type ([#1936](https://github.com/grafana/synthetic-monitoring-app/issues/1936)) ([9afed44](https://github.com/grafana/synthetic-monitoring-app/commit/9afed449bf21d27429041ef29dd6356a7e5ac1be))
+* **recommendations:** filter the tab by label and folder ([#1937](https://github.com/grafana/synthetic-monitoring-app/issues/1937)) ([f905603](https://github.com/grafana/synthetic-monitoring-app/commit/f9056034cc50e635334c30e5d0dc0211d056c174))
+* **reliability-inbox:** show suggestions that need setup instead of hiding them ([#1928](https://github.com/grafana/synthetic-monitoring-app/issues/1928)) ([3f0dc0a](https://github.com/grafana/synthetic-monitoring-app/commit/3f0dc0ac569e062cec9187f5e5c1a6a3f8a631aa))
+
+
+### Fixes
+
+* **ci:** use Node 24 for plugin signing ([#1944](https://github.com/grafana/synthetic-monitoring-app/issues/1944)) ([2c3b0d4](https://github.com/grafana/synthetic-monitoring-app/commit/2c3b0d4d256fe873aae03f83a9ba4b21c4bd355f))
+* consistent breadcrumbs for Synthetics tabs ([#1947](https://github.com/grafana/synthetic-monitoring-app/issues/1947)) ([0dd20f8](https://github.com/grafana/synthetic-monitoring-app/commit/0dd20f8845339ea7d5724e49090184b91dfc0806))
+* restore probe card background contrast ([#1945](https://github.com/grafana/synthetic-monitoring-app/issues/1945)) ([8dd4a84](https://github.com/grafana/synthetic-monitoring-app/commit/8dd4a84aa2da508248515a6b02f77993c071f6dd))
+* **security/medium/:** update dependency ip-address to v10.5.1 [security] ([#1895](https://github.com/grafana/synthetic-monitoring-app/issues/1895)) ([c7e06d5](https://github.com/grafana/synthetic-monitoring-app/commit/c7e06d59689098c48b92053b950712206bd41512))
+* Style issues to align with the re-design ([#1932](https://github.com/grafana/synthetic-monitoring-app/issues/1932)) ([c62cb7c](https://github.com/grafana/synthetic-monitoring-app/commit/c62cb7cab8018b49ad1bf12a4df5fffd847c78a1))
+
+
+### Miscellaneous Chores
+
+* build with Go 1.26.10 (CVE-2026-111943) ([#1942](https://github.com/grafana/synthetic-monitoring-app/issues/1942)) ([3ee3b1e](https://github.com/grafana/synthetic-monitoring-app/commit/3ee3b1e0a7b9b14d2951fb2c5f012127055b1bef))
+* update Graft manifest schema URL ([#1931](https://github.com/grafana/synthetic-monitoring-app/issues/1931)) ([dde50d3](https://github.com/grafana/synthetic-monitoring-app/commit/dde50d356ce613d32a1d7f49bd959c7c7cd7eb55))
+
 ## [1.65.0](https://github.com/grafana/synthetic-monitoring-app/compare/v1.64.0...v1.65.0) (2026-10-09)
 
 
