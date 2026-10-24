@@ -6,6 +6,7 @@ import { css } from '@emotion/css';
 import { CheckKnowledgeGraphInsights } from 'features/knowledgeGraph/KnowledgeGraphInsights';
 
 import { Check } from 'types';
+import { CheckNotebookAction } from 'scenes/Common/CheckNotebookAction';
 import { DashboardAnnotationControls } from 'scenes/Common/DashboardAnnotationControls';
 import { EditCheckButton } from 'scenes/Common/EditCheckButton';
 import { SceneTimeRangePicker } from 'scenes/Common/SceneTimeRangePicker';
@@ -30,6 +31,7 @@ export const DashboardHeader = ({ annotations, check }: DashboardHeaderProps) =>
           <CheckKnowledgeGraphInsights check={check} />
           <SLOIntegration check={check} />
           <EditCheckButton id={check.id} />
+          <CheckNotebookAction check={check} />
           <div className={styles.dashboardControls}>
             <SceneTimeRangePicker />
             <RefreshPicker />
