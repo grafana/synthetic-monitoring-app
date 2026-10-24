@@ -42,6 +42,7 @@ export const CHECKS_TEST_ID = {
     sectionHeader: 'checks folder-view section-header',
   },
   listItem: {
+    dashboardLink: 'checks list-item dashboard-link',
     editButton: 'checks list-item edit-button',
   },
 } as const;
@@ -219,3 +220,9 @@ export const LOGS_TEST_ID = {
 } as const;
 
 export const GROT_SAD_TEST_ID = 'grotSad';
+
+export const SLO_INTEGRATION_TEST_ID = {
+  openButton: 'slo-integration open-button',
+  drawer: 'slo-integration drawer',
+  dashboardLink: 'slo-integration dashboard-link',
+} as const;

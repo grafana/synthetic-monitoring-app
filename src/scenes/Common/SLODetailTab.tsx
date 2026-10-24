@@ -16,6 +16,7 @@ import {
 } from '@grafana/ui';
 import { css } from '@emotion/css';
 import { trackLinkClick } from 'features/tracking/linkEvents';
+import { SLO_INTEGRATION_TEST_ID } from 'test/dataTestIds';
 
 import type { SLO } from './grafanaSLOApp.types';
 
@@ -200,6 +201,7 @@ export function SLODetailTab({ slo, onDelete, isDeleting }: SLODetailTabProps) {
       <Stack direction="row" gap={1}>
         {dashboardHref ? (
           <LinkButton
+            data-testid={SLO_INTEGRATION_TEST_ID.dashboardLink}
             href={dashboardHref}
             variant="primary"
             icon="dashboard"

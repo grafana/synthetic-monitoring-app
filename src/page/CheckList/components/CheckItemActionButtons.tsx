@@ -59,6 +59,8 @@ export const CheckItemActionButtons = ({
           {responsiveDashboardLink ? (
             <>
               <LinkButton
+                data-testid={CHECKS_TEST_ID.listItem.dashboardLink}
+                data-check-id={check.id}
                 href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`}
                 size="sm"
                 fill="text"
@@ -67,6 +69,8 @@ export const CheckItemActionButtons = ({
                 View dashboard
               </LinkButton>
               <LinkButton
+                data-testid={CHECKS_TEST_ID.listItem.dashboardLink}
+                data-check-id={check.id}
                 href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
                 size="sm"
                 fill="text"
@@ -77,6 +81,8 @@ export const CheckItemActionButtons = ({
             </>
           ) : viewDashboardAsIcon ? (
             <LinkButton
+              data-testid={CHECKS_TEST_ID.listItem.dashboardLink}
+              data-check-id={check.id}
               href={generateRoutePath(AppRoutes.CheckDashboard, { id: check.id! })}
               size="sm"
               fill="text"
@@ -84,7 +90,13 @@ export const CheckItemActionButtons = ({
               tooltip="Go to dashboard"
             />
           ) : (
-            <LinkButton href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`} size="sm" fill="text">
+            <LinkButton
+              data-testid={CHECKS_TEST_ID.listItem.dashboardLink}
+              data-check-id={check.id}
+              href={`${getRoute(AppRoutes.Checks)}/${check.id}/dashboard`}
+              size="sm"
+              fill="text"
+            >
               View dashboard
             </LinkButton>
           )}

@@ -1,6 +1,7 @@
 import React from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { SLO_INTEGRATION_TEST_ID } from 'test/dataTestIds';
 import { render } from 'test/render';
 
 import type { SLO } from './grafanaSLOApp.types';
@@ -125,7 +126,8 @@ describe('SLODetailTab', () => {
       readOnly: { drillDownDashboardRef: { UID: 'dash-abc' }, creationTimestamp: 0 },
     });
     render(<SLODetailTab slo={slo} />);
-    const link = await screen.findByRole('link', { name: /view dashboard/i });
+    const link = await screen.findByTestId(SLO_INTEGRATION_TEST_ID.dashboardLink);
+    expect(link).toHaveAccessibleName('View dashboard');
     expect(link.getAttribute('href')).toContain('/d/dash-abc');
   });
 
