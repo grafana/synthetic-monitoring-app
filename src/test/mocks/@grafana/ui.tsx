@@ -7,7 +7,7 @@ jest.mock('@grafana/ui', () => {
 
   const createRouterLink = (displayName: string) => {
     const Component = forwardRef<HTMLAnchorElement, any>(
-      ({ href, children, onClick, external, disabled, tooltip, icon, ...props }, ref) => {
+      ({ href, children, onClick, external, disabled, tooltip, icon, iconPlacement, ...props }, ref) => {
         const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
           if (disabled) {
             e.preventDefault();

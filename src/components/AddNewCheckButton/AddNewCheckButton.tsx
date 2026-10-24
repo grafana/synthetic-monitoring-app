@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useCallback } from 'react';
+import React, { ComponentProps, PropsWithChildren, useCallback } from 'react';
 import { Trans } from '@grafana/i18n';
 import { LinkButton, Tooltip } from '@grafana/ui';
 import { trackAddNewCheckButtonClicked } from 'features/tracking/checkCreationEvents';
@@ -11,13 +11,19 @@ import { getUserPermissions } from 'data/permissions';
 
 import { trackFaroUserAction } from '../../features/tracking/userAction';
 
-interface AddNewCheckButtonProps {
+interface AddNewCheckButtonProps extends Pick<ComponentProps<typeof LinkButton>, 'variant' | 'icon' | 'iconPlacement'> {
   source: 'check-list-empty-state' | 'check-list' | 'homepage';
 }
 
 const NO_PERMISSION_TOOLTIP = 'You do not have permission to create checks. Contact your administrator for access.';
 
-export function AddNewCheckButton({ source, children }: PropsWithChildren<AddNewCheckButtonProps>) {
+export function AddNewCheckButton({
+  source,
+  children,
+  variant = 'primary',
+  icon = 'plus',
+  iconPlacement = 'left',
+}: PropsWithChildren<AddNewCheckButtonProps>) {
   const { canWriteChecks } = getUserPermissions();
 
   const handleClick = useCallback(() => {
@@ -30,10 +36,11 @@ export function AddNewCheckButton({ source, children }: PropsWithChildren<AddNew
       data-testid={ACTIONS_TEST_ID.create.check}
       disabled={!canWriteChecks}
       href={generateRoutePath(AppRoutes.ChooseCheckGroup)}
-      icon="plus"
+      icon={icon}
+      iconPlacement={iconPlacement}
       onClick={handleClick}
       tooltip={!canWriteChecks ? NO_PERMISSION_TOOLTIP : undefined}
-      variant="primary"
+      variant={variant}
     >
       {children ?? <Trans i18nKey="addNewCheckButton.createNewCheck">Create new check</Trans>}
     </LinkButton>

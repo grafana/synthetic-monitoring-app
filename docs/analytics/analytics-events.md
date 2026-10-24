@@ -267,6 +267,14 @@ Tracks when the cloud-setup CLI panel is shown, once per mount.
 
 Tracks when the cloud-setup CLI command is copied to the clipboard.
 
+#### synthetic-monitoring_cloud_setup_agent_prompt_shown
+
+Tracks when a user expands the coding-agent instructions.
+
+#### synthetic-monitoring_cloud_setup_agent_prompt_copied
+
+Tracks a successful copy separately from the setup wizard command.
+
 ### cost_attribution
 
 #### synthetic-monitoring_cost_attribution_setup_banner_shown
