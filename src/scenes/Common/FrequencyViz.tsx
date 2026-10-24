@@ -4,6 +4,7 @@ import { useDataTransformer, useQueryRunner, useTimeRange, VizPanel } from '@gra
 import { BigValueGraphMode, ThresholdsMode } from '@grafana/schema';
 
 import { useMetricsDS } from 'hooks/useMetricsDS';
+import { getMetricValueMappings } from 'scenes/Common/metricValueMappings';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 export const Frequency = () => {
@@ -42,11 +43,13 @@ export const Frequency = () => {
     ],
     data: dataProvider,
   });
+  const transformedData = dataTransformer.useState();
 
   const viz = VizConfigBuilders.stat()
     .setOption('graphMode', BigValueGraphMode.None)
     .setUnit('ms')
     .setNoValue('N/A')
+    .setMappings(getMetricValueMappings(transformedData.data?.state))
     .setColor({ mode: 'fixed', fixedColor: 'green' })
     .setOption('reduceOptions', { values: false, calcs: ['lastNotNull'], fields: '/^frequency$/' })
     .setThresholds({

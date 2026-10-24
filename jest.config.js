@@ -11,6 +11,7 @@ module.exports = {
   moduleNameMapper: {
     ...config.moduleNameMapper,
     '^lodash-es$': 'lodash',
+    '^uwrap$': '<rootDir>/node_modules/uwrap/dist/uWrap.mjs', // Package only declares a module entry point.
     '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|md)$':
       '<rootDir>/src/test/mocks/unsupported_file.js',
     '^!raw-loader!*': '<rootDir>/src/test/mocks/rawLoader.js',
@@ -32,6 +33,8 @@ module.exports = {
       '@grafana/ui/node_modules/ol',
       'yaml',
       '@grafana/schema',
+      '@grafana/react-data-grid', // Used by the current Grafana table renderer.
+      'uwrap',
       'har-to-k6',
       'nanoid',
       'prettier/esm',

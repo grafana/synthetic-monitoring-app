@@ -21,6 +21,7 @@ import { useCheckFolderAccess } from 'hooks/useCheckFolderAccess';
 import { useMetricsDS } from 'hooks/useMetricsDS';
 import { useSMDS } from 'hooks/useSMDS';
 import { DEFAULT_QUERY_FROM_TIME_TEXT } from 'components/constants';
+import { getMetricValueMappings } from 'scenes/Common/metricValueMappings';
 import { useVizPanelMenu } from 'scenes/Common/useVizPanelMenu';
 
 import { getCheckTypeTitle } from './SummaryDashboard.utils';
@@ -304,6 +305,9 @@ export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
   });
 
   const data = dataProvider.useState();
+  const transformedData = dataTransformer.useState();
+  // In background-colored cells, transparent keeps placeholders on the normal table background.
+  const metricValueMappings = getMetricValueMappings(transformedData.data?.state, 'transparent');
 
   const viz = VizConfigBuilders.table()
     .setCustomFieldConfig('cellOptions', { type: TableCellDisplayMode.Auto })
@@ -330,6 +334,7 @@ export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
     .setOverrides((b) => {
       return b
         .matchFieldsWithName('reachability')
+        .overrideMappings(metricValueMappings)
         .overrideUnit('percentunit')
         .overrideCustomFieldConfig('cellOptions', {
           mode: TableCellBackgroundDisplayMode.Gradient,
@@ -357,6 +362,7 @@ export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
     .setOverrides((b) => {
       return b
         .matchFieldsWithName('latency')
+        .overrideMappings(metricValueMappings)
         .overrideCustomFieldConfig('cellOptions', {
           mode: TableCellBackgroundDisplayMode.Gradient,
           type: TableCellDisplayMode.ColorBackground,
@@ -431,6 +437,7 @@ export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
           type: TableCellDisplayMode.ColorBackground,
         })
         .overrideMappings([
+          ...metricValueMappings,
           {
             options: {
               '0': {
@@ -451,6 +458,7 @@ export const SummaryTableViz = ({ checks }: { checks: Check[] }) => {
     .setOverrides((b) => {
       return b
         .matchFieldsWithName('uptime')
+        .overrideMappings(metricValueMappings)
         .overrideUnit('percentunit')
         .overrideCustomFieldConfig('cellOptions', {
           mode: TableCellBackgroundDisplayMode.Gradient,

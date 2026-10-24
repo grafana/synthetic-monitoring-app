@@ -24,7 +24,8 @@ export const Gauge = ({ fetching, loading, height, width, onClick, type, value, 
   const { data: threshold } = useThreshold(type);
   const parsedValue = parseValue(value, unit);
   const comparer = COMPARISON_MAP[type];
-  const color = threshold && parsedValue !== null ? comparer(threshold, parsedValue) : undefined;
+  const isPlaceholder = loading || parsedValue === null;
+  const color = !isPlaceholder && threshold ? comparer(threshold, parsedValue) : undefined;
   const infoText = description || INFO_MAP[type];
   const title = TITLE_MAP[type];
   const text = formatValue(parsedValue, unit, loading);
@@ -73,8 +74,8 @@ const COMPARISON_MAP = {
 };
 
 function parseValue(value: number | null, unit: `%` | `ms`) {
-  if (!value) {
-    return value;
+  if (value === null || Number.isNaN(value)) {
+    return null;
   }
 
   if (unit === `%`) {
@@ -93,7 +94,7 @@ function formatValue(value: number | null, unit: `%` | `ms`, loading?: boolean) 
     return <Spinner />;
   }
 
-  if (!value && value !== 0) {
+  if (value === null) {
     return `N/A`;
   }
 
