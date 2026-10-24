@@ -2,12 +2,6 @@
   "addNewCheckButton": {
     "createNewCheck": "Crear nueva prueba"
   },
-  "agenticFeaturedCard": {
-    "createTestButton": "",
-    "description": "",
-    "learnMoreButton": "",
-    "title": ""
-  },
   "checkFilterGroup": {
     "activeFiltersText": "({{activeFilters}} activo)",
     "filterTitle": "Filtros adicionales {{activeFiltersText}}"

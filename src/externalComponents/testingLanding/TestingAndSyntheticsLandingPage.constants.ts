@@ -19,11 +19,3 @@ export const K6_URLS = {
 
 export const SYNTHETICS_PLUGIN_ID = 'grafana-synthetic-monitoring-app';
 export const PERFORMANCE_PLUGIN_ID = 'k6-app';
-export const AGENTIC_PLUGIN_ID = 'grafana-agentictesting-app';
-
-const AGENTIC_BASE = `/a/${AGENTIC_PLUGIN_ID}`;
-
-export const AGENTIC_URLS = {
-  home: AGENTIC_BASE,
-  create: `${AGENTIC_BASE}/create`,
-};
